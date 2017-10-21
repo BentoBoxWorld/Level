@@ -1,0 +1,7 @@
+name: BSkyBlock-Level
+main: bskyblock.addin.level.Level
+version: 0.1
+
+authors: [tastybento]
+
+depend: [BSkyBlock]
