@@ -1,5 +1,8 @@
 package bskyblock.addin.level;
 
+import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Set;
@@ -13,18 +16,22 @@ import org.bukkit.scheduler.BukkitTask;
 
 import bskyblock.addin.level.config.LocaleManager;
 import bskyblock.addin.level.config.PluginConfig;
+import bskyblock.addin.level.database.object.Levels;
 import us.tastybento.bskyblock.BSkyBlock;
 import us.tastybento.bskyblock.api.commands.ArgumentHandler;
 import us.tastybento.bskyblock.api.commands.CanUseResp;
 import us.tastybento.bskyblock.config.BSBLocale;
 import us.tastybento.bskyblock.config.Settings;
+import us.tastybento.bskyblock.database.BSBDatabase;
+import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
+import us.tastybento.bskyblock.database.objects.Island;
 import us.tastybento.bskyblock.util.Util;
 import us.tastybento.bskyblock.util.VaultHelper;
 
 public class Level extends JavaPlugin {
-        
+
     private BSkyBlock bSkyBlock;
-    
+
     // Level calc cool down
     private HashMap<UUID, Long> levelWaitTime = new HashMap<UUID, Long>();
 
@@ -37,12 +44,30 @@ public class Level extends JavaPlugin {
 
     private HashMap<UUID, Long> islandLevel;
 
-    
+    private AbstractDatabaseHandler<Levels> handler;
+
+    private BSBDatabase database;
+
+    private Levels levelsDatabase;
+
+
     @Override
     public void onEnable() {
         new PluginConfig(this);
         bSkyBlock = BSkyBlock.getPlugin();
         islandLevel = new HashMap<>();
+        // Set up database
+        database = BSBDatabase.getDatabase();
+        // Set up the database handler to store and retrieve Island classes
+        handler = (AbstractDatabaseHandler<Levels>) database.getHandler(bSkyBlock, Levels.class);
+        try {
+            levelsDatabase = handler.loadObject("addon-levels");
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | SecurityException | ClassNotFoundException | IntrospectionException
+                | SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         new TopTen(this);
         // Local locales
         localeManager = new LocaleManager(this);
@@ -58,19 +83,19 @@ public class Level extends JavaPlugin {
                 if (sender instanceof Player) {
                     Player player = (Player)sender;
                     UUID playerUUID = player.getUniqueId();
-                    
-                if (VaultHelper.hasPerm(player, Settings.PERMPREFIX + "island.info")) {
-                    if (!bSkyBlock.getPlayers().inTeam(playerUUID) && !bSkyBlock.getPlayers().hasIsland(playerUUID)) {
-                        Util.sendMessage(player, ChatColor.RED + bSkyBlock.getLocale(sender).get("error.noisland"));
-                        return;
+
+                    if (VaultHelper.hasPerm(player, Settings.PERMPREFIX + "island.info")) {
+                        if (!bSkyBlock.getPlayers().inTeam(playerUUID) && !bSkyBlock.getPlayers().hasIsland(playerUUID)) {
+                            Util.sendMessage(player, ChatColor.RED + bSkyBlock.getLocale(sender).get("error.noisland"));
+                            return;
+                        } else {
+                            calculateIslandLevel(player, playerUUID);
+                            return;
+                        }
                     } else {
-                        calculateIslandLevel(player, playerUUID);
+                        //Util.sendMessage(player, ChatColor.RED + bSkyBlock.myLocale(playerUUID).errorNoPermission);
                         return;
                     }
-                } else {
-                    //Util.sendMessage(player, ChatColor.RED + bSkyBlock.myLocale(playerUUID).errorNoPermission);
-                    return;
-                }
                 }
             }
 
@@ -84,13 +109,36 @@ public class Level extends JavaPlugin {
                 return new String[]{null, "Calculate your island's level"};
             }
         }.alias("level"));
-        
-        
+
+
     }
-    
+
     @Override
     public void onDisable(){
-        
+        if (levelsDatabase != null) {
+            save(false);
+        }
+    }
+    
+    /**
+     * Save the levels to the database
+     * @param async - if true, saving will be done async
+     */
+    public void save(boolean async){
+        Runnable save = () -> {
+            try {
+                handler.saveObject(levelsDatabase);
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException
+                    | InstantiationException | NoSuchMethodException | IntrospectionException | SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        };
+        if(async){
+            getServer().getScheduler().runTaskAsynchronously(this, save);
+        } else {
+            save.run();
+        }
     }
 
     /**
@@ -138,7 +186,7 @@ public class Level extends JavaPlugin {
         }
         return true;
     }
-    
+
     /**
      * Sets cool down for the level command
      * 
@@ -147,7 +195,7 @@ public class Level extends JavaPlugin {
     private void setLevelWaitTime(final Player player) {
         levelWaitTime.put(player.getUniqueId(), Long.valueOf(Calendar.getInstance().getTimeInMillis() + levelWait * 1000));
     }
-    
+
     public boolean onLevelWaitTime(final Player player) {
         if (levelWaitTime.containsKey(player.getUniqueId())) {
             if (levelWaitTime.get(player.getUniqueId()).longValue() > Calendar.getInstance().getTimeInMillis()) {
@@ -159,7 +207,7 @@ public class Level extends JavaPlugin {
 
         return false;
     }
-    
+
     private long getLevelWaitTime(final Player player) {
         if (levelWaitTime.containsKey(player.getUniqueId())) {
             if (levelWaitTime.get(player.getUniqueId()).longValue() > Calendar.getInstance().getTimeInMillis()) {
@@ -172,17 +220,15 @@ public class Level extends JavaPlugin {
         return 0L;
     }
 
-    public long getIslandLevel(UUID targetPlayer) {
+    public Long getIslandLevel(UUID targetPlayer) {
         //getLogger().info("DEBUG: getting island level for " + bSkyBlock.getPlayers().getName(targetPlayer));
-        if (islandLevel.containsKey(targetPlayer))
-            return islandLevel.get(targetPlayer);
-        return 0;
+        return levelsDatabase.getLevel(targetPlayer);
     }
 
     public void setIslandLevel(UUID targetPlayer, long level) {
         //getLogger().info("DEBUG: set island level to " + level + " for " + bSkyBlock.getPlayers().getName(targetPlayer));
-        islandLevel.put(targetPlayer, level);
-        
+        levelsDatabase.addLevel(targetPlayer, level);
+        save(true);
     }
 
     /**

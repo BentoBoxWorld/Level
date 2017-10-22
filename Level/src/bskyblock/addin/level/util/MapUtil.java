@@ -14,7 +14,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with ASkyBlock.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package bskyblock.addin.level;
+package bskyblock.addin.level.util;
 
 import java.util.Collections;
 import java.util.Comparator;
