@@ -20,6 +20,14 @@
 					<include>*.yml</include>
 				</includes>
 			</resource>
+			<resource>
+				<targetPath>locales</targetPath>
+				<filtering>false</filtering>
+				<directory>${basedir}/locales</directory>
+				<includes>
+					<include>*.yml</include>
+				</includes>
+			</resource>
 		</resources>
 
 		<plugins>
