@@ -60,8 +60,12 @@ public class Level extends JavaPlugin {
         database = BSBDatabase.getDatabase();
         // Set up the database handler to store and retrieve Island classes
         handler = (AbstractDatabaseHandler<Levels>) database.getHandler(bSkyBlock, Levels.class);
+        levelsDatabase = new Levels();
         try {
             levelsDatabase = handler.loadObject("addon-levels");
+            if (levelsDatabase == null) {
+                levelsDatabase = new Levels(); 
+            }
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException | SecurityException | ClassNotFoundException | IntrospectionException
                 | SQLException e) {
