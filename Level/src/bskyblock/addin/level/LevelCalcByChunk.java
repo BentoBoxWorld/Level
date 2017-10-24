@@ -178,7 +178,7 @@ public class LevelCalcByChunk {
                                         plugin.getLogger().info("Block is outside protected area - z = " + (chunk.getZ() * 16 + z));
                                     continue;
                                 }
-                                
+
                                 for (int y = 0; y < worldHeight; y++) {
                                     int type = chunk.getBlockTypeId(x, y, z);
                                     int data = chunk.getBlockData(x, y, z);
@@ -359,7 +359,7 @@ public class LevelCalcByChunk {
                             reportLines.add(type.getElement().toString() + ": " + String.format("%,d",type.getCount()) + " blocks (max " + limit + explain);
                         }
                         reportLines.add("==================================");
-                        reportLines.add("Blocks on island that are not in blockvalues.yml");
+                        reportLines.add("Blocks on island that are not in config.yml");
                         reportLines.add("Total number = " + String.format("%,d",ncCount.size()));
                         //entriesSortedByCount = Multisets.copyHighestCountFirst(ncCount).entrySet();
                         entriesSortedByCount = ncCount.entrySet();
@@ -393,13 +393,10 @@ public class LevelCalcByChunk {
                                 if (DEBUG)
                                     plugin.getLogger().info("DEBUG: updating player");
 
-                                if (oldLevel != event.getLevel()) {
-                                    // Update player and team mates
-                                    plugin.setIslandLevel(targetPlayer, event.getLevel());
-                                    if (DEBUG)
-                                        plugin.getLogger().info("DEBUG: set island level, now trying to save player");
-                                    bSkyBlock.getPlayers().save(targetPlayer);
-                                }
+                                //if (oldLevel != event.getLevel()) {
+                                // Update player and team mates
+                                plugin.setIslandLevel(targetPlayer, event.getLevel());
+                                //}
                                 if (DEBUG)
                                     plugin.getLogger().info("DEBUG: save player, now looking at team members");
                                 // Update any team members too
@@ -415,15 +412,6 @@ public class LevelCalcByChunk {
                                 }
                                 if (DEBUG) {
                                     plugin.getLogger().info("DEBUG: finished team member saving");
-                                    plugin.getLogger().info("DEBUG: updating top ten");
-                                }
-                                if (bSkyBlock.getPlayers().inTeam(targetPlayer)) {
-                                    UUID leader = bSkyBlock.getIslands().getTeamLeader(targetPlayer);
-                                    if (leader != null) {
-                                        TopTen.topTenAddEntry(leader, event.getLevel());
-                                    }
-                                } else {
-                                    TopTen.topTenAddEntry(targetPlayer, event.getLevel());
                                 }
                             }
 

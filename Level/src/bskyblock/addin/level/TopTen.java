@@ -17,9 +17,10 @@
 
 package bskyblock.addin.level;
 
-import java.io.File;
+import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -43,8 +43,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import bskyblock.addin.level.config.Settings;
-import bskyblock.addin.level.util.MapUtil;
+import bskyblock.addin.level.database.object.Levels;
+import bskyblock.addin.level.database.object.TopTenList;
 import us.tastybento.bskyblock.BSkyBlock;
+import us.tastybento.bskyblock.database.BSBDatabase;
+import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
 
 /**
  * Handles all Top Ten List functions
@@ -52,18 +55,27 @@ import us.tastybento.bskyblock.BSkyBlock;
  * @author tastybento
  * 
  */
-public class TopTen implements Listener{
-    private static Level plugin;
+public class TopTen implements Listener {
+    private Level plugin;
     // Top ten list of players
-    private static Map<UUID, Long> topTenList = new HashMap<UUID, Long>();
-    private static final int GUISIZE = 27; // Must be a multiple of 9
-    private static final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
-    private static final boolean DEBUG = false;
-    // Store this as a static because it's the same for everyone and saves memory cleanup
-    private static Inventory gui;
+    private TopTenList topTenList;
+    private final int GUISIZE = 27; // Must be a multiple of 9
+    private final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
+    private final boolean DEBUG = false;
+    // Store this as a because it's the same for everyone and saves memory cleanup
+    private Inventory gui;
+    private BSBDatabase database;
+    private AbstractDatabaseHandler<TopTenList> handler;
 
+    @SuppressWarnings("unchecked")
     public TopTen(Level plugin) {
-        TopTen.plugin = plugin;
+        this.plugin = plugin;
+        // Set up database
+        database = BSBDatabase.getDatabase();
+        // Set up the database handler to store and retrieve the TopTenList class
+        // Note that these are saved in the BSkyBlock database
+        handler = (AbstractDatabaseHandler<TopTenList>) database.getHandler(BSkyBlock.getPlugin(), TopTenList.class);
+        topTenLoad();
     }
 
     /**
@@ -72,15 +84,7 @@ public class TopTen implements Listener{
      * @param ownerUUID
      * @param l
      */
-    public static void topTenAddEntry(UUID ownerUUID, long l) {
-        // Special case for removals. If a level of zero is given the player
-        // needs to be removed from the list
-        if (l < 1) {
-            if (topTenList.containsKey(ownerUUID)) {
-                topTenList.remove(ownerUUID);
-            }
-            return;
-        }
+    public void topTenAddEntry(UUID ownerUUID, long l) {
         // Try and see if the player is online
         Player player = plugin.getServer().getPlayer(ownerUUID);
         if (player != null) {
@@ -90,8 +94,8 @@ public class TopTen implements Listener{
                 return;
             }
         }
-        topTenList.put(ownerUUID, l);
-        topTenList = MapUtil.sortByValue(topTenList);
+        topTenList.addLevel(ownerUUID, l);
+        topTenSave();
     }
 
     /**
@@ -99,7 +103,7 @@ public class TopTen implements Listener{
      * 
      * @param ownerUUID
      */
-    public static void topTenRemoveEntry(UUID ownerUUID) {
+    public void topTenRemoveEntry(UUID ownerUUID) {
         topTenList.remove(ownerUUID);
     }
 
@@ -107,7 +111,7 @@ public class TopTen implements Listener{
      * Generates a sorted map of islands for the Top Ten list from all player
      * files
      */
-    public static void topTenCreate() {
+    public void topTenCreate() {
         topTenCreate(null);
     }
 
@@ -117,44 +121,58 @@ public class TopTen implements Listener{
      * Runs asynchronously from the main thread.
      * @param sender
      */
-    public static void topTenCreate(final CommandSender sender) {
-        // TODO
+    public void topTenCreate(final CommandSender sender) {
+        // Obtain all the levels for each known player
+        AbstractDatabaseHandler<Levels> levelHandler = plugin.getHandler();
+        try {
+            long index = 0;
+            for (Levels lv : levelHandler.loadObjects()) {
+                if (index++ % 1000 == 0) {
+                    plugin.getLogger().info("Processed " + index + " players for top ten");
+                }
+                // Convert to UUID
+                UUID playerUUID = UUID.fromString(lv.getUniqueId());
+                // Check if the player is an owner or team leader
+                if (BSkyBlock.getPlugin().getIslands().isOwner(playerUUID)) {
+                    topTenList.addLevel(playerUUID, lv.getLevel());
+                }
+            }
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+                | SecurityException | ClassNotFoundException | IntrospectionException | SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        topTenSave();
     }
 
-    public static void topTenSave() {
+    public void topTenSave() {
+        //plugin.getLogger().info("Saving top ten list");
         if (topTenList == null) {
+            //plugin.getLogger().info("DEBUG: toptenlist = null!");
             return;
         }
-        plugin.getLogger().info("Saving top ten list");
-        // Make file
-        File topTenFile = new File(plugin.getDataFolder(), "topten.yml");
-        // Make configuration
-        YamlConfiguration config = new YamlConfiguration();
-        // Save config
-
-        int rank = 0;
-        for (Map.Entry<UUID, Long> m : topTenList.entrySet()) {
-            if (rank++ == 10) {
-                break;
-            }
-            config.set("topten." + m.getKey().toString(), m.getValue());
-        }
         try {
-            config.save(topTenFile);
-            plugin.getLogger().info("Saved top ten list");
-        } catch (Exception e) {
-            plugin.getLogger().severe("Could not save top ten list!");
+            handler.saveObject(topTenList);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException
+                | InstantiationException | NoSuchMethodException | IntrospectionException | SQLException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
     /**
-     * Loads the top ten from the file system topten.yml. If it does not exist
-     * then the top ten is created
+     * Loads the top ten from the database
      */
-    public static void topTenLoad() {
-        topTenList.clear();
-        // TODO
+    public void topTenLoad() {
+        try {
+            topTenList = handler.loadObject("topten");
+            if (topTenList == null) {
+                topTenList = new TopTenList();
+            }
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+                | SecurityException | ClassNotFoundException | IntrospectionException | SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -164,23 +182,22 @@ public class TopTen implements Listener{
      *            - the requesting player
      * @return - true if successful, false if no Top Ten list exists
      */
-    public static boolean topTenShow(final Player player) {
+    public boolean topTenShow(final Player player) {
 
         if (DEBUG)
             plugin.getLogger().info("DEBUG: new GUI display");
         // New GUI display (shown by default)
         if (topTenList == null) topTenCreate();
-        topTenList = MapUtil.sortByValue(topTenList);
         // Create the top ten GUI if it does not exist
         if (gui == null) {
-            gui = Bukkit.createInventory(null, GUISIZE, plugin.getLocale(player.getUniqueId()).get("topTenGuiTitle"));
+            gui = Bukkit.createInventory(null, GUISIZE, plugin.getLocale(player.getUniqueId()).get("topten.guiTitle"));
             if (DEBUG)
                 plugin.getLogger().info("DEBUG: creating GUI for the first time");
         }
         // Reset
         gui.clear();
         int i = 1;
-        Iterator<Entry<UUID, Long>> it = topTenList.entrySet().iterator();
+        Iterator<Entry<UUID, Long>> it = topTenList.getTopTen().entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<UUID, Long> m = it.next();
             UUID playerUUID = m.getKey();
@@ -210,7 +227,7 @@ public class TopTen implements Listener{
         return true;
     }
 
-    static ItemStack getSkull(int rank, Long long1, UUID player){
+    ItemStack getSkull(int rank, Long long1, UUID player){
         if (DEBUG)
             plugin.getLogger().info("DEBUG: Getting the skull");
         String playerName = BSkyBlock.getPlugin().getPlayers().getName(player);
@@ -223,10 +240,10 @@ public class TopTen implements Listener{
         if (playerName == null) return null;
         SkullMeta meta = (SkullMeta) playerSkull.getItemMeta();
         meta.setOwner(playerName);
-        meta.setDisplayName((plugin.getLocale(player).get("topTenGuiHeading").replace("[name]", BSkyBlock.getPlugin().getIslands().getIslandName(player))).replace("[rank]", String.valueOf(rank)));
+        meta.setDisplayName((plugin.getLocale(player).get("topten.guiHeading").replace("[name]", BSkyBlock.getPlugin().getIslands().getIslandName(player))).replace("[rank]", String.valueOf(rank)));
         //meta.setDisplayName(ChatColor.YELLOW + "" + ChatColor.BOLD + "<!> " + ChatColor.YELLOW + "Island: " + ChatColor.GOLD + ChatColor.UNDERLINE + plugin.getGrid().getIslandName(player) + ChatColor.GRAY + " (#" + rank + ")");
         List<String> lore = new ArrayList<String>();
-        lore.add(ChatColor.YELLOW + plugin.getLocale(player).get("levelislandLevel") + " " + long1);
+        lore.add(ChatColor.YELLOW + plugin.getLocale(player).get("topten.islandLevel").replace("[level]", String.valueOf(long1)));
         if (BSkyBlock.getPlugin().getPlayers().inTeam(player)) {
             List<String> memberList = new ArrayList<>();
             for (UUID members : BSkyBlock.getPlugin().getIslands().getMembers(player)) {
@@ -241,7 +258,7 @@ public class TopTen implements Listener{
         return playerSkull;
     }
 
-    static void remove(UUID owner) {
+    void remove(UUID owner) {
         topTenList.remove(owner);
     }
 
@@ -254,7 +271,7 @@ public class TopTen implements Listener{
         }
         // The player that clicked the item
         Player player = (Player) event.getWhoClicked();
-        if (!inventory.getTitle().equals(plugin.getLocale(player).get("topTenGuiTitle"))) {
+        if (!inventory.getTitle().equals(plugin.getLocale(player).get("topten.guiTitle"))) {
             return;
         }
         event.setCancelled(true);
@@ -275,11 +292,4 @@ public class TopTen implements Listener{
         }
     }
 
-    /**
-     * Get a sorted descending map of the top players
-     * @return the topTenList - may be more or less than ten
-     */
-    public static Map<UUID, Long> getTopTenList() {
-        return topTenList;
-    }
 }

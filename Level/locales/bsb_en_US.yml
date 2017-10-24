@@ -13,3 +13,8 @@ island:
   islandLevelIs: "Island level is"
   requiredPointsToNextLevel: "[points] points required until the next level"
 levelDeaths: "([number] deaths)"
+topten:
+  guiTitle: "Top Ten"
+  guiHeading: "[name]:[rank]"
+  islandLevel: "Level [level]"
+  

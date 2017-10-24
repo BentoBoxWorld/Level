@@ -22,7 +22,7 @@ public class Commands extends CalculateLevel {
     }
 
     private void setupCommands() {
-        BSkyBlock bSkyBlock = BSkyBlock.getPlugin();
+        // level command
         bSkyBlock.addSubCommand(new ArgumentHandler("island") {
 
             @Override
@@ -32,17 +32,17 @@ public class Commands extends CalculateLevel {
 
             @Override
             public void execute(CommandSender sender, String[] args) {
-                plugin.getLogger().info("DEBUG: " + args);
+                //getLogger().info("DEBUG: " + args);
                 if (args.length > 0) {
                     // Asking for another player's level?
-                 // Convert name to a UUID
+                    // Convert name to a UUID
                     final UUID playerUUID = bSkyBlock.getPlayers().getUUID(args[0], true);
-                    plugin.getLogger().info("DEBUG: console player info UUID = " + playerUUID);
+                    //getLogger().info("DEBUG: console player info UUID = " + playerUUID);
                     if (playerUUID == null) {
-                        Util.sendMessage(sender, ChatColor.RED + plugin.getLocale(sender).get("error.UnknownPlayer"));
+                        sendMessage(sender, ChatColor.RED + getLocale(sender).get("error.UnknownPlayer"));
                         return;
                     } else {
-                        Util.sendMessage(sender, ChatColor.GREEN + "Level is " + plugin.getIslandLevel(playerUUID));
+                        sendMessage(sender, ChatColor.GREEN + "Level is " + plugin.getIslandLevel(playerUUID));
                         return;
                     }
                 }
@@ -76,7 +76,36 @@ public class Commands extends CalculateLevel {
             }
         }.alias("level"));
 
-        // Admin command
+        // top command
+        bSkyBlock.addSubCommand(new ArgumentHandler("island") {
+
+            @Override
+            public CanUseResp canUse(CommandSender sender) {
+                if (sender instanceof Player) {
+                    VaultHelper.hasPerm((Player)sender, Settings.PERMPREFIX + "island.topten");
+                    return new CanUseResp(true);
+                }
+                return new CanUseResp(false);
+            }
+
+            @Override
+            public void execute(CommandSender sender, String[] args) {
+                plugin.getTopTen().topTenShow((Player)sender);
+                return;
+            }
+
+            @Override
+            public Set<String> tabComplete(CommandSender sender, String[] args) {
+                return null;
+            }
+
+            @Override
+            public String[] usage(CommandSender sender) {
+                return new String[]{"", "View top ten"};
+            }
+        }.alias("top"));
+
+        // Admin level command
         bSkyBlock.addSubCommand(new ArgumentHandler("bsadmin") {
 
             @Override
@@ -91,7 +120,7 @@ public class Commands extends CalculateLevel {
                 } else {
                     // Convert name to a UUID
                     final UUID playerUUID = bSkyBlock.getPlayers().getUUID(args[0], true);
-                    plugin.getLogger().info("DEBUG: console player info UUID = " + playerUUID);
+                    //plugin.getLogger().info("DEBUG: console player info UUID = " + playerUUID);
                     if (playerUUID == null) {
                         Util.sendMessage(sender, ChatColor.RED + plugin.getLocale(sender).get("error.UnknownPlayer"));
                         return;
