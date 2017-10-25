@@ -417,7 +417,7 @@ public class LevelCalcByChunk {
 
                             // Fire the island post level calculation event
                             final IslandPostLevelEvent event3 = new IslandPostLevelEvent(targetPlayer, island, event.getLevel(), event.getPointsToNextLevel());
-                            bSkyBlock.getServer().getPluginManager().callEvent(event3);
+                            plugin.getServer().getPluginManager().callEvent(event3);
 
                             if(!event3.isCancelled()){
                                 // Check that sender still is online

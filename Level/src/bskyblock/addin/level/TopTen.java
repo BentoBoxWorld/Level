@@ -44,6 +44,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import bskyblock.addin.level.config.Settings;
 import bskyblock.addin.level.database.object.Levels;
 import bskyblock.addin.level.database.object.TopTenList;
+import bskyblock.addin.level.event.TopTenClick;
 import us.tastybento.bskyblock.BSkyBlock;
 import us.tastybento.bskyblock.database.BSBDatabase;
 import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
@@ -173,6 +174,7 @@ public class TopTen implements Listener {
         }
 
         player.openInventory(gui);
+        player.updateInventory();
 
         return true;
     }
@@ -189,6 +191,7 @@ public class TopTen implements Listener {
         ItemStack playerSkull = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
         if (playerName == null) return null;
         SkullMeta meta = (SkullMeta) playerSkull.getItemMeta();
+        //meta.setOwningPlayer(plugin.getServer().getOfflinePlayer(player));
         meta.setOwner(playerName);
         meta.setDisplayName((plugin.getLocale(player).get("topten.guiHeading").replace("[name]", BSkyBlock.getPlugin().getIslands().getIslandName(player))).replace("[rank]", String.valueOf(rank)));
         //meta.setDisplayName(ChatColor.YELLOW + "" + ChatColor.BOLD + "<!> " + ChatColor.YELLOW + "Island: " + ChatColor.GOLD + ChatColor.UNDERLINE + plugin.getGrid().getIslandName(player) + ChatColor.GRAY + " (#" + rank + ")");
@@ -242,9 +245,10 @@ public class TopTen implements Listener {
         event.setCancelled(true);
         player.updateInventory();
         if(event.getCurrentItem() != null && event.getCurrentItem().getType().equals(Material.SKULL_ITEM) && event.getCurrentItem().hasItemMeta()){
-            // TODO warp
-            //Util.runCommand(player, "is warp " + ((SkullMeta)event.getCurrentItem().getItemMeta()).getOwner());
             player.closeInventory();
+            // Fire click event
+            TopTenClick clickEvent = new TopTenClick(((SkullMeta)event.getCurrentItem().getItemMeta()).getOwningPlayer().getName());
+            plugin.getServer().getPluginManager().callEvent(clickEvent);
             return;
         }
         if (event.getSlotType().equals(SlotType.OUTSIDE)) {
