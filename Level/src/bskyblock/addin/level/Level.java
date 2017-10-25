@@ -11,6 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import bskyblock.addin.level.commands.Commands;
 import bskyblock.addin.level.config.LocaleManager;
 import bskyblock.addin.level.config.PluginConfig;
 import bskyblock.addin.level.database.object.Levels;
@@ -150,7 +151,7 @@ public class Level extends JavaPlugin {
         //getLogger().info("DEBUG: set island level to " + level + " for " + bSkyBlock.getPlayers().getName(targetPlayer));
         // Add to cache
         levelsCache.put(targetPlayer, level);
-        topTen.topTenAddEntry(targetPlayer, level);
+        topTen.addEntry(targetPlayer, level);
     }
 
     /**

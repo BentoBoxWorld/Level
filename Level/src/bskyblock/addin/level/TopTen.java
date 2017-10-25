@@ -30,7 +30,6 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -75,7 +74,7 @@ public class TopTen implements Listener {
         // Set up the database handler to store and retrieve the TopTenList class
         // Note that these are saved in the BSkyBlock database
         handler = (AbstractDatabaseHandler<TopTenList>) database.getHandler(BSkyBlock.getPlugin(), TopTenList.class);
-        topTenLoad();
+        loadTopTen();
     }
 
     /**
@@ -84,7 +83,7 @@ public class TopTen implements Listener {
      * @param ownerUUID
      * @param l
      */
-    public void topTenAddEntry(UUID ownerUUID, long l) {
+    public void addEntry(UUID ownerUUID, long l) {
         // Try and see if the player is online
         Player player = plugin.getServer().getPlayer(ownerUUID);
         if (player != null) {
@@ -95,33 +94,15 @@ public class TopTen implements Listener {
             }
         }
         topTenList.addLevel(ownerUUID, l);
-        topTenSave();
-    }
-
-    /**
-     * Removes ownerUUID from the top ten list
-     * 
-     * @param ownerUUID
-     */
-    public void topTenRemoveEntry(UUID ownerUUID) {
-        topTenList.remove(ownerUUID);
-    }
-
-    /**
-     * Generates a sorted map of islands for the Top Ten list from all player
-     * files
-     */
-    public void topTenCreate() {
-        topTenCreate(null);
+        saveTopTen();
     }
 
     /**
      * Creates the top ten list from scratch. Does not get the level of each island. Just
      * takes the level from the player's file.
      * Runs asynchronously from the main thread.
-     * @param sender
      */
-    public void topTenCreate(final CommandSender sender) {
+    public void create() {
         // Obtain all the levels for each known player
         AbstractDatabaseHandler<Levels> levelHandler = plugin.getHandler();
         try {
@@ -142,37 +123,7 @@ public class TopTen implements Listener {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        topTenSave();
-    }
-
-    public void topTenSave() {
-        //plugin.getLogger().info("Saving top ten list");
-        if (topTenList == null) {
-            //plugin.getLogger().info("DEBUG: toptenlist = null!");
-            return;
-        }
-        try {
-            handler.saveObject(topTenList);
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException
-                | InstantiationException | NoSuchMethodException | IntrospectionException | SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Loads the top ten from the database
-     */
-    public void topTenLoad() {
-        try {
-            topTenList = handler.loadObject("topten");
-            if (topTenList == null) {
-                topTenList = new TopTenList();
-            }
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | SecurityException | ClassNotFoundException | IntrospectionException | SQLException e) {
-            e.printStackTrace();
-        }
+        saveTopTen();
     }
 
     /**
@@ -182,12 +133,11 @@ public class TopTen implements Listener {
      *            - the requesting player
      * @return - true if successful, false if no Top Ten list exists
      */
-    public boolean topTenShow(final Player player) {
-
+    public boolean getGUI(final Player player) {
         if (DEBUG)
-            plugin.getLogger().info("DEBUG: new GUI display");
+            plugin.getLogger().info("DEBUG: GUI display");
         // New GUI display (shown by default)
-        if (topTenList == null) topTenCreate();
+        if (topTenList == null) create();
         // Create the top ten GUI if it does not exist
         if (gui == null) {
             gui = Bukkit.createInventory(null, GUISIZE, plugin.getLocale(player.getUniqueId()).get("topten.guiTitle"));
@@ -227,7 +177,7 @@ public class TopTen implements Listener {
         return true;
     }
 
-    ItemStack getSkull(int rank, Long long1, UUID player){
+    private ItemStack getSkull(int rank, Long long1, UUID player){
         if (DEBUG)
             plugin.getLogger().info("DEBUG: Getting the skull");
         String playerName = BSkyBlock.getPlugin().getPlayers().getName(player);
@@ -258,8 +208,23 @@ public class TopTen implements Listener {
         return playerSkull;
     }
 
-    void remove(UUID owner) {
-        topTenList.remove(owner);
+    public TopTenList getTopTenList() {
+        return topTenList;
+    }
+
+    /**
+     * Loads the top ten from the database
+     */
+    public void loadTopTen() {
+        try {
+            topTenList = handler.loadObject("topten");
+            if (topTenList == null) {
+                topTenList = new TopTenList();
+            }
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+                | SecurityException | ClassNotFoundException | IntrospectionException | SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @SuppressWarnings("deprecation")
@@ -289,6 +254,30 @@ public class TopTen implements Listener {
         if (event.getClick().equals(ClickType.SHIFT_RIGHT)) {
             player.closeInventory();
             return;
+        }
+    }
+
+    /**
+     * Removes ownerUUID from the top ten list
+     * 
+     * @param ownerUUID
+     */
+    public void removeEntry(UUID ownerUUID) {
+        topTenList.remove(ownerUUID);
+    }
+
+    public void saveTopTen() {
+        //plugin.getLogger().info("Saving top ten list");
+        if (topTenList == null) {
+            //plugin.getLogger().info("DEBUG: toptenlist = null!");
+            return;
+        }
+        try {
+            handler.saveObject(topTenList);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException
+                | InstantiationException | NoSuchMethodException | IntrospectionException | SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
