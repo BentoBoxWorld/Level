@@ -6,7 +6,6 @@ import org.bukkit.material.MaterialData;
 
 public class Settings {
 
-    public static String PERMPREFIX;
     public static boolean sumTeamDeaths;
     public static int seaHeight;
     public static HashMap<MaterialData, Integer> blockLimits;

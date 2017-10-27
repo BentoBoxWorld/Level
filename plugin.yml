@@ -5,3 +5,8 @@ version: 0.1
 authors: [tastybento]
 
 depend: [BSkyBlock]
+
+permissions:    
+  bskyblock.intopten:
+    description: Player is in the top ten.
+    default: true

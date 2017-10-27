@@ -41,11 +41,11 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import bskyblock.addin.level.config.Settings;
 import bskyblock.addin.level.database.object.Levels;
 import bskyblock.addin.level.database.object.TopTenList;
 import bskyblock.addin.level.event.TopTenClick;
 import us.tastybento.bskyblock.BSkyBlock;
+import us.tastybento.bskyblock.config.Settings;
 import us.tastybento.bskyblock.database.BSBDatabase;
 import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
 

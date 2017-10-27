@@ -67,8 +67,8 @@ public class LevelCalcByChunk {
                     plugin.getLogger().info("DEBUG: player is online");
                 // Get permission multiplier                
                 for (PermissionAttachmentInfo perms : player.getEffectivePermissions()) {
-                    if (perms.getPermission().startsWith(Settings.PERMPREFIX + "island.multiplier.")) {
-                        String spl[] = perms.getPermission().split(Settings.PERMPREFIX + "island.multiplier.");
+                    if (perms.getPermission().startsWith(us.tastybento.bskyblock.config.Settings.PERMPREFIX + "island.multiplier.")) {
+                        String spl[] = perms.getPermission().split(us.tastybento.bskyblock.config.Settings.PERMPREFIX + "island.multiplier.");
                         if (spl.length > 1) {
                             if (!NumberUtils.isDigits(spl[1])) {
                                 bSkyBlock.getLogger().severe("Player " + player.getName() + " has permission: " + perms.getPermission() + " <-- the last part MUST be a number! Ignoring...");
