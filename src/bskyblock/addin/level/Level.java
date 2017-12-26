@@ -7,16 +7,19 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
-import bskyblock.addin.level.commands.Commands;
-import bskyblock.addin.level.config.LocaleManager;
+import bskyblock.addin.level.commands.AdminLevel;
+import bskyblock.addin.level.commands.AdminTop;
+import bskyblock.addin.level.commands.IslandLevel;
+import bskyblock.addin.level.commands.IslandTop;
 import bskyblock.addin.level.config.PluginConfig;
 import bskyblock.addin.level.database.object.Levels;
 import us.tastybento.bskyblock.BSkyBlock;
-import us.tastybento.bskyblock.config.BSBLocale;
+import us.tastybento.bskyblock.api.commands.CompositeCommand;
+import us.tastybento.bskyblock.api.commands.User;
+import us.tastybento.bskyblock.config.Settings;
 import us.tastybento.bskyblock.database.BSBDatabase;
 import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
 
@@ -34,9 +37,6 @@ public class Level extends JavaPlugin {
     // Level calc checker
     BukkitTask checker = null;
 
-    // Locale manager for this plugin
-    private LocaleManager localeManager;
-
     // Database handler for level data
     private AbstractDatabaseHandler<Levels> handler;
 
@@ -50,6 +50,9 @@ public class Level extends JavaPlugin {
 
     // The Top Ten object
     private TopTen topTen;
+    
+    // Level calculator
+    private LevelPresenter levelCalc;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -70,13 +73,20 @@ public class Level extends JavaPlugin {
         handler = (AbstractDatabaseHandler<Levels>) database.getHandler(bSkyBlock, Levels.class);
         // Initialize the cache
         levelsCache = new HashMap<>();
+        // Load the calculator
+        levelCalc = new LevelPresenter(this);
         // Start the top ten and register it for clicks
         topTen = new TopTen(this);
         getServer().getPluginManager().registerEvents(topTen, this);
         // Local locales
-        localeManager = new LocaleManager(this);
+        //localeManager = new LocaleManager(this);
         // Register commands
-        new Commands(this);
+        CompositeCommand bsbIslandCmd = (CompositeCommand) BSkyBlock.getPlugin().getCommandsManager().getCommand(Settings.ISLANDCOMMAND);
+        new IslandLevel(this, bsbIslandCmd);
+        new IslandTop(this, bsbIslandCmd);
+        CompositeCommand bsbAdminCmd = (CompositeCommand) BSkyBlock.getPlugin().getCommandsManager().getCommand(Settings.ADMINCOMMAND);
+        new AdminLevel(this, bsbAdminCmd);
+        new AdminTop(this, bsbAdminCmd);
         // Done
     }
 
@@ -154,30 +164,16 @@ public class Level extends JavaPlugin {
         topTen.addEntry(targetPlayer, level);
     }
 
-    /**
-     * Get the locale for this player
-     * @param sender
-     * @return Locale object for sender
-     */
-    public BSBLocale getLocale(CommandSender sender) {
-        return localeManager.getLocale(sender);
-    }
-
-    /**
-     * Get the locale for this UUID
-     * @param uuid
-     * @return Locale object for UUID
-     */
-    public BSBLocale getLocale(UUID uuid) {
-        return localeManager.getLocale(uuid);
-    }
-
     public AbstractDatabaseHandler<Levels> getHandler() {
         return handler;
     }
 
     public TopTen getTopTen() {
         return topTen;
+    }
+
+    public void calculateIslandLevel(User user, UUID playerUUID, boolean b) {
+        levelCalc.calculateIslandLevel(user, playerUUID, b);        
     }
 
 }

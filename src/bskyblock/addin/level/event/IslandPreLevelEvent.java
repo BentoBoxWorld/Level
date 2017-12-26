@@ -2,10 +2,10 @@ package bskyblock.addin.level.event;
 
 import java.util.UUID;
 
-import us.tastybento.bskyblock.api.events.IslandEvent;
+import us.tastybento.bskyblock.api.events.IslandBaseEvent;
 import us.tastybento.bskyblock.database.objects.Island;
 
-public class IslandPreLevelEvent extends IslandEvent {
+public class IslandPreLevelEvent extends IslandBaseEvent {
     
     private UUID targetPlayer;
     private long level;

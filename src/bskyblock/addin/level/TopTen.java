@@ -45,6 +45,7 @@ import bskyblock.addin.level.database.object.Levels;
 import bskyblock.addin.level.database.object.TopTenList;
 import bskyblock.addin.level.event.TopTenClick;
 import us.tastybento.bskyblock.BSkyBlock;
+import us.tastybento.bskyblock.api.commands.User;
 import us.tastybento.bskyblock.config.Settings;
 import us.tastybento.bskyblock.database.BSBDatabase;
 import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
@@ -141,7 +142,7 @@ public class TopTen implements Listener {
         if (topTenList == null) create();
         // Create the top ten GUI if it does not exist
         if (gui == null) {
-            gui = Bukkit.createInventory(null, GUISIZE, plugin.getLocale(player.getUniqueId()).get("topten.guiTitle"));
+            gui = Bukkit.createInventory(null, GUISIZE, "topten.guiTitle");
             if (DEBUG)
                 plugin.getLogger().info("DEBUG: creating GUI for the first time");
         }
@@ -193,10 +194,10 @@ public class TopTen implements Listener {
         SkullMeta meta = (SkullMeta) playerSkull.getItemMeta();
         //meta.setOwningPlayer(plugin.getServer().getOfflinePlayer(player));
         meta.setOwner(playerName);
-        meta.setDisplayName((plugin.getLocale(player).get("topten.guiHeading").replace("[name]", BSkyBlock.getPlugin().getIslands().getIslandName(player))).replace("[rank]", String.valueOf(rank)));
+        meta.setDisplayName(("topten.guiHeading".replace("[name]", BSkyBlock.getPlugin().getIslands().getIslandName(player))).replace("[rank]", String.valueOf(rank)));
         //meta.setDisplayName(ChatColor.YELLOW + "" + ChatColor.BOLD + "<!> " + ChatColor.YELLOW + "Island: " + ChatColor.GOLD + ChatColor.UNDERLINE + plugin.getGrid().getIslandName(player) + ChatColor.GRAY + " (#" + rank + ")");
         List<String> lore = new ArrayList<String>();
-        lore.add(ChatColor.YELLOW + plugin.getLocale(player).get("topten.islandLevel").replace("[level]", String.valueOf(long1)));
+        lore.add(ChatColor.YELLOW + "topten.islandLevel".replace("[level]", String.valueOf(long1)));
         if (BSkyBlock.getPlugin().getPlayers().inTeam(player)) {
             List<String> memberList = new ArrayList<>();
             for (UUID members : BSkyBlock.getPlugin().getIslands().getMembers(player)) {
@@ -239,7 +240,7 @@ public class TopTen implements Listener {
         }
         // The player that clicked the item
         Player player = (Player) event.getWhoClicked();
-        if (!inventory.getTitle().equals(plugin.getLocale(player).get("topten.guiTitle"))) {
+        if (!inventory.getTitle().equals("topten.guiTitle")) {
             return;
         }
         event.setCancelled(true);

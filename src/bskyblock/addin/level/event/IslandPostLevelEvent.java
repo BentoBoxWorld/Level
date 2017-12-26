@@ -2,7 +2,7 @@ package bskyblock.addin.level.event;
 
 import java.util.UUID;
 
-import us.tastybento.bskyblock.api.events.IslandEvent;
+import us.tastybento.bskyblock.api.events.IslandBaseEvent;
 import us.tastybento.bskyblock.database.objects.Island;
 
 /**
@@ -12,7 +12,7 @@ import us.tastybento.bskyblock.database.objects.Island;
  * 
  * @author Poslovitch, tastybento
  */
-public class IslandPostLevelEvent extends IslandEvent {
+public class IslandPostLevelEvent extends IslandBaseEvent {
     private long level;
     private long pointsToNextLevel;
 
