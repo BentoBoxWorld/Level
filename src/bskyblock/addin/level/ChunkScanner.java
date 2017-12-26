@@ -38,7 +38,7 @@ public class ChunkScanner {
     private final Set<ChunkSnapshot> finalChunk;
     private final Results result;
     private final Optional<User> asker;
-    
+
 
     public ChunkScanner(Level plugin, Island island) {
         this.plugin = plugin;
@@ -49,7 +49,7 @@ public class ChunkScanner {
         result = new Results();
         runAsyncCount(island);
     }
-    
+
     /**
      * Calculates the level of an island
      * @param plugin
@@ -177,7 +177,7 @@ public class ChunkScanner {
                     @Override
                     public void run() {
                         // Run any modifications
-                        
+
                         // All done.
                         if (asker.isPresent()) {
                             // Tell the asker the result
@@ -212,7 +212,7 @@ public class ChunkScanner {
                             while (it.hasNext()) {
                                 Entry<MaterialData> en = it.next();
                                 MaterialData type = en.getElement();
-                                
+
                                 int value = 0;
                                 if (Settings.blockValues.containsKey(type)) {
                                     // Specific
@@ -309,14 +309,11 @@ public class ChunkScanner {
             for (int z = island.getMinProtectedZ(); z < (island.getMinProtectedZ() + (island.getProtectionRange() * 2) + 16); z += 16) {
                 if (!world.isChunkLoaded((int)((double)x/16), (int)((double)z/16))) {
                     // If the chunk isn't already generated, load it but don't try and generate it
-                    if (world.loadChunk((int)((double)x/16), (int)((double)z/16), false)) {
-                        Chunk chunk = world.getChunkAt((int)((double)x/16), (int)((double)z/16));
-                        chunkSnapshot.add(chunk.getChunkSnapshot());
-                    }
-                } else {
-                    // chunk is loaded
-                    chunkSnapshot.add(world.getBlockAt(x, 0, z).getChunk().getChunkSnapshot());
-                } 
+                    world.loadChunk((int)((double)x/16), (int)((double)z/16), false);
+                }
+                // chunk is loaded
+                chunkSnapshot.add(world.getBlockAt(x, 0, z).getChunk().getChunkSnapshot());
+
                 if (DEBUG)
                     plugin.getLogger().info("DEBUG: getting chunk at " + x + ", " + z);
             }
@@ -325,7 +322,7 @@ public class ChunkScanner {
             plugin.getLogger().info("DEBUG: size of chunk snapshot = " + chunkSnapshot.size());
         return chunkSnapshot;
     }
-    
+
     /**
      * Results class
      * @author ben
