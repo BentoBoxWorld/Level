@@ -16,7 +16,7 @@ import bskyblock.addin.level.commands.IslandTop;
 import bskyblock.addin.level.config.PluginConfig;
 import bskyblock.addin.level.database.object.Levels;
 import us.tastybento.bskyblock.BSkyBlock;
-import us.tastybento.bskyblock.api.addons.AddOn;
+import us.tastybento.bskyblock.api.addons.Addon;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.commands.User;
 import us.tastybento.bskyblock.config.Settings;
@@ -28,7 +28,7 @@ import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
  * @author tastybento
  *
  */
-public class Level extends AddOn {
+public class Level extends Addon {
 
 
     // The BSkyBlock plugin instance.
