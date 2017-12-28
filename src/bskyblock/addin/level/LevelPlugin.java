@@ -15,7 +15,7 @@ public abstract class LevelPlugin {
 
     public LevelPlugin(Level plugin) {
         this.plugin = plugin;
-        this.bSkyBlock = BSkyBlock.getPlugin();
+        this.bSkyBlock = BSkyBlock.getInstance();
     }
     
     public final Logger getLogger() {

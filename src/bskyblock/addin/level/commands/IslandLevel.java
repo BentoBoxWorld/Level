@@ -15,9 +15,6 @@ public class IslandLevel extends CompositeCommand {
     public IslandLevel(Level levelPlugin, CompositeCommand parent) {
         super(parent, "level");
         this.levelPlugin = levelPlugin;
-        this.setPermission(Settings.PERMPREFIX + "island.level");
-        this.setUsage("island.level.usage");
-        this.setOnlyPlayer(true);
     }
 
     @Override
@@ -43,6 +40,14 @@ public class IslandLevel extends CompositeCommand {
             levelPlugin.calculateIslandLevel(user, user.getUniqueId(), false);
         }
         return false;
+    }
+
+    @Override
+    public void setup() {
+        this.setPermission(Settings.PERMPREFIX + "island.level");
+        this.setParameters("island.level.parameters");
+        this.setDescription("island.level.description");
+        this.setOnlyPlayer(true);  
     }
 
 }

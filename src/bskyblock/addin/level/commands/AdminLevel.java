@@ -15,9 +15,6 @@ public class AdminLevel extends CompositeCommand {
     public AdminLevel(Level levelPlugin, CompositeCommand parent) {
         super(parent, "level");
         this.levelPlugin = levelPlugin;
-        this.setPermission(Settings.PERMPREFIX + "admin.level");
-        this.setOnlyPlayer(false);
-        this.setUsage("admin.level.usage");
     }
 
     @Override
@@ -39,6 +36,15 @@ public class AdminLevel extends CompositeCommand {
            }
        }
         return true;
+    }
+
+    @Override
+    public void setup() {
+        this.setPermission(Settings.PERMPREFIX + "admin.level");
+        this.setOnlyPlayer(false);
+        this.setParameters("admin.level.parameters");
+        this.setDescription("admin.level.description");
+        
     }
 
 }

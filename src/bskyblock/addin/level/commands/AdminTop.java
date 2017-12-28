@@ -17,9 +17,6 @@ public class AdminTop extends CompositeCommand {
     public AdminTop(Level levelPlugin, CompositeCommand parent) {
         super(parent, "top", "topten");
         this.levelPlugin = levelPlugin;
-        this.setPermission(Settings.PERMPREFIX + "admin.top");
-        this.setOnlyPlayer(false);
-        this.setUsage("admin.top.usage");
     }
 
     @Override
@@ -28,12 +25,19 @@ public class AdminTop extends CompositeCommand {
         for (Entry<UUID, Long> topTen : levelPlugin.getTopTen().getTopTenList().getTopTen().entrySet()) {
             UUID player = topTen.getKey();
             rank++;
-            String item = String.valueOf(rank) + ":" + BSkyBlock.getPlugin().getIslands().getIslandName(player) + " "
+            String item = String.valueOf(rank) + ":" + BSkyBlock.getInstance().getIslands().getIslandName(player) + " "
                     + "topten.islandLevel" +  String.valueOf(topTen.getValue());
             user.sendLegacyMessage(item);
         }
 
         return true;
+    }
+
+    @Override
+    public void setup() {
+        this.setPermission(Settings.PERMPREFIX + "admin.top");
+        this.setOnlyPlayer(false);
+        this.setParameters("admin.top.usage");
     }
 
 }

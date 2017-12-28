@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import bskyblock.addin.level.commands.AdminLevel;
@@ -17,6 +16,7 @@ import bskyblock.addin.level.commands.IslandTop;
 import bskyblock.addin.level.config.PluginConfig;
 import bskyblock.addin.level.database.object.Levels;
 import us.tastybento.bskyblock.BSkyBlock;
+import us.tastybento.bskyblock.api.addons.AddOn;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.commands.User;
 import us.tastybento.bskyblock.config.Settings;
@@ -28,7 +28,7 @@ import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
  * @author tastybento
  *
  */
-public class Level extends JavaPlugin {
+public class Level extends AddOn {
 
 
     // The BSkyBlock plugin instance.
@@ -60,7 +60,7 @@ public class Level extends JavaPlugin {
         // Load the plugin's config
         new PluginConfig(this);
         // Get the BSkyBlock plugin. This will be available because this plugin depends on it in plugin.yml.
-        bSkyBlock = BSkyBlock.getPlugin();
+        bSkyBlock = BSkyBlock.getInstance();
         // Check if it is enabled - it might be loaded, but not enabled.
         if (!bSkyBlock.isEnabled()) {
             this.setEnabled(false);
@@ -73,18 +73,20 @@ public class Level extends JavaPlugin {
         handler = (AbstractDatabaseHandler<Levels>) database.getHandler(bSkyBlock, Levels.class);
         // Initialize the cache
         levelsCache = new HashMap<>();
+        // Load all the levels
+        load();
         // Load the calculator
         levelCalc = new LevelPresenter(this);
         // Start the top ten and register it for clicks
         topTen = new TopTen(this);
-        getServer().getPluginManager().registerEvents(topTen, this);
+        registerListener(topTen);
         // Local locales
         //localeManager = new LocaleManager(this);
         // Register commands
-        CompositeCommand bsbIslandCmd = (CompositeCommand) BSkyBlock.getPlugin().getCommandsManager().getCommand(Settings.ISLANDCOMMAND);
+        CompositeCommand bsbIslandCmd = (CompositeCommand) BSkyBlock.getInstance().getCommandsManager().getCommand(Settings.ISLANDCOMMAND);
         new IslandLevel(this, bsbIslandCmd);
         new IslandTop(this, bsbIslandCmd);
-        CompositeCommand bsbAdminCmd = (CompositeCommand) BSkyBlock.getPlugin().getCommandsManager().getCommand(Settings.ADMINCOMMAND);
+        CompositeCommand bsbAdminCmd = (CompositeCommand) BSkyBlock.getInstance().getCommandsManager().getCommand(Settings.ADMINCOMMAND);
         new AdminLevel(this, bsbAdminCmd);
         new AdminTop(this, bsbAdminCmd);
         // Done
@@ -95,6 +97,18 @@ public class Level extends JavaPlugin {
         // Save the cache
         if (levelsCache != null) {
             save(false);
+        }
+    }
+    
+    public void load() {
+        try {
+            for (Levels level : handler.loadObjects()) {
+                levelsCache.put(UUID.fromString(level.getUniqueId()), level.getLevel());
+            }
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+                | SecurityException | ClassNotFoundException | IntrospectionException | SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
     
@@ -118,7 +132,7 @@ public class Level extends JavaPlugin {
             }
         };
         if(async){
-            getServer().getScheduler().runTaskAsynchronously(this, save);
+            getServer().getScheduler().runTaskAsynchronously(getBSkyBlock(), save);
         } else {
             save.run();
         }

@@ -45,7 +45,6 @@ import bskyblock.addin.level.database.object.Levels;
 import bskyblock.addin.level.database.object.TopTenList;
 import bskyblock.addin.level.event.TopTenClick;
 import us.tastybento.bskyblock.BSkyBlock;
-import us.tastybento.bskyblock.api.commands.User;
 import us.tastybento.bskyblock.config.Settings;
 import us.tastybento.bskyblock.database.BSBDatabase;
 import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
@@ -75,7 +74,7 @@ public class TopTen implements Listener {
         database = BSBDatabase.getDatabase();
         // Set up the database handler to store and retrieve the TopTenList class
         // Note that these are saved in the BSkyBlock database
-        handler = (AbstractDatabaseHandler<TopTenList>) database.getHandler(BSkyBlock.getPlugin(), TopTenList.class);
+        handler = (AbstractDatabaseHandler<TopTenList>) database.getHandler(BSkyBlock.getInstance(), TopTenList.class);
         loadTopTen();
     }
 
@@ -116,7 +115,7 @@ public class TopTen implements Listener {
                 // Convert to UUID
                 UUID playerUUID = UUID.fromString(lv.getUniqueId());
                 // Check if the player is an owner or team leader
-                if (BSkyBlock.getPlugin().getIslands().isOwner(playerUUID)) {
+                if (BSkyBlock.getInstance().getIslands().isOwner(playerUUID)) {
                     topTenList.addLevel(playerUUID, lv.getLevel());
                 }
             }
@@ -183,25 +182,25 @@ public class TopTen implements Listener {
     private ItemStack getSkull(int rank, Long long1, UUID player){
         if (DEBUG)
             plugin.getLogger().info("DEBUG: Getting the skull");
-        String playerName = BSkyBlock.getPlugin().getPlayers().getName(player);
+        String playerName = BSkyBlock.getInstance().getPlayers().getName(player);
         if (DEBUG) {
             plugin.getLogger().info("DEBUG: playername = " + playerName);
 
-            plugin.getLogger().info("DEBUG: second chance = " + BSkyBlock.getPlugin().getPlayers().getName(player));
+            plugin.getLogger().info("DEBUG: second chance = " + BSkyBlock.getInstance().getPlayers().getName(player));
         }
         ItemStack playerSkull = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
         if (playerName == null) return null;
         SkullMeta meta = (SkullMeta) playerSkull.getItemMeta();
         //meta.setOwningPlayer(plugin.getServer().getOfflinePlayer(player));
         meta.setOwner(playerName);
-        meta.setDisplayName(("topten.guiHeading".replace("[name]", BSkyBlock.getPlugin().getIslands().getIslandName(player))).replace("[rank]", String.valueOf(rank)));
+        meta.setDisplayName(("topten.guiHeading".replace("[name]", BSkyBlock.getInstance().getIslands().getIslandName(player))).replace("[rank]", String.valueOf(rank)));
         //meta.setDisplayName(ChatColor.YELLOW + "" + ChatColor.BOLD + "<!> " + ChatColor.YELLOW + "Island: " + ChatColor.GOLD + ChatColor.UNDERLINE + plugin.getGrid().getIslandName(player) + ChatColor.GRAY + " (#" + rank + ")");
         List<String> lore = new ArrayList<String>();
         lore.add(ChatColor.YELLOW + "topten.islandLevel".replace("[level]", String.valueOf(long1)));
-        if (BSkyBlock.getPlugin().getPlayers().inTeam(player)) {
+        if (BSkyBlock.getInstance().getPlayers().inTeam(player)) {
             List<String> memberList = new ArrayList<>();
-            for (UUID members : BSkyBlock.getPlugin().getIslands().getMembers(player)) {
-                memberList.add(ChatColor.AQUA + BSkyBlock.getPlugin().getPlayers().getName(members));
+            for (UUID members : BSkyBlock.getInstance().getIslands().getMembers(player)) {
+                memberList.add(ChatColor.AQUA + BSkyBlock.getInstance().getPlayers().getName(members));
             }
             lore.addAll(memberList);
         }

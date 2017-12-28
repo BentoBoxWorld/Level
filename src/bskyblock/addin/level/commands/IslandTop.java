@@ -14,14 +14,20 @@ public class IslandTop extends CompositeCommand {
     public IslandTop(Level plugin, CompositeCommand parent) {
         super(parent, "top", "topten");
         this.plugin = plugin;
-        this.setPermission(Settings.PERMPREFIX + "island.top");
-        this.setUsage("island.top.usage");
     }
 
     @Override
     public boolean execute(User user, List<String> list) {
         plugin.getTopTen().getGUI(user.getPlayer());
         return false;
+    }
+
+    @Override
+    public void setup() {
+        this.setPermission(Settings.PERMPREFIX + "island.top");
+        this.setDescription("island.top.description");
+
+        
     }
 
 }

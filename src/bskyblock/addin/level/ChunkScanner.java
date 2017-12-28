@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -34,14 +33,14 @@ import us.tastybento.bskyblock.database.objects.Island;
 public class ChunkScanner {
     private static final boolean DEBUG = false;
     protected static final boolean LEVEL_LOGGING = false;
-    private final Level plugin;
+    private final Level addon;
     private final Set<ChunkSnapshot> finalChunk;
     private final Results result;
     private final Optional<User> asker;
 
 
     public ChunkScanner(Level plugin, Island island) {
-        this.plugin = plugin;
+        this.addon = plugin;
         // Get the chunks to scan
         finalChunk = getIslandChunks(island);
         this.asker = Optional.empty();
@@ -52,12 +51,12 @@ public class ChunkScanner {
 
     /**
      * Calculates the level of an island
-     * @param plugin
+     * @param addon
      * @param island - island that is being calculated
      * @param asker - the user who wants the report
      */
-    public ChunkScanner(Level plugin, Island island, User asker) {
-        this.plugin = plugin;
+    public ChunkScanner(Level addon, Island island, User asker) {
+        this.addon = addon;
         // Get the chunks to scan
         finalChunk = getIslandChunks(island);
         this.asker = Optional.of(asker);
@@ -68,7 +67,7 @@ public class ChunkScanner {
 
     private void runAsyncCount(Island island) {
         // Run AsyncTask to count blocks in the chunk snapshots
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+        addon.getServer().getScheduler().runTaskAsynchronously(addon.getBSkyBlock(), new Runnable() {
 
             @SuppressWarnings("deprecation")
             @Override
@@ -81,14 +80,14 @@ public class ChunkScanner {
                         // Check if the block coord is inside the protection zone and if not, don't count it
                         if (chunk.getX() * 16 + x < island.getMinProtectedX() || chunk.getX() * 16 + x >= island.getMinProtectedX() + (island.getProtectionRange() * 2)) {
                             if (DEBUG)
-                                plugin.getLogger().info("Block is outside protected area - x = " + (chunk.getX() * 16 + x));
+                                addon.getLogger().info("Block is outside protected area - x = " + (chunk.getX() * 16 + x));
                             continue;
                         }
                         for (int z = 0; z < 16; z++) {
                             // Check if the block coord is inside the protection zone and if not, don't count it
                             if (chunk.getZ() * 16 + z < island.getMinProtectedZ() || chunk.getZ() * 16 + z >= island.getMinProtectedZ() + (island.getProtectionRange() * 2)) {
                                 if (DEBUG)
-                                    plugin.getLogger().info("Block is outside protected area - z = " + (chunk.getZ() * 16 + z));
+                                    addon.getLogger().info("Block is outside protected area - z = " + (chunk.getZ() * 16 + z));
                                 continue;
                             }
 
@@ -99,13 +98,13 @@ public class ChunkScanner {
                                 MaterialData generic = new MaterialData(type);                                    
                                 if (!type.equals(Material.AIR)) { // AIR
                                     if (DEBUG)
-                                        plugin.getLogger().info("Block is inside protected area " + (chunk.getX() * 16) + "," + (chunk.getZ() * 16 + z));
+                                        addon.getLogger().info("Block is inside protected area " + (chunk.getX() * 16) + "," + (chunk.getZ() * 16 + z));
                                     if (DEBUG)
-                                        plugin.getLogger().info("Block is " + md + "[" + generic +"]");
+                                        addon.getLogger().info("Block is " + md + "[" + generic +"]");
                                     if (limitCount.containsKey(md) && Settings.blockValues.containsKey(md)) {
                                         int count = limitCount.get(md);
                                         if (DEBUG)
-                                            plugin.getLogger().info("DEBUG: Count for non-generic " + md + " is " + count);
+                                            addon.getLogger().info("DEBUG: Count for non-generic " + md + " is " + count);
                                         if (count > 0) {
                                             limitCount.put(md, --count);
                                             if (Settings.seaHeight > 0 && y<=Settings.seaHeight) {
@@ -121,7 +120,7 @@ public class ChunkScanner {
                                     } else if (limitCount.containsKey(generic) && Settings.blockValues.containsKey(generic)) {
                                         int count = limitCount.get(generic);
                                         if (DEBUG)
-                                            plugin.getLogger().info("DEBUG: Count for generic " + generic + " is " + count);
+                                            addon.getLogger().info("DEBUG: Count for generic " + generic + " is " + count);
                                         if (count > 0) {  
                                             limitCount.put(generic, --count);
                                             if (Settings.seaHeight > 0 && y<=Settings.seaHeight) {
@@ -136,7 +135,7 @@ public class ChunkScanner {
                                         }
                                     } else if (Settings.blockValues.containsKey(md)) {
                                         if (DEBUG)
-                                            plugin.getLogger().info("DEBUG: Adding " + md + " = " + Settings.blockValues.get(md));
+                                            addon.getLogger().info("DEBUG: Adding " + md + " = " + Settings.blockValues.get(md));
                                         if (Settings.seaHeight > 0 && y<=Settings.seaHeight) {
                                             result.underWaterBlockCount += Settings.blockValues.get(md);
                                             result.uwCount.add(md);
@@ -146,7 +145,7 @@ public class ChunkScanner {
                                         }
                                     } else if (Settings.blockValues.containsKey(generic)) {
                                         if (DEBUG)
-                                            plugin.getLogger().info("DEBUG: Adding " + generic + " = " + Settings.blockValues.get(generic));
+                                            addon.getLogger().info("DEBUG: Adding " + generic + " = " + Settings.blockValues.get(generic));
                                         if (Settings.seaHeight > 0 && y<=Settings.seaHeight) {
                                             result.underWaterBlockCount += Settings.blockValues.get(generic);
                                             result.uwCount.add(md);
@@ -165,14 +164,14 @@ public class ChunkScanner {
 
                 result.rawBlockCount += (long)((double)result.underWaterBlockCount * Settings.underWaterMultiplier);
                 if (DEBUG)
-                    plugin.getLogger().info("DEBUG: block count = "+result.rawBlockCount);
+                    addon.getLogger().info("DEBUG: block count = "+result.rawBlockCount);
                 // Set the death penalty
-                result.deathHandicap = BSkyBlock.getPlugin().getPlayers().getDeaths(island.getOwner()) * Settings.deathpenalty;
+                result.deathHandicap = BSkyBlock.getInstance().getPlayers().getDeaths(island.getOwner()) * Settings.deathpenalty;
                 // Set final score
                 result.score = (result.rawBlockCount / Settings.levelCost) - result.deathHandicap;
 
                 // Return to main thread
-                plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
+                addon.getServer().getScheduler().runTask(addon.getBSkyBlock(), new Runnable() {
 
                     @Override
                     public void run() {
@@ -302,7 +301,7 @@ public class ChunkScanner {
         final World world = island.getWorld();
         // Get the chunks
         if (DEBUG)
-            plugin.getLogger().info("DEBUG: Getting chunks. Protection range = " + island.getProtectionRange());
+            addon.getLogger().info("DEBUG: Getting chunks. Protection range = " + island.getProtectionRange());
         //long nano = System.nanoTime();
         Set<ChunkSnapshot> chunkSnapshot = new HashSet<ChunkSnapshot>();
         for (int x = island.getMinProtectedX(); x < (island.getMinProtectedX() + (island.getProtectionRange() *2) + 16); x += 16) {
@@ -315,11 +314,11 @@ public class ChunkScanner {
                 chunkSnapshot.add(world.getBlockAt(x, 0, z).getChunk().getChunkSnapshot());
 
                 if (DEBUG)
-                    plugin.getLogger().info("DEBUG: getting chunk at " + x + ", " + z);
+                    addon.getLogger().info("DEBUG: getting chunk at " + x + ", " + z);
             }
         }
         if (DEBUG)
-            plugin.getLogger().info("DEBUG: size of chunk snapshot = " + chunkSnapshot.size());
+            addon.getLogger().info("DEBUG: size of chunk snapshot = " + chunkSnapshot.size());
         return chunkSnapshot;
     }
 
