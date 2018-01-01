@@ -1,10 +1,12 @@
-package bskyblock.addin.level.commands;
+package bskyblock.addon.level.commands;
 
 import java.util.List;
 import java.util.Map.Entry;
+
+import bskyblock.addon.level.Level;
+
 import java.util.UUID;
 
-import bskyblock.addin.level.Level;
 import us.tastybento.bskyblock.BSkyBlock;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.commands.User;

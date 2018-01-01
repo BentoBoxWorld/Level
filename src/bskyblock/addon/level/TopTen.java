@@ -15,7 +15,7 @@
  *     along with ASkyBlock.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
 
-package bskyblock.addin.level;
+package bskyblock.addon.level;
 
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
@@ -41,9 +41,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import bskyblock.addin.level.database.object.Levels;
-import bskyblock.addin.level.database.object.TopTenList;
-import bskyblock.addin.level.event.TopTenClick;
+import bskyblock.addon.level.database.object.Levels;
+import bskyblock.addon.level.database.object.TopTenList;
+import bskyblock.addon.level.event.TopTenClick;
 import us.tastybento.bskyblock.BSkyBlock;
 import us.tastybento.bskyblock.config.Settings;
 import us.tastybento.bskyblock.database.BSBDatabase;

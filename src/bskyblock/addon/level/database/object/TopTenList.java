@@ -1,4 +1,4 @@
-package bskyblock.addin.level.database.object;
+package bskyblock.addon.level.database.object;
 
 import java.util.Comparator;
 import java.util.HashMap;

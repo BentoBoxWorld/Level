@@ -1,4 +1,4 @@
-package bskyblock.addin.level;
+package bskyblock.addon.level;
 
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
@@ -9,12 +9,12 @@ import java.util.UUID;
 
 import org.bukkit.scheduler.BukkitTask;
 
-import bskyblock.addin.level.commands.AdminLevel;
-import bskyblock.addin.level.commands.AdminTop;
-import bskyblock.addin.level.commands.IslandLevel;
-import bskyblock.addin.level.commands.IslandTop;
-import bskyblock.addin.level.config.PluginConfig;
-import bskyblock.addin.level.database.object.Levels;
+import bskyblock.addon.level.commands.AdminLevel;
+import bskyblock.addon.level.commands.AdminTop;
+import bskyblock.addon.level.commands.IslandLevel;
+import bskyblock.addon.level.commands.IslandTop;
+import bskyblock.addon.level.config.PluginConfig;
+import bskyblock.addon.level.database.object.Levels;
 import us.tastybento.bskyblock.BSkyBlock;
 import us.tastybento.bskyblock.api.addons.Addon;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;

@@ -1,4 +1,4 @@
-package bskyblock.addin.level.event;
+package bskyblock.addon.level.event;
 
 import java.util.UUID;
 

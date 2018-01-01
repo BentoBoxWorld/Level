@@ -1,4 +1,4 @@
-package bskyblock.addin.level.database.object;
+package bskyblock.addon.level.database.object;
 
 import us.tastybento.bskyblock.database.objects.DataObject;
 

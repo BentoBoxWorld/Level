@@ -1,4 +1,4 @@
-package bskyblock.addin.level;
+package bskyblock.addon.level;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,9 +16,11 @@ import org.bukkit.material.MaterialData;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
+
+import bskyblock.addon.level.config.Settings;
+
 import com.google.common.collect.Multisets;
 
-import bskyblock.addin.level.config.Settings;
 import us.tastybento.bskyblock.BSkyBlock;
 import us.tastybento.bskyblock.api.commands.User;
 import us.tastybento.bskyblock.database.objects.Island;

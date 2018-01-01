@@ -1,4 +1,4 @@
-package bskyblock.addin.level;
+package bskyblock.addon.level;
 
 import java.util.Calendar;
 import java.util.HashMap;

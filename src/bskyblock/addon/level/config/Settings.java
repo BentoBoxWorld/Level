@@ -1,4 +1,4 @@
-package bskyblock.addin.level.config;
+package bskyblock.addon.level.config;
 
 import java.util.HashMap;
 

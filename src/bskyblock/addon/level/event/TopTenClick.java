@@ -1,4 +1,4 @@
-package bskyblock.addin.level.event;
+package bskyblock.addon.level.event;
 
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;

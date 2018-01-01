@@ -1,4 +1,4 @@
-package bskyblock.addin.level.config;
+package bskyblock.addon.level.config;
 
 import java.util.HashMap;
 
@@ -6,7 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
 import org.bukkit.material.MaterialData;
 
-import bskyblock.addin.level.Level;
+import bskyblock.addon.level.Level;
 
 public class PluginConfig {
     private static final boolean DEBUG = false;
