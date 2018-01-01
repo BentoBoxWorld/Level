@@ -178,7 +178,8 @@ public class ChunkScanner {
                     @Override
                     public void run() {
                         // Run any modifications
-
+                        // Save the value
+                        addon.setIslandLevel(island.getOwner(), result.score);
                         // All done.
                         if (asker.isPresent()) {
                             // Tell the asker the result
