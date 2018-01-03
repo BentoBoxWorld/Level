@@ -3,18 +3,24 @@
 # the one at http://yaml-online-parser.appspot.com                                        #
 ###########################################################################################
 
-### Credits ###
-# Tastybento: maintainer
-# Poslovitch: maintainer
-#
-# This translation is adapted to version : [alpha-0.0.1]
-
+admin:
+  level:
+    parameters: "<player>"
+    description: "calculate the island level for player"
+  top:
+    description: "show the top ten list"
+    
 island:
-  islandLevelIs: "Island level is"
-  requiredPointsToNextLevel: "[points] points required until the next level"
-levelDeaths: "([number] deaths)"
-topten:
-  guiTitle: "Top Ten"
-  guiHeading: "[name]:[rank]"
-  islandLevel: "Level [level]"
+  level: 
+    parameters: "[player]"
+    description: "calculate your island level or show the level of [player]" 
+    islandLevelIs: "Island level is"
+    requiredPointsToNextLevel: "[points] points required until the next level"
+    deaths: "([number] deaths)"
+    
+  top:
+    description: "show the Top Ten"
+    guiTitle: "Top Ten"
+    guiHeading: "[name]:[rank]"
+    islandLevel: "Level [level]"
   

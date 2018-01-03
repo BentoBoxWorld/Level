@@ -31,8 +31,7 @@ public class IslandLevel extends CompositeCommand {
                 // Self level request
                 levelPlugin.calculateIslandLevel(user, user.getUniqueId(), false);
             } else {
-                user.sendMessage("addon.level.level-is", "[level]", String.valueOf(levelPlugin.getIslandLevel(playerUUID)));
-                user.sendLegacyMessage("Level = " + String.valueOf(levelPlugin.getIslandLevel(playerUUID)));
+                user.sendMessage("island.level.islandLevelIs", "[level]", String.valueOf(levelPlugin.getIslandLevel(playerUUID)));
                 return true;
             }
         } else {

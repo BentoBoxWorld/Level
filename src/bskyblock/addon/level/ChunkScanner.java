@@ -184,7 +184,7 @@ public class ChunkScanner {
                         if (asker.isPresent()) {
                             // Tell the asker the result
                             if (asker.get().isPlayer() && asker.get().isOnline()) {
-                                asker.get().sendLegacyMessage("Your level is " + result.score);
+                                asker.get().sendRawMessage("Your level is " + result.score);
                             } else {
                                 // Console
                                 sendConsoleReport(asker);
@@ -286,7 +286,7 @@ public class ChunkScanner {
                         reportLines.add("=================================");
 
                         for (String line : reportLines) {
-                            asker.get().sendLegacyMessage(line);
+                            asker.get().sendRawMessage(line);
                         }
                     }
 

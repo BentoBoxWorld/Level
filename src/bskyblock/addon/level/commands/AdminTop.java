@@ -28,8 +28,8 @@ public class AdminTop extends CompositeCommand {
             UUID player = topTen.getKey();
             rank++;
             String item = String.valueOf(rank) + ":" + BSkyBlock.getInstance().getIslands().getIslandName(player) + " "
-                    + "topten.islandLevel" +  String.valueOf(topTen.getValue());
-            user.sendLegacyMessage(item);
+                    + user.getTranslation("topten.islandLevel", "[level]", String.valueOf(topTen.getValue()));
+            user.sendRawMessage(item);
         }
 
         return true;
@@ -39,7 +39,7 @@ public class AdminTop extends CompositeCommand {
     public void setup() {
         this.setPermission(Settings.PERMPREFIX + "admin.top");
         this.setOnlyPlayer(false);
-        this.setParameters("admin.top.usage");
+        this.setDescription("admin.top.description");
     }
 
 }

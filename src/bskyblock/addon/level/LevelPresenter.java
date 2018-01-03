@@ -42,18 +42,18 @@ public class LevelPresenter extends LevelPlugin {
     public boolean calculateIslandLevel(final User sender, final UUID targetPlayer, boolean report) {
         // Check if sender has island
         if (!bSkyBlock.getIslands().hasIsland(targetPlayer)) {
-            sender.sendLegacyMessage("Target does not have an island");
+            sender.sendRawMessage("Target does not have an island");
             return false;
         }
         // Player asking for their own island calc
         if (!sender.isPlayer() || sender.getUniqueId().equals(targetPlayer) || sender.isOp() || sender.hasPermission(Settings.PERMPREFIX + "mod.info")) {
             // Newer better system - uses chunks
             if (!onLevelWaitTime(sender) || levelWait <= 0 || sender.isOp() || sender.hasPermission(Settings.PERMPREFIX + "mod.info")) {
-                sender.sendLegacyMessage(ChatColor.GREEN + "Calculating level, please wait...");
+                sender.sendRawMessage(ChatColor.GREEN + "Calculating level, please wait...");
                 setLevelWaitTime(sender);
                 new ChunkScanner(plugin, bSkyBlock.getIslands().getIsland(targetPlayer), sender);
             } else {
-                sender.sendLegacyMessage( ChatColor.YELLOW + String.valueOf(getLevelWaitTime(sender)));
+                sender.sendRawMessage( ChatColor.YELLOW + String.valueOf(getLevelWaitTime(sender)));
             }
 
         } else {
