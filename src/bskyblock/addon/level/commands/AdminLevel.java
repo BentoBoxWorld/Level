@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.UUID;
 
 import bskyblock.addon.level.Level;
+import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.commands.User;
-import us.tastybento.bskyblock.config.Settings;
 
 public class AdminLevel extends CompositeCommand {
     
@@ -40,7 +40,7 @@ public class AdminLevel extends CompositeCommand {
 
     @Override
     public void setup() {
-        this.setPermission(Settings.PERMPREFIX + "admin.level");
+        this.setPermission(Constants.PERMPREFIX + "admin.level");
         this.setOnlyPlayer(false);
         this.setParameters("admin.level.parameters");
         this.setDescription("admin.level.description");

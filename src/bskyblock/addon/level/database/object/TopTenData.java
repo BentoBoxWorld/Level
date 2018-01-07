@@ -13,7 +13,7 @@ import us.tastybento.bskyblock.database.objects.DataObject;
  * @author ben
  *
  */
-public class TopTenList extends DataObject {
+public class TopTenData implements DataObject {
     
     private String uniqueId = "topten";
     private HashMap<UUID, Long> topTen = new HashMap<>();

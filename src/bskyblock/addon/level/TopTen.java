@@ -41,11 +41,11 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import bskyblock.addon.level.database.object.Levels;
-import bskyblock.addon.level.database.object.TopTenList;
+import bskyblock.addon.level.database.object.LevelsData;
+import bskyblock.addon.level.database.object.TopTenData;
 import bskyblock.addon.level.event.TopTenClick;
 import us.tastybento.bskyblock.BSkyBlock;
-import us.tastybento.bskyblock.config.Settings;
+import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.database.BSBDatabase;
 import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
 
@@ -58,14 +58,14 @@ import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
 public class TopTen implements Listener {
     private Level plugin;
     // Top ten list of players
-    private TopTenList topTenList;
+    private TopTenData topTenList;
     private final int GUISIZE = 27; // Must be a multiple of 9
     private final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
     private final boolean DEBUG = false;
     // Store this as a because it's the same for everyone and saves memory cleanup
     private Inventory gui;
     private BSBDatabase database;
-    private AbstractDatabaseHandler<TopTenList> handler;
+    private AbstractDatabaseHandler<TopTenData> handler;
 
     @SuppressWarnings("unchecked")
     public TopTen(Level plugin) {
@@ -74,7 +74,7 @@ public class TopTen implements Listener {
         database = BSBDatabase.getDatabase();
         // Set up the database handler to store and retrieve the TopTenList class
         // Note that these are saved in the BSkyBlock database
-        handler = (AbstractDatabaseHandler<TopTenList>) database.getHandler(BSkyBlock.getInstance(), TopTenList.class);
+        handler = (AbstractDatabaseHandler<TopTenData>) database.getHandler(TopTenData.class);
         loadTopTen();
     }
 
@@ -89,7 +89,7 @@ public class TopTen implements Listener {
         Player player = plugin.getServer().getPlayer(ownerUUID);
         if (player != null) {
             // Online
-            if (!player.hasPermission(Settings.PERMPREFIX + "intopten")) {
+            if (!player.hasPermission(Constants.PERMPREFIX + "intopten")) {
                 topTenList.remove(ownerUUID);
                 return;
             }
@@ -105,10 +105,10 @@ public class TopTen implements Listener {
      */
     public void create() {
         // Obtain all the levels for each known player
-        AbstractDatabaseHandler<Levels> levelHandler = plugin.getHandler();
+        AbstractDatabaseHandler<LevelsData> levelHandler = plugin.getHandler();
         try {
             long index = 0;
-            for (Levels lv : levelHandler.loadObjects()) {
+            for (LevelsData lv : levelHandler.loadObjects()) {
                 if (index++ % 1000 == 0) {
                     plugin.getLogger().info("Processed " + index + " players for top ten");
                 }
@@ -158,7 +158,7 @@ public class TopTen implements Listener {
             Player entry = plugin.getServer().getPlayer(playerUUID);
             boolean show = true;
             if (entry != null) {
-                if (!entry.hasPermission(Settings.PERMPREFIX + "intopten")) {
+                if (!entry.hasPermission(Constants.PERMPREFIX + "intopten")) {
                     it.remove();
                     show = false;
                 }
@@ -211,7 +211,7 @@ public class TopTen implements Listener {
         return playerSkull;
     }
 
-    public TopTenList getTopTenList() {
+    public TopTenData getTopTenList() {
         return topTenList;
     }
 
@@ -222,7 +222,7 @@ public class TopTen implements Listener {
         try {
             topTenList = handler.loadObject("topten");
             if (topTenList == null) {
-                topTenList = new TopTenList();
+                topTenList = new TopTenData();
             }
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
                 | SecurityException | ClassNotFoundException | IntrospectionException | SQLException e) {

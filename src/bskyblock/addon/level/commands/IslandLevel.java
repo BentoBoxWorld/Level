@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.UUID;
 
 import bskyblock.addon.level.Level;
+import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.commands.User;
-import us.tastybento.bskyblock.config.Settings;
 
 public class IslandLevel extends CompositeCommand {
     
@@ -43,7 +43,7 @@ public class IslandLevel extends CompositeCommand {
 
     @Override
     public void setup() {
-        this.setPermission(Settings.PERMPREFIX + "island.level");
+        this.setPermission(Constants.PERMPREFIX + "island.level");
         this.setParameters("island.level.parameters");
         this.setDescription("island.level.description");
         this.setOnlyPlayer(true);  

@@ -2,15 +2,13 @@ package bskyblock.addon.level.commands;
 
 import java.util.List;
 import java.util.Map.Entry;
-
-import bskyblock.addon.level.Level;
-
 import java.util.UUID;
 
+import bskyblock.addon.level.Level;
 import us.tastybento.bskyblock.BSkyBlock;
+import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.commands.User;
-import us.tastybento.bskyblock.config.Settings;
 
 public class AdminTop extends CompositeCommand {
     
@@ -37,7 +35,7 @@ public class AdminTop extends CompositeCommand {
 
     @Override
     public void setup() {
-        this.setPermission(Settings.PERMPREFIX + "admin.top");
+        this.setPermission(Constants.PERMPREFIX + "admin.top");
         this.setOnlyPlayer(false);
         this.setDescription("admin.top.description");
     }

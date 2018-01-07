@@ -6,8 +6,8 @@ import java.util.UUID;
 
 import org.bukkit.ChatColor;
 
+import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.commands.User;
-import us.tastybento.bskyblock.config.Settings;
 
 public class LevelPresenter extends LevelPlugin {
 
@@ -46,9 +46,9 @@ public class LevelPresenter extends LevelPlugin {
             return false;
         }
         // Player asking for their own island calc
-        if (!sender.isPlayer() || sender.getUniqueId().equals(targetPlayer) || sender.isOp() || sender.hasPermission(Settings.PERMPREFIX + "mod.info")) {
+        if (!sender.isPlayer() || sender.getUniqueId().equals(targetPlayer) || sender.isOp() || sender.hasPermission(Constants.PERMPREFIX + "mod.info")) {
             // Newer better system - uses chunks
-            if (!onLevelWaitTime(sender) || levelWait <= 0 || sender.isOp() || sender.hasPermission(Settings.PERMPREFIX + "mod.info")) {
+            if (!onLevelWaitTime(sender) || levelWait <= 0 || sender.isOp() || sender.hasPermission(Constants.PERMPREFIX + "mod.info")) {
                 sender.sendRawMessage(ChatColor.GREEN + "Calculating level, please wait...");
                 setLevelWaitTime(sender);
                 new ChunkScanner(plugin, bSkyBlock.getIslands().getIsland(targetPlayer), sender);

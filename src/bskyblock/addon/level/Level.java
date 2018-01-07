@@ -14,12 +14,12 @@ import bskyblock.addon.level.commands.AdminTop;
 import bskyblock.addon.level.commands.IslandLevel;
 import bskyblock.addon.level.commands.IslandTop;
 import bskyblock.addon.level.config.PluginConfig;
-import bskyblock.addon.level.database.object.Levels;
+import bskyblock.addon.level.database.object.LevelsData;
 import us.tastybento.bskyblock.BSkyBlock;
+import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.addons.Addon;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.commands.User;
-import us.tastybento.bskyblock.config.Settings;
 import us.tastybento.bskyblock.database.BSBDatabase;
 import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
 
@@ -38,7 +38,7 @@ public class Level extends Addon {
     BukkitTask checker = null;
 
     // Database handler for level data
-    private AbstractDatabaseHandler<Levels> handler;
+    private AbstractDatabaseHandler<LevelsData> handler;
 
     // The BSkyBlock database object
     private BSBDatabase database;
@@ -70,7 +70,7 @@ public class Level extends Addon {
         database = BSBDatabase.getDatabase();
         // Set up the database handler to store and retrieve Island classes
         // Note that these are saved by the BSkyBlock database
-        handler = (AbstractDatabaseHandler<Levels>) database.getHandler(bSkyBlock, Levels.class);
+        handler = (AbstractDatabaseHandler<LevelsData>) database.getHandler(LevelsData.class);
         // Initialize the cache
         levelsCache = new HashMap<>();
         // Load all the levels
@@ -83,10 +83,10 @@ public class Level extends Addon {
         // Local locales
         //localeManager = new LocaleManager(this);
         // Register commands
-        CompositeCommand bsbIslandCmd = (CompositeCommand) BSkyBlock.getInstance().getCommandsManager().getCommand(Settings.ISLANDCOMMAND);
+        CompositeCommand bsbIslandCmd = (CompositeCommand) BSkyBlock.getInstance().getCommandsManager().getCommand(Constants.ISLANDCOMMAND);
         new IslandLevel(this, bsbIslandCmd);
         new IslandTop(this, bsbIslandCmd);
-        CompositeCommand bsbAdminCmd = (CompositeCommand) BSkyBlock.getInstance().getCommandsManager().getCommand(Settings.ADMINCOMMAND);
+        CompositeCommand bsbAdminCmd = (CompositeCommand) BSkyBlock.getInstance().getCommandsManager().getCommand(Constants.ADMINCOMMAND);
         new AdminLevel(this, bsbAdminCmd);
         new AdminTop(this, bsbAdminCmd);
         // Done
@@ -102,7 +102,7 @@ public class Level extends Addon {
     
     public void load() {
         try {
-            for (Levels level : handler.loadObjects()) {
+            for (LevelsData level : handler.loadObjects()) {
                 levelsCache.put(UUID.fromString(level.getUniqueId()), level.getLevel());
             }
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
@@ -120,7 +120,7 @@ public class Level extends Addon {
         Runnable save = () -> {
             try {
                 for (Entry<UUID, Long> en : levelsCache.entrySet()) {
-                    Levels lv = new Levels();
+                    LevelsData lv = new LevelsData();
                     lv.setLevel(en.getValue());
                     lv.setUniqueId(en.getKey().toString());
                     handler.saveObject(lv);
@@ -149,7 +149,7 @@ public class Level extends Addon {
             return levelsCache.get(targetPlayer);
         }
         // Get from database
-        Levels level;
+        LevelsData level;
         try {
             level = handler.loadObject(targetPlayer.toString());
             if (level == null) {
@@ -178,7 +178,7 @@ public class Level extends Addon {
         topTen.addEntry(targetPlayer, level);
     }
 
-    public AbstractDatabaseHandler<Levels> getHandler() {
+    public AbstractDatabaseHandler<LevelsData> getHandler() {
         return handler;
     }
 

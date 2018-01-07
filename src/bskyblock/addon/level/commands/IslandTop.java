@@ -3,9 +3,9 @@ package bskyblock.addon.level.commands;
 import java.util.List;
 
 import bskyblock.addon.level.Level;
+import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.commands.User;
-import us.tastybento.bskyblock.config.Settings;
 
 public class IslandTop extends CompositeCommand {
 
@@ -24,7 +24,7 @@ public class IslandTop extends CompositeCommand {
 
     @Override
     public void setup() {
-        this.setPermission(Settings.PERMPREFIX + "island.top");
+        this.setPermission(Constants.PERMPREFIX + "island.top");
         this.setDescription("island.top.description");
 
         
