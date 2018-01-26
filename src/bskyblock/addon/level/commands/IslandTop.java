@@ -18,7 +18,7 @@ public class IslandTop extends CompositeCommand {
 
     @Override
     public boolean execute(User user, List<String> list) {
-        plugin.getTopTen().getGUI(user.getPlayer());
+        plugin.getTopTen().getGUI(user);
         return false;
     }
 

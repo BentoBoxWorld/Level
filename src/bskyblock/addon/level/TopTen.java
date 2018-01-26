@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -46,6 +45,12 @@ import bskyblock.addon.level.database.object.TopTenData;
 import bskyblock.addon.level.event.TopTenClick;
 import us.tastybento.bskyblock.BSkyBlock;
 import us.tastybento.bskyblock.Constants;
+import us.tastybento.bskyblock.api.commands.User;
+import us.tastybento.bskyblock.api.panels.Panel;
+import us.tastybento.bskyblock.api.panels.PanelItem;
+import us.tastybento.bskyblock.api.panels.PanelItem.ClickHandler;
+import us.tastybento.bskyblock.api.panels.builders.PanelBuilder;
+import us.tastybento.bskyblock.api.panels.builders.PanelItemBuilder;
 import us.tastybento.bskyblock.database.BSBDatabase;
 import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
 
@@ -130,32 +135,29 @@ public class TopTen implements Listener {
     /**
      * Displays the Top Ten list if it exists in chat
      * 
-     * @param player
+     * @param user
      *            - the requesting player
      * @return - true if successful, false if no Top Ten list exists
      */
-    public boolean getGUI(final Player player) {
+    public boolean getGUI(final User user) {
         if (DEBUG)
             plugin.getLogger().info("DEBUG: GUI display");
         // New GUI display (shown by default)
         if (topTenList == null) create();
-        // Create the top ten GUI if it does not exist
-        if (gui == null) {
-            gui = Bukkit.createInventory(null, GUISIZE, "topten.guiTitle");
-            if (DEBUG)
-                plugin.getLogger().info("DEBUG: creating GUI for the first time");
-        }
-        // Reset
-        gui.clear();
+
+        PanelBuilder panel = new PanelBuilder()
+                .setName("island.top.guiTitle")
+                .setUser(user);
+
         int i = 1;
         Iterator<Entry<UUID, Long>> it = topTenList.getTopTen().entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<UUID, Long> m = it.next();
-            UUID playerUUID = m.getKey();
+            UUID topTenUUID = m.getKey();
             if (DEBUG)
-                plugin.getLogger().info("DEBUG: " + i + ": " + playerUUID);
+                plugin.getLogger().info("DEBUG: " + i + ": " + topTenUUID);
             // Remove from TopTen if the player is online and has the permission
-            Player entry = plugin.getServer().getPlayer(playerUUID);
+            Player entry = plugin.getServer().getPlayer(topTenUUID);
             boolean show = true;
             if (entry != null) {
                 if (!entry.hasPermission(Constants.PERMPREFIX + "intopten")) {
@@ -168,47 +170,44 @@ public class TopTen implements Listener {
 
             }
             if (show) {
-                gui.setItem(SLOTS[i-1], getSkull(i, m.getValue(), playerUUID));
+                panel.addItem(SLOTS[i-1], getSkulls(i, m.getValue(), topTenUUID, user));
                 if (i++ == 10) break;
             }
         }
-
-        player.openInventory(gui);
-        player.updateInventory();
-
+        panel.build();
         return true;
     }
 
-    private ItemStack getSkull(int rank, Long long1, UUID player){
-        if (DEBUG)
-            plugin.getLogger().info("DEBUG: Getting the skull");
-        String playerName = BSkyBlock.getInstance().getPlayers().getName(player);
-        if (DEBUG) {
-            plugin.getLogger().info("DEBUG: playername = " + playerName);
-
-            plugin.getLogger().info("DEBUG: second chance = " + BSkyBlock.getInstance().getPlayers().getName(player));
-        }
+    private PanelItem getSkulls(int rank, Long value, UUID topTenUUID, User user) {
+        final String name = BSkyBlock.getInstance().getPlayers().getName(topTenUUID);
         ItemStack playerSkull = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
-        if (playerName == null) return null;
-        SkullMeta meta = (SkullMeta) playerSkull.getItemMeta();
-        //meta.setOwningPlayer(plugin.getServer().getOfflinePlayer(player));
-        meta.setOwner(playerName);
-        meta.setDisplayName(("topten.guiHeading".replace("[name]", BSkyBlock.getInstance().getIslands().getIslandName(player))).replace("[rank]", String.valueOf(rank)));
-        //meta.setDisplayName(ChatColor.YELLOW + "" + ChatColor.BOLD + "<!> " + ChatColor.YELLOW + "Island: " + ChatColor.GOLD + ChatColor.UNDERLINE + plugin.getGrid().getIslandName(player) + ChatColor.GRAY + " (#" + rank + ")");
-        List<String> lore = new ArrayList<String>();
-        lore.add(ChatColor.YELLOW + "topten.islandLevel".replace("[level]", String.valueOf(long1)));
-        if (BSkyBlock.getInstance().getPlayers().inTeam(player)) {
-            List<String> memberList = new ArrayList<>();
-            for (UUID members : BSkyBlock.getInstance().getIslands().getMembers(player)) {
-                memberList.add(ChatColor.AQUA + BSkyBlock.getInstance().getPlayers().getName(members));
+        List<String> description = new ArrayList<>();
+        if (name != null) {
+            SkullMeta meta = (SkullMeta) playerSkull.getItemMeta();
+            meta.setOwner(name);
+            playerSkull.setItemMeta(meta);
+            description.add(user.getTranslation("island.top.guiHeading", "[name]", BSkyBlock.getInstance().getIslands().getIslandName(topTenUUID), "[rank]", String.valueOf(rank)));
+            description.add(user.getTranslation("island.top.islandLevel","[level]", String.valueOf(value)));
+            if (BSkyBlock.getInstance().getPlayers().inTeam(topTenUUID)) {
+                List<String> memberList = new ArrayList<>();
+                for (UUID members : BSkyBlock.getInstance().getIslands().getMembers(topTenUUID)) {
+                    memberList.add(ChatColor.AQUA + BSkyBlock.getInstance().getPlayers().getName(members));
+                }
+                description.addAll(memberList);
             }
-            lore.addAll(memberList);
         }
-        //else lore.add(ChatColor.AQUA + playerName);
+        return new PanelItemBuilder()
+                .setIcon(playerSkull)
+                .setName(name)
+                .setDescription(description)
+                .setClickHandler(new ClickHandler() {
 
-        meta.setLore(lore);
-        playerSkull.setItemMeta(meta);
-        return playerSkull;
+                    @Override
+                    public boolean onClick(User user, us.tastybento.bskyblock.api.panels.ClickType click) {
+                        user.sendRawMessage("Warp to " + name);
+                        return false;
+                    }})
+                .build();
     }
 
     public TopTenData getTopTenList() {
