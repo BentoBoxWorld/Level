@@ -46,7 +46,6 @@ import bskyblock.addon.level.event.TopTenClick;
 import us.tastybento.bskyblock.BSkyBlock;
 import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.commands.User;
-import us.tastybento.bskyblock.api.panels.Panel;
 import us.tastybento.bskyblock.api.panels.PanelItem;
 import us.tastybento.bskyblock.api.panels.PanelItem.ClickHandler;
 import us.tastybento.bskyblock.api.panels.builders.PanelBuilder;
@@ -197,10 +196,10 @@ public class TopTen implements Listener {
             }
         }
         return new PanelItemBuilder()
-                .setIcon(playerSkull)
-                .setName(name)
-                .setDescription(description)
-                .setClickHandler(new ClickHandler() {
+                .icon(playerSkull)
+                .name(name)
+                .description(description)
+                .clickHandler(new ClickHandler() {
 
                     @Override
                     public boolean onClick(User user, us.tastybento.bskyblock.api.panels.ClickType click) {
