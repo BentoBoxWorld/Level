@@ -14,13 +14,13 @@ island:
   level: 
     parameters: "[player]"
     description: "calculate your island level or show the level of [player]" 
-    islandLevelIs: "Island level is"
-    requiredPointsToNextLevel: "[points] points required until the next level"
+    island-level-is: "Island level is [level]"
+    required-points-to-next-level: "[points] points required until the next level"
     deaths: "([number] deaths)"
     
   top:
     description: "show the Top Ten"
-    guiTitle: "Top Ten"
-    guiHeading: "[name]:[rank]"
-    islandLevel: "Level [level]"
+    gui-title: "Top Ten"
+    gui-heading: "[name]:[rank]"
+    island-level: "Level [level]"
   

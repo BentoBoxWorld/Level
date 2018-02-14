@@ -51,7 +51,7 @@ public class LevelPresenter extends LevelPlugin {
             if (!onLevelWaitTime(sender) || levelWait <= 0 || sender.isOp() || sender.hasPermission(Constants.PERMPREFIX + "mod.info")) {
                 sender.sendRawMessage(ChatColor.GREEN + "Calculating level, please wait...");
                 setLevelWaitTime(sender);
-                new ChunkScanner(plugin, bSkyBlock.getIslands().getIsland(targetPlayer), sender);
+                new Scanner(plugin, bSkyBlock.getIslands().getIsland(targetPlayer), sender);
             } else {
                 sender.sendRawMessage( ChatColor.YELLOW + String.valueOf(getLevelWaitTime(sender)));
             }

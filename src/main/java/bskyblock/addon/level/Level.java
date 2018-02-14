@@ -13,7 +13,7 @@ import bskyblock.addon.level.commands.AdminLevel;
 import bskyblock.addon.level.commands.AdminTop;
 import bskyblock.addon.level.commands.IslandLevel;
 import bskyblock.addon.level.commands.IslandTop;
-import bskyblock.addon.level.config.PluginConfig;
+import bskyblock.addon.level.config.Settings;
 import bskyblock.addon.level.database.object.LevelsData;
 import us.tastybento.bskyblock.BSkyBlock;
 import us.tastybento.bskyblock.Constants;
@@ -33,6 +33,9 @@ public class Level extends Addon {
 
     // The BSkyBlock plugin instance.
     private BSkyBlock bSkyBlock;
+    
+    // Settings
+    private Settings settings;
 
     // Level calc checker
     BukkitTask checker = null;
@@ -58,7 +61,7 @@ public class Level extends Addon {
     @Override
     public void onEnable() {
         // Load the plugin's config
-        new PluginConfig(this);
+        settings = new Settings(this);
         // Get the BSkyBlock plugin. This will be available because this plugin depends on it in plugin.yml.
         bSkyBlock = BSkyBlock.getInstance();
         // Check if it is enabled - it might be loaded, but not enabled.
@@ -100,6 +103,13 @@ public class Level extends Addon {
         }
     }
     
+    /**
+     * @return the settings
+     */
+    public final Settings getSettings() {
+        return settings;
+    }
+
     public void load() {
         try {
             for (LevelsData level : handler.loadObjects()) {
