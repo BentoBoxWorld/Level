@@ -8,9 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -20,7 +18,6 @@ import bskyblock.addin.warps.Warp;
 import bskyblock.addon.level.database.object.LevelsData;
 import bskyblock.addon.level.database.object.TopTenData;
 import us.tastybento.bskyblock.Constants;
-import us.tastybento.bskyblock.api.addons.Addon;
 import us.tastybento.bskyblock.api.commands.User;
 import us.tastybento.bskyblock.api.panels.ClickType;
 import us.tastybento.bskyblock.api.panels.PanelItem;
