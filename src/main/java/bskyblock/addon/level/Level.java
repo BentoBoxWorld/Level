@@ -4,10 +4,9 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
-
-import org.bukkit.scheduler.BukkitTask;
 
 import bskyblock.addon.level.commands.AdminLevel;
 import bskyblock.addon.level.commands.AdminTop;
@@ -15,7 +14,6 @@ import bskyblock.addon.level.commands.IslandLevel;
 import bskyblock.addon.level.commands.IslandTop;
 import bskyblock.addon.level.config.Settings;
 import bskyblock.addon.level.database.object.LevelsData;
-import us.tastybento.bskyblock.BSkyBlock;
 import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.addons.Addon;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
@@ -24,21 +22,14 @@ import us.tastybento.bskyblock.database.BSBDatabase;
 import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
 
 /**
- * Addin to BSkyBlock that enables island level scoring and top ten functionality
+ * Addon to BSkyBlock that enables island level scoring and top ten functionality
  * @author tastybento
  *
  */
 public class Level extends Addon {
-
-
-    // The BSkyBlock plugin instance.
-    private BSkyBlock bSkyBlock;
     
     // Settings
     private Settings settings;
-
-    // Level calc checker
-    BukkitTask checker = null;
 
     // Database handler for level data
     private AbstractDatabaseHandler<LevelsData> handler;
@@ -49,7 +40,7 @@ public class Level extends Addon {
     // A cache of island levels. Island levels are not kept in memory unless required.
     // The cache is saved when the server shuts down and the plugin is disabled.
     // TODO: Save regularly to avoid crash issues.
-    private HashMap<UUID, Long> levelsCache;
+    private Map<UUID, Long> levelsCache;
 
     // The Top Ten object
     private TopTen topTen;
@@ -57,18 +48,87 @@ public class Level extends Addon {
     // Level calculator
     private LevelPresenter levelCalc;
 
+    /**
+     * Calculates a user's island
+     * @param user
+     * @param playerUUID - the player's UUID
+     * @param b
+     */
+    public void calculateIslandLevel(User user, UUID playerUUID, boolean b) {
+        levelCalc.calculateIslandLevel(user, playerUUID, b);        
+    }
+
+    public AbstractDatabaseHandler<LevelsData> getHandler() {
+        return handler;
+    }
+    
+    /**
+     * Get level from cache for a player
+     * @param targetPlayer
+     * @return Level of player
+     */
+    public long getIslandLevel(UUID targetPlayer) {
+        if (levelsCache.containsKey(targetPlayer)) {
+            return levelsCache.get(targetPlayer);
+        }
+        // Get from database
+        LevelsData level;
+        try {
+            level = handler.loadObject(targetPlayer.toString());
+            if (level == null) {
+                // We do not know this player, set to zero
+                return 0;
+            }
+            levelsCache.put(targetPlayer, level.getLevel());
+            return level.getLevel();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                 | ClassNotFoundException | IntrospectionException | SQLException e) {
+            getLogger().severe("Could not load player's level! " + e.getMessage());
+        }
+        return 0;
+    }
+
+    /**
+     * @return the settings
+     */
+    public final Settings getSettings() {
+        return settings;
+    }
+    
+    public TopTen getTopTen() {
+        return topTen;
+    }
+
+    private void load() {
+        try {
+            for (LevelsData level : handler.loadObjects()) {
+                levelsCache.put(UUID.fromString(level.getUniqueId()), level.getLevel());
+            }
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                 | ClassNotFoundException | IntrospectionException | SQLException e) {
+            getLogger().severe("Could not load levels cache data! " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onDisable(){
+        // Save the cache
+        if (levelsCache != null) {
+            save(false);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public void onEnable() {
-        // Load the plugin's config
-        settings = new Settings(this);
-        // Get the BSkyBlock plugin. This will be available because this plugin depends on it in plugin.yml.
-        bSkyBlock = BSkyBlock.getInstance();
         // Check if it is enabled - it might be loaded, but not enabled.
-        if (!bSkyBlock.isEnabled()) {
+        if (getBSkyBlock() == null || !getBSkyBlock().isEnabled()) {
+            getLogger().severe("BSkyBlock does not exist or is not enabled. Stopping.");
             this.setEnabled(false);
             return;
         }
+        // Load the plugin's config
+        settings = new Settings(this);
         // Get the BSkyBlock database
         database = BSBDatabase.getDatabase();
         // Set up the database handler to store and retrieve Island classes
@@ -83,45 +143,16 @@ public class Level extends Addon {
         // Start the top ten and register it for clicks
         topTen = new TopTen(this);
         registerListener(topTen);
-        // Local locales
-        //localeManager = new LocaleManager(this);
         // Register commands
-        CompositeCommand bsbIslandCmd = (CompositeCommand) BSkyBlock.getInstance().getCommandsManager().getCommand(Constants.ISLANDCOMMAND);
+        CompositeCommand bsbIslandCmd = getBSkyBlock().getCommandsManager().getCommand(Constants.ISLANDCOMMAND);
         new IslandLevel(this, bsbIslandCmd);
         new IslandTop(this, bsbIslandCmd);
-        CompositeCommand bsbAdminCmd = (CompositeCommand) BSkyBlock.getInstance().getCommandsManager().getCommand(Constants.ADMINCOMMAND);
+        CompositeCommand bsbAdminCmd = getBSkyBlock().getCommandsManager().getCommand(Constants.ADMINCOMMAND);
         new AdminLevel(this, bsbAdminCmd);
         new AdminTop(this, bsbAdminCmd);
         // Done
     }
 
-    @Override
-    public void onDisable(){
-        // Save the cache
-        if (levelsCache != null) {
-            save(false);
-        }
-    }
-    
-    /**
-     * @return the settings
-     */
-    public final Settings getSettings() {
-        return settings;
-    }
-
-    public void load() {
-        try {
-            for (LevelsData level : handler.loadObjects()) {
-                levelsCache.put(UUID.fromString(level.getUniqueId()), level.getLevel());
-            }
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | SecurityException | ClassNotFoundException | IntrospectionException | SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-    
     /**
      * Save the levels to the database
      * @param async - if true, saving will be done async
@@ -135,10 +166,9 @@ public class Level extends Addon {
                     lv.setUniqueId(en.getKey().toString());
                     handler.saveObject(lv);
                 }
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException
+            } catch (IllegalAccessException | InvocationTargetException
                     | InstantiationException | NoSuchMethodException | IntrospectionException | SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                getLogger().severe("Could not save levels async! " + e.getMessage());
             }
         };
         if(async){
@@ -149,55 +179,14 @@ public class Level extends Addon {
     }
 
     /**
-     * Get level from cache for a player
-     * @param targetPlayer
-     * @return Level of player
-     */
-    public long getIslandLevel(UUID targetPlayer) {
-        //getLogger().info("DEBUG: getting island level for " + bSkyBlock.getPlayers().getName(targetPlayer));
-        if (levelsCache.containsKey(targetPlayer)) {
-            return levelsCache.get(targetPlayer);
-        }
-        // Get from database
-        LevelsData level;
-        try {
-            level = handler.loadObject(targetPlayer.toString());
-            if (level == null) {
-                // We do not know this player, set to zero
-                return 0;
-            }
-            levelsCache.put(targetPlayer, level.getLevel());
-            return level.getLevel();
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | SecurityException | ClassNotFoundException | IntrospectionException | SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    /**
-     * Save the player's level 
+     * Sets the player's level to a value
      * @param targetPlayer
      * @param level
      */
-    public void setIslandLevel(UUID targetPlayer, long level) {
-        //getLogger().info("DEBUG: set island level to " + level + " for " + bSkyBlock.getPlayers().getName(targetPlayer));
+    protected void setIslandLevel(UUID targetPlayer, long level) {
         // Add to cache
         levelsCache.put(targetPlayer, level);
         topTen.addEntry(targetPlayer, level);
-    }
-
-    public AbstractDatabaseHandler<LevelsData> getHandler() {
-        return handler;
-    }
-
-    public TopTen getTopTen() {
-        return topTen;
-    }
-
-    public void calculateIslandLevel(User user, UUID playerUUID, boolean b) {
-        levelCalc.calculateIslandLevel(user, playerUUID, b);        
     }
 
 }

@@ -1,15 +1,21 @@
 package bskyblock.addon.level;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.google.common.collect.HashMultiset;
@@ -17,15 +23,18 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
 
-import us.tastybento.bskyblock.BSkyBlock;
+import bskyblock.addon.level.event.IslandPostLevelEvent;
+import bskyblock.addon.level.event.IslandPreLevelEvent;
+import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.commands.User;
 import us.tastybento.bskyblock.database.objects.Island;
 import us.tastybento.bskyblock.util.Pair;
 
-public class Scanner {
 
-    private static final int MAX_CHUNKS = 50;
-    private static final long SPEED = 5;
+public class LevelCalcByChunk {
+
+    private static final int MAX_CHUNKS = 200;
+    private static final long SPEED = 1;
     private boolean checking = true;
     private BukkitTask task;
 
@@ -33,18 +42,27 @@ public class Scanner {
 
     private Set<Pair<Integer, Integer>> chunksToScan;
     private Island island;
+    private World world;
     private User asker;
+    private UUID targetPlayer;
     private Results result;
 
     // Copy the limits hashmap
     HashMap<MaterialData, Integer> limitCount;
+    private boolean report;
+    private long oldLevel;
 
 
-    public Scanner(Level addon, Island island, User asker) {
+    public LevelCalcByChunk(final Level addon, final Island island, final UUID targetPlayer, final User asker, final boolean report) {
         this.addon = addon;
         this.island = island;
+        this.world = island != null ? island.getCenter().getWorld() : null;
         this.asker = asker;
+        this.targetPlayer = targetPlayer;
         this.limitCount = new HashMap<>(addon.getSettings().getBlockLimits());
+        this.report = report;
+        this.oldLevel = addon.getIslandLevel(targetPlayer);
+
         // Results go here
         result = new Results();
 
@@ -67,7 +85,13 @@ public class Scanner {
                 // Add chunk snapshots to the list
                 while (it.hasNext() && chunkSnapshot.size() < MAX_CHUNKS) {
                     Pair<Integer, Integer> pair = it.next();
-                    chunkSnapshot.add(island.getWorld().getChunkAt(pair.x, pair.z).getChunkSnapshot());
+                    if (!world.isChunkLoaded(pair.x, pair.z)) {
+                        world.loadChunk(pair.x, pair.z);
+                        chunkSnapshot.add(world.getChunkAt(pair.x, pair.z).getChunkSnapshot());
+                        world.unloadChunk(pair.x, pair.z);
+                    } else {
+                        chunkSnapshot.add(world.getChunkAt(pair.x, pair.z).getChunkSnapshot());
+                    }
                     it.remove();
                 }
                 // Move to next step
@@ -77,10 +101,9 @@ public class Scanner {
         }, 0L, SPEED);
     }
 
-    private void checkChunksAsync(Set<ChunkSnapshot> chunkSnapshot) {
+    private void checkChunksAsync(final Set<ChunkSnapshot> chunkSnapshot) {
         // Run async task to scan chunks
         addon.getServer().getScheduler().runTaskAsynchronously(addon.getBSkyBlock(), () -> {
-
             for (ChunkSnapshot chunk: chunkSnapshot) {
                 scanChunk(chunk);
             }
@@ -94,16 +117,16 @@ public class Scanner {
     private void scanChunk(ChunkSnapshot chunk) {
         for (int x = 0; x< 16; x++) { 
             // Check if the block coord is inside the protection zone and if not, don't count it
-            if (chunk.getX() * 16 + x < island.getMinProtectedX() || chunk.getX() * 16 + x >= island.getMinProtectedX() + (island.getProtectionRange() * 2)) {
+            if (chunk.getX() * 16 + x < island.getMinProtectedX() || chunk.getX() * 16 + x >= island.getMinProtectedX() + island.getProtectionRange()) {
                 continue;
             }
             for (int z = 0; z < 16; z++) {
                 // Check if the block coord is inside the protection zone and if not, don't count it
-                if (chunk.getZ() * 16 + z < island.getMinProtectedZ() || chunk.getZ() * 16 + z >= island.getMinProtectedZ() + (island.getProtectionRange() * 2)) {
+                if (chunk.getZ() * 16 + z < island.getMinProtectedZ() || chunk.getZ() * 16 + z >= island.getMinProtectedZ() + island.getProtectionRange()) {
                     continue;
                 }
 
-                for (int y = 0; y < island.getWorld().getMaxHeight(); y++) {
+                for (int y = 0; y < island.getCenter().getWorld().getMaxHeight(); y++) {
                     Material blockType = chunk.getBlockType(x, y, z);
                     boolean belowSeaLevel = (addon.getSettings().getSeaHeight() > 0 && y<=addon.getSettings().getSeaHeight()) ? true : false;
                     // Air is free
@@ -172,11 +195,11 @@ public class Scanner {
      * @return
      */
     private Set<Pair<Integer, Integer>> getChunksToScan(Island island) {
-        // Get the chunks coords
         Set<Pair<Integer, Integer>> chunkSnapshot = new HashSet<>();
-        for (int x = island.getMinProtectedX(); x < (island.getMinProtectedX() + (island.getProtectionRange() *2) + 16); x += 16) {
-            for (int z = island.getMinProtectedZ(); z < (island.getMinProtectedZ() + (island.getProtectionRange() * 2) + 16); z += 16) {                
-                chunkSnapshot.add(new Pair<>(x/16,z/16));
+        for (int x = island.getMinProtectedX(); x < (island.getMinProtectedX() + island.getProtectionRange() + 16); x += 16) {
+            for (int z = island.getMinProtectedZ(); z < (island.getMinProtectedZ() + island.getProtectionRange() + 16); z += 16) {
+                Pair<Integer, Integer> pair = new Pair<>(world.getBlockAt(x, 0, z).getChunk().getX(), world.getBlockAt(x, 0, z).getChunk().getZ());
+                chunkSnapshot.add(pair);
             }
         }
         return chunkSnapshot;
@@ -188,23 +211,109 @@ public class Scanner {
         // Finalize calculations
         result.rawBlockCount += (long)((double)result.underWaterBlockCount * addon.getSettings().getUnderWaterMultiplier());
         // Set the death penalty
-        result.deathHandicap = BSkyBlock.getInstance().getPlayers().getDeaths(island.getOwner()) * addon.getSettings().getDeathPenalty();
+        result.deathHandicap = addon.getPlayers().getDeaths(island.getOwner());
         // Set final score
-        result.score = (result.rawBlockCount / addon.getSettings().getLevelCost()) - result.deathHandicap;
+        result.score = (result.rawBlockCount / addon.getSettings().getLevelCost()) - result.deathHandicap - island.getLevelHandicap();
         // Run any modifications
-        // Save the value
-        addon.setIslandLevel(island.getOwner(), result.score);
+        // Get the permission multiplier if it is available
+        int levelMultiplier = 1;
+        Player player = addon.getServer().getPlayer(targetPlayer);
+        if (player != null) {
+            // Get permission multiplier                
+            for (PermissionAttachmentInfo perms : player.getEffectivePermissions()) {
+                if (perms.getPermission().startsWith(Constants.PERMPREFIX + "island.multiplier.")) {
+                    String spl[] = perms.getPermission().split(Constants.PERMPREFIX + "island.multiplier.");
+                    if (spl.length > 1) {
+                        if (!NumberUtils.isDigits(spl[1])) {
+                            addon.getLogger().severe("Player " + player.getName() + " has permission: " + perms.getPermission() + " <-- the last part MUST be a number! Ignoring...");
+                        } else {
+                            // Get the max value should there be more than one
+                            levelMultiplier = Math.max(levelMultiplier, Integer.valueOf(spl[1]));
+                        }
+                    }
+                }
+                // Do some sanity checking
+                if (levelMultiplier < 1) {
+                    levelMultiplier = 1;
+                }
+            }
+        }
+        // Calculate how many points are required to get to the next level
+        long pointsToNextLevel = (addon.getSettings().getLevelCost() * (result.score + 1 + island.getLevelHandicap())) - ((result.rawBlockCount * levelMultiplier) - (result.deathHandicap * addon.getSettings().getDeathPenalty()));
+        // Sometimes it will return 0, so calculate again to make sure it will display a good value
+        if(pointsToNextLevel == 0) pointsToNextLevel = (addon.getSettings().getLevelCost() * (result.score + 2 + island.getLevelHandicap()) - ((result.rawBlockCount * levelMultiplier) - (result.deathHandicap * addon.getSettings().getDeathPenalty())));
+
         // All done.
-        // Tell the asker the result
-        if (asker.isPlayer() && asker.isOnline()) {
-            asker.sendMessage("island.level.island-level-is", "[level]", String.valueOf(result.score));
-        } else {
-            // Console
-            sendConsoleReport(asker, island);
+        informPlayers(saveLevel(island, targetPlayer, pointsToNextLevel));
+
+    }
+
+    private void informPlayers(IslandPreLevelEvent event) {
+        // Fire the island post level calculation event
+        final IslandPostLevelEvent event3 = new IslandPostLevelEvent(targetPlayer, island, event.getLevel(), event.getPointsToNextLevel());
+        addon.getServer().getPluginManager().callEvent(event3);
+
+        if(event3.isCancelled() || asker == null) {
+            return;
+        }
+        // Tell the asker
+        asker.sendMessage("island.level.island-level-is", "[level]", String.valueOf(addon.getIslandLevel(targetPlayer)));
+        // Console  
+        if (report) {
+            sendConsoleReport(asker);
+        }
+        // Check if player - if so show some more info
+        if (!(asker instanceof Player)) {
+            return;
+        }
+        // Player
+        if (addon.getSettings().getDeathPenalty() != 0) {
+            asker.sendMessage("island.level.deaths", "[number]", String.valueOf(result.deathHandicap));
+        }
+        // Send player how many points are required to reach next island level
+        if (event.getPointsToNextLevel() >= 0) {
+            asker.sendMessage("island.level.required-points-to-next-level", "[points]", String.valueOf(event.getPointsToNextLevel()));
+        }
+        // Tell other team members
+        if (addon.getIslandLevel(targetPlayer) != oldLevel) {
+            for (UUID member : island.getMemberSet()) {
+                if (!member.equals(asker.getUniqueId())) {
+                    User.getInstance(member).sendMessage("island.level.island-level-is", "[level]", String.valueOf(addon.getIslandLevel(targetPlayer)));
+                }
+            }
         }
     }
 
-    private void sendConsoleReport(User asker, Island island) {
+    private IslandPreLevelEvent saveLevel(Island island, UUID targetPlayer, long pointsToNextLevel) {
+        // Fire the pre-level event
+        final IslandPreLevelEvent event = new IslandPreLevelEvent(targetPlayer, island, result.score);
+        event.setPointsToNextLevel(pointsToNextLevel);
+        addon.getServer().getPluginManager().callEvent(event);
+        if (!event.isCancelled()) {
+            // Save the value
+            addon.setIslandLevel(island.getOwner(), event.getLevel());
+            if (addon.getPlayers().inTeam(targetPlayer)) {
+                //plugin.getLogger().info("DEBUG: player is in team");
+                for (UUID member : addon.getIslands().getMembers(targetPlayer)) {
+                    //plugin.getLogger().info("DEBUG: updating team member level too");
+                    if (addon.getIslandLevel(member) != event.getLevel()) {
+                        addon.setIslandLevel(member, event.getLevel());
+                    }
+                }
+                if (addon.getPlayers().inTeam(targetPlayer)) {
+                    UUID leader = addon.getIslands().getTeamLeader(targetPlayer);
+                    if (leader != null) {
+                        addon.getTopTen().addEntry(leader, event.getLevel());
+                    }
+                } else {
+                    addon.getTopTen().addEntry(targetPlayer, event.getLevel());
+                }
+            }
+        }
+        return event;
+    }
+
+    private void sendConsoleReport(User asker) {
         List<String> reportLines = new ArrayList<>();
         // provide counts
         reportLines.add("Level Log for island at " + island.getCenter());
@@ -220,58 +329,16 @@ public class Scanner {
         if (!result.uwCount.isEmpty()) {
             reportLines.add("Underwater block count (Multiplier = x" + addon.getSettings().getUnderWaterMultiplier() + ") value");
             reportLines.add("Total number of underwater blocks = " + String.format("%,d",result.uwCount.size()));
-            Iterable<Multiset.Entry<MaterialData>> entriesSortedByCount = 
-                    Multisets.copyHighestCountFirst(result.uwCount).entrySet();
-            Iterator<Entry<MaterialData>> it = entriesSortedByCount.iterator();
-            while (it.hasNext()) {
-                Entry<MaterialData> en = it.next();
-                MaterialData type = en.getElement();
-
-                int value = 0;
-                if (addon.getSettings().getBlockValues().containsKey(type)) {
-                    // Specific
-                    value = addon.getSettings().getBlockValues().get(type);
-                } else if (addon.getSettings().getBlockValues().containsKey(new MaterialData(type.getItemType()))) {
-                    // Generic
-                    value = addon.getSettings().getBlockValues().get(new MaterialData(type.getItemType()));
-                }
-                if (value > 0) {
-                    reportLines.add(type.toString() + ":" 
-                            + String.format("%,d",en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
-                    total += (value * en.getCount());
-                }
-            }
-            reportLines.add("Subtotal = " + total);
-            reportLines.add("==================================");
+            reportLines.addAll(sortedReport(total, result.uwCount));
         }
         reportLines.add("Regular block count");
         reportLines.add("Total number of blocks = " + String.format("%,d",result.mdCount.size()));
-        Iterable<Multiset.Entry<MaterialData>> entriesSortedByCount = 
-                result.mdCount.entrySet();
-        Iterator<Entry<MaterialData>> it = entriesSortedByCount.iterator();
-        while (it.hasNext()) {
-            Entry<MaterialData> en = it.next();
-            MaterialData type = en.getElement();
-            int value = 0;
-            if (addon.getSettings().getBlockValues().containsKey(type)) {
-                // Specific
-                value = addon.getSettings().getBlockValues().get(type);
-            } else if (addon.getSettings().getBlockValues().containsKey(new MaterialData(type.getItemType()))) {
-                // Generic
-                value = addon.getSettings().getBlockValues().get(new MaterialData(type.getItemType()));
-            }
-            if (value > 0) {
-                reportLines.add(type.toString() + ":" 
-                        + String.format("%,d",en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
-                total += (value * en.getCount());
-            }
-        }
-        reportLines.add("Total = " + total);
-        reportLines.add("==================================");
+        reportLines.addAll(sortedReport(total, result.mdCount));
+
         reportLines.add("Blocks not counted because they exceeded limits: " + String.format("%,d",result.ofCount.size()));
         //entriesSortedByCount = Multisets.copyHighestCountFirst(ofCount).entrySet();
-        entriesSortedByCount = result.ofCount.entrySet();
-        it = entriesSortedByCount.iterator();
+        Iterable<Multiset.Entry<MaterialData>> entriesSortedByCount = result.ofCount.entrySet();
+        Iterator<Entry<MaterialData>> it = entriesSortedByCount.iterator();
         while (it.hasNext()) {
             Entry<MaterialData> type = it.next();
             Integer limit = addon.getSettings().getBlockLimits().get(type.getElement());
@@ -300,9 +367,35 @@ public class Scanner {
         }
     }
 
+    private Collection<String> sortedReport(int total, Multiset<MaterialData> materialDataCount) {
+        Collection<String> result = new ArrayList<>();
+        Iterable<Multiset.Entry<MaterialData>> entriesSortedByCount = Multisets.copyHighestCountFirst(materialDataCount).entrySet();
+        Iterator<Entry<MaterialData>> it = entriesSortedByCount.iterator();
+        while (it.hasNext()) {
+            Entry<MaterialData> en = it.next();
+            MaterialData type = en.getElement();
+
+            int value = 0;
+            if (addon.getSettings().getBlockValues().containsKey(type)) {
+                // Specific
+                value = addon.getSettings().getBlockValues().get(type);
+            } else if (addon.getSettings().getBlockValues().containsKey(new MaterialData(type.getItemType()))) {
+                // Generic
+                value = addon.getSettings().getBlockValues().get(new MaterialData(type.getItemType()));
+            }
+            if (value > 0) {
+                result.add(type.toString() + ":" 
+                        + String.format("%,d",en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
+                total += (value * en.getCount());
+            }
+        }
+        result.add("Subtotal = " + total);
+        result.add("==================================");
+        return result;
+    }
+
     /**
      * Results class
-     * @author ben
      *
      */
     public class Results {

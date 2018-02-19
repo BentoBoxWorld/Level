@@ -43,14 +43,18 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.12.2-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>us.tastybento</groupId>
 			<artifactId>bskyblock</artifactId>
-			<version>LATEST</version>
+			<version>alpha-0.0.1</version>
 		</dependency>
+		<dependency>
+            <groupId>bskyblock.addon</groupId>
+            <artifactId>WelcomeWarpSigns</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
 	</dependencies>
 	<repositories>
 		<repository>
@@ -59,4 +63,13 @@
 		</repository>
 	</repositories>
 	<groupId>bskyblock.addon</groupId>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.bukkit</groupId>
+				<artifactId>bukkit</artifactId>
+				<version>1.12.2-R0.1-SNAPSHOT</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 </project>

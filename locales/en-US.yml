@@ -13,14 +13,17 @@ admin:
 island:
   level: 
     parameters: "[player]"
-    description: "calculate your island level or show the level of [player]" 
-    island-level-is: "Island level is [level]"
-    required-points-to-next-level: "[points] points required until the next level"
-    deaths: "([number] deaths)"
+    description: "calculate your island level or show the level of [player]"
+    calculating: "&aCalculating level..." 
+    island-level-is: "&aIsland level is &b[level]"
+    required-points-to-next-level: "&a[points] points required until the next level"
+    deaths: "&c([number] deaths)"
+    cooldown: "&cYou must wait &b[time] &cseconds until you can do that again"
     
   top:
     description: "show the Top Ten"
-    gui-title: "Top Ten"
-    gui-heading: "[name]:[rank]"
-    island-level: "Level [level]"
+    gui-title: "&aTop Ten"
+    gui-heading: "&6[name]: &B[rank]"
+    island-level: "&BLevel [level]"
+    warp-to: "&AWarping to [name]'s island"
   

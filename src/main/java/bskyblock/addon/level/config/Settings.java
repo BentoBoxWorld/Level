@@ -10,7 +10,7 @@ import bskyblock.addon.level.Level;
 
 public class Settings {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private boolean sumTeamDeaths;
     private int seaHeight;
     private HashMap<MaterialData, Integer> blockLimits = new HashMap<>();

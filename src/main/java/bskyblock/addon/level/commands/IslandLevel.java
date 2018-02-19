@@ -25,13 +25,13 @@ public class IslandLevel extends CompositeCommand {
             final UUID playerUUID = getPlugin().getPlayers().getUUID(args.get(0));
             //getLogger().info("DEBUG: console player info UUID = " + playerUUID);
             if (playerUUID == null) {
-                user.sendMessage("error.UnknownPlayer");
+                user.sendMessage("general.errors.unknown-player");
                 return true;
             } else if (user.getUniqueId().equals(playerUUID) ) {
                 // Self level request
                 levelPlugin.calculateIslandLevel(user, user.getUniqueId(), false);
             } else {
-                user.sendMessage("island.level.islandLevelIs", "[level]", String.valueOf(levelPlugin.getIslandLevel(playerUUID)));
+                user.sendMessage("island.level.island-level-is", "[level]", String.valueOf(levelPlugin.getIslandLevel(playerUUID)));
                 return true;
             }
         } else {

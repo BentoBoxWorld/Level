@@ -4,8 +4,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.UUID;
 
-import org.bukkit.ChatColor;
-
 import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.commands.User;
 
@@ -42,23 +40,24 @@ public class LevelPresenter extends LevelPlugin {
     public boolean calculateIslandLevel(final User sender, final UUID targetPlayer, boolean report) {
         // Check if sender has island
         if (!bSkyBlock.getIslands().hasIsland(targetPlayer)) {
-            sender.sendRawMessage("Target does not have an island");
+            sender.sendMessage("general.errors.player-has-no-island");
             return false;
         }
         // Player asking for their own island calc
         if (!sender.isPlayer() || sender.getUniqueId().equals(targetPlayer) || sender.isOp() || sender.hasPermission(Constants.PERMPREFIX + "mod.info")) {
             // Newer better system - uses chunks
             if (!onLevelWaitTime(sender) || levelWait <= 0 || sender.isOp() || sender.hasPermission(Constants.PERMPREFIX + "mod.info")) {
-                sender.sendRawMessage(ChatColor.GREEN + "Calculating level, please wait...");
+                sender.sendMessage("island.level.calculating");
                 setLevelWaitTime(sender);
-                new Scanner(plugin, bSkyBlock.getIslands().getIsland(targetPlayer), sender);
+                new LevelCalcByChunk(plugin, bSkyBlock.getIslands().getIsland(targetPlayer), targetPlayer, sender, report);
             } else {
-                sender.sendRawMessage( ChatColor.YELLOW + String.valueOf(getLevelWaitTime(sender)));
+                // Cooldown
+                sender.sendMessage("island.level.cooldown", "[time]", String.valueOf(getLevelWaitTime(sender)));
             }
 
         } else {
             // Asking for the level of another player
-            sender.sendMessage("island.islandLevelIs","[level]", String.valueOf(plugin.getIslandLevel(targetPlayer)));
+            sender.sendMessage("island.level.island-level-is","[level]", String.valueOf(plugin.getIslandLevel(targetPlayer)));
         }
         return true;
     }
