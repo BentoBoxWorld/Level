@@ -1,10 +1,15 @@
 package bskyblock.addon.level.database.object;
 
+import com.google.gson.annotations.Expose;
+
 import us.tastybento.bskyblock.database.objects.DataObject;
 
 public class LevelsData implements DataObject {
     
+    @Expose
     private String uniqueId = "";
+    
+    @Expose
     private long level = 0;
 
     public String getUniqueId() {

@@ -18,8 +18,8 @@ import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.addons.Addon;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.commands.User;
+import us.tastybento.bskyblock.database.AbstractDatabaseHandler;
 import us.tastybento.bskyblock.database.BSBDatabase;
-import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
 
 /**
  * Addon to BSkyBlock that enables island level scoring and top ten functionality

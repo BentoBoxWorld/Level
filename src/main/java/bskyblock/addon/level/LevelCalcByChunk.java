@@ -117,12 +117,12 @@ public class LevelCalcByChunk {
     private void scanChunk(ChunkSnapshot chunk) {
         for (int x = 0; x< 16; x++) { 
             // Check if the block coord is inside the protection zone and if not, don't count it
-            if (chunk.getX() * 16 + x < island.getMinProtectedX() || chunk.getX() * 16 + x >= island.getMinProtectedX() + island.getProtectionRange()) {
+            if (chunk.getX() * 16 + x < island.getMinProtectedX() || chunk.getX() * 16 + x >= island.getMinProtectedX() + island.getProtectionRange() * 2) {
                 continue;
             }
             for (int z = 0; z < 16; z++) {
                 // Check if the block coord is inside the protection zone and if not, don't count it
-                if (chunk.getZ() * 16 + z < island.getMinProtectedZ() || chunk.getZ() * 16 + z >= island.getMinProtectedZ() + island.getProtectionRange()) {
+                if (chunk.getZ() * 16 + z < island.getMinProtectedZ() || chunk.getZ() * 16 + z >= island.getMinProtectedZ() + island.getProtectionRange() * 2) {
                     continue;
                 }
 
@@ -196,8 +196,8 @@ public class LevelCalcByChunk {
      */
     private Set<Pair<Integer, Integer>> getChunksToScan(Island island) {
         Set<Pair<Integer, Integer>> chunkSnapshot = new HashSet<>();
-        for (int x = island.getMinProtectedX(); x < (island.getMinProtectedX() + island.getProtectionRange() + 16); x += 16) {
-            for (int z = island.getMinProtectedZ(); z < (island.getMinProtectedZ() + island.getProtectionRange() + 16); z += 16) {
+        for (int x = island.getMinProtectedX(); x < (island.getMinProtectedX() + island.getProtectionRange() * 2 + 16); x += 16) {
+            for (int z = island.getMinProtectedZ(); z < (island.getMinProtectedZ() + island.getProtectionRange() * 2 + 16); z += 16) {
                 Pair<Integer, Integer> pair = new Pair<>(world.getBlockAt(x, 0, z).getChunk().getX(), world.getBlockAt(x, 0, z).getChunk().getZ());
                 chunkSnapshot.add(pair);
             }
