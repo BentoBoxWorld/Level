@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.google.gson.annotations.Expose;
+
 import us.tastybento.bskyblock.database.objects.DataObject;
 
 /**
@@ -15,10 +17,12 @@ import us.tastybento.bskyblock.database.objects.DataObject;
  */
 public class TopTenData implements DataObject {
     
+    @Expose
     private String uniqueId = "topten";
-    private HashMap<UUID, Long> topTen = new HashMap<>();
+    @Expose
+    private Map<UUID, Long> topTen = new HashMap<>();
 
-    public HashMap<UUID, Long> getTopTen() {
+    public Map<UUID, Long> getTopTen() {
         return topTen;
     }
 
