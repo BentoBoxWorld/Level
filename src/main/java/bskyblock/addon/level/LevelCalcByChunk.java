@@ -26,7 +26,7 @@ import com.google.common.collect.Multisets;
 import bskyblock.addon.level.event.IslandPostLevelEvent;
 import bskyblock.addon.level.event.IslandPreLevelEvent;
 import us.tastybento.bskyblock.Constants;
-import us.tastybento.bskyblock.api.commands.User;
+import us.tastybento.bskyblock.api.user.User;
 import us.tastybento.bskyblock.database.objects.Island;
 import us.tastybento.bskyblock.util.Pair;
 

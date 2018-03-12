@@ -2,7 +2,6 @@ package bskyblock.addon.level;
 
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,9 +16,9 @@ import bskyblock.addon.level.database.object.LevelsData;
 import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.addons.Addon;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
-import us.tastybento.bskyblock.api.commands.User;
+import us.tastybento.bskyblock.api.user.User;
+import us.tastybento.bskyblock.database.AbstractDatabaseHandler;
 import us.tastybento.bskyblock.database.BSBDatabase;
-import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
 
 /**
  * Addon to BSkyBlock that enables island level scoring and top ten functionality
@@ -82,7 +81,7 @@ public class Level extends Addon {
             levelsCache.put(targetPlayer, level.getLevel());
             return level.getLevel();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException
-                 | ClassNotFoundException | IntrospectionException | SQLException e) {
+                 | ClassNotFoundException | IntrospectionException e) {
             getLogger().severe("Could not load player's level! " + e.getMessage());
         }
         return 0;
@@ -105,7 +104,7 @@ public class Level extends Addon {
                 levelsCache.put(UUID.fromString(level.getUniqueId()), level.getLevel());
             }
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException
-                 | ClassNotFoundException | IntrospectionException | SQLException e) {
+                 | ClassNotFoundException | IntrospectionException e) {
             getLogger().severe("Could not load levels cache data! " + e.getMessage());
         }
     }
@@ -166,8 +165,7 @@ public class Level extends Addon {
                     lv.setUniqueId(en.getKey().toString());
                     handler.saveObject(lv);
                 }
-            } catch (IllegalAccessException | InvocationTargetException
-                    | InstantiationException | NoSuchMethodException | IntrospectionException | SQLException e) {
+            } catch (IllegalAccessException | InvocationTargetException | IntrospectionException e) {
                 getLogger().severe("Could not save levels async! " + e.getMessage());
             }
         };

@@ -18,14 +18,14 @@ import bskyblock.addin.warps.Warp;
 import bskyblock.addon.level.database.object.LevelsData;
 import bskyblock.addon.level.database.object.TopTenData;
 import us.tastybento.bskyblock.Constants;
-import us.tastybento.bskyblock.api.commands.User;
 import us.tastybento.bskyblock.api.panels.ClickType;
 import us.tastybento.bskyblock.api.panels.PanelItem;
 import us.tastybento.bskyblock.api.panels.PanelItem.ClickHandler;
 import us.tastybento.bskyblock.api.panels.builders.PanelBuilder;
 import us.tastybento.bskyblock.api.panels.builders.PanelItemBuilder;
+import us.tastybento.bskyblock.api.user.User;
+import us.tastybento.bskyblock.database.AbstractDatabaseHandler;
 import us.tastybento.bskyblock.database.BSBDatabase;
-import us.tastybento.bskyblock.database.managers.AbstractDatabaseHandler;
 
 /**
  * Handles all Top Ten List functions
@@ -95,7 +95,7 @@ public class TopTen implements Listener {
                 }
             }
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | SecurityException | ClassNotFoundException | IntrospectionException | SQLException e) {
+                | SecurityException | ClassNotFoundException | IntrospectionException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
@@ -116,8 +116,8 @@ public class TopTen implements Listener {
         if (topTenList == null) create();
 
         PanelBuilder panel = new PanelBuilder()
-                .setName(user.getTranslation("island.top.gui-title"))
-                .setUser(user);
+                .name(user.getTranslation("island.top.gui-title"))
+                .user(user);
 
         int i = 1;
         Iterator<Entry<UUID, Long>> it = topTenList.getTopTen().entrySet().iterator();
@@ -140,7 +140,7 @@ public class TopTen implements Listener {
 
             }
             if (show) {
-                panel.addItem(SLOTS[i-1], getHead(i, m.getValue(), topTenUUID, user));
+                panel.item(SLOTS[i-1], getHead(i, m.getValue(), topTenUUID, user));
                 if (i++ == 10) break;
             }
         }
@@ -177,9 +177,9 @@ public class TopTen implements Listener {
 
         // If welcome warps is present then add warping
         addon.getAddonByName("BSkyBlock-WelcomeWarps").ifPresent(warp -> {
-            
+
             if (((Warp)warp).getWarpSignsManager().hasWarp(playerUUID)) {
-                
+
                 builder.clickHandler(new ClickHandler() {
 
                     @Override
@@ -213,7 +213,7 @@ public class TopTen implements Listener {
                 topTenList = new TopTenData();
             }
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | SecurityException | ClassNotFoundException | IntrospectionException | SQLException e) {
+                | SecurityException | ClassNotFoundException | IntrospectionException e) {
             e.printStackTrace();
         }
     }
@@ -267,7 +267,7 @@ public class TopTen implements Listener {
         try {
             handler.saveObject(topTenList);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException
-                | InstantiationException | NoSuchMethodException | IntrospectionException | SQLException e) {
+                | IntrospectionException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
