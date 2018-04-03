@@ -37,7 +37,7 @@ public class TopTen implements Listener {
     // Top ten list of players
     private TopTenData topTenList;
     private final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
-    private final boolean DEBUG = false;
+    private final boolean DEBUG = true;
     private BSBDatabase database;
     private AbstractDatabaseHandler<TopTenData> handler;
 
@@ -129,6 +129,8 @@ public class TopTen implements Listener {
             Player entry = addon.getServer().getPlayer(topTenUUID);
             boolean show = true;
             if (entry != null) {
+                if (DEBUG)
+                    addon.getLogger().info("DEBUG: removing from topten");
                 if (!entry.hasPermission(Constants.PERMPREFIX + "intopten")) {
                     it.remove();
                     show = false;

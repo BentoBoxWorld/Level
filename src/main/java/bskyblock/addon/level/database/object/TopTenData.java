@@ -1,7 +1,7 @@
 package bskyblock.addon.level.database.object;
 
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -20,13 +20,16 @@ public class TopTenData implements DataObject {
     @Expose
     private String uniqueId = "topten";
     @Expose
-    private Map<UUID, Long> topTen = new HashMap<>();
+    private Map<UUID, Long> topTen = new LinkedHashMap<>();
 
     public Map<UUID, Long> getTopTen() {
-        return topTen;
+        return topTen.entrySet().stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).limit(10)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
     }
 
-    public void setTopTen(HashMap<UUID, Long> topTen) {
+    public void setTopTen(Map<UUID, Long> topTen) {
         this.topTen = topTen;
     }
 
@@ -47,7 +50,6 @@ public class TopTenData implements DataObject {
      */
     public void addLevel(UUID uuid, Long level) {
         this.topTen.put(uuid, level);
-        sortTopTen();
     }
     
     /**
@@ -69,13 +71,4 @@ public class TopTenData implements DataObject {
         this.topTen.remove(ownerUUID);        
     }
     
-    /**
-     * Sorts the top ten and limits it to 10 entries
-     */
-    void sortTopTen() {
-        topTen = (HashMap<UUID, Long>) topTen.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey(Comparator.reverseOrder()))
-                .limit(10)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
 }
