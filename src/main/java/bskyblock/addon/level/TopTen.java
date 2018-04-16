@@ -1,7 +1,5 @@
 package bskyblock.addon.level;
 
-import java.beans.IntrospectionException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,7 +21,6 @@ import us.tastybento.bskyblock.api.panels.PanelItem.ClickHandler;
 import us.tastybento.bskyblock.api.panels.builders.PanelBuilder;
 import us.tastybento.bskyblock.api.panels.builders.PanelItemBuilder;
 import us.tastybento.bskyblock.api.user.User;
-import us.tastybento.bskyblock.database.AbstractDatabaseHandler;
 import us.tastybento.bskyblock.database.BSBDatabase;
 
 /**
@@ -38,17 +35,13 @@ public class TopTen implements Listener {
     private TopTenData topTenList;
     private final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
     private final boolean DEBUG = true;
-    private BSBDatabase database;
-    private AbstractDatabaseHandler<TopTenData> handler;
+    private BSBDatabase<TopTenData> handler;
 
-    @SuppressWarnings("unchecked")
     public TopTen(Level addon) {
         this.addon = addon;
-        // Set up database
-        database = BSBDatabase.getDatabase();
         // Set up the database handler to store and retrieve the TopTenList class
         // Note that these are saved in the BSkyBlock database
-        handler = (AbstractDatabaseHandler<TopTenData>) database.getHandler(TopTenData.class);
+        handler = new BSBDatabase<>(addon, TopTenData.class);
         loadTopTen();
     }
 
@@ -79,24 +72,18 @@ public class TopTen implements Listener {
      */
     public void create() {
         // Obtain all the levels for each known player
-        AbstractDatabaseHandler<LevelsData> levelHandler = addon.getHandler();
-        try {
-            long index = 0;
-            for (LevelsData lv : levelHandler.loadObjects()) {
-                if (index++ % 1000 == 0) {
-                    addon.getLogger().info("Processed " + index + " players for top ten");
-                }
-                // Convert to UUID
-                UUID playerUUID = UUID.fromString(lv.getUniqueId());
-                // Check if the player is an owner or team leader
-                if (addon.getIslands().isOwner(playerUUID)) {
-                    topTenList.addLevel(playerUUID, lv.getLevel());
-                }
+        BSBDatabase<LevelsData> levelHandler = addon.getHandler();
+        long index = 0;
+        for (LevelsData lv : levelHandler.loadObjects()) {
+            if (index++ % 1000 == 0) {
+                addon.getLogger().info("Processed " + index + " players for top ten");
             }
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | SecurityException | ClassNotFoundException | IntrospectionException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            // Convert to UUID
+            UUID playerUUID = UUID.fromString(lv.getUniqueId());
+            // Check if the player is an owner or team leader
+            if (addon.getIslands().isOwner(playerUUID)) {
+                topTenList.addLevel(playerUUID, lv.getLevel());
+            }
         }
         saveTopTen();
     }
@@ -208,48 +195,12 @@ public class TopTen implements Listener {
      * Loads the top ten from the database
      */
     public void loadTopTen() {
-        try {
-            topTenList = handler.loadObject("topten");
-            if (topTenList == null) {
-                topTenList = new TopTenData();
-            }
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | SecurityException | ClassNotFoundException | IntrospectionException e) {
-            e.printStackTrace();
+        topTenList = handler.loadObject("topten");
+        if (topTenList == null) {
+            topTenList = new TopTenData();
         }
     }
-    /*
-    @SuppressWarnings("deprecation")
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
-    public void onInventoryClick(InventoryClickEvent event) {
-        Inventory inventory = event.getInventory(); // The inventory that was clicked in
-        if (inventory.getName() == null) {
-            return;
-        }
-        // The player that clicked the item
-        Player player = (Player) event.getWhoClicked();
-        if (!inventory.getTitle().equals("topten.guiTitle")) {
-            return;
-        }
-        event.setCancelled(true);
-        player.updateInventory();
-        if(event.getCurrentItem() != null && event.getCurrentItem().getType().equals(Material.SKULL_ITEM) && event.getCurrentItem().hasItemMeta()){
-            player.closeInventory();
-            // Fire click event
-            TopTenClick clickEvent = new TopTenClick(((SkullMeta)event.getCurrentItem().getItemMeta()).getOwningPlayer().getName());
-            addon.getServer().getPluginManager().callEvent(clickEvent);
-            return;
-        }
-        if (event.getSlotType().equals(SlotType.OUTSIDE)) {
-            player.closeInventory();
-            return;
-        }
-        if (event.getClick().equals(ClickType.SHIFT_RIGHT)) {
-            player.closeInventory();
-            return;
-        }
-    }
-     */
+
     /**
      * Removes ownerUUID from the top ten list
      * 
@@ -265,13 +216,7 @@ public class TopTen implements Listener {
             //plugin.getLogger().info("DEBUG: toptenlist = null!");
             return;
         }
-        try {
-            handler.saveObject(topTenList);
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException
-                | IntrospectionException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        handler.saveObject(topTenList);
     }
 
 }

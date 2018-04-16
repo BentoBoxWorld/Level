@@ -2,7 +2,7 @@ name: BSkyBlock-Level
 main: bskyblock.addon.level.Level
 version: 0.1
 
-authors: [tastybento]
+authors: tastybento
 
 permissions:    
   bskyblock.intopten:
@@ -11,7 +11,7 @@ permissions:
   bskyblock.island.level:
     description: Player can use level command
     default: true
-  bskyblock.island.topten:
+  bskyblock.island.top:
     description: Player can use top ten command
     default: true
   bskyblock.admin.level:

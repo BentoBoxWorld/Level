@@ -1,7 +1,5 @@
 package bskyblock.addon.level;
 
-import java.beans.IntrospectionException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,7 +15,6 @@ import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.addons.Addon;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.user.User;
-import us.tastybento.bskyblock.database.AbstractDatabaseHandler;
 import us.tastybento.bskyblock.database.BSBDatabase;
 
 
@@ -27,15 +24,12 @@ import us.tastybento.bskyblock.database.BSBDatabase;
  *
  */
 public class Level extends Addon {
-    
+
     // Settings
     private Settings settings;
 
     // Database handler for level data
-    private AbstractDatabaseHandler<LevelsData> handler;
-
-    // The BSkyBlock database object
-    private BSBDatabase database;
+    private BSBDatabase<LevelsData> handler;
 
     // A cache of island levels. Island levels are not kept in memory unless required.
     // The cache is saved when the server shuts down and the plugin is disabled.
@@ -44,7 +38,7 @@ public class Level extends Addon {
 
     // The Top Ten object
     private TopTen topTen;
-    
+
     // Level calculator
     private LevelPresenter levelCalc;
 
@@ -58,10 +52,6 @@ public class Level extends Addon {
         levelCalc.calculateIslandLevel(user, playerUUID, b);        
     }
 
-    public AbstractDatabaseHandler<LevelsData> getHandler() {
-        return handler;
-    }
-    
     /**
      * Get level from cache for a player
      * @param targetPlayer
@@ -73,19 +63,13 @@ public class Level extends Addon {
         }
         // Get from database
         LevelsData level;
-        try {
-            level = handler.loadObject(targetPlayer.toString());
-            if (level == null) {
-                // We do not know this player, set to zero
-                return 0;
-            }
-            levelsCache.put(targetPlayer, level.getLevel());
-            return level.getLevel();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException
-                 | ClassNotFoundException | IntrospectionException e) {
-            getLogger().severe("Could not load player's level! " + e.getMessage());
+        level = handler.loadObject(targetPlayer.toString());
+        if (level == null) {
+            // We do not know this player, set to zero
+            return 0;
         }
-        return 0;
+        levelsCache.put(targetPlayer, level.getLevel());
+        return level.getLevel();
     }
 
     /**
@@ -94,19 +78,14 @@ public class Level extends Addon {
     public final Settings getSettings() {
         return settings;
     }
-    
+
     public TopTen getTopTen() {
         return topTen;
     }
 
     private void load() {
-        try {
-            for (LevelsData level : handler.loadObjects()) {
-                levelsCache.put(UUID.fromString(level.getUniqueId()), level.getLevel());
-            }
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException
-                 | ClassNotFoundException | IntrospectionException e) {
-            getLogger().severe("Could not load levels cache data! " + e.getMessage());
+        for (LevelsData level : handler.loadObjects()) {
+            levelsCache.put(UUID.fromString(level.getUniqueId()), level.getLevel());
         }
     }
 
@@ -118,7 +97,6 @@ public class Level extends Addon {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void onEnable() {
         // Check if it is enabled - it might be loaded, but not enabled.
@@ -130,10 +108,9 @@ public class Level extends Addon {
         // Load the plugin's config
         settings = new Settings(this);
         // Get the BSkyBlock database
-        database = BSBDatabase.getDatabase();
         // Set up the database handler to store and retrieve Island classes
         // Note that these are saved by the BSkyBlock database
-        handler = (AbstractDatabaseHandler<LevelsData>) database.getHandler(LevelsData.class);
+        handler = new BSBDatabase<>(this, LevelsData.class);
         // Initialize the cache
         levelsCache = new HashMap<>();
         // Load all the levels
@@ -159,15 +136,11 @@ public class Level extends Addon {
      */
     public void save(boolean async){
         Runnable save = () -> {
-            try {
-                for (Entry<UUID, Long> en : levelsCache.entrySet()) {
-                    LevelsData lv = new LevelsData();
-                    lv.setLevel(en.getValue());
-                    lv.setUniqueId(en.getKey().toString());
-                    handler.saveObject(lv);
-                }
-            } catch (IllegalAccessException | InvocationTargetException | IntrospectionException e) {
-                getLogger().severe("Could not save levels async! " + e.getMessage());
+            for (Entry<UUID, Long> en : levelsCache.entrySet()) {
+                LevelsData lv = new LevelsData();
+                lv.setLevel(en.getValue());
+                lv.setUniqueId(en.getKey().toString());
+                handler.saveObject(lv);
             }
         };
         if(async){
@@ -186,6 +159,10 @@ public class Level extends Addon {
         // Add to cache
         levelsCache.put(targetPlayer, level);
         topTen.addEntry(targetPlayer, level);
+    }
+
+    public BSBDatabase<LevelsData> getHandler() {
+        return handler;
     }
 
 }
