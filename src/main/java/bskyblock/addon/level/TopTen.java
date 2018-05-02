@@ -10,14 +10,13 @@ import java.util.UUID;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 
 import bskyblock.addon.level.database.object.LevelsData;
 import bskyblock.addon.level.database.object.TopTenData;
 import bskyblock.addon.warps.Warp;
 import us.tastybento.bskyblock.Constants;
-import us.tastybento.bskyblock.api.panels.ClickType;
 import us.tastybento.bskyblock.api.panels.PanelItem;
-import us.tastybento.bskyblock.api.panels.PanelItem.ClickHandler;
 import us.tastybento.bskyblock.api.panels.builders.PanelBuilder;
 import us.tastybento.bskyblock.api.panels.builders.PanelItemBuilder;
 import us.tastybento.bskyblock.api.user.User;
@@ -167,22 +166,14 @@ public class TopTen implements Listener {
         addon.getAddonByName("BSkyBlock-WelcomeWarps").ifPresent(warp -> {
 
             if (((Warp)warp).getWarpSignsManager().hasWarp(playerUUID)) {
-
-                builder.clickHandler(new ClickHandler() {
-
-                    @Override
-                    public boolean onClick(User user, ClickType click) {
-                        if (click.equals(ClickType.LEFT)) {
-                            user.sendMessage("island.top.warp-to", "[name]", name);
-
-
-                            ((Warp)warp).getWarpSignsManager().warpPlayer(user, playerUUID);
-                        }
-                        return true;
+                builder.clickHandler((panel, user, click, slot) -> {
+                    if (click.equals(ClickType.LEFT)) {
+                        user.sendMessage("island.top.warp-to", "[name]", name);
+                        ((Warp)warp).getWarpSignsManager().warpPlayer(user, playerUUID);
                     }
+                    return true;
                 });
-
-            } 
+            }
         });
         return builder.build();
     }
