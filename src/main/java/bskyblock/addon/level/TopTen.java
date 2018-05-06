@@ -149,7 +149,7 @@ public class TopTen implements Listener {
         if (name != null) {
             description.add(asker.getTranslation("island.top.gui-heading", "[name]", addon.getIslands().getIslandName(playerUUID), "[rank]", String.valueOf(rank)));
             description.add(asker.getTranslation("island.top.island-level","[level]", String.valueOf(level)));
-            if (addon.getPlayers().inTeam(playerUUID)) {
+            if (addon.getIslands().inTeam(playerUUID)) {
                 List<String> memberList = new ArrayList<>();
                 for (UUID members : addon.getIslands().getMembers(playerUUID)) {
                     memberList.add(ChatColor.AQUA + addon.getPlayers().getName(members));

@@ -292,7 +292,7 @@ public class LevelCalcByChunk {
         if (!event.isCancelled()) {
             // Save the value
             addon.setIslandLevel(island.getOwner(), event.getLevel());
-            if (addon.getPlayers().inTeam(targetPlayer)) {
+            if (addon.getIslands().inTeam(targetPlayer)) {
                 //plugin.getLogger().info("DEBUG: player is in team");
                 for (UUID member : addon.getIslands().getMembers(targetPlayer)) {
                     //plugin.getLogger().info("DEBUG: updating team member level too");
@@ -300,7 +300,7 @@ public class LevelCalcByChunk {
                         addon.setIslandLevel(member, event.getLevel());
                     }
                 }
-                if (addon.getPlayers().inTeam(targetPlayer)) {
+                if (addon.getIslands().inTeam(targetPlayer)) {
                     UUID leader = addon.getIslands().getTeamLeader(targetPlayer);
                     if (leader != null) {
                         addon.getTopTen().addEntry(leader, event.getLevel());

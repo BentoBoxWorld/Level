@@ -24,6 +24,7 @@ public class Settings {
     private boolean islandResetDeathReset;
     private boolean teamJoinDeathReset;
 
+    @SuppressWarnings("deprecation")
     public Settings(Level level) {
         level.saveDefaultConfig();
 
