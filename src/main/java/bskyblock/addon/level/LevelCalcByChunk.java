@@ -61,7 +61,7 @@ public class LevelCalcByChunk {
         this.targetPlayer = targetPlayer;
         this.limitCount = new HashMap<>(addon.getSettings().getBlockLimits());
         this.report = report;
-        this.oldLevel = addon.getIslandLevel(targetPlayer);
+        this.oldLevel = addon.getIslandLevel(world, targetPlayer);
 
         // Results go here
         result = new Results();
@@ -143,14 +143,12 @@ public class LevelCalcByChunk {
         @SuppressWarnings("deprecation")
         MaterialData md = new MaterialData(type, (byte) blockData);
         int count = limitCount(md);
-        if (count > 0) {
-            if (belowSeaLevel) {
-                result.underWaterBlockCount += count;                                                    
-                result.uwCount.add(md);
-            } else {
-                result.rawBlockCount += count;
-                result.mdCount.add(md); 
-            } 
+        if (belowSeaLevel) {
+            result.underWaterBlockCount += count;                                                    
+            result.uwCount.add(md);
+        } else {
+            result.rawBlockCount += count;
+            result.mdCount.add(md); 
         }
     }
 
@@ -161,32 +159,44 @@ public class LevelCalcByChunk {
      */
     private int limitCount(MaterialData md) {
         MaterialData generic = new MaterialData(md.getItemType());
-        if (limitCount.containsKey(md) && addon.getSettings().getBlockValues().containsKey(md)) {
+        if (limitCount.containsKey(md)) {
             int count = limitCount.get(md);
             if (count > 0) {
                 limitCount.put(md, --count);
-                return addon.getSettings().getBlockValues().get(md);
+                return getValue(md);
             } else {
                 result.ofCount.add(md);
                 return 0;
             }
-        } else if (limitCount.containsKey(generic) && addon.getSettings().getBlockValues().containsKey(generic)) {
+        } else if (limitCount.containsKey(generic)) {
             int count = limitCount.get(generic);
             if (count > 0) {  
                 limitCount.put(generic, --count);
-                return addon.getSettings().getBlockValues().get(generic);
+                return getValue(generic);
             } else {
                 result.ofCount.add(md);
                 return 0;
             }
         } else if (addon.getSettings().getBlockValues().containsKey(md)) {
-            return addon.getSettings().getBlockValues().get(md);
+            return getValue(md);
         } else if (addon.getSettings().getBlockValues().containsKey(generic)) {
-            return addon.getSettings().getBlockValues().get(generic);
+            return getValue(generic);
         } else {
             result.ncCount.add(md);
             return 0;
         }
+    }
+    
+    /**
+     * World blocks trump regular block values
+     * @param md
+     * @return
+     */
+    private int getValue(MaterialData md) {
+        if (addon.getSettings().getWorldBlockValues().containsKey(world) && addon.getSettings().getWorldBlockValues().get(world).containsKey(md)) {
+                return addon.getSettings().getWorldBlockValues().get(world).get(md);
+            }
+        return addon.getSettings().getBlockValues().getOrDefault(md, 0);
     }
 
     /**
@@ -257,7 +267,7 @@ public class LevelCalcByChunk {
             return;
         }
         // Tell the asker
-        asker.sendMessage("island.level.island-level-is", "[level]", String.valueOf(addon.getIslandLevel(targetPlayer)));
+        asker.sendMessage("island.level.island-level-is", "[level]", String.valueOf(addon.getIslandLevel(world, targetPlayer)));
         // Console  
         if (report) {
             sendConsoleReport(asker);
@@ -275,10 +285,10 @@ public class LevelCalcByChunk {
             asker.sendMessage("island.level.required-points-to-next-level", "[points]", String.valueOf(event.getPointsToNextLevel()));
         }
         // Tell other team members
-        if (addon.getIslandLevel(targetPlayer) != oldLevel) {
+        if (addon.getIslandLevel(world, targetPlayer) != oldLevel) {
             for (UUID member : island.getMemberSet()) {
                 if (!member.equals(asker.getUniqueId())) {
-                    User.getInstance(member).sendMessage("island.level.island-level-is", "[level]", String.valueOf(addon.getIslandLevel(targetPlayer)));
+                    User.getInstance(member).sendMessage("island.level.island-level-is", "[level]", String.valueOf(addon.getIslandLevel(world, targetPlayer)));
                 }
             }
         }
@@ -291,22 +301,22 @@ public class LevelCalcByChunk {
         addon.getServer().getPluginManager().callEvent(event);
         if (!event.isCancelled()) {
             // Save the value
-            addon.setIslandLevel(island.getOwner(), event.getLevel());
-            if (addon.getIslands().inTeam(targetPlayer)) {
+            addon.setIslandLevel(world, island.getOwner(), event.getLevel());
+            if (addon.getIslands().inTeam(island.getWorld(), targetPlayer)) {
                 //plugin.getLogger().info("DEBUG: player is in team");
-                for (UUID member : addon.getIslands().getMembers(targetPlayer)) {
+                for (UUID member : addon.getIslands().getMembers(island.getWorld(), targetPlayer)) {
                     //plugin.getLogger().info("DEBUG: updating team member level too");
-                    if (addon.getIslandLevel(member) != event.getLevel()) {
-                        addon.setIslandLevel(member, event.getLevel());
+                    if (addon.getIslandLevel(world, member) != event.getLevel()) {
+                        addon.setIslandLevel(world, member, event.getLevel());
                     }
                 }
-                if (addon.getIslands().inTeam(targetPlayer)) {
-                    UUID leader = addon.getIslands().getTeamLeader(targetPlayer);
+                if (addon.getIslands().inTeam(island.getWorld(), targetPlayer)) {
+                    UUID leader = addon.getIslands().getTeamLeader(island.getWorld(), targetPlayer);
                     if (leader != null) {
-                        addon.getTopTen().addEntry(leader, event.getLevel());
+                        addon.getTopTen().addEntry(world, leader, event.getLevel());
                     }
                 } else {
-                    addon.getTopTen().addEntry(targetPlayer, event.getLevel());
+                    addon.getTopTen().addEntry(world, targetPlayer, event.getLevel());
                 }
             }
         }
@@ -383,11 +393,9 @@ public class LevelCalcByChunk {
                 // Generic
                 value = addon.getSettings().getBlockValues().get(new MaterialData(type.getItemType()));
             }
-            if (value > 0) {
-                result.add(type.toString() + ":" 
-                        + String.format("%,d",en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
-                total += (value * en.getCount());
-            }
+            result.add(type.toString() + ":" 
+                    + String.format("%,d",en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
+            total += (value * en.getCount());
         }
         result.add("Subtotal = " + total);
         result.add("==================================");

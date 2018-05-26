@@ -17,8 +17,9 @@ import us.tastybento.bskyblock.database.objects.DataObject;
  */
 public class TopTenData implements DataObject {
     
+    // UniqueId is the world name
     @Expose
-    private String uniqueId = "topten";
+    private String uniqueId = "";
     @Expose
     private Map<UUID, Long> topTen = new LinkedHashMap<>();
 

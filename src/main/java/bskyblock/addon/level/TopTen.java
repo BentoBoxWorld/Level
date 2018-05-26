@@ -1,13 +1,16 @@
 package bskyblock.addon.level;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
@@ -31,7 +34,7 @@ import us.tastybento.bskyblock.database.BSBDatabase;
 public class TopTen implements Listener {
     private Level addon;
     // Top ten list of players
-    private TopTenData topTenList;
+    private Map<World,TopTenData> topTenList;
     private final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
     private final boolean DEBUG = true;
     private BSBDatabase<TopTenData> handler;
@@ -50,18 +53,24 @@ public class TopTen implements Listener {
      * @param ownerUUID
      * @param l
      */
-    public void addEntry(UUID ownerUUID, long l) {
+    public void addEntry(World world, UUID ownerUUID, long l) {
+        // Check if player is an island owner or not
+        if (!addon.getIslands().isOwner(world, ownerUUID)) {
+            return;
+        }
+        // Set up world data
+        topTenList.putIfAbsent(world, new TopTenData());
+        
         // Try and see if the player is online
         Player player = addon.getServer().getPlayer(ownerUUID);
         if (player != null) {
             // Online
             if (!player.hasPermission(Constants.PERMPREFIX + "intopten")) {
-                topTenList.remove(ownerUUID);
+                topTenList.get(world).remove(ownerUUID);
                 return;
             }
         }
-        topTenList.addLevel(ownerUUID, l);
-        saveTopTen();
+        topTenList.get(world).addLevel(ownerUUID, l);
     }
 
     /**
@@ -79,10 +88,8 @@ public class TopTen implements Listener {
             }
             // Convert to UUID
             UUID playerUUID = UUID.fromString(lv.getUniqueId());
-            // Check if the player is an owner or team leader
-            if (addon.getIslands().isOwner(playerUUID)) {
-                topTenList.addLevel(playerUUID, lv.getLevel());
-            }
+            // Get the world
+            lv.getLevels().forEach((k,v) -> addEntry(Bukkit.getWorld(k), playerUUID, v));
         }
         saveTopTen();
     }
@@ -95,17 +102,18 @@ public class TopTen implements Listener {
      * @return - true if successful, false if no Top Ten list exists
      */
     public boolean getGUI(final User user) {
+        // Check world
+        topTenList.putIfAbsent(user.getWorld(), new TopTenData());
+        
         if (DEBUG)
             addon.getLogger().info("DEBUG: GUI display");
-        // New GUI display (shown by default)
-        if (topTenList == null) create();
 
         PanelBuilder panel = new PanelBuilder()
                 .name(user.getTranslation("island.top.gui-title"))
                 .user(user);
 
         int i = 1;
-        Iterator<Entry<UUID, Long>> it = topTenList.getTopTen().entrySet().iterator();
+        Iterator<Entry<UUID, Long>> it = topTenList.get(user.getWorld()).getTopTen().entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<UUID, Long> m = it.next();
             UUID topTenUUID = m.getKey();
@@ -147,11 +155,11 @@ public class TopTen implements Listener {
         final String name = addon.getPlayers().getName(playerUUID);
         List<String> description = new ArrayList<>();
         if (name != null) {
-            description.add(asker.getTranslation("island.top.gui-heading", "[name]", addon.getIslands().getIslandName(playerUUID), "[rank]", String.valueOf(rank)));
+            description.add(asker.getTranslation("island.top.gui-heading", "[name]", name, "[rank]", String.valueOf(rank)));
             description.add(asker.getTranslation("island.top.island-level","[level]", String.valueOf(level)));
-            if (addon.getIslands().inTeam(playerUUID)) {
+            if (addon.getIslands().inTeam(asker.getWorld(), playerUUID)) {
                 List<String> memberList = new ArrayList<>();
-                for (UUID members : addon.getIslands().getMembers(playerUUID)) {
+                for (UUID members : addon.getIslands().getMembers(asker.getWorld(), playerUUID)) {
                     memberList.add(ChatColor.AQUA + addon.getPlayers().getName(members));
                 }
                 description.addAll(memberList);
@@ -178,18 +186,16 @@ public class TopTen implements Listener {
         return builder.build();
     }
 
-    public TopTenData getTopTenList() {
-        return topTenList;
+    public TopTenData getTopTenList(World world) {
+        return topTenList.get(world);
     }
 
     /**
-     * Loads the top ten from the database
+     * Loads all the top tens from the database
      */
     public void loadTopTen() {
-        topTenList = handler.loadObject("topten");
-        if (topTenList == null) {
-            topTenList = new TopTenData();
-        }
+        topTenList = new HashMap<>();
+        handler.loadObjects().forEach(tt -> topTenList.put(Bukkit.getWorld(tt.getUniqueId()), tt));
     }
 
     /**
@@ -197,17 +203,13 @@ public class TopTen implements Listener {
      * 
      * @param ownerUUID
      */
-    public void removeEntry(UUID ownerUUID) {
-        topTenList.remove(ownerUUID);
+    public void removeEntry(World world, UUID ownerUUID) {
+        topTenList.putIfAbsent(world, new TopTenData());
+        topTenList.get(world).remove(ownerUUID);
     }
 
     public void saveTopTen() {
-        //plugin.getLogger().info("Saving top ten list");
-        if (topTenList == null) {
-            //plugin.getLogger().info("DEBUG: toptenlist = null!");
-            return;
-        }
-        handler.saveObject(topTenList);
+        topTenList.values().forEach(handler::saveObject);
     }
 
 }

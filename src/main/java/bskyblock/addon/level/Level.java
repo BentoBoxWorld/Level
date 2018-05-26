@@ -2,8 +2,9 @@ package bskyblock.addon.level;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.UUID;
+
+import org.bukkit.World;
 
 import bskyblock.addon.level.commands.AdminLevel;
 import bskyblock.addon.level.commands.AdminTop;
@@ -31,10 +32,8 @@ public class Level extends Addon {
     // Database handler for level data
     private BSBDatabase<LevelsData> handler;
 
-    // A cache of island levels. Island levels are not kept in memory unless required.
-    // The cache is saved when the server shuts down and the plugin is disabled.
-    // TODO: Save regularly to avoid crash issues.
-    private Map<UUID, Long> levelsCache;
+    // A cache of island levels. 
+    private Map<UUID, LevelsData> levelsCache;
 
     // The Top Ten object
     private TopTen topTen;
@@ -44,12 +43,13 @@ public class Level extends Addon {
 
     /**
      * Calculates a user's island
+     * @param world 
      * @param user
      * @param playerUUID - the player's UUID
      * @param b
      */
-    public void calculateIslandLevel(User user, UUID playerUUID, boolean b) {
-        levelCalc.calculateIslandLevel(user, playerUUID, b);        
+    public void calculateIslandLevel(World world, User user, UUID playerUUID, boolean b) {
+        levelCalc.calculateIslandLevel(world, user, playerUUID, b);        
     }
 
     /**
@@ -57,19 +57,14 @@ public class Level extends Addon {
      * @param targetPlayer
      * @return Level of player
      */
-    public long getIslandLevel(UUID targetPlayer) {
-        if (levelsCache.containsKey(targetPlayer)) {
-            return levelsCache.get(targetPlayer);
-        }
-        // Get from database
-        LevelsData level;
-        level = handler.loadObject(targetPlayer.toString());
-        if (level == null) {
-            // We do not know this player, set to zero
-            return 0;
-        }
-        levelsCache.put(targetPlayer, level.getLevel());
-        return level.getLevel();
+    public long getIslandLevel(World world, UUID targetPlayer) { 
+        LevelsData ld = getLevelsData(targetPlayer);
+        return ld == null ? 0L : ld.getLevel(world);
+    }
+    
+    private LevelsData getLevelsData(UUID targetPlayer) {
+        // Load player
+        return levelsCache.getOrDefault(targetPlayer, handler.loadObject(targetPlayer.toString()));
     }
 
     /**
@@ -81,12 +76,6 @@ public class Level extends Addon {
 
     public TopTen getTopTen() {
         return topTen;
-    }
-
-    private void load() {
-        for (LevelsData level : handler.loadObjects()) {
-            levelsCache.put(UUID.fromString(level.getUniqueId()), level.getLevel());
-        }
     }
 
     @Override
@@ -113,8 +102,6 @@ public class Level extends Addon {
         handler = new BSBDatabase<>(this, LevelsData.class);
         // Initialize the cache
         levelsCache = new HashMap<>();
-        // Load all the levels
-        load();
         // Load the calculator
         levelCalc = new LevelPresenter(this);
         // Start the top ten and register it for clicks
@@ -135,14 +122,7 @@ public class Level extends Addon {
      * @param async - if true, saving will be done async
      */
     public void save(boolean async){
-        Runnable save = () -> {
-            for (Entry<UUID, Long> en : levelsCache.entrySet()) {
-                LevelsData lv = new LevelsData();
-                lv.setLevel(en.getValue());
-                lv.setUniqueId(en.getKey().toString());
-                handler.saveObject(lv);
-            }
-        };
+        Runnable save = () -> levelsCache.values().forEach(handler::saveObject);
         if(async){
             getServer().getScheduler().runTaskAsynchronously(getBSkyBlock(), save);
         } else {
@@ -152,13 +132,20 @@ public class Level extends Addon {
 
     /**
      * Sets the player's level to a value
+     * @param world 
      * @param targetPlayer
      * @param level
      */
-    protected void setIslandLevel(UUID targetPlayer, long level) {
+    protected void setIslandLevel(World world, UUID targetPlayer, long level) {
+        LevelsData ld = getLevelsData(targetPlayer);
+        if (ld == null) {
+            ld = new LevelsData(targetPlayer, level, world);
+        } else {
+            ld.setLevel(world, level);
+        }
         // Add to cache
-        levelsCache.put(targetPlayer, level);
-        topTen.addEntry(targetPlayer, level);
+        levelsCache.put(targetPlayer, ld);
+        topTen.addEntry(world, targetPlayer, level);
     }
 
     public BSBDatabase<LevelsData> getHandler() {
