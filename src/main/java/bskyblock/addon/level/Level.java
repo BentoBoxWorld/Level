@@ -12,7 +12,6 @@ import bskyblock.addon.level.commands.IslandLevel;
 import bskyblock.addon.level.commands.IslandTop;
 import bskyblock.addon.level.config.Settings;
 import bskyblock.addon.level.database.object.LevelsData;
-import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.addons.Addon;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.user.User;
@@ -47,9 +46,10 @@ public class Level extends Addon {
      * @param user
      * @param playerUUID - the player's UUID
      * @param b
+     * @param permPrefix 
      */
-    public void calculateIslandLevel(World world, User user, UUID playerUUID, boolean b) {
-        levelCalc.calculateIslandLevel(world, user, playerUUID, b);        
+    public void calculateIslandLevel(World world, User user, UUID playerUUID, boolean b, String permPrefix) {
+        levelCalc.calculateIslandLevel(world, user, playerUUID, b, permPrefix);        
     }
 
     /**
@@ -61,7 +61,7 @@ public class Level extends Addon {
         LevelsData ld = getLevelsData(targetPlayer);
         return ld == null ? 0L : ld.getLevel(world);
     }
-    
+
     private LevelsData getLevelsData(UUID targetPlayer) {
         // Load player
         return levelsCache.getOrDefault(targetPlayer, handler.loadObject(targetPlayer.toString()));
@@ -84,6 +84,9 @@ public class Level extends Addon {
         if (levelsCache != null) {
             save(false);
         }
+        if (topTen != null) {
+            topTen.saveTopTen();
+        }
     }
 
     @Override
@@ -103,15 +106,28 @@ public class Level extends Addon {
         // Initialize the cache
         levelsCache = new HashMap<>();
         // Load the calculator
-        levelCalc = new LevelPresenter(this);
+        levelCalc = new LevelPresenter(this, getBSkyBlock());
         // Start the top ten and register it for clicks
         topTen = new TopTen(this);
         registerListener(topTen);
-        // Register commands
-        CompositeCommand bsbIslandCmd = getBSkyBlock().getCommandsManager().getCommand(Constants.ISLANDCOMMAND);
+        // Register commands - run one tick later to allow all addons to load
+        // AcidIsland hook in
+        getServer().getScheduler().runTask(getBSkyBlock(), () -> {
+            this.getBSkyBlock().getAddonsManager().getAddonByName("AcidIsland").ifPresent(a -> {
+                getLogger().info("DEBUG: " + getBSkyBlock().getCommandsManager().listCommands());
+                CompositeCommand acidIslandCmd = getBSkyBlock().getCommandsManager().getCommand("ai");
+                new IslandLevel(this, acidIslandCmd);
+                new IslandTop(this, acidIslandCmd);
+                CompositeCommand acidCmd = getBSkyBlock().getCommandsManager().getCommand("acid");
+                new AdminLevel(this, acidCmd);
+                new AdminTop(this, acidCmd);
+            });
+        });
+        // BSkyBlock hook in
+        CompositeCommand bsbIslandCmd = getBSkyBlock().getCommandsManager().getCommand("island");
         new IslandLevel(this, bsbIslandCmd);
         new IslandTop(this, bsbIslandCmd);
-        CompositeCommand bsbAdminCmd = getBSkyBlock().getCommandsManager().getCommand(Constants.ADMINCOMMAND);
+        CompositeCommand bsbAdminCmd = getBSkyBlock().getCommandsManager().getCommand("bsbadmin");
         new AdminLevel(this, bsbAdminCmd);
         new AdminTop(this, bsbAdminCmd);
         // Done
@@ -135,8 +151,9 @@ public class Level extends Addon {
      * @param world 
      * @param targetPlayer
      * @param level
+     * @param permPrefix
      */
-    protected void setIslandLevel(World world, UUID targetPlayer, long level) {
+    protected void setIslandLevel(World world, UUID targetPlayer, long level, String permPrefix) {
         LevelsData ld = getLevelsData(targetPlayer);
         if (ld == null) {
             ld = new LevelsData(targetPlayer, level, world);
@@ -145,7 +162,7 @@ public class Level extends Addon {
         }
         // Add to cache
         levelsCache.put(targetPlayer, ld);
-        topTen.addEntry(world, targetPlayer, level);
+        topTen.addEntry(world, targetPlayer, level, permPrefix);
     }
 
     public BSBDatabase<LevelsData> getHandler() {

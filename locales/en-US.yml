@@ -9,6 +9,7 @@ admin:
     description: "calculate the island level for player"
   top:
     description: "show the top ten list"
+    unknown-world: "&cUnknown world!"
     
 island:
   level: 

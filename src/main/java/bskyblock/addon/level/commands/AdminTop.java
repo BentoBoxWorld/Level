@@ -7,7 +7,6 @@ import java.util.UUID;
 import org.bukkit.World;
 
 import bskyblock.addon.level.Level;
-import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.user.User;
 import us.tastybento.bskyblock.database.objects.Island;
@@ -57,7 +56,7 @@ public class AdminTop extends CompositeCommand {
 
     @Override
     public void setup() {
-        this.setPermission(Constants.PERMPREFIX + "admin.top");
+        this.setPermission(getPermissionPrefix() + "admin.top");
         this.setOnlyPlayer(false);
         this.setDescription("admin.top.description");
     }

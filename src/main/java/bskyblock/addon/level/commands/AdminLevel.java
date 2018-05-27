@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.bukkit.World;
 
 import bskyblock.addon.level.Level;
-import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.user.User;
 
@@ -39,9 +38,9 @@ public class AdminLevel extends CompositeCommand {
                 return true;
             } else {
                 if (user.isPlayer()) {
-                    levelPlugin.calculateIslandLevel(world, user, playerUUID, false); 
+                    levelPlugin.calculateIslandLevel(world, user, playerUUID, false, getPermissionPrefix()); 
                 } else {
-                    levelPlugin.calculateIslandLevel(world, user, playerUUID, true);
+                    levelPlugin.calculateIslandLevel(world, user, playerUUID, true, getPermissionPrefix());
                 }
             }
             return true;
@@ -53,7 +52,7 @@ public class AdminLevel extends CompositeCommand {
 
     @Override
     public void setup() {
-        this.setPermission(Constants.PERMPREFIX + "admin.level");
+        this.setPermission(getPermissionPrefix() + "admin.level");
         this.setOnlyPlayer(false);
         this.setParameters("admin.level.parameters");
         this.setDescription("admin.level.description");

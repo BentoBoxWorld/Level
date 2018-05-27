@@ -25,7 +25,6 @@ import com.google.common.collect.Multisets;
 
 import bskyblock.addon.level.event.IslandPostLevelEvent;
 import bskyblock.addon.level.event.IslandPreLevelEvent;
-import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.user.User;
 import us.tastybento.bskyblock.database.objects.Island;
 import us.tastybento.bskyblock.util.Pair;
@@ -51,9 +50,10 @@ public class LevelCalcByChunk {
     HashMap<MaterialData, Integer> limitCount;
     private boolean report;
     private long oldLevel;
+    private String permPrefix;
 
 
-    public LevelCalcByChunk(final Level addon, final Island island, final UUID targetPlayer, final User asker, final boolean report) {
+    public LevelCalcByChunk(final Level addon, final Island island, final UUID targetPlayer, final User asker, final boolean report, String permPrefix) {
         this.addon = addon;
         this.island = island;
         this.world = island != null ? island.getCenter().getWorld() : null;
@@ -62,6 +62,7 @@ public class LevelCalcByChunk {
         this.limitCount = new HashMap<>(addon.getSettings().getBlockLimits());
         this.report = report;
         this.oldLevel = addon.getIslandLevel(world, targetPlayer);
+        this.permPrefix = permPrefix;
 
         // Results go here
         result = new Results();
@@ -231,8 +232,8 @@ public class LevelCalcByChunk {
         if (player != null) {
             // Get permission multiplier                
             for (PermissionAttachmentInfo perms : player.getEffectivePermissions()) {
-                if (perms.getPermission().startsWith(Constants.PERMPREFIX + "island.multiplier.")) {
-                    String spl[] = perms.getPermission().split(Constants.PERMPREFIX + "island.multiplier.");
+                if (perms.getPermission().startsWith(permPrefix + "island.multiplier.")) {
+                    String spl[] = perms.getPermission().split(permPrefix + "island.multiplier.");
                     if (spl.length > 1) {
                         if (!NumberUtils.isDigits(spl[1])) {
                             addon.getLogger().severe("Player " + player.getName() + " has permission: " + perms.getPermission() + " <-- the last part MUST be a number! Ignoring...");
@@ -301,22 +302,22 @@ public class LevelCalcByChunk {
         addon.getServer().getPluginManager().callEvent(event);
         if (!event.isCancelled()) {
             // Save the value
-            addon.setIslandLevel(world, island.getOwner(), event.getLevel());
+            addon.setIslandLevel(world, island.getOwner(), event.getLevel(), permPrefix);
             if (addon.getIslands().inTeam(island.getWorld(), targetPlayer)) {
                 //plugin.getLogger().info("DEBUG: player is in team");
                 for (UUID member : addon.getIslands().getMembers(island.getWorld(), targetPlayer)) {
                     //plugin.getLogger().info("DEBUG: updating team member level too");
                     if (addon.getIslandLevel(world, member) != event.getLevel()) {
-                        addon.setIslandLevel(world, member, event.getLevel());
+                        addon.setIslandLevel(world, member, event.getLevel(), permPrefix);
                     }
                 }
                 if (addon.getIslands().inTeam(island.getWorld(), targetPlayer)) {
                     UUID leader = addon.getIslands().getTeamLeader(island.getWorld(), targetPlayer);
                     if (leader != null) {
-                        addon.getTopTen().addEntry(world, leader, event.getLevel());
+                        addon.getTopTen().addEntry(world, leader, event.getLevel(), permPrefix);
                     }
                 } else {
-                    addon.getTopTen().addEntry(world, targetPlayer, event.getLevel());
+                    addon.getTopTen().addEntry(world, targetPlayer, event.getLevel(), permPrefix);
                 }
             }
         }

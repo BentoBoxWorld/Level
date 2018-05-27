@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.UUID;
 
 import bskyblock.addon.level.Level;
-import us.tastybento.bskyblock.Constants;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.user.User;
 
@@ -29,21 +28,21 @@ public class IslandLevel extends CompositeCommand {
                 return true;
             } else if (user.getUniqueId().equals(playerUUID) ) {
                 // Self level request
-                levelPlugin.calculateIslandLevel(user.getWorld(), user, user.getUniqueId(), false);
+                levelPlugin.calculateIslandLevel(getWorld(), user, user.getUniqueId(), false, this.getPermissionPrefix());
             } else {
-                user.sendMessage("island.level.island-level-is", "[level]", String.valueOf(levelPlugin.getIslandLevel(user.getWorld(), playerUUID)));
+                user.sendMessage("island.level.island-level-is", "[level]", String.valueOf(levelPlugin.getIslandLevel(getWorld(), playerUUID)));
                 return true;
             }
         } else {
             // Self level request
-            levelPlugin.calculateIslandLevel(user.getWorld(), user, user.getUniqueId(), false);
+            levelPlugin.calculateIslandLevel(getWorld(), user, user.getUniqueId(), false, this.getPermissionPrefix());
         }
         return false;
     }
 
     @Override
     public void setup() {
-        this.setPermission(Constants.PERMPREFIX + "island.level");
+        this.setPermission(getPermissionPrefix() + "island.level");
         this.setParameters("island.level.parameters");
         this.setDescription("island.level.description");
         this.setOnlyPlayer(true);  
