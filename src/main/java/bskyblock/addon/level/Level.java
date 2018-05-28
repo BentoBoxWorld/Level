@@ -114,7 +114,6 @@ public class Level extends Addon {
         // AcidIsland hook in
         getServer().getScheduler().runTask(getBSkyBlock(), () -> {
             this.getBSkyBlock().getAddonsManager().getAddonByName("AcidIsland").ifPresent(a -> {
-                getLogger().info("DEBUG: " + getBSkyBlock().getCommandsManager().listCommands());
                 CompositeCommand acidIslandCmd = getBSkyBlock().getCommandsManager().getCommand("ai");
                 new IslandLevel(this, acidIslandCmd);
                 new IslandTop(this, acidIslandCmd);

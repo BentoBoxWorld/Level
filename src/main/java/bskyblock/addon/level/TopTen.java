@@ -174,11 +174,11 @@ public class TopTen implements Listener {
         // If welcome warps is present then add warping
         addon.getAddonByName("BSkyBlock-WelcomeWarps").ifPresent(warp -> {
 
-            if (((Warp)warp).getWarpSignsManager().hasWarp(playerUUID)) {
+            if (((Warp)warp).getWarpSignsManager().hasWarp(world, playerUUID)) {
                 builder.clickHandler((panel, user, click, slot) -> {
                     if (click.equals(ClickType.LEFT)) {
                         user.sendMessage("island.top.warp-to", "[name]", name);
-                        ((Warp)warp).getWarpSignsManager().warpPlayer(user, playerUUID);
+                        ((Warp)warp).getWarpSignsManager().warpPlayer(world, user, playerUUID);
                     }
                     return true;
                 });
