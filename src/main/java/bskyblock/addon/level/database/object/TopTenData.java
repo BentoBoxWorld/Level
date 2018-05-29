@@ -22,6 +22,8 @@ public class TopTenData implements DataObject {
     private String uniqueId = "";
     @Expose
     private Map<UUID, Long> topTen = new LinkedHashMap<>();
+    
+    public TopTenData() {}
 
     public Map<UUID, Long> getTopTen() {
         return topTen.entrySet().stream()

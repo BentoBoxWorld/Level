@@ -96,7 +96,7 @@ public class Settings {
                         worldBlockValues.put(bWorld, values);
                     }
                 } else {
-                    level.getLogger().severe("No such world : " + world);
+                    level.getLogger().severe("Level Addon: No such world : " + world);
                 }
             }
         }

@@ -19,6 +19,8 @@ public class LevelsData implements DataObject {
     // Map - world name, level
     @Expose
     private Map<String, Long> levels = new HashMap<>();
+    
+    public LevelsData() {} // For Bean loading
 
     /**
      * Create a level entry for target player

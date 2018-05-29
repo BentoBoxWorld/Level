@@ -308,7 +308,7 @@ blocks:
 # If a block is not listed, the default value will be used
 # Prefix with world name
 worlds:
-  AcidIsland-world:
+  AcidIsland_world:
     SAND: 0
     SANDSTONE: 0
     ICE: 0
