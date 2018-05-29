@@ -46,7 +46,7 @@ public class LevelsData implements DataObject {
     }
 
     public Long getLevel(World world) {
-        return levels.getOrDefault(world.getName(), 0L);
+        return world == null ? 0L : levels.getOrDefault(world.getName(), 0L);
     }
     
     /**
