@@ -52,7 +52,7 @@ public class AdminLevel extends CompositeCommand {
 
     @Override
     public void setup() {
-        this.setPermission(getPermissionPrefix() + "admin.level");
+        this.setPermission("admin.level");
         this.setOnlyPlayer(false);
         this.setParameters("admin.level.parameters");
         this.setDescription("admin.level.description");

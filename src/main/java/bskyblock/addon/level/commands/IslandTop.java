@@ -23,7 +23,7 @@ public class IslandTop extends CompositeCommand {
 
     @Override
     public void setup() {
-        this.setPermission(getPermissionPrefix() + "island.top");
+        this.setPermission("island.top");
         this.setDescription("island.top.description");
 
         

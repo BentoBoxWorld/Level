@@ -56,7 +56,7 @@ public class AdminTop extends CompositeCommand {
 
     @Override
     public void setup() {
-        this.setPermission(getPermissionPrefix() + "admin.top");
+        this.setPermission("admin.top");
         this.setOnlyPlayer(false);
         this.setDescription("admin.top.description");
     }

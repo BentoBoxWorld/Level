@@ -42,7 +42,7 @@ public class IslandLevel extends CompositeCommand {
 
     @Override
     public void setup() {
-        this.setPermission(getPermissionPrefix() + "island.level");
+        this.setPermission("island.level");
         this.setParameters("island.level.parameters");
         this.setDescription("island.level.description");
         this.setOnlyPlayer(true);  
