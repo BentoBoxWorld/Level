@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>us.tastybento</groupId>
 			<artifactId>bskyblock</artifactId>
-			<version>alpha-0.0.1</version>
+			<version>LATEST</version>
 		</dependency>
 		<dependency>
 			<groupId>bskyblock.addon</groupId>

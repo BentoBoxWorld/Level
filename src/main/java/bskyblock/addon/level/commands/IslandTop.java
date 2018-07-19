@@ -16,7 +16,7 @@ public class IslandTop extends CompositeCommand {
     }
 
     @Override
-    public boolean execute(User user, List<String> list) {
+    public boolean execute(User user, String label, List<String> list) {
         plugin.getTopTen().getGUI(getWorld(), user, getPermissionPrefix());
         return true;
     }
@@ -26,7 +26,7 @@ public class IslandTop extends CompositeCommand {
         this.setPermission("island.top");
         this.setDescription("island.top.description");
 
-        
+
     }
 
 }

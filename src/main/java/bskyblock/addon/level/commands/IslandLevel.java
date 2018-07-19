@@ -8,16 +8,16 @@ import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.user.User;
 
 public class IslandLevel extends CompositeCommand {
-    
+
     private final Level levelPlugin;
-    
+
     public IslandLevel(Level levelPlugin, CompositeCommand parent) {
         super(parent, "level");
         this.levelPlugin = levelPlugin;
     }
 
     @Override
-    public boolean execute(User user, List<String> args) {
+    public boolean execute(User user, String label, List<String> args) {
         if (!args.isEmpty()) {
             // Asking for another player's level?
             // Convert name to a UUID
@@ -45,7 +45,7 @@ public class IslandLevel extends CompositeCommand {
         this.setPermission("island.level");
         this.setParameters("island.level.parameters");
         this.setDescription("island.level.description");
-        this.setOnlyPlayer(true);  
+        this.setOnlyPlayer(true);
     }
 
 }

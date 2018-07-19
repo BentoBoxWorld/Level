@@ -21,7 +21,7 @@ public class AdminTop extends CompositeCommand {
     }
 
     @Override
-    public boolean execute(User user, List<String> args) {
+    public boolean execute(User user, String label, List<String> args) {
         // Get world
         World world = null;
         if (args.isEmpty()) {

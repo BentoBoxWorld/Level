@@ -19,7 +19,7 @@ public class AdminLevel extends CompositeCommand {
     }
 
     @Override
-    public boolean execute(User user, List<String> args) {
+    public boolean execute(User user, String label, List<String> args) {
         if (args.size() == 2) {
             // Get world
             World world = null;
@@ -38,7 +38,7 @@ public class AdminLevel extends CompositeCommand {
                 return true;
             } else {
                 if (user.isPlayer()) {
-                    levelPlugin.calculateIslandLevel(world, user, playerUUID, false, getPermissionPrefix()); 
+                    levelPlugin.calculateIslandLevel(world, user, playerUUID, false, getPermissionPrefix());
                 } else {
                     levelPlugin.calculateIslandLevel(world, user, playerUUID, true, getPermissionPrefix());
                 }
