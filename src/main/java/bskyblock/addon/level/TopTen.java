@@ -26,9 +26,9 @@ import us.tastybento.bskyblock.database.BSBDatabase;
 
 /**
  * Handles all Top Ten List functions
- * 
+ *
  * @author tastybento
- * 
+ *
  */
 public class TopTen implements Listener {
     private Level addon;
@@ -48,11 +48,11 @@ public class TopTen implements Listener {
 
     /**
      * Adds a player to the top ten, if the level is good enough
-     * 
+     *
      * @param ownerUUID
      * @param l
      */
-    public void addEntry(World world, UUID ownerUUID, long l, String permPrefix) {
+    public void addEntry(World world, UUID ownerUUID, long l) {
         // Check if player is an island owner or not
         if (!addon.getIslands().isOwner(world, ownerUUID)) {
             return;
@@ -60,12 +60,12 @@ public class TopTen implements Listener {
         // Set up world data
         topTenList.putIfAbsent(world, new TopTenData());
         topTenList.get(world).setUniqueId(world.getName());
-        
+
         // Try and see if the player is online
         Player player = addon.getServer().getPlayer(ownerUUID);
         if (player != null) {
             // Online
-            if (!player.hasPermission(permPrefix + "intopten")) {
+            if (!player.hasPermission(addon.getBSkyBlock().getIWM().getPermissionPrefix(world) + ".intopten")) {
                 topTenList.get(world).remove(ownerUUID);
                 return;
             }
@@ -89,15 +89,15 @@ public class TopTen implements Listener {
             // Convert to UUID
             UUID playerUUID = UUID.fromString(lv.getUniqueId());
             // Get the world
-            lv.getLevels().forEach((k,v) -> addEntry(Bukkit.getWorld(k), playerUUID, v, permPrefix));
+            lv.getLevels().forEach((k,v) -> addEntry(Bukkit.getWorld(k), playerUUID, v));
         }
         saveTopTen();
     }
 
     /**
      * Displays the Top Ten list
-     * @param world 
-     * 
+     * @param world
+     *
      * @param user
      *            - the requesting player
      * @return - true if successful, false if no Top Ten list exists
@@ -201,7 +201,7 @@ public class TopTen implements Listener {
 
     /**
      * Removes ownerUUID from the top ten list
-     * 
+     *
      * @param ownerUUID
      */
     public void removeEntry(World world, UUID ownerUUID) {

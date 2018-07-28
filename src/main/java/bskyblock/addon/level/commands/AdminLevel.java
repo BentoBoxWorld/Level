@@ -3,8 +3,6 @@ package bskyblock.addon.level.commands;
 import java.util.List;
 import java.util.UUID;
 
-import org.bukkit.World;
-
 import bskyblock.addon.level.Level;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.user.User;
@@ -20,15 +18,7 @@ public class AdminLevel extends CompositeCommand {
 
     @Override
     public boolean execute(User user, String label, List<String> args) {
-        if (args.size() == 2) {
-            // Get world
-            World world = null;
-            if (getPlugin().getIWM().isOverWorld(args.get(0))) {
-                world = getPlugin().getIWM().getIslandWorld(args.get(0));
-            } else {
-                user.sendMessage("commands.admin.top.unknown-world");
-                return false;
-            }
+        if (args.size() == 1) {
             // Asking for another player's level?
             // Convert name to a UUID
             final UUID playerUUID = getPlugin().getPlayers().getUUID(args.get(0));
@@ -37,11 +27,7 @@ public class AdminLevel extends CompositeCommand {
                 user.sendMessage("general.errors.unknown-player");
                 return true;
             } else {
-                if (user.isPlayer()) {
-                    levelPlugin.calculateIslandLevel(world, user, playerUUID, false, getPermissionPrefix());
-                } else {
-                    levelPlugin.calculateIslandLevel(world, user, playerUUID, true, getPermissionPrefix());
-                }
+                levelPlugin.calculateIslandLevel(getWorld(), user, playerUUID);
             }
             return true;
         } else {

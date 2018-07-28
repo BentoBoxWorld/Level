@@ -28,14 +28,14 @@ public class IslandLevel extends CompositeCommand {
                 return true;
             } else if (user.getUniqueId().equals(playerUUID) ) {
                 // Self level request
-                levelPlugin.calculateIslandLevel(getWorld(), user, user.getUniqueId(), false, this.getPermissionPrefix());
+                levelPlugin.calculateIslandLevel(getWorld(), user, user.getUniqueId());
             } else {
                 user.sendMessage("island.level.island-level-is", "[level]", String.valueOf(levelPlugin.getIslandLevel(getWorld(), playerUUID)));
                 return true;
             }
         } else {
             // Self level request
-            levelPlugin.calculateIslandLevel(getWorld(), user, user.getUniqueId(), false, this.getPermissionPrefix());
+            levelPlugin.calculateIslandLevel(getWorld(), user, user.getUniqueId());
         }
         return false;
     }

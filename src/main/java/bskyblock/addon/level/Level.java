@@ -12,10 +12,12 @@ import bskyblock.addon.level.commands.IslandLevel;
 import bskyblock.addon.level.commands.IslandTop;
 import bskyblock.addon.level.config.Settings;
 import bskyblock.addon.level.database.object.LevelsData;
+import bskyblock.addon.level.listeners.NewIslandListener;
 import us.tastybento.bskyblock.api.addons.Addon;
 import us.tastybento.bskyblock.api.commands.CompositeCommand;
 import us.tastybento.bskyblock.api.user.User;
 import us.tastybento.bskyblock.database.BSBDatabase;
+import us.tastybento.bskyblock.database.objects.Island;
 
 
 /**
@@ -31,7 +33,7 @@ public class Level extends Addon {
     // Database handler for level data
     private BSBDatabase<LevelsData> handler;
 
-    // A cache of island levels. 
+    // A cache of island levels.
     private Map<UUID, LevelsData> levelsCache;
 
     // The Top Ten object
@@ -42,14 +44,12 @@ public class Level extends Addon {
 
     /**
      * Calculates a user's island
-     * @param world 
-     * @param user
-     * @param playerUUID - the player's UUID
-     * @param b
-     * @param permPrefix 
+     * @param world - the world where this island is
+     * @param user - the user who is asking, or null if none
+     * @param playerUUID - the target island member's UUID
      */
-    public void calculateIslandLevel(World world, User user, UUID playerUUID, boolean b, String permPrefix) {
-        levelCalc.calculateIslandLevel(world, user, playerUUID, b, permPrefix);        
+    public void calculateIslandLevel(World world, User user, UUID playerUUID) {
+        levelCalc.calculateIslandLevel(world, user, playerUUID);
     }
 
     /**
@@ -57,7 +57,7 @@ public class Level extends Addon {
      * @param targetPlayer
      * @return Level of player
      */
-    public long getIslandLevel(World world, UUID targetPlayer) { 
+    public long getIslandLevel(World world, UUID targetPlayer) {
         LevelsData ld = getLevelsData(targetPlayer);
         return ld == null ? 0L : ld.getLevel(world);
     }
@@ -129,7 +129,10 @@ public class Level extends Addon {
         CompositeCommand bsbAdminCmd = getBSkyBlock().getCommandsManager().getCommand("bsbadmin");
         new AdminLevel(this, bsbAdminCmd);
         new AdminTop(this, bsbAdminCmd);
+        // Register new island listener
+        registerListener(new NewIslandListener(this));
         // Done
+
     }
 
     /**
@@ -147,12 +150,11 @@ public class Level extends Addon {
 
     /**
      * Sets the player's level to a value
-     * @param world 
+     * @param world
      * @param targetPlayer
      * @param level
-     * @param permPrefix
      */
-    protected void setIslandLevel(World world, UUID targetPlayer, long level, String permPrefix) {
+    public void setIslandLevel(World world, UUID targetPlayer, long level) {
         LevelsData ld = getLevelsData(targetPlayer);
         if (ld == null) {
             ld = new LevelsData(targetPlayer, level, world);
@@ -161,8 +163,19 @@ public class Level extends Addon {
         }
         // Add to cache
         levelsCache.put(targetPlayer, ld);
-        topTen.addEntry(world, targetPlayer, level, permPrefix);
+        topTen.addEntry(world, targetPlayer, getIslandLevel(world, targetPlayer));
     }
+
+    /**
+     * Sets the initial island level
+     * @param island - island
+     * @param level - initial calculated island level
+     */
+    public void setInitialIslandLevel(Island island, long level) {
+        setIslandLevel(island.getWorld(), island.getOwner(), level);
+        levelsCache.get(island.getOwner()).setInitialIslandLevel(level);
+    }
+
 
     public BSBDatabase<LevelsData> getHandler() {
         return handler;

@@ -11,15 +11,17 @@ import com.google.gson.annotations.Expose;
 import us.tastybento.bskyblock.database.objects.DataObject;
 
 public class LevelsData implements DataObject {
-    
+
     // uniqueId is the player's UUID
     @Expose
     private String uniqueId = "";
-    
+
     // Map - world name, level
     @Expose
     private Map<String, Long> levels = new HashMap<>();
-    
+    @Expose
+    private long initialIslandLevel = 0;
+
     public LevelsData() {} // For Bean loading
 
     /**
@@ -36,6 +38,7 @@ public class LevelsData implements DataObject {
     /* (non-Javadoc)
      * @see us.tastybento.bskyblock.database.objects.DataObject#getUniqueId()
      */
+    @Override
     public String getUniqueId() {
         return uniqueId;
     }
@@ -43,14 +46,20 @@ public class LevelsData implements DataObject {
     /* (non-Javadoc)
      * @see us.tastybento.bskyblock.database.objects.DataObject#setUniqueId(java.lang.String)
      */
+    @Override
     public void setUniqueId(String uniqueId) {
         this.uniqueId = uniqueId;
     }
 
+    /**
+     * Get the island level for this world
+     * @param world - world
+     * @return island level, less the initialIslandLevel
+     */
     public Long getLevel(World world) {
-        return world == null ? 0L : levels.getOrDefault(world.getName(), 0L);
+        return world == null ? -initialIslandLevel : levels.getOrDefault(world.getName(), 0L) - initialIslandLevel;
     }
-    
+
     /**
      * @return the levels
      */
@@ -67,5 +76,19 @@ public class LevelsData implements DataObject {
 
     public void setLevel(World world, Long lv) {
         levels.put(world.getName(),lv);
+    }
+
+    /**
+     * @return the initialIslandLevel
+     */
+    public long getInitialIslandLevel() {
+        return initialIslandLevel;
+    }
+
+    /**
+     * @param initialIslandLevel the initialIslandLevel to set
+     */
+    public void setInitialIslandLevel(long initialIslandLevel) {
+        this.initialIslandLevel = initialIslandLevel;
     }
 }

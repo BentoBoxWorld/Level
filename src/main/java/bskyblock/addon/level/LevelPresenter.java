@@ -6,20 +6,21 @@ import java.util.UUID;
 
 import org.bukkit.World;
 
+import bskyblock.addon.level.calculators.PlayerLevel;
 import us.tastybento.bskyblock.BSkyBlock;
 import us.tastybento.bskyblock.api.user.User;
 
 public class LevelPresenter {
 
     private int levelWait;
-    private final Level plugin;
+    private final Level addon;
     private final BSkyBlock bSkyBlock;
 
     // Level calc cool down
     private HashMap<UUID, Long> levelWaitTime = new HashMap<UUID, Long>();
 
     public LevelPresenter(Level plugin, BSkyBlock bSkyBlock) {
-        this.plugin = plugin;
+        this.addon = plugin;
         this.bSkyBlock = bSkyBlock;
     }
 
@@ -28,12 +29,12 @@ public class LevelPresenter {
      * @param world - world to check
      * @param sender - asker of the level info
      * @param targetPlayer
-     * @param report - if true, a detailed report will be provided
-     * @param permPrefix - per prefix for this player
      * @return - false if this is cannot be done
      */
-    public boolean calculateIslandLevel(World world, final User sender, UUID targetPlayer, boolean report, String permPrefix) {
-        // Check if sender has island
+    public boolean calculateIslandLevel(World world, final User sender, UUID targetPlayer) {
+        // Get permission prefix for this world
+        String permPrefix = bSkyBlock.getIWM().getPermissionPrefix(world);
+        // Check if target has island
         boolean inTeam = false;
         if (!bSkyBlock.getIslands().hasIsland(world, targetPlayer)) {
             // Player may be in a team
@@ -51,7 +52,7 @@ public class LevelPresenter {
             if (!onLevelWaitTime(sender) || levelWait <= 0 || sender.isOp() || sender.hasPermission(permPrefix + "mod.info")) {
                 sender.sendMessage("island.level.calculating");
                 setLevelWaitTime(sender);
-                new LevelCalcByChunk(plugin, bSkyBlock.getIslands().getIsland(world, targetPlayer), targetPlayer, sender, report, permPrefix);
+                new PlayerLevel(addon, bSkyBlock.getIslands().getIsland(world, targetPlayer), targetPlayer, sender);
             } else {
                 // Cooldown
                 sender.sendMessage("island.level.cooldown", "[time]", String.valueOf(getLevelWaitTime(sender)));
@@ -59,14 +60,14 @@ public class LevelPresenter {
 
         } else {
             // Asking for the level of another player
-            sender.sendMessage("island.level.island-level-is","[level]", String.valueOf(plugin.getIslandLevel(world, targetPlayer)));
+            sender.sendMessage("island.level.island-level-is","[level]", String.valueOf(addon.getIslandLevel(world, targetPlayer)));
         }
         return true;
     }
 
     /**
      * Sets cool down for the level command
-     * 
+     *
      * @param player
      */
     private void setLevelWaitTime(final User player) {

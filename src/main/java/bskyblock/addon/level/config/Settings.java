@@ -3,23 +3,20 @@ package bskyblock.addon.level.config;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.material.MaterialData;
 
 import bskyblock.addon.level.Level;
 
 public class Settings {
 
-    private static final boolean DEBUG = false;
     private boolean sumTeamDeaths;
     private int seaHeight;
-    private Map<MaterialData, Integer> blockLimits = new HashMap<>();
-    private Map<MaterialData, Integer> blockValues = new HashMap<>();
-    private Map<World, Map<MaterialData, Integer>> worldBlockValues = new HashMap<>();
+    private Map<Material, Integer> blockLimits = new HashMap<>();
+    private Map<Material, Integer> blockValues = new HashMap<>();
+    private Map<World, Map<Material, Integer>> worldBlockValues = new HashMap<>();
     private double underWaterMultiplier;
     private int deathpenalty;
     private long levelCost;
@@ -30,6 +27,7 @@ public class Settings {
     private boolean teamJoinDeathReset;
 
     public Settings(Level level) {
+
         level.saveDefaultConfig();
 
         setLevelWait(level.getConfig().getInt("levelwait", 60));
@@ -49,14 +47,11 @@ public class Settings {
         }
 
         if (level.getConfig().isSet("limits")) {
-            HashMap<MaterialData, Integer> blockLimits = new HashMap<>();
+            HashMap<Material, Integer> blockLimits = new HashMap<>();
             for (String material : level.getConfig().getConfigurationSection("limits").getKeys(false)) {
                 try {
-                    MaterialData materialData = getMaterialData(material);
-                    blockLimits.put(materialData, level.getConfig().getInt("limits." + material, 0));
-                    if (DEBUG) {
-                        level.getLogger().info("Maximum number of " + materialData + " will be " + blockLimits.get(materialData));
-                    }
+                    Material mat = Material.valueOf(material);
+                    blockLimits.put(mat, level.getConfig().getInt("limits." + material, 0));
                 } catch (Exception e) {
                     level.getLogger().warning("Unknown material (" + material + ") in blockvalues.yml Limits section. Skipping...");
                 }
@@ -64,23 +59,20 @@ public class Settings {
             setBlockLimits(blockLimits);
         }
         if (level.getConfig().isSet("blocks")) {
-            Map<MaterialData, Integer> blockValues = new HashMap<>();
+            Map<Material, Integer> blockValues = new HashMap<>();
             for (String material : level.getConfig().getConfigurationSection("blocks").getKeys(false)) {
 
                 try {
-                    MaterialData materialData = getMaterialData(material);
-                    blockValues.put(materialData, level.getConfig().getInt("blocks." + material, 0));
-                    if (DEBUG) {
-                        level.getLogger().info(materialData.toString() + " value = " + blockValues.get(materialData));
-                    }
+                    Material mat = Material.valueOf(material);
+                    blockValues.put(mat, level.getConfig().getInt("blocks." + material, 0));
                 } catch (Exception e) {
                     // e.printStackTrace();
-                    level.getLogger().warning("Unknown material (" + material + ") in blockvalues.yml blocks section. Skipping...");
+                    level.getLogger().warning("Unknown material (" + material + ") in config.yml blocks section. Skipping...");
                 }
             }
             setBlockValues(blockValues);
         } else {
-            level.getLogger().severe("No block values in blockvalues.yml! All island levels will be zero!");
+            level.getLogger().severe("No block values in config.yml! All island levels will be zero!");
         }
         // Worlds
         if (level.getConfig().isSet("worlds")) {
@@ -90,9 +82,9 @@ public class Settings {
                 if (bWorld != null) {
                     ConfigurationSection worldValues = worlds.getConfigurationSection(world);
                     for (String material : worldValues.getKeys(false)) {
-                        MaterialData materialData = getMaterialData(material);
-                        Map<MaterialData, Integer> values = worldBlockValues.getOrDefault(bWorld, new HashMap<>());
-                        values.put(materialData, worldValues.getInt("blocks." + material, 0));
+                        Material mat = Material.valueOf(material);
+                        Map<Material, Integer> values = worldBlockValues.getOrDefault(bWorld, new HashMap<>());
+                        values.put(mat, worldValues.getInt("blocks." + material, 0));
                         worldBlockValues.put(bWorld, values);
                     }
                 } else {
@@ -101,24 +93,6 @@ public class Settings {
             }
         }
         // All done
-    }
-
-    @SuppressWarnings("deprecation")
-    private MaterialData getMaterialData(String material) {
-        String[] split = material.split(":");
-        byte data = 0;
-        if (split.length>1) {
-            data = Byte.valueOf(split[1]);
-        }
-        MaterialData materialData = null;
-        if (StringUtils.isNumeric(split[0])) {
-            materialData = new MaterialData(Integer.parseInt(split[0]));
-        } else {
-            materialData = new MaterialData(Material.valueOf(split[0].toUpperCase()));
-        }
-
-        materialData.setData(data);
-        return materialData;
     }
 
     /**
@@ -148,25 +122,25 @@ public class Settings {
     /**
      * @return the blockLimits
      */
-    public final Map<MaterialData, Integer> getBlockLimits() {
+    public final Map<Material, Integer> getBlockLimits() {
         return blockLimits;
     }
     /**
-     * @param blockLimits the blockLimits to set
+     * @param blockLimits2 the blockLimits to set
      */
-    public final void setBlockLimits(HashMap<MaterialData, Integer> blockLimits) {
-        this.blockLimits = blockLimits;
+    public final void setBlockLimits(HashMap<Material, Integer> blockLimits2) {
+        this.blockLimits = blockLimits2;
     }
     /**
      * @return the blockValues
      */
-    public final Map<MaterialData, Integer> getBlockValues() {
+    public final Map<Material, Integer> getBlockValues() {
         return blockValues;
     }
     /**
      * @param blockValues2 the blockValues to set
      */
-    public final void setBlockValues(Map<MaterialData, Integer> blockValues2) {
+    public final void setBlockValues(Map<Material, Integer> blockValues2) {
         this.blockValues = blockValues2;
     }
     /**
@@ -269,7 +243,7 @@ public class Settings {
     /**
      * @return the worldBlockValues
      */
-    public Map<World, Map<MaterialData, Integer>> getWorldBlockValues() {
+    public Map<World, Map<Material, Integer>> getWorldBlockValues() {
         return worldBlockValues;
     }
 
