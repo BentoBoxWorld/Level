@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 import com.google.gson.annotations.Expose;
 
-import us.tastybento.bskyblock.database.objects.DataObject;
+import world.bentobox.bbox.database.objects.DataObject;
 
 /**
  * This class stores and sorts the top ten.

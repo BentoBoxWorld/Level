@@ -8,7 +8,7 @@ import org.bukkit.World;
 
 import com.google.gson.annotations.Expose;
 
-import us.tastybento.bskyblock.database.objects.DataObject;
+import world.bentobox.bbox.database.objects.DataObject;
 
 public class LevelsData implements DataObject {
 
@@ -36,7 +36,7 @@ public class LevelsData implements DataObject {
     }
 
     /* (non-Javadoc)
-     * @see us.tastybento.bskyblock.database.objects.DataObject#getUniqueId()
+     * @see world.bentobox.bbox.database.objects.DataObject#getUniqueId()
      */
     @Override
     public String getUniqueId() {
@@ -44,7 +44,7 @@ public class LevelsData implements DataObject {
     }
 
     /* (non-Javadoc)
-     * @see us.tastybento.bskyblock.database.objects.DataObject#setUniqueId(java.lang.String)
+     * @see world.bentobox.bbox.database.objects.DataObject#setUniqueId(java.lang.String)
      */
     @Override
     public void setUniqueId(String uniqueId) {

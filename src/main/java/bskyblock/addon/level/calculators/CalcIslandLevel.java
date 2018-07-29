@@ -20,9 +20,9 @@ import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
 
 import bskyblock.addon.level.Level;
-import us.tastybento.bskyblock.database.objects.Island;
-import us.tastybento.bskyblock.util.Pair;
-import us.tastybento.bskyblock.util.Util;
+import world.bentobox.bbox.database.objects.Island;
+import world.bentobox.bbox.util.Pair;
+import world.bentobox.bbox.util.Util;
 
 
 public class CalcIslandLevel {
@@ -201,7 +201,7 @@ public class CalcIslandLevel {
         // Finalize calculations
         result.rawBlockCount += (long)(result.underWaterBlockCount * addon.getSettings().getUnderWaterMultiplier());
         // Set the death penalty
-        result.deathHandicap = addon.getPlayers().getDeaths(island.getOwner());
+        result.deathHandicap = addon.getPlayers().getDeaths(world, island.getOwner());
         // Set final score
         result.level = (result.rawBlockCount / addon.getSettings().getLevelCost()) - result.deathHandicap - island.getLevelHandicap();
         // Calculate how many points are required to get to the next level

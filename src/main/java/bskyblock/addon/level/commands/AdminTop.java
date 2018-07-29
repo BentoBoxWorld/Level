@@ -7,9 +7,9 @@ import java.util.UUID;
 import org.bukkit.World;
 
 import bskyblock.addon.level.Level;
-import us.tastybento.bskyblock.api.commands.CompositeCommand;
-import us.tastybento.bskyblock.api.user.User;
-import us.tastybento.bskyblock.database.objects.Island;
+import world.bentobox.bbox.api.commands.CompositeCommand;
+import world.bentobox.bbox.api.user.User;
+import world.bentobox.bbox.database.objects.Island;
 
 public class AdminTop extends CompositeCommand {
 

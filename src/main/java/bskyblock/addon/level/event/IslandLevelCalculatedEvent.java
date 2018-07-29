@@ -3,8 +3,8 @@ package bskyblock.addon.level.event;
 import java.util.UUID;
 
 import bskyblock.addon.level.calculators.CalcIslandLevel.Results;
-import us.tastybento.bskyblock.api.events.IslandBaseEvent;
-import us.tastybento.bskyblock.database.objects.Island;
+import world.bentobox.bbox.api.events.IslandBaseEvent;
+import world.bentobox.bbox.database.objects.Island;
 
 /**
  * This event is fired after the island level is calculated and before the results are saved.

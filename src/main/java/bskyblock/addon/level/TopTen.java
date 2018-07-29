@@ -13,16 +13,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.ClickType;
 
 import bskyblock.addon.level.database.object.LevelsData;
 import bskyblock.addon.level.database.object.TopTenData;
-import bskyblock.addon.warps.Warp;
-import us.tastybento.bskyblock.api.panels.PanelItem;
-import us.tastybento.bskyblock.api.panels.builders.PanelBuilder;
-import us.tastybento.bskyblock.api.panels.builders.PanelItemBuilder;
-import us.tastybento.bskyblock.api.user.User;
-import us.tastybento.bskyblock.database.BSBDatabase;
+import world.bentobox.bbox.api.panels.PanelItem;
+import world.bentobox.bbox.api.panels.builders.PanelBuilder;
+import world.bentobox.bbox.api.panels.builders.PanelItemBuilder;
+import world.bentobox.bbox.api.user.User;
+import world.bentobox.bbox.database.BSBDatabase;
 
 /**
  * Handles all Top Ten List functions
@@ -172,6 +170,7 @@ public class TopTen implements Listener {
                 .description(description);
 
         // If welcome warps is present then add warping
+        /*
         addon.getAddonByName("BSkyBlock-WelcomeWarps").ifPresent(warp -> {
 
             if (((Warp)warp).getWarpSignsManager().hasWarp(world, playerUUID)) {
@@ -183,7 +182,7 @@ public class TopTen implements Listener {
                     return true;
                 });
             }
-        });
+        });*/
         return builder.build();
     }
 

@@ -13,11 +13,11 @@ import bskyblock.addon.level.commands.IslandTop;
 import bskyblock.addon.level.config.Settings;
 import bskyblock.addon.level.database.object.LevelsData;
 import bskyblock.addon.level.listeners.NewIslandListener;
-import us.tastybento.bskyblock.api.addons.Addon;
-import us.tastybento.bskyblock.api.commands.CompositeCommand;
-import us.tastybento.bskyblock.api.user.User;
-import us.tastybento.bskyblock.database.BSBDatabase;
-import us.tastybento.bskyblock.database.objects.Island;
+import world.bentobox.bbox.api.addons.Addon;
+import world.bentobox.bbox.api.commands.CompositeCommand;
+import world.bentobox.bbox.api.user.User;
+import world.bentobox.bbox.database.BSBDatabase;
+import world.bentobox.bbox.database.objects.Island;
 
 
 /**
@@ -106,7 +106,7 @@ public class Level extends Addon {
         // Initialize the cache
         levelsCache = new HashMap<>();
         // Load the calculator
-        levelCalc = new LevelPresenter(this, getBSkyBlock());
+        levelCalc = new LevelPresenter(this, this.getBSkyBlock());
         // Start the top ten and register it for clicks
         topTen = new TopTen(this);
         registerListener(topTen);
@@ -115,20 +115,27 @@ public class Level extends Addon {
         getServer().getScheduler().runTask(getBSkyBlock(), () -> {
             this.getBSkyBlock().getAddonsManager().getAddonByName("AcidIsland").ifPresent(a -> {
                 CompositeCommand acidIslandCmd = getBSkyBlock().getCommandsManager().getCommand("ai");
-                new IslandLevel(this, acidIslandCmd);
-                new IslandTop(this, acidIslandCmd);
-                CompositeCommand acidCmd = getBSkyBlock().getCommandsManager().getCommand("acid");
-                new AdminLevel(this, acidCmd);
-                new AdminTop(this, acidCmd);
+                if (acidIslandCmd != null) {
+                    new IslandLevel(this, acidIslandCmd);
+                    new IslandTop(this, acidIslandCmd);
+                    CompositeCommand acidCmd = getBSkyBlock().getCommandsManager().getCommand("acid");
+                    new AdminLevel(this, acidCmd);
+                    new AdminTop(this, acidCmd);
+                }
+            });
+            // BSkyBlock hook in
+            this.getBSkyBlock().getAddonsManager().getAddonByName("BSkyBlock").ifPresent(a -> {
+                CompositeCommand bsbIslandCmd = getBSkyBlock().getCommandsManager().getCommand("island");
+                if (bsbIslandCmd != null) {
+                    new IslandLevel(this, bsbIslandCmd);
+                    new IslandTop(this, bsbIslandCmd);
+                    CompositeCommand bsbAdminCmd = getBSkyBlock().getCommandsManager().getCommand("bsbadmin");
+                    new AdminLevel(this, bsbAdminCmd);
+                    new AdminTop(this, bsbAdminCmd);
+                }
             });
         });
-        // BSkyBlock hook in
-        CompositeCommand bsbIslandCmd = getBSkyBlock().getCommandsManager().getCommand("island");
-        new IslandLevel(this, bsbIslandCmd);
-        new IslandTop(this, bsbIslandCmd);
-        CompositeCommand bsbAdminCmd = getBSkyBlock().getCommandsManager().getCommand("bsbadmin");
-        new AdminLevel(this, bsbAdminCmd);
-        new AdminTop(this, bsbAdminCmd);
+
         // Register new island listener
         registerListener(new NewIslandListener(this));
         // Done

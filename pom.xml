@@ -47,9 +47,10 @@
             <scope>provided</scope>
         </dependency>
 		<dependency>
-			<groupId>us.tastybento</groupId>
-			<artifactId>bskyblock</artifactId>
+			<groupId>world.bentobox</groupId>
+			<artifactId>bentobox</artifactId>
 			<version>LATEST</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>bskyblock.addon</groupId>
