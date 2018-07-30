@@ -63,7 +63,7 @@ public class TopTen implements Listener {
         Player player = addon.getServer().getPlayer(ownerUUID);
         if (player != null) {
             // Online
-            if (!player.hasPermission(addon.getBSkyBlock().getIWM().getPermissionPrefix(world) + ".intopten")) {
+            if (!player.hasPermission(addon.getPlugin().getIWM().getPermissionPrefix(world) + ".intopten")) {
                 topTenList.get(world).remove(ownerUUID);
                 return;
             }

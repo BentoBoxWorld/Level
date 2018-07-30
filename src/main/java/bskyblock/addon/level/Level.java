@@ -92,7 +92,7 @@ public class Level extends Addon {
     @Override
     public void onEnable() {
         // Check if it is enabled - it might be loaded, but not enabled.
-        if (getBSkyBlock() == null || !getBSkyBlock().isEnabled()) {
+        if (getPlugin() == null || !getPlugin().isEnabled()) {
             getLogger().severe("BSkyBlock does not exist or is not enabled. Stopping.");
             this.setEnabled(false);
             return;
@@ -106,30 +106,30 @@ public class Level extends Addon {
         // Initialize the cache
         levelsCache = new HashMap<>();
         // Load the calculator
-        levelCalc = new LevelPresenter(this, this.getBSkyBlock());
+        levelCalc = new LevelPresenter(this, this.getPlugin());
         // Start the top ten and register it for clicks
         topTen = new TopTen(this);
         registerListener(topTen);
         // Register commands - run one tick later to allow all addons to load
         // AcidIsland hook in
-        getServer().getScheduler().runTask(getBSkyBlock(), () -> {
-            this.getBSkyBlock().getAddonsManager().getAddonByName("AcidIsland").ifPresent(a -> {
-                CompositeCommand acidIslandCmd = getBSkyBlock().getCommandsManager().getCommand("ai");
+        getServer().getScheduler().runTask(getPlugin(), () -> {
+            this.getPlugin().getAddonsManager().getAddonByName("AcidIsland").ifPresent(a -> {
+                CompositeCommand acidIslandCmd = getPlugin().getCommandsManager().getCommand("ai");
                 if (acidIslandCmd != null) {
                     new IslandLevel(this, acidIslandCmd);
                     new IslandTop(this, acidIslandCmd);
-                    CompositeCommand acidCmd = getBSkyBlock().getCommandsManager().getCommand("acid");
+                    CompositeCommand acidCmd = getPlugin().getCommandsManager().getCommand("acid");
                     new AdminLevel(this, acidCmd);
                     new AdminTop(this, acidCmd);
                 }
             });
             // BSkyBlock hook in
-            this.getBSkyBlock().getAddonsManager().getAddonByName("BSkyBlock").ifPresent(a -> {
-                CompositeCommand bsbIslandCmd = getBSkyBlock().getCommandsManager().getCommand("island");
+            this.getPlugin().getAddonsManager().getAddonByName("BSkyBlock").ifPresent(a -> {
+                CompositeCommand bsbIslandCmd = getPlugin().getCommandsManager().getCommand("island");
                 if (bsbIslandCmd != null) {
                     new IslandLevel(this, bsbIslandCmd);
                     new IslandTop(this, bsbIslandCmd);
-                    CompositeCommand bsbAdminCmd = getBSkyBlock().getCommandsManager().getCommand("bsbadmin");
+                    CompositeCommand bsbAdminCmd = getPlugin().getCommandsManager().getCommand("bsbadmin");
                     new AdminLevel(this, bsbAdminCmd);
                     new AdminTop(this, bsbAdminCmd);
                 }
@@ -149,7 +149,7 @@ public class Level extends Addon {
     public void save(boolean async){
         Runnable save = () -> levelsCache.values().forEach(handler::saveObject);
         if(async){
-            getServer().getScheduler().runTaskAsynchronously(getBSkyBlock(), save);
+            getServer().getScheduler().runTaskAsynchronously(getPlugin(), save);
         } else {
             save.run();
         }

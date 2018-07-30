@@ -68,7 +68,7 @@ public class CalcIslandLevel {
         checking = true;
 
         // Start a recurring task until done or cancelled
-        task = addon.getServer().getScheduler().runTaskTimer(addon.getBSkyBlock(), () -> {
+        task = addon.getServer().getScheduler().runTaskTimer(addon.getPlugin(), () -> {
             Set<ChunkSnapshot> chunkSnapshot = new HashSet<>();
             if (checking) {
                 Iterator<Pair<Integer, Integer>> it = chunksToScan.iterator();
@@ -98,7 +98,7 @@ public class CalcIslandLevel {
 
     private void checkChunksAsync(final Set<ChunkSnapshot> chunkSnapshot) {
         // Run async task to scan chunks
-        addon.getServer().getScheduler().runTaskAsynchronously(addon.getBSkyBlock(), () -> {
+        addon.getServer().getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
             for (ChunkSnapshot chunk: chunkSnapshot) {
                 scanChunk(chunk);
             }
@@ -212,7 +212,7 @@ public class CalcIslandLevel {
         result.report = getReport();
         // All done.
         if (onExit != null) {
-            Bukkit.getScheduler().runTask(addon.getBSkyBlock(), onExit);
+            Bukkit.getScheduler().runTask(addon.getPlugin(), onExit);
         }
     }
 
@@ -220,7 +220,7 @@ public class CalcIslandLevel {
     private List<String> getReport() {
         List<String> reportLines = new ArrayList<>();
         // provide counts
-        reportLines.add("Level Log for island in " + addon.getBSkyBlock().getIWM().getFriendlyName(island.getWorld()) + " at " + Util.xyz(island.getCenter().toVector()));
+        reportLines.add("Level Log for island in " + addon.getPlugin().getIWM().getFriendlyName(island.getWorld()) + " at " + Util.xyz(island.getCenter().toVector()));
         reportLines.add("Island owner UUID = " + island.getOwner());
         reportLines.add("Total block value count = " + String.format("%,d",result.rawBlockCount));
         reportLines.add("Level cost = " + addon.getSettings().getLevelCost());
