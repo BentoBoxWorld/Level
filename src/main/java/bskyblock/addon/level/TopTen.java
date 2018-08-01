@@ -16,11 +16,11 @@ import org.bukkit.event.Listener;
 
 import bskyblock.addon.level.database.object.LevelsData;
 import bskyblock.addon.level.database.object.TopTenData;
-import world.bentobox.bbox.api.panels.PanelItem;
-import world.bentobox.bbox.api.panels.builders.PanelBuilder;
-import world.bentobox.bbox.api.panels.builders.PanelItemBuilder;
-import world.bentobox.bbox.api.user.User;
-import world.bentobox.bbox.database.BSBDatabase;
+import world.bentobox.bentobox.api.panels.PanelItem;
+import world.bentobox.bentobox.api.panels.builders.PanelBuilder;
+import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;
+import world.bentobox.bentobox.api.user.User;
+import world.bentobox.bentobox.database.BSBDatabase;
 
 /**
  * Handles all Top Ten List functions

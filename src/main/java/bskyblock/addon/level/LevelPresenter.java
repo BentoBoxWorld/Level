@@ -7,8 +7,8 @@ import java.util.UUID;
 import org.bukkit.World;
 
 import bskyblock.addon.level.calculators.PlayerLevel;
-import world.bentobox.bbox.BentoBox;
-import world.bentobox.bbox.api.user.User;
+import world.bentobox.bentobox.BentoBox;
+import world.bentobox.bentobox.api.user.User;
 
 public class LevelPresenter {
 

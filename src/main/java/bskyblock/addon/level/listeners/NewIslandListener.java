@@ -9,9 +9,9 @@ import org.bukkit.event.Listener;
 
 import bskyblock.addon.level.Level;
 import bskyblock.addon.level.calculators.CalcIslandLevel;
-import world.bentobox.bbox.api.events.island.IslandEvent.IslandCreatedEvent;
-import world.bentobox.bbox.api.events.island.IslandEvent.IslandResettedEvent;
-import world.bentobox.bbox.database.objects.Island;
+import world.bentobox.bentobox.api.events.island.IslandEvent.IslandCreatedEvent;
+import world.bentobox.bentobox.api.events.island.IslandEvent.IslandResettedEvent;
+import world.bentobox.bentobox.database.objects.Island;
 
 /**
  * Listens for new islands and sets the level to zero automatically

@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.UUID;
 
 import bskyblock.addon.level.Level;
-import world.bentobox.bbox.api.commands.CompositeCommand;
-import world.bentobox.bbox.api.user.User;
+import world.bentobox.bentobox.api.commands.CompositeCommand;
+import world.bentobox.bentobox.api.user.User;
 
 public class AdminLevel extends CompositeCommand {
 

@@ -7,9 +7,9 @@ import java.util.UUID;
 import org.bukkit.World;
 
 import bskyblock.addon.level.Level;
-import world.bentobox.bbox.api.commands.CompositeCommand;
-import world.bentobox.bbox.api.user.User;
-import world.bentobox.bbox.database.objects.Island;
+import world.bentobox.bentobox.api.commands.CompositeCommand;
+import world.bentobox.bentobox.api.user.User;
+import world.bentobox.bentobox.database.objects.Island;
 
 public class AdminTop extends CompositeCommand {
 

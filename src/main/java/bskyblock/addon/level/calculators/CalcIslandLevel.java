@@ -20,9 +20,9 @@ import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
 
 import bskyblock.addon.level.Level;
-import world.bentobox.bbox.database.objects.Island;
-import world.bentobox.bbox.util.Pair;
-import world.bentobox.bbox.util.Util;
+import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.bentobox.util.Pair;
+import world.bentobox.bentobox.util.Util;
 
 
 public class CalcIslandLevel {

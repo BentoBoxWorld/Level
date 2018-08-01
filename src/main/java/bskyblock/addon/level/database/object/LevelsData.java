@@ -8,7 +8,7 @@ import org.bukkit.World;
 
 import com.google.gson.annotations.Expose;
 
-import world.bentobox.bbox.database.objects.DataObject;
+import world.bentobox.bentobox.database.objects.DataObject;
 
 public class LevelsData implements DataObject {
 

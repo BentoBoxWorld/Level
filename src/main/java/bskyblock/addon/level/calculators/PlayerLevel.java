@@ -8,8 +8,8 @@ import bskyblock.addon.level.Level;
 import bskyblock.addon.level.calculators.CalcIslandLevel.Results;
 import bskyblock.addon.level.event.IslandLevelCalculatedEvent;
 import bskyblock.addon.level.event.IslandPreLevelEvent;
-import world.bentobox.bbox.api.user.User;
-import world.bentobox.bbox.database.objects.Island;
+import world.bentobox.bentobox.api.user.User;
+import world.bentobox.bentobox.database.objects.Island;
 
 
 /**
