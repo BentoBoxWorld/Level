@@ -1,28 +1,38 @@
-package bskyblock.addin.level.database.object;
+package bskyblock.addon.level.database.object;
 
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import us.tastybento.bskyblock.database.objects.DataObject;
+import com.google.gson.annotations.Expose;
+
+import world.bentobox.bentobox.database.objects.DataObject;
 
 /**
  * This class stores and sorts the top ten.
  * @author ben
  *
  */
-public class TopTenList extends DataObject {
+public class TopTenData implements DataObject {
     
-    private String uniqueId = "topten";
-    private HashMap<UUID, Long> topTen = new HashMap<>();
+    // UniqueId is the world name
+    @Expose
+    private String uniqueId = "";
+    @Expose
+    private Map<UUID, Long> topTen = new LinkedHashMap<>();
+    
+    public TopTenData() {}
 
-    public HashMap<UUID, Long> getTopTen() {
-        return topTen;
+    public Map<UUID, Long> getTopTen() {
+        return topTen.entrySet().stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).limit(10)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
     }
 
-    public void setTopTen(HashMap<UUID, Long> topTen) {
+    public void setTopTen(Map<UUID, Long> topTen) {
         this.topTen = topTen;
     }
 
@@ -43,7 +53,6 @@ public class TopTenList extends DataObject {
      */
     public void addLevel(UUID uuid, Long level) {
         this.topTen.put(uuid, level);
-        sortTopTen();
     }
     
     /**
@@ -65,13 +74,4 @@ public class TopTenList extends DataObject {
         this.topTen.remove(ownerUUID);        
     }
     
-    /**
-     * Sorts the top ten and limits it to 10 entries
-     */
-    void sortTopTen() {
-        topTen = (HashMap<UUID, Long>) topTen.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey(Comparator.reverseOrder()))
-                .limit(10)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
 }

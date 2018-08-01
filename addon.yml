@@ -1,0 +1,37 @@
+name: BSkyBlock-Level
+main: bskyblock.addon.level.Level
+version: 0.1
+
+authors: tastybento
+
+permissions:    
+  bskyblock.intopten:
+    description: Player is in the top ten.
+    default: true
+  bskyblock.island.level:
+    description: Player can use level command
+    default: true
+  bskyblock.island.top:
+    description: Player can use top ten command
+    default: true
+  bskyblock.admin.level:
+    description: Player can use admin level command
+    default: true
+  bskyblock.admin.topten:
+    description: Player can use admin top ten command
+    default: true
+  acidisland.intopten:
+    description: Player is in the top ten.
+    default: true
+  acidisland.island.level:
+    description: Player can use level command
+    default: true
+  acidisland.island.top:
+    description: Player can use top ten command
+    default: true
+  acidisland.admin.level:
+    description: Player can use admin level command
+    default: true
+  acidisland.admin.topten:
+    description: Player can use admin top ten command
+    default: true
