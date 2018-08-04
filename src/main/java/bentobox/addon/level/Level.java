@@ -12,6 +12,7 @@ import bentobox.addon.level.commands.IslandLevel;
 import bentobox.addon.level.commands.IslandTop;
 import bentobox.addon.level.config.Settings;
 import bentobox.addon.level.database.object.LevelsData;
+import bentobox.addon.level.listeners.JoinLeaveListener;
 import bentobox.addon.level.listeners.NewIslandListener;
 import world.bentobox.bentobox.api.addons.Addon;
 import world.bentobox.bentobox.api.commands.CompositeCommand;
@@ -62,9 +63,18 @@ public class Level extends Addon {
         return ld == null ? 0L : ld.getLevel(world);
     }
 
-    private LevelsData getLevelsData(UUID targetPlayer) {
-        // Load player
-        return levelsCache.getOrDefault(targetPlayer, handler.loadObject(targetPlayer.toString()));
+    /**
+     * Load a player from the cache or database
+     * @param targetPlayer - UUID of target player
+     * @return LevelsData object or null if not found
+     */
+    public LevelsData getLevelsData(UUID targetPlayer) {
+        // Get from database if not in cache
+        if (!levelsCache.containsKey(targetPlayer) && handler.objectExists(targetPlayer.toString())) {
+            levelsCache.put(targetPlayer, handler.loadObject(targetPlayer.toString()));
+        }
+        // Return cached value or null
+        return levelsCache.get(targetPlayer);
     }
 
     /**
@@ -138,6 +148,7 @@ public class Level extends Addon {
 
         // Register new island listener
         registerListener(new NewIslandListener(this));
+        registerListener(new JoinLeaveListener(this));
         // Done
 
     }
@@ -147,12 +158,8 @@ public class Level extends Addon {
      * @param async - if true, saving will be done async
      */
     public void save(boolean async){
-        Runnable save = () -> levelsCache.values().forEach(handler::saveObject);
-        if(async){
-            getServer().getScheduler().runTaskAsynchronously(getPlugin(), save);
-        } else {
-            save.run();
-        }
+        // No async for now
+        levelsCache.values().forEach(handler::saveObject);
     }
 
     /**
@@ -186,6 +193,13 @@ public class Level extends Addon {
 
     public BSBDatabase<LevelsData> getHandler() {
         return handler;
+    }
+
+    public void uncachePlayer(UUID uniqueId) {
+        if (levelsCache.containsKey(uniqueId)) {
+            handler.saveObject(levelsCache.get(uniqueId));
+        }
+        levelsCache.remove(uniqueId);
     }
 
 }
