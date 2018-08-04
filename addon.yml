@@ -1,5 +1,5 @@
-name: BSkyBlock-Level
-main: bskyblock.addon.level.Level
+name: BentoBox-Level
+main: bentobox.addon.level.Level
 version: 0.1
 
 authors: tastybento

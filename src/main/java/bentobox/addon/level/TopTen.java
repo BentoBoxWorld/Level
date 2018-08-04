@@ -1,4 +1,4 @@
-package bskyblock.addon.level;
+package bentobox.addon.level;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,8 +14,8 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 
-import bskyblock.addon.level.database.object.LevelsData;
-import bskyblock.addon.level.database.object.TopTenData;
+import bentobox.addon.level.database.object.LevelsData;
+import bentobox.addon.level.database.object.TopTenData;
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.builders.PanelBuilder;
 import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;

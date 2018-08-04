@@ -1,4 +1,4 @@
-package bskyblock.addon.level.database.object;
+package bentobox.addon.level.database.object;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;

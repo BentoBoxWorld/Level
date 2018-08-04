@@ -1,4 +1,4 @@
-package bskyblock.addon.level;
+package bentobox.addon.level;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.bukkit.World;
 
-import bskyblock.addon.level.calculators.PlayerLevel;
+import bentobox.addon.level.calculators.PlayerLevel;
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.user.User;
 

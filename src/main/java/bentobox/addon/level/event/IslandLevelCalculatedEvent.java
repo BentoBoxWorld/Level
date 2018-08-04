@@ -1,8 +1,8 @@
-package bskyblock.addon.level.event;
+package bentobox.addon.level.event;
 
 import java.util.UUID;
 
-import bskyblock.addon.level.calculators.CalcIslandLevel.Results;
+import bentobox.addon.level.calculators.CalcIslandLevel.Results;
 import world.bentobox.bentobox.api.events.IslandBaseEvent;
 import world.bentobox.bentobox.database.objects.Island;
 

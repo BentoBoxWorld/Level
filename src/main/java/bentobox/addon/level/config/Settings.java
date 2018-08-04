@@ -1,4 +1,4 @@
-package bskyblock.addon.level.config;
+package bentobox.addon.level.config;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,7 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 
-import bskyblock.addon.level.Level;
+import bentobox.addon.level.Level;
 
 public class Settings {
 

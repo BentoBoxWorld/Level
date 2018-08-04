@@ -1,4 +1,4 @@
-package bskyblock.addon.level;
+package bentobox.addon.level;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,13 +6,13 @@ import java.util.UUID;
 
 import org.bukkit.World;
 
-import bskyblock.addon.level.commands.AdminLevel;
-import bskyblock.addon.level.commands.AdminTop;
-import bskyblock.addon.level.commands.IslandLevel;
-import bskyblock.addon.level.commands.IslandTop;
-import bskyblock.addon.level.config.Settings;
-import bskyblock.addon.level.database.object.LevelsData;
-import bskyblock.addon.level.listeners.NewIslandListener;
+import bentobox.addon.level.commands.AdminLevel;
+import bentobox.addon.level.commands.AdminTop;
+import bentobox.addon.level.commands.IslandLevel;
+import bentobox.addon.level.commands.IslandTop;
+import bentobox.addon.level.config.Settings;
+import bentobox.addon.level.database.object.LevelsData;
+import bentobox.addon.level.listeners.NewIslandListener;
 import world.bentobox.bentobox.api.addons.Addon;
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.user.User;
@@ -93,7 +93,7 @@ public class Level extends Addon {
     public void onEnable() {
         // Check if it is enabled - it might be loaded, but not enabled.
         if (getPlugin() == null || !getPlugin().isEnabled()) {
-            getLogger().severe("BSkyBlock does not exist or is not enabled. Stopping.");
+            getLogger().severe("BentoBox does not exist or is not enabled. Stopping.");
             this.setEnabled(false);
             return;
         }

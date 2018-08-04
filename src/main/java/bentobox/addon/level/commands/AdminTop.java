@@ -1,4 +1,4 @@
-package bskyblock.addon.level.commands;
+package bentobox.addon.level.commands;
 
 import java.util.List;
 import java.util.Map.Entry;
@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.bukkit.World;
 
-import bskyblock.addon.level.Level;
+import bentobox.addon.level.Level;
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;

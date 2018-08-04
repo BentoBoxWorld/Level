@@ -1,4 +1,4 @@
-package bskyblock.addon.level.event;
+package bentobox.addon.level.event;
 
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;

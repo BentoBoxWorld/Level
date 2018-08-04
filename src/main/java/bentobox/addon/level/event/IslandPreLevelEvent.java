@@ -1,4 +1,4 @@
-package bskyblock.addon.level.event;
+package bentobox.addon.level.event;
 
 import java.util.UUID;
 
