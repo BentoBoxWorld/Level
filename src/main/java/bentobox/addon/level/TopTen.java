@@ -20,7 +20,7 @@ import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.builders.PanelBuilder;
 import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;
 import world.bentobox.bentobox.api.user.User;
-import world.bentobox.bentobox.database.BSBDatabase;
+import world.bentobox.bentobox.database.BBDatabase;
 
 /**
  * Handles all Top Ten List functions
@@ -34,13 +34,13 @@ public class TopTen implements Listener {
     private Map<World,TopTenData> topTenList;
     private final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
     private final boolean DEBUG = false;
-    private BSBDatabase<TopTenData> handler;
+    private BBDatabase<TopTenData> handler;
 
     public TopTen(Level addon) {
         this.addon = addon;
         // Set up the database handler to store and retrieve the TopTenList class
         // Note that these are saved in the BSkyBlock database
-        handler = new BSBDatabase<>(addon, TopTenData.class);
+        handler = new BBDatabase<>(addon, TopTenData.class);
         loadTopTen();
     }
 
@@ -78,7 +78,7 @@ public class TopTen implements Listener {
      */
     public void create(String permPrefix) {
         // Obtain all the levels for each known player
-        BSBDatabase<LevelsData> levelHandler = addon.getHandler();
+        BBDatabase<LevelsData> levelHandler = addon.getHandler();
         long index = 0;
         for (LevelsData lv : levelHandler.loadObjects()) {
             if (index++ % 1000 == 0) {
