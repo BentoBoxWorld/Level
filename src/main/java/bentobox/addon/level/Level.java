@@ -17,7 +17,7 @@ import bentobox.addon.level.listeners.NewIslandListener;
 import world.bentobox.bentobox.api.addons.Addon;
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.user.User;
-import world.bentobox.bentobox.database.BBDatabase;
+import world.bentobox.bentobox.database.Database;
 import world.bentobox.bentobox.database.objects.Island;
 
 
@@ -32,7 +32,7 @@ public class Level extends Addon {
     private Settings settings;
 
     // Database handler for level data
-    private BBDatabase<LevelsData> handler;
+    private Database<LevelsData> handler;
 
     // A cache of island levels.
     private Map<UUID, LevelsData> levelsCache;
@@ -112,7 +112,7 @@ public class Level extends Addon {
         // Get the BSkyBlock database
         // Set up the database handler to store and retrieve Island classes
         // Note that these are saved by the BSkyBlock database
-        handler = new BBDatabase<>(this, LevelsData.class);
+        handler = new Database<>(this, LevelsData.class);
         // Initialize the cache
         levelsCache = new HashMap<>();
         // Load the calculator
@@ -191,7 +191,7 @@ public class Level extends Addon {
     }
 
 
-    public BBDatabase<LevelsData> getHandler() {
+    public Database<LevelsData> getHandler() {
         return handler;
     }
 
