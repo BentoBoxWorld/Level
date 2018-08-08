@@ -101,12 +101,6 @@ public class Level extends Addon {
 
     @Override
     public void onEnable() {
-        // Check if it is enabled - it might be loaded, but not enabled.
-        if (getPlugin() == null || !getPlugin().isEnabled()) {
-            getLogger().severe("BentoBox does not exist or is not enabled. Stopping.");
-            this.setEnabled(false);
-            return;
-        }
         // Load the plugin's config
         settings = new Settings(this);
         // Get the BSkyBlock database
