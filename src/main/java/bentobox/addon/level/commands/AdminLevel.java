@@ -40,7 +40,7 @@ public class AdminLevel extends CompositeCommand {
     public void setup() {
         this.setPermission("admin.level");
         this.setOnlyPlayer(false);
-        this.setParameters("admin.level.parameters");
+        this.setParametersHelp("admin.level.parameters");
         this.setDescription("admin.level.description");
 
     }
