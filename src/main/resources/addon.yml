@@ -2,6 +2,8 @@ name: BentoBox-Level
 main: bentobox.addon.level.Level
 version: 0.1
 
+softdepend: AcidIsland, BSkyBlock
+
 authors: tastybento
 
 permissions:    

@@ -114,30 +114,28 @@ public class Level extends Addon {
         // Start the top ten and register it for clicks
         topTen = new TopTen(this);
         registerListener(topTen);
-        // Register commands - run one tick later to allow all addons to load
+        // Register commands
         // AcidIsland hook in
-        getServer().getScheduler().runTask(getPlugin(), () -> {
-            this.getPlugin().getAddonsManager().getAddonByName("AcidIsland").ifPresent(a -> {
-                CompositeCommand acidIslandCmd = getPlugin().getCommandsManager().getCommand("ai");
-                if (acidIslandCmd != null) {
-                    new IslandLevel(this, acidIslandCmd);
-                    new IslandTop(this, acidIslandCmd);
-                    CompositeCommand acidCmd = getPlugin().getCommandsManager().getCommand("acid");
-                    new AdminLevel(this, acidCmd);
-                    new AdminTop(this, acidCmd);
-                }
-            });
-            // BSkyBlock hook in
-            this.getPlugin().getAddonsManager().getAddonByName("BSkyBlock").ifPresent(a -> {
-                CompositeCommand bsbIslandCmd = getPlugin().getCommandsManager().getCommand("island");
-                if (bsbIslandCmd != null) {
-                    new IslandLevel(this, bsbIslandCmd);
-                    new IslandTop(this, bsbIslandCmd);
-                    CompositeCommand bsbAdminCmd = getPlugin().getCommandsManager().getCommand("bsbadmin");
-                    new AdminLevel(this, bsbAdminCmd);
-                    new AdminTop(this, bsbAdminCmd);
-                }
-            });
+        this.getPlugin().getAddonsManager().getAddonByName("AcidIsland").ifPresent(a -> {
+            CompositeCommand acidIslandCmd = getPlugin().getCommandsManager().getCommand("ai");
+            if (acidIslandCmd != null) {
+                new IslandLevel(this, acidIslandCmd);
+                new IslandTop(this, acidIslandCmd);
+                CompositeCommand acidCmd = getPlugin().getCommandsManager().getCommand("acid");
+                new AdminLevel(this, acidCmd);
+                new AdminTop(this, acidCmd);
+            }
+        });
+        // BSkyBlock hook in
+        this.getPlugin().getAddonsManager().getAddonByName("BSkyBlock").ifPresent(a -> {
+            CompositeCommand bsbIslandCmd = getPlugin().getCommandsManager().getCommand("island");
+            if (bsbIslandCmd != null) {
+                new IslandLevel(this, bsbIslandCmd);
+                new IslandTop(this, bsbIslandCmd);
+                CompositeCommand bsbAdminCmd = getPlugin().getCommandsManager().getCommand("bsbadmin");
+                new AdminLevel(this, bsbAdminCmd);
+                new AdminTop(this, bsbAdminCmd);
+            }
         });
 
         // Register new island listener
