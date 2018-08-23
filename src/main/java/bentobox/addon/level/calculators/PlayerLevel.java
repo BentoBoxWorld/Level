@@ -71,7 +71,7 @@ public class PlayerLevel {
             }
             // Send player how many points are required to reach next island level
             if (results.getPointsToNextLevel() >= 0) {
-                asker.sendMessage("island.level.required-points-to-next-level", "[points]", String.valueOf(addon.getIslandLevel(world, targetPlayer)));
+                asker.sendMessage("island.level.required-points-to-next-level", "[points]", String.valueOf(results.getPointsToNextLevel()));
             }
             // Tell other team members
             if (addon.getIslandLevel(world, targetPlayer) != oldLevel) {

@@ -207,9 +207,7 @@ public class CalcIslandLevel {
         // Set final score
         result.level = (result.rawBlockCount / addon.getSettings().getLevelCost()) - result.deathHandicap - island.getLevelHandicap();
         // Calculate how many points are required to get to the next level
-        result.pointsToNextLevel = (addon.getSettings().getLevelCost() * (result.level + 1 + island.getLevelHandicap())) - (result.rawBlockCount - (result.deathHandicap * addon.getSettings().getDeathPenalty()));
-        // Sometimes it will return 0, so calculate again to make sure it will display a good value
-        if(result.pointsToNextLevel == 0) result.pointsToNextLevel = (addon.getSettings().getLevelCost() * (result.level + 2 + island.getLevelHandicap()) - (result.rawBlockCount - (result.deathHandicap * addon.getSettings().getDeathPenalty())));
+        result.pointsToNextLevel = addon.getSettings().getLevelCost() - (result.rawBlockCount % addon.getSettings().getLevelCost());
         // Report
         result.report = getReport();
         // All done.
