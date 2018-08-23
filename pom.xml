@@ -81,7 +81,7 @@
 		</dependency>
 		<dependency>
 			<groupId>us.tastybento</groupId>
-			<artifactId>addon-acidisland</artifactId>
+			<artifactId>AcidIsland</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
