@@ -2,7 +2,7 @@ language: java
 sudo: false
 addons:
     sonarcloud:
-        organization: "bentobox-world"
+        organization: "tastybento-github"
         token:
             secure: $SONAR_TOKEN
         branches:
