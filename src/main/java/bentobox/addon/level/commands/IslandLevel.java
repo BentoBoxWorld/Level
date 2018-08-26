@@ -22,7 +22,6 @@ public class IslandLevel extends CompositeCommand {
             // Asking for another player's level?
             // Convert name to a UUID
             final UUID playerUUID = getPlugin().getPlayers().getUUID(args.get(0));
-            //getLogger().info("DEBUG: console player info UUID = " + playerUUID);
             if (playerUUID == null) {
                 user.sendMessage("general.errors.unknown-player");
                 return true;

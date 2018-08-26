@@ -47,30 +47,29 @@ public class Settings {
         }
 
         if (level.getConfig().isSet("limits")) {
-            HashMap<Material, Integer> blockLimits = new HashMap<>();
+            HashMap<Material, Integer> bl = new HashMap<>();
             for (String material : level.getConfig().getConfigurationSection("limits").getKeys(false)) {
                 try {
                     Material mat = Material.valueOf(material);
-                    blockLimits.put(mat, level.getConfig().getInt("limits." + material, 0));
+                    bl.put(mat, level.getConfig().getInt("limits." + material, 0));
                 } catch (Exception e) {
-                    level.getLogger().warning("Unknown material (" + material + ") in blockvalues.yml Limits section. Skipping...");
+                    level.getLogger().warning(() -> "Unknown material (" + material + ") in blockvalues.yml Limits section. Skipping...");
                 }
             }
-            setBlockLimits(blockLimits);
+            setBlockLimits(bl);
         }
         if (level.getConfig().isSet("blocks")) {
-            Map<Material, Integer> blockValues = new HashMap<>();
+            Map<Material, Integer> bv = new HashMap<>();
             for (String material : level.getConfig().getConfigurationSection("blocks").getKeys(false)) {
 
                 try {
                     Material mat = Material.valueOf(material);
-                    blockValues.put(mat, level.getConfig().getInt("blocks." + material, 0));
+                    bv.put(mat, level.getConfig().getInt("blocks." + material, 0));
                 } catch (Exception e) {
-                    // e.printStackTrace();
-                    level.getLogger().warning("Unknown material (" + material + ") in config.yml blocks section. Skipping...");
+                    level.getLogger().warning(()-> "Unknown material (" + material + ") in config.yml blocks section. Skipping...");
                 }
             }
-            setBlockValues(blockValues);
+            setBlockValues(bv);
         } else {
             level.getLogger().severe("No block values in config.yml! All island levels will be zero!");
         }
@@ -88,7 +87,7 @@ public class Settings {
                         worldBlockValues.put(bWorld, values);
                     }
                 } else {
-                    level.getLogger().severe("Level Addon: No such world : " + world);
+                    level.getLogger().severe(() -> "Level Addon: No such world : " + world);
                 }
             }
         }

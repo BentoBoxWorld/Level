@@ -14,7 +14,6 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 
-import bentobox.addon.level.database.object.LevelsData;
 import bentobox.addon.level.database.object.TopTenData;
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.builders.PanelBuilder;
@@ -33,7 +32,6 @@ public class TopTen implements Listener {
     // Top ten list of players
     private Map<World,TopTenData> topTenList;
     private final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
-    private final boolean DEBUG = false;
     private Database<TopTenData> handler;
 
     public TopTen(Level addon) {
@@ -61,35 +59,11 @@ public class TopTen implements Listener {
 
         // Try and see if the player is online
         Player player = addon.getServer().getPlayer(ownerUUID);
-        if (player != null) {
-            // Online
-            if (!player.hasPermission(addon.getPlugin().getIWM().getPermissionPrefix(world) + ".intopten")) {
-                topTenList.get(world).remove(ownerUUID);
-                return;
-            }
+        if (player != null && !player.hasPermission(addon.getPlugin().getIWM().getPermissionPrefix(world) + ".intopten")) {
+            topTenList.get(world).remove(ownerUUID);
+            return;
         }
         topTenList.get(world).addLevel(ownerUUID, l);
-    }
-
-    /**
-     * Creates the top ten list from scratch. Does not get the level of each island. Just
-     * takes the level from the player's file.
-     * Runs asynchronously from the main thread.
-     */
-    public void create(String permPrefix) {
-        // Obtain all the levels for each known player
-        Database<LevelsData> levelHandler = addon.getHandler();
-        long index = 0;
-        for (LevelsData lv : levelHandler.loadObjects()) {
-            if (index++ % 1000 == 0) {
-                addon.getLogger().info("Processed " + index + " players for top ten");
-            }
-            // Convert to UUID
-            UUID playerUUID = UUID.fromString(lv.getUniqueId());
-            // Get the world
-            lv.getLevels().forEach((k,v) -> addEntry(Bukkit.getWorld(k), playerUUID, v));
-        }
-        saveTopTen();
     }
 
     /**
@@ -104,8 +78,6 @@ public class TopTen implements Listener {
         // Check world
         topTenList.putIfAbsent(world, new TopTenData());
         topTenList.get(world).setUniqueId(world.getName());
-        if (DEBUG)
-            addon.getLogger().info("DEBUG: GUI display");
 
         PanelBuilder panel = new PanelBuilder()
                 .name(user.getTranslation("island.top.gui-title"))
@@ -116,22 +88,14 @@ public class TopTen implements Listener {
         while (it.hasNext()) {
             Map.Entry<UUID, Long> m = it.next();
             UUID topTenUUID = m.getKey();
-            if (DEBUG)
-                addon.getLogger().info("DEBUG: " + i + ": " + topTenUUID);
             // Remove from TopTen if the player is online and has the permission
             Player entry = addon.getServer().getPlayer(topTenUUID);
             boolean show = true;
             if (entry != null) {
-                if (DEBUG)
-                    addon.getLogger().info("DEBUG: removing from topten");
                 if (!entry.hasPermission(permPrefix + "intopten")) {
                     it.remove();
                     show = false;
                 }
-            } else {
-                if (DEBUG)
-                    addon.getLogger().info("DEBUG: player not online, so no per check");
-
             }
             if (show) {
                 panel.item(SLOTS[i-1], getHead(i, m.getValue(), topTenUUID, user, world));
@@ -168,21 +132,6 @@ public class TopTen implements Listener {
                 .icon(name)
                 .name(name)
                 .description(description);
-
-        // If welcome warps is present then add warping
-        /*
-        addon.getAddonByName("BSkyBlock-WelcomeWarps").ifPresent(warp -> {
-
-            if (((Warp)warp).getWarpSignsManager().hasWarp(world, playerUUID)) {
-                builder.clickHandler((panel, user, click, slot) -> {
-                    if (click.equals(ClickType.LEFT)) {
-                        user.sendMessage("island.top.warp-to", "[name]", name);
-                        ((Warp)warp).getWarpSignsManager().warpPlayer(world, user, playerUUID);
-                    }
-                    return true;
-                });
-            }
-        });*/
         return builder.build();
     }
 

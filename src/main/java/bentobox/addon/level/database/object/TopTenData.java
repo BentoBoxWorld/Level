@@ -16,14 +16,12 @@ import world.bentobox.bentobox.database.objects.DataObject;
  *
  */
 public class TopTenData implements DataObject {
-    
+
     // UniqueId is the world name
     @Expose
     private String uniqueId = "";
     @Expose
     private Map<UUID, Long> topTen = new LinkedHashMap<>();
-    
-    public TopTenData() {}
 
     public Map<UUID, Long> getTopTen() {
         return topTen.entrySet().stream()
@@ -54,7 +52,7 @@ public class TopTenData implements DataObject {
     public void addLevel(UUID uuid, Long level) {
         this.topTen.put(uuid, level);
     }
-    
+
     /**
      * Get the level for this UUID, or zero if the UUID is not found
      * @param uuid
@@ -71,7 +69,7 @@ public class TopTenData implements DataObject {
      * @param ownerUUID
      */
     public void remove(UUID ownerUUID) {
-        this.topTen.remove(ownerUUID);        
+        this.topTen.remove(ownerUUID);
     }
-    
+
 }

@@ -6,15 +6,15 @@ import org.bukkit.event.HandlerList;
 
 /**
  * This event is fired when a player clicks on a top ten head.
- * 
+ *
  * @author tastybento
  */
 public class TopTenClick extends Event implements Cancellable {
-    
+
     private boolean cancelled;
     private static final HandlerList handlers = new HandlerList();
     private final String owner;
-    
+
 
     public TopTenClick(String owner) {
         this.owner = owner;
@@ -35,12 +35,12 @@ public class TopTenClick extends Event implements Cancellable {
     @Override
     public void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
-        
+
     }
 
     @Override
     public HandlerList getHandlers() {
-        return handlers;
+        return getHandlerList();
     }
 
     public static HandlerList getHandlerList() {

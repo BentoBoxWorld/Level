@@ -17,11 +17,9 @@ import org.bukkit.scheduler.BukkitTask;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
-
-import bentobox.addon.level.Level;
-
 import com.google.common.collect.Multisets;
 
+import bentobox.addon.level.Level;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.util.Pair;
 import world.bentobox.bentobox.util.Util;
@@ -31,6 +29,7 @@ public class CalcIslandLevel {
 
     private static final int MAX_CHUNKS = 200;
     private static final long SPEED = 1;
+    private static final String LINE_BREAK = "==================================";
     private boolean checking = true;
     private BukkitTask task;
 
@@ -56,7 +55,7 @@ public class CalcIslandLevel {
     public CalcIslandLevel(final Level addon, final Island island, final Runnable onExit) {
         this.addon = addon;
         this.island = island;
-        this.world = island != null ? island.getCenter().getWorld() : null;
+        this.world = island.getCenter().getWorld();
         this.limitCount = new HashMap<>(addon.getSettings().getBlockLimits());
         this.onExit = onExit;
 
@@ -226,7 +225,7 @@ public class CalcIslandLevel {
         reportLines.add("Level cost = " + addon.getSettings().getLevelCost());
         reportLines.add("Deaths handicap = " + result.deathHandicap);
         reportLines.add("Level calculated = " + result.level);
-        reportLines.add("==================================");
+        reportLines.add(LINE_BREAK);
         int total = 0;
         if (!result.uwCount.isEmpty()) {
             reportLines.add("Underwater block count (Multiplier = x" + addon.getSettings().getUnderWaterMultiplier() + ") value");
@@ -238,7 +237,6 @@ public class CalcIslandLevel {
         reportLines.addAll(sortedReport(total, result.mdCount));
 
         reportLines.add("Blocks not counted because they exceeded limits: " + String.format("%,d",result.ofCount.size()));
-        //entriesSortedByCount = Multisets.copyHighestCountFirst(ofCount).entrySet();
         Iterable<Multiset.Entry<Material>> entriesSortedByCount = result.ofCount.entrySet();
         Iterator<Entry<Material>> it = entriesSortedByCount.iterator();
         while (it.hasNext()) {
@@ -252,23 +250,22 @@ public class CalcIslandLevel {
             }
             reportLines.add(type.getElement().toString() + ": " + String.format("%,d",type.getCount()) + " blocks (max " + limit + explain);
         }
-        reportLines.add("==================================");
+        reportLines.add(LINE_BREAK);
         reportLines.add("Blocks on island that are not in config.yml");
         reportLines.add("Total number = " + String.format("%,d",result.ncCount.size()));
-        //entriesSortedByCount = Multisets.copyHighestCountFirst(ncCount).entrySet();
         entriesSortedByCount = result.ncCount.entrySet();
         it = entriesSortedByCount.iterator();
         while (it.hasNext()) {
             Entry<Material> type = it.next();
             reportLines.add(type.getElement().toString() + ": " + String.format("%,d",type.getCount()) + " blocks");
         }
-        reportLines.add("=================================");
+        reportLines.add(LINE_BREAK);
 
         return reportLines;
     }
 
     private Collection<String> sortedReport(int total, Multiset<Material> MaterialCount) {
-        Collection<String> result = new ArrayList<>();
+        Collection<String> r = new ArrayList<>();
         Iterable<Multiset.Entry<Material>> entriesSortedByCount = Multisets.copyHighestCountFirst(MaterialCount).entrySet();
         Iterator<Entry<Material>> it = entriesSortedByCount.iterator();
         while (it.hasNext()) {
@@ -280,13 +277,13 @@ public class CalcIslandLevel {
                 // Specific
                 value = addon.getSettings().getBlockValues().get(type);
             }
-            result.add(type.toString() + ":"
+            r.add(type.toString() + ":"
                     + String.format("%,d",en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
             total += (value * en.getCount());
         }
-        result.add("Subtotal = " + total);
-        result.add("==================================");
-        return result;
+        r.add("Subtotal = " + total);
+        r.add(LINE_BREAK);
+        return r;
     }
 
     /**
