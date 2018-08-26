@@ -16,7 +16,7 @@ public class Settings {
     private int seaHeight;
     private Map<Material, Integer> blockLimits = new HashMap<>();
     private Map<Material, Integer> blockValues = new HashMap<>();
-    private Map<World, Map<Material, Integer>> worldBlockValues = new HashMap<>();
+    private final Map<World, Map<Material, Integer>> worldBlockValues = new HashMap<>();
     private double underWaterMultiplier;
     private int deathpenalty;
     private long levelCost;
@@ -103,7 +103,7 @@ public class Settings {
     /**
      * @param sumTeamDeaths the sumTeamDeaths to set
      */
-    public final void setSumTeamDeaths(boolean sumTeamDeaths) {
+    private void setSumTeamDeaths(boolean sumTeamDeaths) {
         this.sumTeamDeaths = sumTeamDeaths;
     }
     /**
@@ -127,7 +127,7 @@ public class Settings {
     /**
      * @param blockLimits2 the blockLimits to set
      */
-    public final void setBlockLimits(HashMap<Material, Integer> blockLimits2) {
+    private void setBlockLimits(HashMap<Material, Integer> blockLimits2) {
         this.blockLimits = blockLimits2;
     }
     /**
@@ -139,7 +139,7 @@ public class Settings {
     /**
      * @param blockValues2 the blockValues to set
      */
-    public final void setBlockValues(Map<Material, Integer> blockValues2) {
+    private void setBlockValues(Map<Material, Integer> blockValues2) {
         this.blockValues = blockValues2;
     }
     /**
@@ -151,7 +151,7 @@ public class Settings {
     /**
      * @param underWaterMultiplier the underWaterMultiplier to set
      */
-    public final void setUnderWaterMultiplier(double underWaterMultiplier) {
+    private void setUnderWaterMultiplier(double underWaterMultiplier) {
         this.underWaterMultiplier = underWaterMultiplier;
     }
     /**
@@ -163,7 +163,7 @@ public class Settings {
     /**
      * @param deathpenalty the deathpenalty to set
      */
-    public final void setDeathpenalty(int deathpenalty) {
+    private void setDeathpenalty(int deathpenalty) {
         this.deathpenalty = deathpenalty;
     }
     /**
@@ -175,7 +175,7 @@ public class Settings {
     /**
      * @param levelCost the levelCost to set
      */
-    public final void setLevelCost(long levelCost) {
+    private void setLevelCost(long levelCost) {
         this.levelCost = levelCost;
     }
     /**
@@ -193,16 +193,17 @@ public class Settings {
     /**
      * @return the levelWait
      */
-    public final int getLevelWait() {
+    private int getLevelWait() {
         return levelWait;
     }
     /**
      * @param levelWait the levelWait to set
      */
-    public final void setLevelWait(int levelWait) {
+    private void setLevelWait(int levelWait) {
         this.levelWait = levelWait;
     }
     /**
+     * TODO: Use max deaths
      * @return the maxDeaths
      */
     public final int getMaxDeaths() {
@@ -211,7 +212,7 @@ public class Settings {
     /**
      * @param maxDeaths the maxDeaths to set
      */
-    public final void setMaxDeaths(int maxDeaths) {
+    private void setMaxDeaths(int maxDeaths) {
         this.maxDeaths = maxDeaths;
     }
     /**
@@ -223,7 +224,7 @@ public class Settings {
     /**
      * @param islandResetDeathReset the islandResetDeathReset to set
      */
-    public final void setIslandResetDeathReset(boolean islandResetDeathReset) {
+    private void setIslandResetDeathReset(boolean islandResetDeathReset) {
         this.islandResetDeathReset = islandResetDeathReset;
     }
     /**
@@ -235,7 +236,7 @@ public class Settings {
     /**
      * @param teamJoinDeathReset the teamJoinDeathReset to set
      */
-    public final void setTeamJoinDeathReset(boolean teamJoinDeathReset) {
+    private void setTeamJoinDeathReset(boolean teamJoinDeathReset) {
         this.teamJoinDeathReset = teamJoinDeathReset;
     }
 

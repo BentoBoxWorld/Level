@@ -19,14 +19,14 @@ import world.bentobox.bentobox.database.objects.Island;
  */
 public class PlayerLevel {
 
-    private Level addon;
+    private final Level addon;
 
-    private Island island;
-    private World world;
-    private User asker;
-    private UUID targetPlayer;
+    private final Island island;
+    private final World world;
+    private final User asker;
+    private final UUID targetPlayer;
 
-    private long oldLevel;
+    private final long oldLevel;
 
     private CalcIslandLevel calc;
 
@@ -34,7 +34,7 @@ public class PlayerLevel {
     public PlayerLevel(final Level addon, final Island island, final UUID targetPlayer, final User asker) {
         this.addon = addon;
         this.island = island;
-        this.world = island != null ? island.getCenter().getWorld() : null;
+        this.world = island.getCenter().getWorld();
         this.asker = asker;
         this.targetPlayer = targetPlayer;
         this.oldLevel = addon.getIslandLevel(world, targetPlayer);
@@ -44,7 +44,7 @@ public class PlayerLevel {
         addon.getServer().getPluginManager().callEvent(e);
         if (!e.isCancelled()) {
             // Calculate if not cancelled
-            calc = new CalcIslandLevel(addon, island, ()-> fireIslandLevelCalcEvent());
+            calc = new CalcIslandLevel(addon, island, this::fireIslandLevelCalcEvent);
         }
     }
 

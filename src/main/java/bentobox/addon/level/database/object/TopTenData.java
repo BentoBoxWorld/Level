@@ -55,7 +55,7 @@ public class TopTenData implements DataObject {
 
     /**
      * Get the level for this UUID, or zero if the UUID is not found
-     * @param uuid
+     * @param uuid - UUID to check
      * @return island level
      */
     public long getLevel(UUID uuid) {
@@ -66,7 +66,7 @@ public class TopTenData implements DataObject {
 
     /**
      * Removes ownerUUID from the top ten
-     * @param ownerUUID
+     * @param ownerUUID - UUID to remove
      */
     public void remove(UUID ownerUUID) {
         this.topTen.remove(ownerUUID);

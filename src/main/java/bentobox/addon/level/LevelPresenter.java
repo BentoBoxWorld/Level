@@ -10,14 +10,14 @@ import bentobox.addon.level.calculators.PlayerLevel;
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.user.User;
 
-public class LevelPresenter {
+class LevelPresenter {
 
     private int levelWait;
     private final Level addon;
     private final BentoBox plugin;
 
     // Level calc cool down
-    private HashMap<UUID, Long> levelWaitTime = new HashMap<UUID, Long>();
+    private final HashMap<UUID, Long> levelWaitTime = new HashMap<>();
 
     public LevelPresenter(Level addon, BentoBox plugin) {
         this.addon = addon;
@@ -28,10 +28,9 @@ public class LevelPresenter {
      * Calculates the island level
      * @param world - world to check
      * @param sender - asker of the level info
-     * @param targetPlayer
-     * @return - false if this is cannot be done
+     * @param targetPlayer - target player
      */
-    public boolean calculateIslandLevel(World world, final User sender, UUID targetPlayer) {
+    public void calculateIslandLevel(World world, final User sender, UUID targetPlayer) {
         // Get permission prefix for this world
         String permPrefix = plugin.getIWM().getPermissionPrefix(world);
         // Check if target has island
@@ -43,7 +42,7 @@ public class LevelPresenter {
                 inTeam = true;
             } else {
                 sender.sendMessage("general.errors.player-has-no-island");
-                return false;
+                return;
             }
         }
         // Player asking for their own island calc
@@ -62,25 +61,21 @@ public class LevelPresenter {
             // Asking for the level of another player
             sender.sendMessage("island.level.island-level-is","[level]", String.valueOf(addon.getIslandLevel(world, targetPlayer)));
         }
-        return true;
     }
 
     /**
      * Sets cool down for the level command
      *
-     * @param player
+     * @param user - user
      */
-    private void setLevelWaitTime(final User player) {
-        levelWaitTime.put(player.getUniqueId(), Long.valueOf(Calendar.getInstance().getTimeInMillis() + levelWait * 1000));
+    private void setLevelWaitTime(final User user) {
+        levelWaitTime.put(user.getUniqueId(), Calendar.getInstance().getTimeInMillis() + levelWait * 1000);
     }
 
     private boolean onLevelWaitTime(final User sender) {
         if (levelWaitTime.containsKey(sender.getUniqueId())) {
-            if (levelWaitTime.get(sender.getUniqueId()).longValue() > Calendar.getInstance().getTimeInMillis()) {
-                return true;
-            }
+            return levelWaitTime.get(sender.getUniqueId()) > Calendar.getInstance().getTimeInMillis();
 
-            return false;
         }
 
         return false;
@@ -88,8 +83,8 @@ public class LevelPresenter {
 
     private long getLevelWaitTime(final User sender) {
         if (levelWaitTime.containsKey(sender.getUniqueId())) {
-            if (levelWaitTime.get(sender.getUniqueId()).longValue() > Calendar.getInstance().getTimeInMillis()) {
-                return (levelWaitTime.get(sender.getUniqueId()).longValue() - Calendar.getInstance().getTimeInMillis()) / 1000;
+            if (levelWaitTime.get(sender.getUniqueId()) > Calendar.getInstance().getTimeInMillis()) {
+                return (levelWaitTime.get(sender.getUniqueId()) - Calendar.getInstance().getTimeInMillis()) / 1000;
             }
 
             return 0L;

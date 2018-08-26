@@ -30,19 +30,19 @@ public class CalcIslandLevel {
     private static final int MAX_CHUNKS = 200;
     private static final long SPEED = 1;
     private static final String LINE_BREAK = "==================================";
-    private boolean checking = true;
-    private BukkitTask task;
+    private boolean checking;
+    private final BukkitTask task;
 
-    private Level addon;
+    private final Level addon;
 
-    private Set<Pair<Integer, Integer>> chunksToScan;
-    private Island island;
-    private World world;
-    private Results result;
-    private Runnable onExit;
+    private final Set<Pair<Integer, Integer>> chunksToScan;
+    private final Island island;
+    private final World world;
+    private final Results result;
+    private final Runnable onExit;
 
     // Copy the limits hashmap
-    HashMap<Material, Integer> limitCount;
+    private final HashMap<Material, Integer> limitCount;
 
 
     /**
@@ -123,7 +123,7 @@ public class CalcIslandLevel {
 
                 for (int y = 0; y < island.getCenter().getWorld().getMaxHeight(); y++) {
                     Material blockData = chunk.getBlockType(x, y, z);
-                    boolean belowSeaLevel = (addon.getSettings().getSeaHeight() > 0 && y<=addon.getSettings().getSeaHeight()) ? true : false;
+                    boolean belowSeaLevel = addon.getSettings().getSeaHeight() > 0 && y <= addon.getSettings().getSeaHeight();
                     // Air is free
                     if (!blockData.equals(Material.AIR)) {
                         checkBlock(blockData, belowSeaLevel);
@@ -146,7 +146,7 @@ public class CalcIslandLevel {
 
     /**
      * Checks if a block has been limited or not and whether a block has any value or not
-     * @param md
+     * @param md - Material to check
      * @return value of the block if can be counted
      */
     private int limitCount(Material md) {
@@ -170,7 +170,7 @@ public class CalcIslandLevel {
     /**
      * Get value of a material
      * World blocks trump regular block values
-     * @param md
+     * @param md - Material to check
      * @return value of a material
      */
     private int getValue(Material md) {
@@ -182,8 +182,8 @@ public class CalcIslandLevel {
 
     /**
      * Get a set of all the chunks in island
-     * @param island
-     * @return
+     * @param island - island
+     * @return - set of pairs of x,z coordinates to check
      */
     private Set<Pair<Integer, Integer>> getChunksToScan(Island island) {
         Set<Pair<Integer, Integer>> chunkSnapshot = new HashSet<>();
@@ -267,9 +267,7 @@ public class CalcIslandLevel {
     private Collection<String> sortedReport(int total, Multiset<Material> MaterialCount) {
         Collection<String> r = new ArrayList<>();
         Iterable<Multiset.Entry<Material>> entriesSortedByCount = Multisets.copyHighestCountFirst(MaterialCount).entrySet();
-        Iterator<Entry<Material>> it = entriesSortedByCount.iterator();
-        while (it.hasNext()) {
-            Entry<Material> en = it.next();
+        for (Entry<Material> en : entriesSortedByCount) {
             Material type = en.getElement();
 
             int value = 0;
@@ -278,7 +276,7 @@ public class CalcIslandLevel {
                 value = addon.getSettings().getBlockValues().get(type);
             }
             r.add(type.toString() + ":"
-                    + String.format("%,d",en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
+                    + String.format("%,d", en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
             total += (value * en.getCount());
         }
         r.add("Subtotal = " + total);
@@ -299,10 +297,10 @@ public class CalcIslandLevel {
      */
     public class Results {
         private List<String> report;
-        private Multiset<Material> mdCount = HashMultiset.create();
-        private Multiset<Material> uwCount = HashMultiset.create();
-        private Multiset<Material> ncCount = HashMultiset.create();
-        private Multiset<Material> ofCount = HashMultiset.create();
+        private final Multiset<Material> mdCount = HashMultiset.create();
+        private final Multiset<Material> uwCount = HashMultiset.create();
+        private final Multiset<Material> ncCount = HashMultiset.create();
+        private final Multiset<Material> ofCount = HashMultiset.create();
         private long rawBlockCount = 0;
         private long underWaterBlockCount = 0;
         private long level = 0;
@@ -314,12 +312,7 @@ public class CalcIslandLevel {
         public int getDeathHandicap() {
             return deathHandicap;
         }
-        /**
-         * @param deathHandicap the deathHandicap to set
-         */
-        public void setDeathHandicap(int deathHandicap) {
-            this.deathHandicap = deathHandicap;
-        }
+
         /**
          * @return the report
          */
@@ -337,24 +330,6 @@ public class CalcIslandLevel {
          */
         public long getPointsToNextLevel() {
             return pointsToNextLevel;
-        }
-        /**
-         * @param report the report to set
-         */
-        public void setReport(List<String> report) {
-            this.report = report;
-        }
-        /**
-         * @param level the level to set
-         */
-        public void setLevel(long level) {
-            this.level = level;
-        }
-        /**
-         * @param pointsToNextLevel the pointsToNextLevel to set
-         */
-        public void setPointsToNextLevel(long pointsToNextLevel) {
-            this.pointsToNextLevel = pointsToNextLevel;
         }
 
     }

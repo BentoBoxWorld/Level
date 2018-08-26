@@ -9,7 +9,7 @@ import org.bukkit.event.HandlerList;
  *
  * @author tastybento
  */
-public class TopTenClick extends Event implements Cancellable {
+class TopTenClick extends Event implements Cancellable {
 
     private boolean cancelled;
     private static final HandlerList handlers = new HandlerList();
@@ -43,7 +43,7 @@ public class TopTenClick extends Event implements Cancellable {
         return getHandlerList();
     }
 
-    public static HandlerList getHandlerList() {
+    private static HandlerList getHandlerList() {
         return handlers;
     }
 
