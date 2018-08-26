@@ -123,7 +123,8 @@ public class CalcIslandLevel {
 
                 for (int y = 0; y < island.getCenter().getWorld().getMaxHeight(); y++) {
                     Material blockData = chunk.getBlockType(x, y, z);
-                    boolean belowSeaLevel = addon.getSettings().getSeaHeight() > 0 && y <= addon.getSettings().getSeaHeight();
+                    int seaHeight = addon.getPlugin().getIWM().getSeaHeight(world);
+                    boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
                     // Air is free
                     if (!blockData.equals(Material.AIR)) {
                         checkBlock(blockData, belowSeaLevel);

@@ -13,14 +13,12 @@ import bentobox.addon.level.Level;
 public class Settings {
 
     private boolean sumTeamDeaths;
-    private int seaHeight;
     private Map<Material, Integer> blockLimits = new HashMap<>();
     private Map<Material, Integer> blockValues = new HashMap<>();
     private final Map<World, Map<Material, Integer>> worldBlockValues = new HashMap<>();
     private double underWaterMultiplier;
     private int deathpenalty;
     private long levelCost;
-    private Object defaultLanguage;
     private int levelWait;
     private int maxDeaths;
     private boolean islandResetDeathReset;
@@ -107,18 +105,6 @@ public class Settings {
         this.sumTeamDeaths = sumTeamDeaths;
     }
     /**
-     * @return the seaHeight
-     */
-    public final int getSeaHeight() {
-        return seaHeight;
-    }
-    /**
-     * @param seaHeight the seaHeight to set
-     */
-    public final void setSeaHeight(int seaHeight) {
-        this.seaHeight = seaHeight;
-    }
-    /**
      * @return the blockLimits
      */
     public final Map<Material, Integer> getBlockLimits() {
@@ -177,18 +163,6 @@ public class Settings {
      */
     private void setLevelCost(long levelCost) {
         this.levelCost = levelCost;
-    }
-    /**
-     * @return the defaultLanguage
-     */
-    public final Object getDefaultLanguage() {
-        return defaultLanguage;
-    }
-    /**
-     * @param defaultLanguage the defaultLanguage to set
-     */
-    public final void setDefaultLanguage(Object defaultLanguage) {
-        this.defaultLanguage = defaultLanguage;
     }
     /**
      * @return the levelWait
