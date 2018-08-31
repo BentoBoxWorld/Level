@@ -18,9 +18,9 @@ public class IslandLevelCalculatedEvent extends IslandBaseEvent {
     private UUID targetPlayer;
 
     /**
-     * @param targetPlayer
-     * @param island
-     * @param results
+     * @param targetPlayer - target player
+     * @param island - island
+     * @param results - results object to set
      */
     public IslandLevelCalculatedEvent(UUID targetPlayer, Island island, Results results) {
         super(island);

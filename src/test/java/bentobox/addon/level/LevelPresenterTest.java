@@ -1,9 +1,5 @@
-/**
- * 
- */
 package bentobox.addon.level;
 
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -37,9 +33,6 @@ public class LevelPresenterTest {
     private Level addon;
     private PlayerLevel pl;
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
     public void setUp() throws Exception {
         plugin = mock(BentoBox.class);
@@ -66,7 +59,7 @@ public class LevelPresenterTest {
      */
     @Test
     public void testLevelPresenter() {
-        assertNotNull(new LevelPresenter(addon, plugin));
+        new LevelPresenter(addon, plugin);
     }
 
     /**
