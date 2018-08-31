@@ -23,7 +23,7 @@ public class AdminTop extends CompositeCommand {
     @Override
     public boolean execute(User user, String label, List<String> args) {
         // Get world
-        World world = null;
+        World world;
         if (args.isEmpty()) {
             if (getPlugin().getIWM().getOverWorlds().size() == 1) {
                 world = getPlugin().getIWM().getOverWorlds().get(0);

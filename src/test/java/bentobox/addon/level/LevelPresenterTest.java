@@ -35,7 +35,6 @@ public class LevelPresenterTest {
 
     private BentoBox plugin;
     private Level addon;
-    private IslandsManager im;
     private PlayerLevel pl;
 
     /**
@@ -48,7 +47,7 @@ public class LevelPresenterTest {
         IslandWorldManager iwm = mock(IslandWorldManager.class);
         when(plugin.getIWM()).thenReturn(iwm);
         when(iwm.getPermissionPrefix(Mockito.any())).thenReturn("world");
-        im = mock(IslandsManager.class);
+        IslandsManager im = mock(IslandsManager.class);
         when(plugin.getIslands()).thenReturn(im);
         // Has island
         when(im.hasIsland(Mockito.any(), Mockito.any(User.class))).thenReturn(true);

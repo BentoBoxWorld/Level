@@ -76,11 +76,8 @@ public class LevelPresenter {
 
     private boolean onLevelWaitTime(final User sender) {
         if (levelWaitTime.containsKey(sender.getUniqueId())) {
-            if (levelWaitTime.get(sender.getUniqueId()).longValue() > Calendar.getInstance().getTimeInMillis()) {
-                return true;
-            }
+            return levelWaitTime.get(sender.getUniqueId()).longValue() > Calendar.getInstance().getTimeInMillis();
 
-            return false;
         }
 
         return false;

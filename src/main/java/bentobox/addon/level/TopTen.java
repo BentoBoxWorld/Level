@@ -33,7 +33,6 @@ public class TopTen implements Listener {
     // Top ten list of players
     private Map<World,TopTenData> topTenList;
     private final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
-    private final boolean DEBUG = false;
     private Database<TopTenData> handler;
 
     public TopTen(Level addon) {
@@ -104,6 +103,7 @@ public class TopTen implements Listener {
         // Check world
         topTenList.putIfAbsent(world, new TopTenData());
         topTenList.get(world).setUniqueId(world.getName());
+        boolean DEBUG = false;
         if (DEBUG)
             addon.getLogger().info("DEBUG: GUI display");
 
