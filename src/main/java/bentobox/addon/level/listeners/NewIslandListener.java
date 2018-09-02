@@ -20,11 +20,11 @@ import world.bentobox.bentobox.database.objects.Island;
  */
 public class NewIslandListener implements Listener {
 
-    private Level addon;
-    private Map<Island, CalcIslandLevel> cil;
+    private final Level addon;
+    private final Map<Island, CalcIslandLevel> cil;
 
     /**
-     * @param addon
+     * @param addon - addon
      */
     public NewIslandListener(Level addon) {
         this.addon = addon;

@@ -17,11 +17,9 @@ import org.bukkit.scheduler.BukkitTask;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
-
-import bentobox.addon.level.Level;
-
 import com.google.common.collect.Multisets;
 
+import bentobox.addon.level.Level;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.util.Pair;
 import world.bentobox.bentobox.util.Util;
@@ -31,19 +29,20 @@ public class CalcIslandLevel {
 
     private static final int MAX_CHUNKS = 200;
     private static final long SPEED = 1;
-    private boolean checking = true;
-    private BukkitTask task;
+    private static final String LINE_BREAK = "==================================";
+    private boolean checking;
+    private final BukkitTask task;
 
-    private Level addon;
+    private final Level addon;
 
-    private Set<Pair<Integer, Integer>> chunksToScan;
-    private Island island;
-    private World world;
-    private Results result;
-    private Runnable onExit;
+    private final Set<Pair<Integer, Integer>> chunksToScan;
+    private final Island island;
+    private final World world;
+    private final Results result;
+    private final Runnable onExit;
 
-    // Copy the limits hashmap
-    HashMap<Material, Integer> limitCount;
+    // Copy the limits hash map
+    private final HashMap<Material, Integer> limitCount;
 
 
     /**
@@ -56,7 +55,7 @@ public class CalcIslandLevel {
     public CalcIslandLevel(final Level addon, final Island island, final Runnable onExit) {
         this.addon = addon;
         this.island = island;
-        this.world = island != null ? island.getCenter().getWorld() : null;
+        this.world = island.getCenter().getWorld();
         this.limitCount = new HashMap<>(addon.getSettings().getBlockLimits());
         this.onExit = onExit;
 
@@ -112,19 +111,20 @@ public class CalcIslandLevel {
 
     private void scanChunk(ChunkSnapshot chunk) {
         for (int x = 0; x< 16; x++) {
-            // Check if the block coord is inside the protection zone and if not, don't count it
+            // Check if the block coordinate is inside the protection zone and if not, don't count it
             if (chunk.getX() * 16 + x < island.getMinProtectedX() || chunk.getX() * 16 + x >= island.getMinProtectedX() + island.getProtectionRange() * 2) {
                 continue;
             }
             for (int z = 0; z < 16; z++) {
-                // Check if the block coord is inside the protection zone and if not, don't count it
+                // Check if the block coordinate is inside the protection zone and if not, don't count it
                 if (chunk.getZ() * 16 + z < island.getMinProtectedZ() || chunk.getZ() * 16 + z >= island.getMinProtectedZ() + island.getProtectionRange() * 2) {
                     continue;
                 }
 
                 for (int y = 0; y < island.getCenter().getWorld().getMaxHeight(); y++) {
                     Material blockData = chunk.getBlockType(x, y, z);
-                    boolean belowSeaLevel = (addon.getSettings().getSeaHeight() > 0 && y<=addon.getSettings().getSeaHeight()) ? true : false;
+                    int seaHeight = addon.getPlugin().getIWM().getSeaHeight(world);
+                    boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
                     // Air is free
                     if (!blockData.equals(Material.AIR)) {
                         checkBlock(blockData, belowSeaLevel);
@@ -147,7 +147,11 @@ public class CalcIslandLevel {
 
     /**
      * Checks if a block has been limited or not and whether a block has any value or not
-     * @param md
+<<<<<<< HEAD
+     * @param md Material
+=======
+     * @param md - Material to check
+>>>>>>> branch 'develop' of https://github.com/BentoBoxWorld/addon-level.git
      * @return value of the block if can be counted
      */
     private int limitCount(Material md) {
@@ -171,7 +175,11 @@ public class CalcIslandLevel {
     /**
      * Get value of a material
      * World blocks trump regular block values
-     * @param md
+<<<<<<< HEAD
+     * @param md Material
+=======
+     * @param md - Material to check
+>>>>>>> branch 'develop' of https://github.com/BentoBoxWorld/addon-level.git
      * @return value of a material
      */
     private int getValue(Material md) {
@@ -183,8 +191,12 @@ public class CalcIslandLevel {
 
     /**
      * Get a set of all the chunks in island
-     * @param island
-     * @return
+     * @param island - island
+<<<<<<< HEAD
+     * @return - set of all the chunks in the island to scan
+=======
+     * @return - set of pairs of x,z coordinates to check
+>>>>>>> branch 'develop' of https://github.com/BentoBoxWorld/addon-level.git
      */
     private Set<Pair<Integer, Integer>> getChunksToScan(Island island) {
         Set<Pair<Integer, Integer>> chunkSnapshot = new HashSet<>();
@@ -226,7 +238,7 @@ public class CalcIslandLevel {
         reportLines.add("Level cost = " + addon.getSettings().getLevelCost());
         reportLines.add("Deaths handicap = " + result.deathHandicap);
         reportLines.add("Level calculated = " + result.level);
-        reportLines.add("==================================");
+        reportLines.add(LINE_BREAK);
         int total = 0;
         if (!result.uwCount.isEmpty()) {
             reportLines.add("Underwater block count (Multiplier = x" + addon.getSettings().getUnderWaterMultiplier() + ") value");
@@ -238,7 +250,6 @@ public class CalcIslandLevel {
         reportLines.addAll(sortedReport(total, result.mdCount));
 
         reportLines.add("Blocks not counted because they exceeded limits: " + String.format("%,d",result.ofCount.size()));
-        //entriesSortedByCount = Multisets.copyHighestCountFirst(ofCount).entrySet();
         Iterable<Multiset.Entry<Material>> entriesSortedByCount = result.ofCount.entrySet();
         Iterator<Entry<Material>> it = entriesSortedByCount.iterator();
         while (it.hasNext()) {
@@ -252,27 +263,24 @@ public class CalcIslandLevel {
             }
             reportLines.add(type.getElement().toString() + ": " + String.format("%,d",type.getCount()) + " blocks (max " + limit + explain);
         }
-        reportLines.add("==================================");
+        reportLines.add(LINE_BREAK);
         reportLines.add("Blocks on island that are not in config.yml");
         reportLines.add("Total number = " + String.format("%,d",result.ncCount.size()));
-        //entriesSortedByCount = Multisets.copyHighestCountFirst(ncCount).entrySet();
         entriesSortedByCount = result.ncCount.entrySet();
         it = entriesSortedByCount.iterator();
         while (it.hasNext()) {
             Entry<Material> type = it.next();
             reportLines.add(type.getElement().toString() + ": " + String.format("%,d",type.getCount()) + " blocks");
         }
-        reportLines.add("=================================");
+        reportLines.add(LINE_BREAK);
 
         return reportLines;
     }
 
     private Collection<String> sortedReport(int total, Multiset<Material> MaterialCount) {
-        Collection<String> result = new ArrayList<>();
+        Collection<String> r = new ArrayList<>();
         Iterable<Multiset.Entry<Material>> entriesSortedByCount = Multisets.copyHighestCountFirst(MaterialCount).entrySet();
-        Iterator<Entry<Material>> it = entriesSortedByCount.iterator();
-        while (it.hasNext()) {
-            Entry<Material> en = it.next();
+        for (Entry<Material> en : entriesSortedByCount) {
             Material type = en.getElement();
 
             int value = 0;
@@ -280,13 +288,13 @@ public class CalcIslandLevel {
                 // Specific
                 value = addon.getSettings().getBlockValues().get(type);
             }
-            result.add(type.toString() + ":"
-                    + String.format("%,d",en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
+            r.add(type.toString() + ":"
+                    + String.format("%,d", en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
             total += (value * en.getCount());
         }
-        result.add("Subtotal = " + total);
-        result.add("==================================");
-        return result;
+        r.add("Subtotal = " + total);
+        r.add(LINE_BREAK);
+        return r;
     }
 
     /**
@@ -302,10 +310,10 @@ public class CalcIslandLevel {
      */
     public class Results {
         private List<String> report;
-        private Multiset<Material> mdCount = HashMultiset.create();
-        private Multiset<Material> uwCount = HashMultiset.create();
-        private Multiset<Material> ncCount = HashMultiset.create();
-        private Multiset<Material> ofCount = HashMultiset.create();
+        private final Multiset<Material> mdCount = HashMultiset.create();
+        private final Multiset<Material> uwCount = HashMultiset.create();
+        private final Multiset<Material> ncCount = HashMultiset.create();
+        private final Multiset<Material> ofCount = HashMultiset.create();
         private long rawBlockCount = 0;
         private long underWaterBlockCount = 0;
         private long level = 0;
@@ -317,12 +325,7 @@ public class CalcIslandLevel {
         public int getDeathHandicap() {
             return deathHandicap;
         }
-        /**
-         * @param deathHandicap the deathHandicap to set
-         */
-        public void setDeathHandicap(int deathHandicap) {
-            this.deathHandicap = deathHandicap;
-        }
+
         /**
          * @return the report
          */
@@ -340,24 +343,6 @@ public class CalcIslandLevel {
          */
         public long getPointsToNextLevel() {
             return pointsToNextLevel;
-        }
-        /**
-         * @param report the report to set
-         */
-        public void setReport(List<String> report) {
-            this.report = report;
-        }
-        /**
-         * @param level the level to set
-         */
-        public void setLevel(long level) {
-            this.level = level;
-        }
-        /**
-         * @param pointsToNextLevel the pointsToNextLevel to set
-         */
-        public void setPointsToNextLevel(long pointsToNextLevel) {
-            this.pointsToNextLevel = pointsToNextLevel;
         }
 
     }

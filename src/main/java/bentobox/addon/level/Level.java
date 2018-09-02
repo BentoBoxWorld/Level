@@ -55,7 +55,7 @@ public class Level extends Addon {
 
     /**
      * Get level from cache for a player
-     * @param targetPlayer
+     * @param targetPlayer - target player
      * @return Level of player
      */
     public long getIslandLevel(World world, UUID targetPlayer) {
@@ -92,7 +92,7 @@ public class Level extends Addon {
     public void onDisable(){
         // Save the cache
         if (levelsCache != null) {
-            save(false);
+            save();
         }
         if (topTen != null) {
             topTen.saveTopTen();
@@ -147,18 +147,17 @@ public class Level extends Addon {
 
     /**
      * Save the levels to the database
-     * @param async - if true, saving will be done async
      */
-    public void save(boolean async){
+    private void save(){
         // No async for now
         levelsCache.values().forEach(handler::saveObject);
     }
 
     /**
      * Sets the player's level to a value
-     * @param world
-     * @param targetPlayer
-     * @param level
+     * @param world - world
+     * @param targetPlayer - target player
+     * @param level - level
      */
     public void setIslandLevel(World world, UUID targetPlayer, long level) {
         LevelsData ld = getLevelsData(targetPlayer);

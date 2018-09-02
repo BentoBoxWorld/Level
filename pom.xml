@@ -6,7 +6,7 @@
 
 	<groupId>bskyblock.addon</groupId>
 	<artifactId>Level</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 
 	<name>Level</name>
 	<description>Level is an add-on for BentoBox, an expandable Minecraft Bukkit plugin for island-type games like ASkyBlock or AcidIsland.</description>
@@ -46,7 +46,7 @@
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.13-R0.1-SNAPSHOT</version>
+			<version>1.13.1-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -202,7 +202,7 @@
 			<id>sonar</id>
 			<properties>
 				<sonar.host.url>https://sonarcloud.io</sonar.host.url>
-				<sonar.organization>tastybento-github</sonar.organization>
+				<sonar.organization>bentobox-world</sonar.organization>
 			</properties>
 			<build>
 				<plugins>
