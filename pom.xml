@@ -6,7 +6,7 @@
 
 	<groupId>bskyblock.addon</groupId>
 	<artifactId>Level</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 
 	<name>Level</name>
 	<description>Level is an add-on for BentoBox, an expandable Minecraft Bukkit plugin for island-type games like ASkyBlock or AcidIsland.</description>
