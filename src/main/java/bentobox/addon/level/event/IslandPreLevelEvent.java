@@ -12,7 +12,7 @@ import world.bentobox.bentobox.database.objects.Island;
  */
 public class IslandPreLevelEvent extends IslandBaseEvent {
 
-    private UUID targetPlayer;
+    private final UUID targetPlayer;
 
 
     /**

@@ -13,14 +13,12 @@ import bentobox.addon.level.Level;
 public class Settings {
 
     private boolean sumTeamDeaths;
-    private int seaHeight;
     private Map<Material, Integer> blockLimits = new HashMap<>();
     private Map<Material, Integer> blockValues = new HashMap<>();
-    private Map<World, Map<Material, Integer>> worldBlockValues = new HashMap<>();
+    private final Map<World, Map<Material, Integer>> worldBlockValues = new HashMap<>();
     private double underWaterMultiplier;
     private int deathpenalty;
     private long levelCost;
-    private Object defaultLanguage;
     private int levelWait;
     private int maxDeaths;
     private boolean islandResetDeathReset;
@@ -47,30 +45,29 @@ public class Settings {
         }
 
         if (level.getConfig().isSet("limits")) {
-            HashMap<Material, Integer> blockLimits = new HashMap<>();
+            HashMap<Material, Integer> bl = new HashMap<>();
             for (String material : level.getConfig().getConfigurationSection("limits").getKeys(false)) {
                 try {
                     Material mat = Material.valueOf(material);
-                    blockLimits.put(mat, level.getConfig().getInt("limits." + material, 0));
+                    bl.put(mat, level.getConfig().getInt("limits." + material, 0));
                 } catch (Exception e) {
-                    level.getLogger().warning("Unknown material (" + material + ") in blockvalues.yml Limits section. Skipping...");
+                    level.getLogger().warning(() -> "Unknown material (" + material + ") in blockvalues.yml Limits section. Skipping...");
                 }
             }
-            setBlockLimits(blockLimits);
+            setBlockLimits(bl);
         }
         if (level.getConfig().isSet("blocks")) {
-            Map<Material, Integer> blockValues = new HashMap<>();
+            Map<Material, Integer> bv = new HashMap<>();
             for (String material : level.getConfig().getConfigurationSection("blocks").getKeys(false)) {
 
                 try {
                     Material mat = Material.valueOf(material);
-                    blockValues.put(mat, level.getConfig().getInt("blocks." + material, 0));
+                    bv.put(mat, level.getConfig().getInt("blocks." + material, 0));
                 } catch (Exception e) {
-                    // e.printStackTrace();
-                    level.getLogger().warning("Unknown material (" + material + ") in config.yml blocks section. Skipping...");
+                    level.getLogger().warning(()-> "Unknown material (" + material + ") in config.yml blocks section. Skipping...");
                 }
             }
-            setBlockValues(blockValues);
+            setBlockValues(bv);
         } else {
             level.getLogger().severe("No block values in config.yml! All island levels will be zero!");
         }
@@ -88,7 +85,7 @@ public class Settings {
                         worldBlockValues.put(bWorld, values);
                     }
                 } else {
-                    level.getLogger().severe("Level Addon: No such world : " + world);
+                    level.getLogger().severe(() -> "Level Addon: No such world : " + world);
                 }
             }
         }
@@ -104,20 +101,8 @@ public class Settings {
     /**
      * @param sumTeamDeaths the sumTeamDeaths to set
      */
-    public final void setSumTeamDeaths(boolean sumTeamDeaths) {
+    private void setSumTeamDeaths(boolean sumTeamDeaths) {
         this.sumTeamDeaths = sumTeamDeaths;
-    }
-    /**
-     * @return the seaHeight
-     */
-    public final int getSeaHeight() {
-        return seaHeight;
-    }
-    /**
-     * @param seaHeight the seaHeight to set
-     */
-    public final void setSeaHeight(int seaHeight) {
-        this.seaHeight = seaHeight;
     }
     /**
      * @return the blockLimits
@@ -128,7 +113,7 @@ public class Settings {
     /**
      * @param blockLimits2 the blockLimits to set
      */
-    public final void setBlockLimits(HashMap<Material, Integer> blockLimits2) {
+    private void setBlockLimits(HashMap<Material, Integer> blockLimits2) {
         this.blockLimits = blockLimits2;
     }
     /**
@@ -140,7 +125,7 @@ public class Settings {
     /**
      * @param blockValues2 the blockValues to set
      */
-    public final void setBlockValues(Map<Material, Integer> blockValues2) {
+    private void setBlockValues(Map<Material, Integer> blockValues2) {
         this.blockValues = blockValues2;
     }
     /**
@@ -152,7 +137,7 @@ public class Settings {
     /**
      * @param underWaterMultiplier the underWaterMultiplier to set
      */
-    public final void setUnderWaterMultiplier(double underWaterMultiplier) {
+    private void setUnderWaterMultiplier(double underWaterMultiplier) {
         this.underWaterMultiplier = underWaterMultiplier;
     }
     /**
@@ -164,7 +149,7 @@ public class Settings {
     /**
      * @param deathpenalty the deathpenalty to set
      */
-    public final void setDeathpenalty(int deathpenalty) {
+    private void setDeathpenalty(int deathpenalty) {
         this.deathpenalty = deathpenalty;
     }
     /**
@@ -176,34 +161,23 @@ public class Settings {
     /**
      * @param levelCost the levelCost to set
      */
-    public final void setLevelCost(long levelCost) {
+    private void setLevelCost(long levelCost) {
         this.levelCost = levelCost;
-    }
-    /**
-     * @return the defaultLanguage
-     */
-    public final Object getDefaultLanguage() {
-        return defaultLanguage;
-    }
-    /**
-     * @param defaultLanguage the defaultLanguage to set
-     */
-    public final void setDefaultLanguage(Object defaultLanguage) {
-        this.defaultLanguage = defaultLanguage;
     }
     /**
      * @return the levelWait
      */
-    public final int getLevelWait() {
+    private int getLevelWait() {
         return levelWait;
     }
     /**
      * @param levelWait the levelWait to set
      */
-    public final void setLevelWait(int levelWait) {
+    private void setLevelWait(int levelWait) {
         this.levelWait = levelWait;
     }
     /**
+     * TODO: Use max deaths
      * @return the maxDeaths
      */
     public final int getMaxDeaths() {
@@ -212,7 +186,7 @@ public class Settings {
     /**
      * @param maxDeaths the maxDeaths to set
      */
-    public final void setMaxDeaths(int maxDeaths) {
+    private void setMaxDeaths(int maxDeaths) {
         this.maxDeaths = maxDeaths;
     }
     /**
@@ -224,7 +198,7 @@ public class Settings {
     /**
      * @param islandResetDeathReset the islandResetDeathReset to set
      */
-    public final void setIslandResetDeathReset(boolean islandResetDeathReset) {
+    private void setIslandResetDeathReset(boolean islandResetDeathReset) {
         this.islandResetDeathReset = islandResetDeathReset;
     }
     /**
@@ -236,7 +210,7 @@ public class Settings {
     /**
      * @param teamJoinDeathReset the teamJoinDeathReset to set
      */
-    public final void setTeamJoinDeathReset(boolean teamJoinDeathReset) {
+    private void setTeamJoinDeathReset(boolean teamJoinDeathReset) {
         this.teamJoinDeathReset = teamJoinDeathReset;
     }
 

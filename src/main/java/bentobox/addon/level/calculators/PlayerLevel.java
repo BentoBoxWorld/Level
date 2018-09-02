@@ -19,14 +19,14 @@ import world.bentobox.bentobox.database.objects.Island;
  */
 public class PlayerLevel {
 
-    private Level addon;
+    private final Level addon;
 
-    private Island island;
-    private World world;
-    private User asker;
-    private UUID targetPlayer;
+    private final Island island;
+    private final World world;
+    private final User asker;
+    private final UUID targetPlayer;
 
-    private long oldLevel;
+    private final long oldLevel;
 
     private CalcIslandLevel calc;
 
@@ -34,7 +34,7 @@ public class PlayerLevel {
     public PlayerLevel(final Level addon, final Island island, final UUID targetPlayer, final User asker) {
         this.addon = addon;
         this.island = island;
-        this.world = island != null ? island.getCenter().getWorld() : null;
+        this.world = island.getCenter().getWorld();
         this.asker = asker;
         this.targetPlayer = targetPlayer;
         this.oldLevel = addon.getIslandLevel(world, targetPlayer);
@@ -44,44 +44,48 @@ public class PlayerLevel {
         addon.getServer().getPluginManager().callEvent(e);
         if (!e.isCancelled()) {
             // Calculate if not cancelled
-            calc = new CalcIslandLevel(addon, island, ()-> informPlayers());
+            calc = new CalcIslandLevel(addon, island, this::fireIslandLevelCalcEvent);
         }
     }
 
 
-    private void informPlayers() {
+    private void fireIslandLevelCalcEvent() {
         // Fire post calculation event
         IslandLevelCalculatedEvent ilce = new IslandLevelCalculatedEvent(targetPlayer, island, calc.getResult());
         addon.getServer().getPluginManager().callEvent(ilce);
         Results results = ilce.getResults();
         // Save the results
         island.getMemberSet().forEach(m -> addon.setIslandLevel(world, m, results.getLevel()));
-        // Display result
+        // Display result if event is not cancelled
         if (!ilce.isCancelled()) {
-            // Tell the asker
-            asker.sendMessage("island.level.island-level-is", "[level]", String.valueOf(addon.getIslandLevel(world, targetPlayer)));
-            // Console
-            if (!asker.isPlayer()) {
-                results.getReport().forEach(asker::sendRawMessage);
-                return;
-            }
-            // Player
-            if (addon.getSettings().getDeathPenalty() != 0) {
-                asker.sendMessage("island.level.deaths", "[number]", String.valueOf(results.getDeathHandicap()));
-            }
-            // Send player how many points are required to reach next island level
-            if (results.getPointsToNextLevel() >= 0) {
-                asker.sendMessage("island.level.required-points-to-next-level", "[points]", String.valueOf(results.getPointsToNextLevel()));
-            }
-            // Tell other team members
-            if (addon.getIslandLevel(world, targetPlayer) != oldLevel) {
-                for (UUID member : island.getMemberSet()) {
-                    if (!member.equals(asker.getUniqueId())) {
-                        User.getInstance(member).sendMessage("island.level.island-level-is", "[level]", String.valueOf(addon.getIslandLevel(world, targetPlayer)));
-                    }
-                }
-            }
+            informPlayers(results);
         }
+    }
+
+
+    private void informPlayers(Results results) {
+        // Tell the asker
+        asker.sendMessage("island.level.island-level-is", "[level]", String.valueOf(addon.getIslandLevel(world, targetPlayer)));
+        // Console
+        if (!asker.isPlayer()) {
+            results.getReport().forEach(asker::sendRawMessage);
+            return;
+        }
+        // Player
+        if (addon.getSettings().getDeathPenalty() != 0) {
+            asker.sendMessage("island.level.deaths", "[number]", String.valueOf(results.getDeathHandicap()));
+        }
+        // Send player how many points are required to reach next island level
+        if (results.getPointsToNextLevel() >= 0) {
+            asker.sendMessage("island.level.required-points-to-next-level", "[points]", String.valueOf(results.getPointsToNextLevel()));
+        }
+        // Tell other team members
+        if (addon.getIslandLevel(world, targetPlayer) != oldLevel) {
+            island.getMemberSet().stream()
+            .filter(u -> !u.equals(asker.getUniqueId()))
+            .forEach(m -> User.getInstance(m).sendMessage("island.level.island-level-is", "[level]", String.valueOf(addon.getIslandLevel(world, targetPlayer))));
+        }
+
     }
 
 

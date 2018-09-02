@@ -15,10 +15,10 @@ import bentobox.addon.level.Level;
  */
 public class JoinLeaveListener implements Listener {
 
-    private Level addon;
+    private final Level addon;
 
     /**
-     * @param addon
+     * @param addon - addon
      */
     public JoinLeaveListener(Level addon) {
         this.addon = addon;
