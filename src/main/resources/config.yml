@@ -1,3 +1,15 @@
+# Config file for Level add-on for BSkyBlock or AcidIsland
+
+# Command hook-in configuration.
+# Level will try to hook into these commands when it starts
+# If you have changed the default AcidIsland or BSkyBlock commands, change them here
+acidisland:
+  admin-command: acid
+  user-command: ai
+bskyblock:
+  admin-command: bsbadmin
+  user-command: island
+
 # This file lists the values for various blocks that are used to calculate the
 # island level. Level = total of all blocks in island boundary / 100.
 # Players with the permission askyblock.island.multiplier.# will have their blocks

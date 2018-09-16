@@ -117,22 +117,22 @@ public class Level extends Addon {
         // Register commands
         // AcidIsland hook in
         this.getPlugin().getAddonsManager().getAddonByName("AcidIsland").ifPresent(a -> {
-            CompositeCommand acidIslandCmd = getPlugin().getCommandsManager().getCommand("ai");
+            CompositeCommand acidIslandCmd = getPlugin().getCommandsManager().getCommand(getConfig().getString("acidisland.user-command","ai"));
             if (acidIslandCmd != null) {
                 new IslandLevel(this, acidIslandCmd);
                 new IslandTop(this, acidIslandCmd);
-                CompositeCommand acidCmd = getPlugin().getCommandsManager().getCommand("acid");
+                CompositeCommand acidCmd = getPlugin().getCommandsManager().getCommand(getConfig().getString("acidisland.admin-command","acid"));
                 new AdminLevel(this, acidCmd);
                 new AdminTop(this, acidCmd);
             }
         });
         // BSkyBlock hook in
         this.getPlugin().getAddonsManager().getAddonByName("BSkyBlock").ifPresent(a -> {
-            CompositeCommand bsbIslandCmd = getPlugin().getCommandsManager().getCommand("island");
+            CompositeCommand bsbIslandCmd = getPlugin().getCommandsManager().getCommand(getConfig().getString("bskyblock.user-command","island"));
             if (bsbIslandCmd != null) {
                 new IslandLevel(this, bsbIslandCmd);
                 new IslandTop(this, bsbIslandCmd);
-                CompositeCommand bsbAdminCmd = getPlugin().getCommandsManager().getCommand("bsbadmin");
+                CompositeCommand bsbAdminCmd = getPlugin().getCommandsManager().getCommand(getConfig().getString("bskyblock.admin-command","bsbadmin"));
                 new AdminLevel(this, bsbAdminCmd);
                 new AdminTop(this, bsbAdminCmd);
             }
