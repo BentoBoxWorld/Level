@@ -53,7 +53,7 @@ limits:
   NETHERRACK: 1000
   
 # This section lists the value of a block. Value must be an integer.
-# Any blocks not listed will have a value of 1. AIR is always zero.
+# Any blocks not listed will have a value of 0. AIR is always zero.
 # Format is MATERIAL: value 
 
 blocks:
