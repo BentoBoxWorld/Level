@@ -1,4 +1,4 @@
-package bentobox.addon.level.listeners;
+package world.bentobox.level.listeners;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -6,7 +6,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import bentobox.addon.level.Level;
+import world.bentobox.level.Level;
 
 /**
  * Listens for when players join and leave

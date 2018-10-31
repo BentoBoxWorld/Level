@@ -1,4 +1,4 @@
-package bentobox.addon.level.calculators;
+package world.bentobox.level.calculators;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,7 +19,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
 
-import bentobox.addon.level.Level;
+import world.bentobox.level.Level;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.util.Pair;
 import world.bentobox.bentobox.util.Util;

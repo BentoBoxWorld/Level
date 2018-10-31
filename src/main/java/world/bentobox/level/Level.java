@@ -1,4 +1,4 @@
-package bentobox.addon.level;
+package world.bentobox.level;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,14 +6,14 @@ import java.util.UUID;
 
 import org.bukkit.World;
 
-import bentobox.addon.level.commands.AdminLevel;
-import bentobox.addon.level.commands.AdminTop;
-import bentobox.addon.level.commands.IslandLevel;
-import bentobox.addon.level.commands.IslandTop;
-import bentobox.addon.level.config.Settings;
-import bentobox.addon.level.database.object.LevelsData;
-import bentobox.addon.level.listeners.JoinLeaveListener;
-import bentobox.addon.level.listeners.NewIslandListener;
+import world.bentobox.level.commands.AdminLevel;
+import world.bentobox.level.commands.AdminTop;
+import world.bentobox.level.commands.IslandLevel;
+import world.bentobox.level.commands.IslandTop;
+import world.bentobox.level.config.Settings;
+import world.bentobox.level.objects.LevelsData;
+import world.bentobox.level.listeners.JoinLeaveListener;
+import world.bentobox.level.listeners.NewIslandListener;
 import world.bentobox.bentobox.api.addons.Addon;
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.user.User;

@@ -1,13 +1,13 @@
-package bentobox.addon.level.calculators;
+package world.bentobox.level.calculators;
 
 import java.util.UUID;
 
 import org.bukkit.World;
 
-import bentobox.addon.level.Level;
-import bentobox.addon.level.calculators.CalcIslandLevel.Results;
-import bentobox.addon.level.event.IslandLevelCalculatedEvent;
-import bentobox.addon.level.event.IslandPreLevelEvent;
+import world.bentobox.level.Level;
+import world.bentobox.level.calculators.CalcIslandLevel.Results;
+import world.bentobox.level.event.IslandLevelCalculatedEvent;
+import world.bentobox.level.event.IslandPreLevelEvent;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
 

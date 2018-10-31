@@ -1,4 +1,4 @@
-package bentobox.addon.level;
+package world.bentobox.level;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -15,7 +15,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import bentobox.addon.level.calculators.PlayerLevel;
+import world.bentobox.level.calculators.PlayerLevel;
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.managers.IslandWorldManager;
@@ -55,7 +55,7 @@ public class LevelPresenterTest {
     }
 
     /**
-     * Test method for {@link bentobox.addon.level.LevelPresenter#LevelPresenter(bentobox.addon.level.Level, world.bentobox.bentobox.BentoBox)}.
+     * Test method for {@link LevelPresenter#LevelPresenter(Level, world.bentobox.bentobox.BentoBox)}.
      */
     @Test
     public void testLevelPresenter() {
@@ -63,7 +63,7 @@ public class LevelPresenterTest {
     }
 
     /**
-     * Test method for {@link bentobox.addon.level.LevelPresenter#calculateIslandLevel(org.bukkit.World, world.bentobox.bentobox.api.user.User, java.util.UUID)}.
+     * Test method for {@link LevelPresenter#calculateIslandLevel(org.bukkit.World, world.bentobox.bentobox.api.user.User, java.util.UUID)}.
      */
     @Test
     public void testCalculateIslandLevel() {

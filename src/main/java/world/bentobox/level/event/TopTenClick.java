@@ -1,4 +1,4 @@
-package bentobox.addon.level.event;
+package world.bentobox.level.event;
 
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;

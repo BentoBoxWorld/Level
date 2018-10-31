@@ -1,4 +1,4 @@
-package bentobox.addon.level.database.object;
+package world.bentobox.level.objects;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package bentobox.addon.level.event;
+package world.bentobox.level.event;
 
 import java.util.UUID;
 

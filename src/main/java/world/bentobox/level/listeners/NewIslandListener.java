@@ -1,4 +1,4 @@
-package bentobox.addon.level.listeners;
+package world.bentobox.level.listeners;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -7,8 +7,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-import bentobox.addon.level.Level;
-import bentobox.addon.level.calculators.CalcIslandLevel;
+import world.bentobox.level.Level;
+import world.bentobox.level.calculators.CalcIslandLevel;
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandCreatedEvent;
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandResettedEvent;
 import world.bentobox.bentobox.database.objects.Island;

@@ -1,5 +1,5 @@
-name: BentoBox-Level
-main: bentobox.addon.level.Level
+name: Level
+main: world.bentobox.level.Level
 version: ${version}
 
 softdepend: AcidIsland, BSkyBlock

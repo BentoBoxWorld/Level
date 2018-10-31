@@ -1,4 +1,4 @@
-package bentobox.addon.level;
+package world.bentobox.level;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.bukkit.World;
 
-import bentobox.addon.level.calculators.PlayerLevel;
+import world.bentobox.level.calculators.PlayerLevel;
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.user.User;
 

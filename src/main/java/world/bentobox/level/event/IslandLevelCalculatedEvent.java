@@ -1,8 +1,8 @@
-package bentobox.addon.level.event;
+package world.bentobox.level.event;
 
 import java.util.UUID;
 
-import bentobox.addon.level.calculators.CalcIslandLevel.Results;
+import world.bentobox.level.calculators.CalcIslandLevel.Results;
 import world.bentobox.bentobox.api.events.IslandBaseEvent;
 import world.bentobox.bentobox.database.objects.Island;
 

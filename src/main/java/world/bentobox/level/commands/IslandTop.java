@@ -1,8 +1,8 @@
-package bentobox.addon.level.commands;
+package world.bentobox.level.commands;
 
 import java.util.List;
 
-import bentobox.addon.level.Level;
+import world.bentobox.level.Level;
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.user.User;
 

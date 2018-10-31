@@ -1,4 +1,4 @@
-package bentobox.addon.level.config;
+package world.bentobox.level.config;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,7 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 
-import bentobox.addon.level.Level;
+import world.bentobox.level.Level;
 
 public class Settings {
 

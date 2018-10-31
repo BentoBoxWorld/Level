@@ -1,4 +1,4 @@
-package bentobox.addon.level.commands;
+package world.bentobox.level.commands;
 
 import java.util.List;
 import java.util.Map.Entry;
@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.bukkit.World;
 
-import bentobox.addon.level.Level;
+import world.bentobox.level.Level;
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
