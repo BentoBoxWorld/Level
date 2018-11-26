@@ -1,0 +1,30 @@
+###########################################################################################
+# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
+# the one at http://yaml-online-parser.appspot.com                                        #
+###########################################################################################
+
+admin:
+  level:
+    parameters: "<player>"
+    description: "计算玩家的岛屿等级"
+  top:
+    description: "显示排名前十榜单"
+    unknown-world: "&c未知世界！"
+    
+island:
+  level: 
+    parameters: "[player]"
+    description: "计算您的岛屿等级或显示 [player] 的岛屿等级"
+    calculating: "&a正在计算等级……" 
+    island-level-is: "&a岛屿等级是 &b[level]"
+    required-points-to-next-level: "&a距离下一级还需要 [points] 点"
+    deaths: "&c（[number] 次死亡）"
+    cooldown: "&c在您可以再次做这件事之前必须等待 &b[time] &c秒"
+    
+  top:
+    description: "显示排名前十榜单"
+    gui-title: "&a前十榜"
+    gui-heading: "&6[name]: &B[rank]"
+    island-level: "&B等级 [level]"
+    warp-to: "&A正在传送到 [name] 的岛屿"
+  
