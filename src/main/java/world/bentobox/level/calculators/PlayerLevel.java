@@ -1,15 +1,18 @@
 package world.bentobox.level.calculators;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.World;
 
+import world.bentobox.bentobox.api.events.addon.AddonEvent;
+import world.bentobox.bentobox.api.user.User;
+import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.level.Level;
 import world.bentobox.level.calculators.CalcIslandLevel.Results;
 import world.bentobox.level.event.IslandLevelCalculatedEvent;
 import world.bentobox.level.event.IslandPreLevelEvent;
-import world.bentobox.bentobox.api.user.User;
-import world.bentobox.bentobox.database.objects.Island;
 
 
 /**
@@ -53,6 +56,13 @@ public class PlayerLevel {
         // Fire post calculation event
         IslandLevelCalculatedEvent ilce = new IslandLevelCalculatedEvent(targetPlayer, island, calc.getResult());
         addon.getServer().getPluginManager().callEvent(ilce);
+        Map<String, Object> keyValues = new HashMap<>();
+        keyValues.put("targetPlayer", targetPlayer);
+        keyValues.put("islandUUID", island.getUniqueId());
+        keyValues.put("level", calc.getResult().getLevel());
+        keyValues.put("pointsToNextLevel", calc.getResult().getPointsToNextLevel());
+        keyValues.put("deathHandicap", calc.getResult().getDeathHandicap());
+        addon.getServer().getPluginManager().callEvent(new AddonEvent().builder().addon(addon).keyValues(keyValues).build());
         Results results = ilce.getResults();
         // Save the results
         island.getMemberSet().forEach(m -> addon.setIslandLevel(world, m, results.getLevel()));

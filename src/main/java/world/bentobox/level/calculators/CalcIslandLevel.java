@@ -19,10 +19,10 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
 
-import world.bentobox.level.Level;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.util.Pair;
 import world.bentobox.bentobox.util.Util;
+import world.bentobox.level.Level;
 
 
 public class CalcIslandLevel {
@@ -343,6 +343,17 @@ public class CalcIslandLevel {
          */
         public long getPointsToNextLevel() {
             return pointsToNextLevel;
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+            return "Results [report=" + report + ", mdCount=" + mdCount + ", uwCount=" + uwCount + ", ncCount="
+                    + ncCount + ", ofCount=" + ofCount + ", rawBlockCount=" + rawBlockCount + ", underWaterBlockCount="
+                    + underWaterBlockCount + ", level=" + level + ", deathHandicap=" + deathHandicap
+                    + ", pointsToNextLevel=" + pointsToNextLevel + "]";
         }
 
     }
