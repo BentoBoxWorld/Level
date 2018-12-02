@@ -6,9 +6,9 @@ import java.util.UUID;
 
 import org.bukkit.World;
 
-import world.bentobox.level.calculators.PlayerLevel;
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.user.User;
+import world.bentobox.level.calculators.PlayerLevel;
 
 class LevelPresenter {
 
@@ -38,7 +38,7 @@ class LevelPresenter {
         if (!plugin.getIslands().hasIsland(world, targetPlayer)) {
             // Player may be in a team
             if (plugin.getIslands().inTeam(world, targetPlayer)) {
-                targetPlayer = plugin.getIslands().getTeamLeader(world, targetPlayer);
+                targetPlayer = plugin.getIslands().getOwner(world, targetPlayer);
                 inTeam = true;
             } else {
                 sender.sendMessage("general.errors.player-has-no-island");
