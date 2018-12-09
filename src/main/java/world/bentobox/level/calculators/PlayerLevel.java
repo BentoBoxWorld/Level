@@ -57,6 +57,7 @@ public class PlayerLevel {
         IslandLevelCalculatedEvent ilce = new IslandLevelCalculatedEvent(targetPlayer, island, calc.getResult());
         addon.getServer().getPluginManager().callEvent(ilce);
         Map<String, Object> keyValues = new HashMap<>();
+        keyValues.put("eventName", "IslandLevelCalculatedEvent");
         keyValues.put("targetPlayer", targetPlayer);
         keyValues.put("islandUUID", island.getUniqueId());
         keyValues.put("level", calc.getResult().getLevel());
