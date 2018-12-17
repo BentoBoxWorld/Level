@@ -45,8 +45,13 @@ public class AdminTop extends CompositeCommand {
             Island island = getPlugin().getIslands().getIsland(world, topTen.getKey());
             if (island != null) {
                 rank++;
-                String item = String.valueOf(rank) + ":" + island.getName() + " "
-                        + user.getTranslation("topten.islandLevel", "[level]", String.valueOf(topTen.getValue()));
+                String item = user.getTranslation("admin.topten",
+                    "[rank]",
+                    "[name]",
+                    "[level]",
+                    String.valueOf(rank),
+                    this.getPlugin().getPlayers().getUser(island.getOwner()).getName(),
+                    String.valueOf(topTen.getValue()));
                 user.sendRawMessage(item);
             }
         }
