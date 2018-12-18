@@ -47,7 +47,7 @@ public class LevelPresenterTest {
         // In team
         when(im.inTeam(Mockito.any(), Mockito.any())).thenReturn(true);
         // team leader
-        when(im.getTeamLeader(Mockito.any(), Mockito.any())).thenReturn(UUID.randomUUID());
+        when(im.getOwner(Mockito.any(), Mockito.any())).thenReturn(UUID.randomUUID());
         
         pl = mock(PlayerLevel.class);
         PowerMockito.whenNew(PlayerLevel.class).withAnyArguments().thenReturn(pl);
