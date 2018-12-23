@@ -1,23 +1,27 @@
-package world.bentobox.level.commands;
+package world.bentobox.level.commands.island;
+
+import world.bentobox.bentobox.api.commands.CompositeCommand;
+import world.bentobox.bentobox.api.user.User;
+import world.bentobox.level.Level;
 
 import java.util.List;
 import java.util.UUID;
 
-import world.bentobox.level.Level;
-import world.bentobox.bentobox.api.commands.CompositeCommand;
-import world.bentobox.bentobox.api.user.User;
-
-/**
- * @deprecated Renamed and moved to {@link world.bentobox.level.commands.island.IslandLevelCommand}.
- */
-@Deprecated
-public class IslandLevel extends CompositeCommand {
+public class IslandLevelCommand extends CompositeCommand {
 
     private final Level levelPlugin;
 
-    public IslandLevel(Level levelPlugin, CompositeCommand parent) {
+    public IslandLevelCommand(Level levelPlugin, CompositeCommand parent) {
         super(parent, "level");
         this.levelPlugin = levelPlugin;
+    }
+
+    @Override
+    public void setup() {
+        this.setPermission("island.level");
+        this.setParametersHelp("island.level.parameters");
+        this.setDescription("island.level.description");
+        this.setOnlyPlayer(true);
     }
 
     @Override
@@ -41,14 +45,6 @@ public class IslandLevel extends CompositeCommand {
             levelPlugin.calculateIslandLevel(getWorld(), user, user.getUniqueId());
         }
         return false;
-    }
-
-    @Override
-    public void setup() {
-        this.setPermission("island.level");
-        this.setParametersHelp("island.level.parameters");
-        this.setDescription("island.level.description");
-        this.setOnlyPlayer(true);
     }
 
 }

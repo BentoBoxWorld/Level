@@ -1,23 +1,27 @@
-package world.bentobox.level.commands;
+package world.bentobox.level.commands.admin;
+
+import world.bentobox.bentobox.api.commands.CompositeCommand;
+import world.bentobox.bentobox.api.user.User;
+import world.bentobox.level.Level;
 
 import java.util.List;
 import java.util.UUID;
 
-import world.bentobox.level.Level;
-import world.bentobox.bentobox.api.commands.CompositeCommand;
-import world.bentobox.bentobox.api.user.User;
-
-/**
- * @deprecated Renamed and moved to {@link world.bentobox.level.commands.admin.AdminLevelCommand}.
- */
-@Deprecated
-public class AdminLevel extends CompositeCommand {
+public class AdminLevelCommand extends CompositeCommand {
 
     private final Level levelPlugin;
 
-    public AdminLevel(Level levelPlugin, CompositeCommand parent) {
+    public AdminLevelCommand(Level levelPlugin, CompositeCommand parent) {
         super(parent, "level");
         this.levelPlugin = levelPlugin;
+    }
+
+    @Override
+    public void setup() {
+        this.setPermission("admin.level");
+        this.setOnlyPlayer(false);
+        this.setParametersHelp("admin.level.parameters");
+        this.setDescription("admin.level.description");
     }
 
     @Override
@@ -38,14 +42,4 @@ public class AdminLevel extends CompositeCommand {
             return false;
         }
     }
-
-    @Override
-    public void setup() {
-        this.setPermission("admin.level");
-        this.setOnlyPlayer(false);
-        this.setParametersHelp("admin.level.parameters");
-        this.setDescription("admin.level.description");
-
-    }
-
 }

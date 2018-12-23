@@ -1,27 +1,29 @@
-package world.bentobox.level.commands;
-
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.UUID;
+package world.bentobox.level.commands.admin;
 
 import org.bukkit.World;
-
-import world.bentobox.level.Level;
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.level.Level;
 
-/**
- * @deprecated Renamed and moved to {@link world.bentobox.level.commands.admin.AdminTopCommand}.
- */
-@Deprecated
-public class AdminTop extends CompositeCommand {
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+public class AdminTopCommand extends CompositeCommand {
 
     private final Level levelPlugin;
 
-    public AdminTop(Level levelPlugin, CompositeCommand parent) {
+    public AdminTopCommand(Level levelPlugin, CompositeCommand parent) {
         super(parent, "top", "topten");
         this.levelPlugin = levelPlugin;
+    }
+
+    @Override
+    public void setup() {
+        this.setPermission("admin.top");
+        this.setOnlyPlayer(false);
+        this.setDescription("admin.top.description");
     }
 
     @Override
@@ -45,29 +47,21 @@ public class AdminTop extends CompositeCommand {
 
         }
         int rank = 0;
-        for (Entry<UUID, Long> topTen : levelPlugin.getTopTen().getTopTenList(world).getTopTen().entrySet()) {
+        for (Map.Entry<UUID, Long> topTen : levelPlugin.getTopTen().getTopTenList(world).getTopTen().entrySet()) {
             Island island = getPlugin().getIslands().getIsland(world, topTen.getKey());
             if (island != null) {
                 rank++;
                 String item = user.getTranslation("admin.topten",
-                    "[rank]",
-                    "[name]",
-                    "[level]",
-                    String.valueOf(rank),
-                    this.getPlugin().getPlayers().getUser(island.getOwner()).getName(),
-                    String.valueOf(topTen.getValue()));
+                        "[rank]",
+                        "[name]",
+                        "[level]",
+                        String.valueOf(rank),
+                        this.getPlugin().getPlayers().getUser(island.getOwner()).getName(),
+                        String.valueOf(topTen.getValue()));
                 user.sendRawMessage(item);
             }
         }
 
         return true;
     }
-
-    @Override
-    public void setup() {
-        this.setPermission("admin.top");
-        this.setOnlyPlayer(false);
-        this.setDescription("admin.top.description");
-    }
-
 }

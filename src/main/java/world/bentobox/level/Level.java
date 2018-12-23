@@ -6,10 +6,10 @@ import java.util.UUID;
 
 import org.bukkit.World;
 
-import world.bentobox.level.commands.AdminLevel;
-import world.bentobox.level.commands.AdminTop;
-import world.bentobox.level.commands.IslandLevel;
-import world.bentobox.level.commands.IslandTop;
+import world.bentobox.level.commands.admin.AdminLevelCommand;
+import world.bentobox.level.commands.admin.AdminTopCommand;
+import world.bentobox.level.commands.island.IslandLevelCommand;
+import world.bentobox.level.commands.island.IslandTopCommand;
 import world.bentobox.level.config.Settings;
 import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.listeners.JoinLeaveListener;
@@ -20,9 +20,8 @@ import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.Database;
 import world.bentobox.bentobox.database.objects.Island;
 
-
 /**
- * Addon to BSkyBlock that enables island level scoring and top ten functionality
+ * Addon to BSkyBlock/AcidIsland that enables island level scoring and top ten functionality
  * @author tastybento
  *
  */
@@ -119,22 +118,22 @@ public class Level extends Addon {
         this.getPlugin().getAddonsManager().getAddonByName("AcidIsland").ifPresent(a -> {
             CompositeCommand acidIslandCmd = getPlugin().getCommandsManager().getCommand(getConfig().getString("acidisland.user-command","ai"));
             if (acidIslandCmd != null) {
-                new IslandLevel(this, acidIslandCmd);
-                new IslandTop(this, acidIslandCmd);
+                new IslandLevelCommand(this, acidIslandCmd);
+                new IslandTopCommand(this, acidIslandCmd);
                 CompositeCommand acidCmd = getPlugin().getCommandsManager().getCommand(getConfig().getString("acidisland.admin-command","acid"));
-                new AdminLevel(this, acidCmd);
-                new AdminTop(this, acidCmd);
+                new AdminLevelCommand(this, acidCmd);
+                new AdminTopCommand(this, acidCmd);
             }
         });
         // BSkyBlock hook in
         this.getPlugin().getAddonsManager().getAddonByName("BSkyBlock").ifPresent(a -> {
             CompositeCommand bsbIslandCmd = getPlugin().getCommandsManager().getCommand(getConfig().getString("bskyblock.user-command","island"));
             if (bsbIslandCmd != null) {
-                new IslandLevel(this, bsbIslandCmd);
-                new IslandTop(this, bsbIslandCmd);
+                new IslandLevelCommand(this, bsbIslandCmd);
+                new IslandTopCommand(this, bsbIslandCmd);
                 CompositeCommand bsbAdminCmd = getPlugin().getCommandsManager().getCommand(getConfig().getString("bskyblock.admin-command","bsbadmin"));
-                new AdminLevel(this, bsbAdminCmd);
-                new AdminTop(this, bsbAdminCmd);
+                new AdminLevelCommand(this, bsbAdminCmd);
+                new AdminTopCommand(this, bsbAdminCmd);
             }
         });
 

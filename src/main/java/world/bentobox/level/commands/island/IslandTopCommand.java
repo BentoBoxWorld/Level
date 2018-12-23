@@ -1,20 +1,16 @@
-package world.bentobox.level.commands;
+package world.bentobox.level.commands.island;
+
+import world.bentobox.bentobox.api.commands.CompositeCommand;
+import world.bentobox.bentobox.api.user.User;
+import world.bentobox.level.Level;
 
 import java.util.List;
 
-import world.bentobox.level.Level;
-import world.bentobox.bentobox.api.commands.CompositeCommand;
-import world.bentobox.bentobox.api.user.User;
-
-/**
- * @deprecated Renamed and moved to {@link world.bentobox.level.commands.island.IslandTopCommand}.
- */
-@Deprecated
-public class IslandTop extends CompositeCommand {
+public class IslandTopCommand extends CompositeCommand {
 
     private final Level plugin;
 
-    public IslandTop(Level plugin, CompositeCommand parent) {
+    public IslandTopCommand(Level plugin, CompositeCommand parent) {
         super(parent, "top", "topten");
         this.plugin = plugin;
     }
