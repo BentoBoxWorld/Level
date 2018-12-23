@@ -10,7 +10,7 @@ admin:
   top:
     description: "show the top ten list"
     unknown-world: "&cUnknown world!"
-  topten: "[rank]. [name] - island level = [level]"
+    display: "&f[rank]. &a[name] &7- &b[level]"
 
 island:
   level: 
