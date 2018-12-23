@@ -19,6 +19,7 @@ import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.Database;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.level.requests.LevelRequestHandler;
 
 /**
  * Addon to BSkyBlock/AcidIsland that enables island level scoring and top ten functionality
@@ -140,6 +141,10 @@ public class Level extends Addon {
         // Register new island listener
         registerListener(new NewIslandListener(this));
         registerListener(new JoinLeaveListener(this));
+
+        // Register request handlers
+        registerRequestHandler(new LevelRequestHandler(this));
+
         // Done
 
     }
