@@ -10,7 +10,8 @@ admin:
   top:
     description: "show the top ten list"
     unknown-world: "&cUnknown world!"
-    
+  topten: "[rank]. [name] - island level = [level]"
+
 island:
   level: 
     parameters: "[player]"

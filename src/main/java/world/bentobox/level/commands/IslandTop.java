@@ -17,7 +17,9 @@ public class IslandTop extends CompositeCommand {
 
     @Override
     public boolean execute(User user, String label, List<String> list) {
-        plugin.getTopTen().getGUI(getWorld(), user, getPermissionPrefix());
+        if (user.isPlayer()) {
+            this.plugin.getTopTen().getGUI(getWorld(), user, getPermissionPrefix());
+        }
         return true;
     }
 
