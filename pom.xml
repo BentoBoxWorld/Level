@@ -9,24 +9,24 @@
 	<version>0.2.0-SNAPSHOT</version>
 
 	<name>Level</name>
-	<description>Level is an add-on for BentoBox, an expandable Minecraft Bukkit plugin for island-type games like ASkyBlock or AcidIsland.</description>
-	<url>https://github.com/BentoBoxWorld/addon-level</url>
-	<inceptionYear>2018</inceptionYear>
+	<description>Level is an add-on for BentoBox, an expandable Minecraft Bukkit plugin for island-type games like SkyBlock or AcidIsland.</description>
+	<url>https://github.com/BentoBoxWorld/Level</url>
+	<inceptionYear>2017</inceptionYear>
 
 	<scm>
-		<connection>scm:git:https://github.com/BentoBoxWorld/addon-level.git</connection>
-		<developerConnection>scm:git:git@github.com:BentoBoxWorld/addon-level.git</developerConnection>
-		<url>https://github.com/BentoBoxWorld/addon-welcomewarpsigns</url>
+		<connection>scm:git:https://github.com/BentoBoxWorld/Level.git</connection>
+		<developerConnection>scm:git:git@github.com:BentoBoxWorld/Level.git</developerConnection>
+		<url>https://github.com/BentoBoxWorld/Level</url>
 	</scm>
 
 	<ciManagement>
 		<system>jenkins</system>
-		<url>http://ci.codemc.org/job/BentoBoxWorld/job/addon-level</url>
+		<url>http://ci.codemc.org/job/BentoBoxWorld/job/Level</url>
 	</ciManagement>
 
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/BentoBoxWorld/addon-level/issues</url>
+		<url>https://github.com/BentoBoxWorld/Level/issues</url>
 	</issueManagement>
 
 	<distributionManagement>
@@ -53,8 +53,8 @@
 			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots</url>
 		</repository>
 		<repository>
-			<id>codemc</id>
-			<url>https://repo.codemc.org/repository/maven-snapshots/</url>
+			<id>codemc-repo</id>
+			<url>https://repo.codemc.org/repository/maven-public/</url>
 		</repository>
 	</repositories>
 
@@ -62,7 +62,7 @@
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.13.1-R0.1-SNAPSHOT</version>
+			<version>1.13.2-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
