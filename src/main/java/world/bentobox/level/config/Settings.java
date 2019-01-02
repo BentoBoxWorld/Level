@@ -167,7 +167,7 @@ public class Settings {
     /**
      * @return the levelWait
      */
-    private int getLevelWait() {
+    public final int getLevelWait() {
         return levelWait;
     }
     /**
