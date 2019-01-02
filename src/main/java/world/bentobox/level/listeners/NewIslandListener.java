@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandCreatedEvent;
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandResettedEvent;
+import world.bentobox.bentobox.api.events.team.TeamEvent.TeamJoinEvent;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.level.Level;
 import world.bentobox.level.calculators.CalcIslandLevel;
@@ -46,6 +47,24 @@ public class NewIslandListener implements Listener {
             addon.getPlayers().setDeaths(e.getIsland().getWorld(), e.getOwner(), 0);
         }
     }
+
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onTeamJoin(TeamJoinEvent event)
+    {
+        if (this.addon.getSettings().isTeamJoinDeathReset())
+        {
+            this.cil.putIfAbsent(event.getIsland(),
+                new CalcIslandLevel(this.addon,
+                    event.getIsland(),
+                    () -> zeroLevel(event.getIsland())));
+
+            this.addon.getPlayers().setDeaths(event.getIsland().getWorld(),
+                event.getOwner(),
+                0);
+        }
+    }
+
 
     private void zeroLevel(Island island) {
         if (cil.containsKey(island)) {
