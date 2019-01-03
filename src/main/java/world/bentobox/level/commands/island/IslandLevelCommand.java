@@ -34,17 +34,39 @@ public class IslandLevelCommand extends CompositeCommand {
                 user.sendMessage("general.errors.unknown-player");
                 return true;
             } else if (user.getUniqueId().equals(playerUUID) ) {
-                // Self level request
-                levelPlugin.calculateIslandLevel(getWorld(), user, user.getUniqueId());
+                return this.calculateLevel(user);
             } else {
                 user.sendMessage("island.level.island-level-is", "[level]", String.valueOf(levelPlugin.getIslandLevel(getWorld(), playerUUID)));
                 return true;
             }
         } else {
-            // Self level request
-            levelPlugin.calculateIslandLevel(getWorld(), user, user.getUniqueId());
+            return this.calculateLevel(user);
         }
-        return false;
     }
 
+
+    /**
+     * This method calls island level calculation if it is allowed by cooldown.
+     * @param user User which island level must be calculated.
+     * @return True if le
+     */
+    private boolean calculateLevel(User user)
+    {
+        int coolDown = this.levelPlugin.getSettings().getLevelWait();
+
+        if (coolDown > 0 && this.checkCooldown(user, null))
+        {
+            return false;
+        }
+
+        // Self level request
+        this.levelPlugin.calculateIslandLevel(getWorld(), user, user.getUniqueId());
+
+        if (coolDown > 0)
+        {
+            this.setCooldown(user.getUniqueId(), null, coolDown);
+        }
+
+        return true;
+    }
 }
