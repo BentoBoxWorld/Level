@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChunkSnapshot;
@@ -214,12 +215,38 @@ public class CalcIslandLevel {
         task.cancel();
         // Finalize calculations
         result.rawBlockCount += (long)(result.underWaterBlockCount * addon.getSettings().getUnderWaterMultiplier());
+
         // Set the death penalty
-        result.deathHandicap = addon.getPlayers().getDeaths(world, island.getOwner());
-        // Set final score
-        result.level = (result.rawBlockCount / addon.getSettings().getLevelCost()) - result.deathHandicap - island.getLevelHandicap();
+        if (this.addon.getSettings().isSumTeamDeaths())
+        {
+            for (UUID uuid : this.island.getMemberSet())
+            {
+                this.result.deathHandicap += this.addon.getPlayers().getDeaths(this.world, uuid);
+            }
+        }
+        else
+        {
+            this.result.deathHandicap =
+                this.addon.getPlayers().getDeaths(this.world, this.island.getOwner());
+        }
+
+        // Just lazy check for min death count.
+		this.result.deathHandicap = Math.min(this.result.deathHandicap, this.addon.getSettings().getMaxDeaths());
+
+		long blockAndDeathPoints = this.result.rawBlockCount;
+
+        if (this.addon.getSettings().getDeathPenalty() > 0)
+		{
+			// Proper death penalty calculation.
+			blockAndDeathPoints -= this.result.deathHandicap * this.addon.getSettings().getDeathPenalty();
+		}
+
+		this.result.level = blockAndDeathPoints / this.addon.getSettings().getLevelCost() - this.island.getLevelHandicap();
+
         // Calculate how many points are required to get to the next level
-        result.pointsToNextLevel = addon.getSettings().getLevelCost() - (result.rawBlockCount % addon.getSettings().getLevelCost());
+        this.result.pointsToNextLevel = this.addon.getSettings().getLevelCost() -
+			(blockAndDeathPoints % this.addon.getSettings().getLevelCost());
+
         // Report
         result.report = getReport();
         // All done.
