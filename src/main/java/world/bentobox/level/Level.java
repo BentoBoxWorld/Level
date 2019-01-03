@@ -6,19 +6,19 @@ import java.util.UUID;
 
 import org.bukkit.World;
 
-import world.bentobox.level.commands.admin.AdminLevelCommand;
-import world.bentobox.level.commands.admin.AdminTopCommand;
-import world.bentobox.level.commands.island.IslandLevelCommand;
-import world.bentobox.level.commands.island.IslandTopCommand;
-import world.bentobox.level.config.Settings;
-import world.bentobox.level.objects.LevelsData;
-import world.bentobox.level.listeners.JoinLeaveListener;
-import world.bentobox.level.listeners.NewIslandListener;
 import world.bentobox.bentobox.api.addons.Addon;
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.Database;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.level.commands.admin.AdminLevelCommand;
+import world.bentobox.level.commands.admin.AdminTopCommand;
+import world.bentobox.level.commands.island.IslandLevelCommand;
+import world.bentobox.level.commands.island.IslandTopCommand;
+import world.bentobox.level.config.Settings;
+import world.bentobox.level.listeners.JoinLeaveListener;
+import world.bentobox.level.listeners.NewIslandListener;
+import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.requests.LevelRequestHandler;
 
 /**
@@ -184,7 +184,6 @@ public class Level extends Addon {
         setIslandLevel(island.getWorld(), island.getOwner(), level);
         levelsCache.get(island.getOwner()).setInitialIslandLevel(level);
     }
-
 
     public Database<LevelsData> getHandler() {
         return handler;

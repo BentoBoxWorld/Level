@@ -148,11 +148,7 @@ public class CalcIslandLevel {
 
     /**
      * Checks if a block has been limited or not and whether a block has any value or not
-<<<<<<< HEAD
      * @param md Material
-=======
-     * @param md - Material to check
->>>>>>> branch 'develop' of https://github.com/BentoBoxWorld/addon-level.git
      * @return value of the block if can be counted
      */
     private int limitCount(Material md) {
@@ -176,11 +172,7 @@ public class CalcIslandLevel {
     /**
      * Get value of a material
      * World blocks trump regular block values
-<<<<<<< HEAD
-     * @param md Material
-=======
      * @param md - Material to check
->>>>>>> branch 'develop' of https://github.com/BentoBoxWorld/addon-level.git
      * @return value of a material
      */
     private int getValue(Material md) {
@@ -193,11 +185,7 @@ public class CalcIslandLevel {
     /**
      * Get a set of all the chunks in island
      * @param island - island
-<<<<<<< HEAD
-     * @return - set of all the chunks in the island to scan
-=======
      * @return - set of pairs of x,z coordinates to check
->>>>>>> branch 'develop' of https://github.com/BentoBoxWorld/addon-level.git
      */
     private Set<Pair<Integer, Integer>> getChunksToScan(Island island) {
         Set<Pair<Integer, Integer>> chunkSnapshot = new HashSet<>();
@@ -227,25 +215,26 @@ public class CalcIslandLevel {
         else
         {
             this.result.deathHandicap =
-                this.addon.getPlayers().getDeaths(this.world, this.island.getOwner());
+                    this.addon.getPlayers().getDeaths(this.world, this.island.getOwner());
         }
 
         // Just lazy check for min death count.
-		this.result.deathHandicap = Math.min(this.result.deathHandicap, this.addon.getSettings().getMaxDeaths());
+        this.result.deathHandicap = Math.min(this.result.deathHandicap, this.addon.getSettings().getMaxDeaths());
 
-		long blockAndDeathPoints = this.result.rawBlockCount;
+        long blockAndDeathPoints = this.result.rawBlockCount;
 
         if (this.addon.getSettings().getDeathPenalty() > 0)
-		{
-			// Proper death penalty calculation.
-			blockAndDeathPoints -= this.result.deathHandicap * this.addon.getSettings().getDeathPenalty();
-		}
+        {
+            // Proper death penalty calculation.
+            blockAndDeathPoints -= this.result.deathHandicap * this.addon.getSettings().getDeathPenalty();
+        }
 
-		this.result.level = blockAndDeathPoints / this.addon.getSettings().getLevelCost() - this.island.getLevelHandicap();
+        this.result.level = blockAndDeathPoints / this.addon.getSettings().getLevelCost() - this.island.getLevelHandicap();
+
 
         // Calculate how many points are required to get to the next level
         this.result.pointsToNextLevel = this.addon.getSettings().getLevelCost() -
-			(blockAndDeathPoints % this.addon.getSettings().getLevelCost());
+                (blockAndDeathPoints % this.addon.getSettings().getLevelCost());
 
         // Report
         result.report = getReport();

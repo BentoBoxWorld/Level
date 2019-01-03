@@ -7,11 +7,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-import world.bentobox.level.Level;
-import world.bentobox.level.calculators.CalcIslandLevel;
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandCreatedEvent;
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandResettedEvent;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.level.Level;
+import world.bentobox.level.calculators.CalcIslandLevel;
 
 /**
  * Listens for new islands and sets the level to zero automatically
