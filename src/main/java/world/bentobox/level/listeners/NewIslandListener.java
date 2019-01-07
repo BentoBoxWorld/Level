@@ -33,12 +33,16 @@ public class NewIslandListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onNewIsland(IslandCreatedEvent e) {
-        cil.putIfAbsent(e.getIsland(), new CalcIslandLevel(addon, e.getIsland(), () -> zeroLevel(e.getIsland())));
+        if (e.getIsland().getOwner() != null && e.getIsland().getWorld() != null) {
+            cil.putIfAbsent(e.getIsland(), new CalcIslandLevel(addon, e.getIsland(), () -> zeroLevel(e.getIsland())));
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onNewIsland(IslandResettedEvent e) {
-        cil.putIfAbsent(e.getIsland(), new CalcIslandLevel(addon, e.getIsland(), () -> zeroLevel(e.getIsland())));
+        if (e.getIsland().getOwner() != null && e.getIsland().getWorld() != null) {
+            cil.putIfAbsent(e.getIsland(), new CalcIslandLevel(addon, e.getIsland(), () -> zeroLevel(e.getIsland())));
+        }
     }
 
     private void zeroLevel(Island island) {

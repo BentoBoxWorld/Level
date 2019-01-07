@@ -164,6 +164,10 @@ public class Level extends Addon {
      * @param level - level
      */
     public void setIslandLevel(World world, UUID targetPlayer, long level) {
+        if (world == null || targetPlayer == null) {
+            this.logError("Level: request to store a null " + world + " " + targetPlayer);
+            return;
+        }
         LevelsData ld = getLevelsData(targetPlayer);
         if (ld == null) {
             ld = new LevelsData(targetPlayer, level, world);
@@ -181,6 +185,10 @@ public class Level extends Addon {
      * @param level - initial calculated island level
      */
     public void setInitialIslandLevel(Island island, long level) {
+        if (island.getWorld() == null || island.getOwner() == null) {
+            this.logError("Level: request to store a null (initial) " + island.getWorld() + " " + island.getOwner());
+            return;
+        }
         setIslandLevel(island.getWorld(), island.getOwner(), level);
         levelsCache.get(island.getOwner()).setInitialIslandLevel(level);
     }
@@ -190,7 +198,7 @@ public class Level extends Addon {
     }
 
     public void uncachePlayer(UUID uniqueId) {
-        if (levelsCache.containsKey(uniqueId)) {
+        if (levelsCache.containsKey(uniqueId) && levelsCache.get(uniqueId) != null) {
             handler.saveObject(levelsCache.get(uniqueId));
         }
         levelsCache.remove(uniqueId);
