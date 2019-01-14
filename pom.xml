@@ -214,6 +214,7 @@
 			<properties>
 				<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 				<sonar.organization>bentobox-world</sonar.organization>
+				<sonar.projectKey>BentoBoxWorld_Level</sonar.projectKey>
 			</properties>
 			<build>
 				<plugins>
