@@ -1,14 +1,15 @@
 package world.bentobox.level.commands.admin;
 
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import org.bukkit.World;
+
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.level.Level;
-
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public class AdminTopCommand extends CompositeCommand {
 
@@ -38,9 +39,8 @@ public class AdminTopCommand extends CompositeCommand {
                 return false;
             }
         } else {
-            if (getPlugin().getIWM().isOverWorld(args.get(0))) {
-                world = getPlugin().getIWM().getIslandWorld(args.get(0));
-            } else {
+            world = getPlugin().getIWM().getIslandWorld(args.get(0));
+            if (world == null) {
                 user.sendMessage("commands.admin.top.unknown-world");
                 return false;
             }
