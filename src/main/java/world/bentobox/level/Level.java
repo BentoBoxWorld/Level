@@ -7,7 +7,6 @@ import java.util.UUID;
 import org.bukkit.World;
 
 import world.bentobox.bentobox.api.addons.Addon;
-import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.Database;
 import world.bentobox.bentobox.database.objects.Island;
@@ -114,28 +113,18 @@ public class Level extends Addon {
         // Start the top ten and register it for clicks
         topTen = new TopTen(this);
         registerListener(topTen);
-        // Register commands
-        // AcidIsland hook in
-        this.getPlugin().getAddonsManager().getAddonByName("AcidIsland").ifPresent(a -> {
-            CompositeCommand acidIslandCmd = getPlugin().getCommandsManager().getCommand(getConfig().getString("acidisland.user-command","ai"));
-            if (acidIslandCmd != null) {
-                new IslandLevelCommand(this, acidIslandCmd);
-                new IslandTopCommand(this, acidIslandCmd);
-                CompositeCommand acidCmd = getPlugin().getCommandsManager().getCommand(getConfig().getString("acidisland.admin-command","acid"));
-                new AdminLevelCommand(this, acidCmd);
-                new AdminTopCommand(this, acidCmd);
-            }
-        });
-        // BSkyBlock hook in
-        this.getPlugin().getAddonsManager().getAddonByName("BSkyBlock").ifPresent(a -> {
-            CompositeCommand bsbIslandCmd = getPlugin().getCommandsManager().getCommand(getConfig().getString("bskyblock.user-command","island"));
-            if (bsbIslandCmd != null) {
-                new IslandLevelCommand(this, bsbIslandCmd);
-                new IslandTopCommand(this, bsbIslandCmd);
-                CompositeCommand bsbAdminCmd = getPlugin().getCommandsManager().getCommand(getConfig().getString("bskyblock.admin-command","bsbadmin"));
-                new AdminLevelCommand(this, bsbAdminCmd);
-                new AdminTopCommand(this, bsbAdminCmd);
-            }
+        // Register commands for AcidIsland and BSkyBlock
+        getPlugin().getAddonsManager().getGameModeAddons().stream()
+        .filter(gm -> gm.getDescription().getName().equals("AcidIsland") || gm.getDescription().getName().equals("BSkyBlock"))
+        .forEach(gm -> {
+            gm.getAdminCommand().ifPresent(adminCommand ->  {
+                new AdminLevelCommand(this, adminCommand);
+                new AdminTopCommand(this, adminCommand);
+            });
+            gm.getPlayerCommand().ifPresent(playerCmd -> {
+                new IslandLevelCommand(this, playerCmd);
+                new IslandTopCommand(this, playerCmd);
+            });
         });
 
         // Register new island listener
