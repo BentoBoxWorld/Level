@@ -18,6 +18,7 @@ import world.bentobox.level.config.Settings;
 import world.bentobox.level.listeners.JoinLeaveListener;
 import world.bentobox.level.listeners.NewIslandListener;
 import world.bentobox.level.objects.LevelsData;
+import world.bentobox.level.placeholders.LevelPlaceholder;
 import world.bentobox.level.requests.LevelRequestHandler;
 
 /**
@@ -125,6 +126,11 @@ public class Level extends Addon {
                 new IslandLevelCommand(this, playerCmd);
                 new IslandTopCommand(this, playerCmd);
             });
+            // Register placeholders
+            getPlugin().logDebug(getPlugin().getPlaceholdersManager());
+            if (getPlugin().getPlaceholdersManager() != null) {
+                getPlugin().getPlaceholdersManager().registerPlaceholder(this, "island-level", new LevelPlaceholder(this, gm));
+            }
         });
 
         // Register new island listener
@@ -133,6 +139,8 @@ public class Level extends Addon {
 
         // Register request handlers
         registerRequestHandler(new LevelRequestHandler(this));
+
+
 
         // Done
 
