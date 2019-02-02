@@ -127,7 +127,6 @@ public class Level extends Addon {
                 new IslandTopCommand(this, playerCmd);
             });
             // Register placeholders
-            getPlugin().logDebug(getPlugin().getPlaceholdersManager());
             if (getPlugin().getPlaceholdersManager() != null) {
                 getPlugin().getPlaceholdersManager().registerPlaceholder(this, "island-level", new LevelPlaceholder(this, gm));
             }
