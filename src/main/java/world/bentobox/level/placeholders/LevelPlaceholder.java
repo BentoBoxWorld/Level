@@ -19,7 +19,8 @@ public class LevelPlaceholder implements PlaceholderReplacer {
 
     /**
      * Provides placeholder support
-     * @param gm
+     * @param addon - Level addon
+     * @param gm - Game mode
      */
     public LevelPlaceholder(Level addon, GameModeAddon gm) {
         this.addon = addon;
