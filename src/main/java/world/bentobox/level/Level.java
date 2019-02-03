@@ -16,7 +16,7 @@ import world.bentobox.level.commands.island.IslandLevelCommand;
 import world.bentobox.level.commands.island.IslandTopCommand;
 import world.bentobox.level.config.Settings;
 import world.bentobox.level.listeners.JoinLeaveListener;
-import world.bentobox.level.listeners.NewIslandListener;
+import world.bentobox.level.listeners.IslandTeamListeners;
 import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.placeholders.LevelPlaceholder;
 import world.bentobox.level.requests.LevelRequestHandler;
@@ -133,7 +133,7 @@ public class Level extends Addon {
         });
 
         // Register new island listener
-        registerListener(new NewIslandListener(this));
+        registerListener(new IslandTeamListeners(this));
         registerListener(new JoinLeaveListener(this));
 
         // Register request handlers
