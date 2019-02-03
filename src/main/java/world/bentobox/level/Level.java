@@ -180,6 +180,7 @@ public class Level extends Addon {
         // Add to cache
         levelsCache.put(targetPlayer, ld);
         topTen.addEntry(world, targetPlayer, getIslandLevel(world, targetPlayer));
+        handler.saveObject(ld);
     }
 
     /**
