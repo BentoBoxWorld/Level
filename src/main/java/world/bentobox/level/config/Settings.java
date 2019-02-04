@@ -1,6 +1,8 @@
 package world.bentobox.level.config;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
@@ -23,10 +25,14 @@ public class Settings {
     private int maxDeaths;
     private boolean islandResetDeathReset;
     private boolean teamJoinDeathReset;
+    private List<String> gameModes = new ArrayList<>();
 
     public Settings(Level level) {
 
         level.saveDefaultConfig();
+
+        // GameModes
+        gameModes = level.getConfig().getStringList("game-modes");
 
         setLevelWait(level.getConfig().getInt("levelwait", 60));
         if (getLevelWait() < 0) {
@@ -219,6 +225,13 @@ public class Settings {
      */
     public Map<World, Map<Material, Integer>> getWorldBlockValues() {
         return worldBlockValues;
+    }
+
+    /**
+     * @return the gameModes
+     */
+    public List<String> getGameModes() {
+        return gameModes;
     }
 
 }

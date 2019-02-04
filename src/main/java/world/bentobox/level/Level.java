@@ -118,8 +118,9 @@ public class Level extends Addon {
         registerListener(topTen);
         // Register commands for AcidIsland and BSkyBlock
         getPlugin().getAddonsManager().getGameModeAddons().stream()
-        .filter(gm -> gm.getDescription().getName().equals("AcidIsland") || gm.getDescription().getName().equals("BSkyBlock"))
+        .filter(gm -> settings.getGameModes().contains(gm.getDescription().getName()))
         .forEach(gm -> {
+            log("Level hooking into " + gm.getDescription().getName());
             gm.getAdminCommand().ifPresent(adminCommand ->  {
                 new AdminLevelCommand(this, adminCommand);
                 new AdminTopCommand(this, adminCommand);
@@ -130,11 +131,11 @@ public class Level extends Addon {
             });
             // Register placeholders
             if (getPlugin().getPlaceholdersManager() != null) {
-                getPlugin().getPlaceholdersManager().registerPlaceholder(this, "island-level", new LevelPlaceholder(this, gm));
+                getPlugin().getPlaceholdersManager().registerPlaceholder(this, gm.getDescription().getName().toLowerCase() + "-island-level", new LevelPlaceholder(this, gm));
                 // Top Ten
                 for (int i = 1; i < 11; i++) {
-                    getPlugin().getPlaceholdersManager().registerPlaceholder(this, "island-level-top-value-" + i, new TopTenPlaceholder(this, gm, i));
-                    getPlugin().getPlaceholdersManager().registerPlaceholder(this, "island-level-top-name-" + i, new TopTenNamePlaceholder(this, gm, i));
+                    getPlugin().getPlaceholdersManager().registerPlaceholder(this, gm.getDescription().getName().toLowerCase() + "-island-level-top-value-" + i, new TopTenPlaceholder(this, gm, i));
+                    getPlugin().getPlaceholdersManager().registerPlaceholder(this, gm.getDescription().getName().toLowerCase() + "-island-level-top-name-" + i, new TopTenNamePlaceholder(this, gm, i));
                 }
             }
         });
