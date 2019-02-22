@@ -1,11 +1,12 @@
 package world.bentobox.level.requests;
 
-import org.bukkit.Bukkit;
-import world.bentobox.bentobox.api.addons.request.AddonRequestHandler;
-import world.bentobox.level.Level;
-
 import java.util.Map;
 import java.util.UUID;
+
+import org.bukkit.Bukkit;
+
+import world.bentobox.bentobox.api.addons.request.AddonRequestHandler;
+import world.bentobox.level.Level;
 
 public class LevelRequestHandler extends AddonRequestHandler {
 

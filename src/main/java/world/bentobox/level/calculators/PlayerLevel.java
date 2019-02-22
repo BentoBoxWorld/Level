@@ -56,6 +56,7 @@ public class PlayerLevel {
         // Fire post calculation event
         IslandLevelCalculatedEvent ilce = new IslandLevelCalculatedEvent(targetPlayer, island, calc.getResult());
         addon.getServer().getPluginManager().callEvent(ilce);
+        // This exposes these values to plugins via the event
         Map<String, Object> keyValues = new HashMap<>();
         keyValues.put("eventName", "IslandLevelCalculatedEvent");
         keyValues.put("targetPlayer", targetPlayer);
@@ -63,6 +64,7 @@ public class PlayerLevel {
         keyValues.put("level", calc.getResult().getLevel());
         keyValues.put("pointsToNextLevel", calc.getResult().getPointsToNextLevel());
         keyValues.put("deathHandicap", calc.getResult().getDeathHandicap());
+        keyValues.put("initialLevel", calc.getResult().getInitialLevel());
         addon.getServer().getPluginManager().callEvent(new AddonEvent().builder().addon(addon).keyValues(keyValues).build());
         Results results = ilce.getResults();
         // Save the results

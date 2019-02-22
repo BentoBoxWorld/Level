@@ -63,6 +63,9 @@ public class CalcIslandLevel {
         // Results go here
         result = new Results();
 
+        // Set the initial island handicap
+        result.initialLevel = addon.getInitialIslandLevel(island);
+        
         // Get chunks to scan
         chunksToScan = getChunksToScan(island);
 
@@ -229,7 +232,7 @@ public class CalcIslandLevel {
             blockAndDeathPoints -= this.result.deathHandicap * this.addon.getSettings().getDeathPenalty();
         }
 
-        this.result.level = blockAndDeathPoints / this.addon.getSettings().getLevelCost() - this.island.getLevelHandicap();
+        this.result.level = blockAndDeathPoints / this.addon.getSettings().getLevelCost() - this.island.getLevelHandicap() - result.initialLevel;
 
 
         // Calculate how many points are required to get to the next level
@@ -253,6 +256,7 @@ public class CalcIslandLevel {
         reportLines.add("Total block value count = " + String.format("%,d",result.rawBlockCount));
         reportLines.add("Level cost = " + addon.getSettings().getLevelCost());
         reportLines.add("Deaths handicap = " + result.deathHandicap);
+        reportLines.add("Initial island level = " + (0L - result.initialLevel));
         reportLines.add("Level calculated = " + result.level);
         reportLines.add(LINE_BREAK);
         int total = 0;
@@ -335,6 +339,8 @@ public class CalcIslandLevel {
         private long level = 0;
         private int deathHandicap = 0;
         private long pointsToNextLevel = 0;
+        private long initialLevel = 0;
+        
         /**
          * @return the deathHandicap
          */
@@ -349,6 +355,13 @@ public class CalcIslandLevel {
             return report;
         }
         /**
+         * Set level
+         * @param level - level
+         */
+        public void setLevel(int level) {
+            this.level = level;           
+        }
+        /**
          * @return the level
          */
         public long getLevel() {
@@ -361,6 +374,14 @@ public class CalcIslandLevel {
             return pointsToNextLevel;
         }
 
+        public long getInitialLevel() {
+            return initialLevel;
+        }
+
+        public void setInitialLevel(long initialLevel) {
+            this.initialLevel = initialLevel;
+        }
+
         /* (non-Javadoc)
          * @see java.lang.Object#toString()
          */
@@ -369,7 +390,7 @@ public class CalcIslandLevel {
             return "Results [report=" + report + ", mdCount=" + mdCount + ", uwCount=" + uwCount + ", ncCount="
                     + ncCount + ", ofCount=" + ofCount + ", rawBlockCount=" + rawBlockCount + ", underWaterBlockCount="
                     + underWaterBlockCount + ", level=" + level + ", deathHandicap=" + deathHandicap
-                    + ", pointsToNextLevel=" + pointsToNextLevel + "]";
+                    + ", pointsToNextLevel=" + pointsToNextLevel + ", initialLevel=" + initialLevel + "]";
         }
 
     }

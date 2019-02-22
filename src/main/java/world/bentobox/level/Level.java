@@ -147,10 +147,7 @@ public class Level extends Addon {
         // Register request handlers
         registerRequestHandler(new LevelRequestHandler(this));
 
-
-
         // Done
-
     }
 
     /**
@@ -185,7 +182,7 @@ public class Level extends Addon {
     }
 
     /**
-     * Sets the initial island level
+     * Zeros the initial island level
      * @param island - island
      * @param level - initial calculated island level
      */
@@ -194,10 +191,19 @@ public class Level extends Addon {
             this.logError("Level: request to store a null (initial) " + island.getWorld() + " " + island.getOwner());
             return;
         }
-        setIslandLevel(island.getWorld(), island.getOwner(), level);
-        levelsCache.get(island.getOwner()).setInitialIslandLevel(level);
+        setIslandLevel(island.getWorld(), island.getOwner(), 0L);
+        levelsCache.get(island.getOwner()).setInitialLevel(island.getWorld(), level);
     }
 
+    /**
+     * Get the initial island level
+     * @param island - island
+     * @return level or 0 by default
+     */
+    public long getInitialIslandLevel(Island island) {
+        return levelsCache.containsKey(island.getOwner()) ? levelsCache.get(island.getOwner()).getInitialLevel(island.getWorld()) : 0L;
+    }
+    
     public Database<LevelsData> getHandler() {
         return handler;
     }

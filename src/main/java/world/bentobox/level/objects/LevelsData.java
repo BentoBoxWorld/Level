@@ -16,11 +16,16 @@ public class LevelsData implements DataObject {
     @Expose
     private String uniqueId = "";
 
-    // Map - world name, level
+    /**
+     * Map of world name and island level
+     */
     @Expose
     private Map<String, Long> levels = new HashMap<>();
+    /**
+     * Map of world name to island initial level
+     */
     @Expose
-    private long initialIslandLevel = 0;
+    private Map<String, Long> initialLevel = new HashMap<>();
 
     public LevelsData() {} // For Bean loading
 
@@ -54,10 +59,10 @@ public class LevelsData implements DataObject {
     /**
      * Get the island level for this world
      * @param world - world
-     * @return island level, less the initialIslandLevel
+     * @return island level
      */
     public Long getLevel(World world) {
-        return world == null ? -initialIslandLevel : levels.getOrDefault(world.getName(), 0L) - initialIslandLevel;
+        return world == null ? 0L : levels.getOrDefault(world.getName(), 0L);
     }
 
     /**
@@ -79,16 +84,34 @@ public class LevelsData implements DataObject {
     }
 
     /**
-     * @return the initialIslandLevel
+     * Set the initial level of the island for this world
+     * @param world - world
+     * @param level - level
      */
-    public long getInitialIslandLevel() {
-        return initialIslandLevel;
+    public void setInitialLevel(World world, long level) {
+        this.initialLevel.put(world.getName(), level);        
     }
 
     /**
-     * @param initialIslandLevel the initialIslandLevel to set
+     * @return the initialLevel
      */
-    public void setInitialIslandLevel(long initialIslandLevel) {
-        this.initialIslandLevel = initialIslandLevel;
+    public Map<String, Long> getInitialLevel() {
+        return initialLevel;
+    }
+
+    /**
+     * @param initialLevel the initialLevel to set
+     */
+    public void setInitialLevel(Map<String, Long> initialLevel) {
+        this.initialLevel = initialLevel;
+    }
+
+    /**
+     * Get the initial island level for this world
+     * @param world - world
+     * @return initial island level or 0 by default
+     */
+    public long getInitialLevel(World world) {
+        return initialLevel.getOrDefault(world.getName(), 0L);
     }
 }
