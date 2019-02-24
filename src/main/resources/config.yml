@@ -1,7 +1,7 @@
-# Config file for Level add-on for BSkyBlock or AcidIsland
+# Config file for Level add-on Version ${version}
 
-# GameModes
-# Level will hook into these game modes. Don't forget to set any world-specific
+# Game Mode Addons
+# Level will hook into these game mode addons. Don't forget to set any world-specific
 # block values below!
 game-modes:
 - AcidIsland
