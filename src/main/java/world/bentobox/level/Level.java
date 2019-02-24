@@ -6,19 +6,21 @@ import java.util.UUID;
 
 import org.bukkit.World;
 
+import world.bentobox.bentobox.api.addons.Addon;
+import world.bentobox.bentobox.api.user.User;
+import world.bentobox.bentobox.database.Database;
+import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.level.commands.admin.AdminLevelCommand;
 import world.bentobox.level.commands.admin.AdminTopCommand;
 import world.bentobox.level.commands.island.IslandLevelCommand;
 import world.bentobox.level.commands.island.IslandTopCommand;
 import world.bentobox.level.config.Settings;
-import world.bentobox.level.objects.LevelsData;
+import world.bentobox.level.listeners.IslandTeamListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
-import world.bentobox.level.listeners.NewIslandListener;
-import world.bentobox.bentobox.api.addons.Addon;
-import world.bentobox.bentobox.api.commands.CompositeCommand;
-import world.bentobox.bentobox.api.user.User;
-import world.bentobox.bentobox.database.Database;
-import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.level.objects.LevelsData;
+import world.bentobox.level.placeholders.LevelPlaceholder;
+import world.bentobox.level.placeholders.TopTenNamePlaceholder;
+import world.bentobox.level.placeholders.TopTenPlaceholder;
 import world.bentobox.level.requests.LevelRequestHandler;
 
 /**
@@ -114,39 +116,38 @@ public class Level extends Addon {
         // Start the top ten and register it for clicks
         topTen = new TopTen(this);
         registerListener(topTen);
-        // Register commands
-        // AcidIsland hook in
-        this.getPlugin().getAddonsManager().getAddonByName("AcidIsland").ifPresent(a -> {
-            CompositeCommand acidIslandCmd = getPlugin().getCommandsManager().getCommand(getConfig().getString("acidisland.user-command","ai"));
-            if (acidIslandCmd != null) {
-                new IslandLevelCommand(this, acidIslandCmd);
-                new IslandTopCommand(this, acidIslandCmd);
-                CompositeCommand acidCmd = getPlugin().getCommandsManager().getCommand(getConfig().getString("acidisland.admin-command","acid"));
-                new AdminLevelCommand(this, acidCmd);
-                new AdminTopCommand(this, acidCmd);
-            }
-        });
-        // BSkyBlock hook in
-        this.getPlugin().getAddonsManager().getAddonByName("BSkyBlock").ifPresent(a -> {
-            CompositeCommand bsbIslandCmd = getPlugin().getCommandsManager().getCommand(getConfig().getString("bskyblock.user-command","island"));
-            if (bsbIslandCmd != null) {
-                new IslandLevelCommand(this, bsbIslandCmd);
-                new IslandTopCommand(this, bsbIslandCmd);
-                CompositeCommand bsbAdminCmd = getPlugin().getCommandsManager().getCommand(getConfig().getString("bskyblock.admin-command","bsbadmin"));
-                new AdminLevelCommand(this, bsbAdminCmd);
-                new AdminTopCommand(this, bsbAdminCmd);
+        // Register commands for AcidIsland and BSkyBlock
+        getPlugin().getAddonsManager().getGameModeAddons().stream()
+        .filter(gm -> settings.getGameModes().contains(gm.getDescription().getName()))
+        .forEach(gm -> {
+            log("Level hooking into " + gm.getDescription().getName());
+            gm.getAdminCommand().ifPresent(adminCommand ->  {
+                new AdminLevelCommand(this, adminCommand);
+                new AdminTopCommand(this, adminCommand);
+            });
+            gm.getPlayerCommand().ifPresent(playerCmd -> {
+                new IslandLevelCommand(this, playerCmd);
+                new IslandTopCommand(this, playerCmd);
+            });
+            // Register placeholders
+            if (getPlugin().getPlaceholdersManager() != null) {
+                getPlugin().getPlaceholdersManager().registerPlaceholder(this, gm.getDescription().getName().toLowerCase() + "-island-level", new LevelPlaceholder(this, gm));
+                // Top Ten
+                for (int i = 1; i < 11; i++) {
+                    getPlugin().getPlaceholdersManager().registerPlaceholder(this, gm.getDescription().getName().toLowerCase() + "-island-level-top-value-" + i, new TopTenPlaceholder(this, gm, i));
+                    getPlugin().getPlaceholdersManager().registerPlaceholder(this, gm.getDescription().getName().toLowerCase() + "-island-level-top-name-" + i, new TopTenNamePlaceholder(this, gm, i));
+                }
             }
         });
 
         // Register new island listener
-        registerListener(new NewIslandListener(this));
+        registerListener(new IslandTeamListeners(this));
         registerListener(new JoinLeaveListener(this));
 
         // Register request handlers
         registerRequestHandler(new LevelRequestHandler(this));
 
         // Done
-
     }
 
     /**
@@ -164,6 +165,10 @@ public class Level extends Addon {
      * @param level - level
      */
     public void setIslandLevel(World world, UUID targetPlayer, long level) {
+        if (world == null || targetPlayer == null) {
+            this.logError("Level: request to store a null " + world + " " + targetPlayer);
+            return;
+        }
         LevelsData ld = getLevelsData(targetPlayer);
         if (ld == null) {
             ld = new LevelsData(targetPlayer, level, world);
@@ -173,25 +178,38 @@ public class Level extends Addon {
         // Add to cache
         levelsCache.put(targetPlayer, ld);
         topTen.addEntry(world, targetPlayer, getIslandLevel(world, targetPlayer));
+        handler.saveObject(ld);
     }
 
     /**
-     * Sets the initial island level
+     * Zeros the initial island level
      * @param island - island
      * @param level - initial calculated island level
      */
     public void setInitialIslandLevel(Island island, long level) {
-        setIslandLevel(island.getWorld(), island.getOwner(), level);
-        levelsCache.get(island.getOwner()).setInitialIslandLevel(level);
+        if (island.getWorld() == null || island.getOwner() == null) {
+            this.logError("Level: request to store a null (initial) " + island.getWorld() + " " + island.getOwner());
+            return;
+        }
+        setIslandLevel(island.getWorld(), island.getOwner(), 0L);
+        levelsCache.get(island.getOwner()).setInitialLevel(island.getWorld(), level);
     }
 
-
+    /**
+     * Get the initial island level
+     * @param island - island
+     * @return level or 0 by default
+     */
+    public long getInitialIslandLevel(Island island) {
+        return levelsCache.containsKey(island.getOwner()) ? levelsCache.get(island.getOwner()).getInitialLevel(island.getWorld()) : 0L;
+    }
+    
     public Database<LevelsData> getHandler() {
         return handler;
     }
 
     public void uncachePlayer(UUID uniqueId) {
-        if (levelsCache.containsKey(uniqueId)) {
+        if (levelsCache.containsKey(uniqueId) && levelsCache.get(uniqueId) != null) {
             handler.saveObject(levelsCache.get(uniqueId));
         }
         levelsCache.remove(uniqueId);

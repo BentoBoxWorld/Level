@@ -22,6 +22,7 @@ permissions:
   bskyblock.admin.topten:
     description: Player can use admin top ten command
     default: true
+
   acidisland.intopten:
     description: Player is in the top ten.
     default: true
@@ -35,5 +36,37 @@ permissions:
     description: Player can use admin level command
     default: true
   acidisland.admin.topten:
+    description: Player can use admin top ten command
+    default: true
+
+  caveblock.intopten:
+    description: Player is in the top ten.
+    default: true
+  caveblock.island.level:
+    description: Player can use level command
+    default: true
+  caveblock.island.top:
+    description: Player can use top ten command
+    default: true
+  caveblock.admin.level:
+    description: Player can use admin level command
+    default: true
+  caveblock.admin.topten:
+    description: Player can use admin top ten command
+    default: true
+
+  skygird.intopten:
+    description: Player is in the top ten.
+    default: true
+  skygird.island.level:
+    description: Player can use level command
+    default: true
+  skygird.island.top:
+    description: Player can use top ten command
+    default: true
+  skygird.admin.level:
+    description: Player can use admin level command
+    default: true
+  skygird.admin.topten:
     description: Player can use admin top ten command
     default: true

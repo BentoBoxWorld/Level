@@ -1,10 +1,10 @@
 package world.bentobox.level.commands.island;
 
+import java.util.List;
+
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.level.Level;
-
-import java.util.List;
 
 public class IslandTopCommand extends CompositeCommand {
 
