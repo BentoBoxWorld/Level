@@ -22,6 +22,8 @@ import world.bentobox.level.placeholders.LevelPlaceholder;
 import world.bentobox.level.placeholders.TopTenNamePlaceholder;
 import world.bentobox.level.placeholders.TopTenPlaceholder;
 import world.bentobox.level.requests.LevelRequestHandler;
+import world.bentobox.level.requests.TopTenRequestHandler;
+
 
 /**
  * Addon to BSkyBlock/AcidIsland that enables island level scoring and top ten functionality
@@ -146,6 +148,7 @@ public class Level extends Addon {
 
         // Register request handlers
         registerRequestHandler(new LevelRequestHandler(this));
+        registerRequestHandler(new TopTenRequestHandler(this));
 
         // Done
     }
