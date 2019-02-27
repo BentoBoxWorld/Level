@@ -40,7 +40,7 @@ public class IslandValueCommand extends CompositeCommand {
                     }
                 }
             } else {
-                user.sendMessage("island.value.success", "[value]",  "0");
+                user.sendMessage("island.value.no-value");
             }
         } else {
             user.sendMessage("island.value.empty-hand");
