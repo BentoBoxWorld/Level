@@ -65,7 +65,7 @@ public class CalcIslandLevel {
 
         // Set the initial island handicap
         result.initialLevel = addon.getInitialIslandLevel(island);
-        
+
         // Get chunks to scan
         chunksToScan = getChunksToScan(island);
 
@@ -217,8 +217,9 @@ public class CalcIslandLevel {
         }
         else
         {
-            this.result.deathHandicap =
-                    this.addon.getPlayers().getDeaths(this.world, this.island.getOwner());
+            // At this point, it may be that the island has become unowned.
+            this.result.deathHandicap = this.island.getOwner() == null ? 0 :
+                this.addon.getPlayers().getDeaths(this.world, this.island.getOwner());
         }
 
         // Just lazy check for min death count.
@@ -340,7 +341,7 @@ public class CalcIslandLevel {
         private int deathHandicap = 0;
         private long pointsToNextLevel = 0;
         private long initialLevel = 0;
-        
+
         /**
          * @return the deathHandicap
          */
@@ -359,7 +360,7 @@ public class CalcIslandLevel {
          * @param level - level
          */
         public void setLevel(int level) {
-            this.level = level;           
+            this.level = level;
         }
         /**
          * @return the level
