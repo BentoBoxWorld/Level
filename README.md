@@ -1,6 +1,6 @@
-# addon-level
+# Level
 Add-on for BentoBox to calculate island levels for BSkyBlock and AcidIsland. This add-on will work
-for both game modes.
+for game modes listed in the config.yml.
 
 ## How to use
 
@@ -10,20 +10,23 @@ for both game modes.
 4. Edit the config.yml how you want. The config specifies how much blocks are worth (see below)
 5. Restart the server if you make a change
 
+## Upgrading
+
+1. Read the release notes carefully, but you may have to delete the old config.yml to use a new one.
+
 ## Config.yml
 
 The config.yml has the following sections:
 
-* Command hook-in configuration
+* Game Mode Addon configuration
 * General settings
 * Limits
 * Block values
 * Per-world block values
 
-### Command hook-in configuration
+### Game Mode Addon configuration
 
-This section allows you to tell the add-on which commands it should hook into. Do not edit this unless
-you are changing the game mode command names.
+This section allows you to list which game mode add-ons Level should hook into. Use BentoBox's version command to list the official add-on name.
 
 ### General Settings
 

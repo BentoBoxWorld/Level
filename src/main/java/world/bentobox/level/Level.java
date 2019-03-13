@@ -14,6 +14,7 @@ import world.bentobox.level.commands.admin.AdminLevelCommand;
 import world.bentobox.level.commands.admin.AdminTopCommand;
 import world.bentobox.level.commands.island.IslandLevelCommand;
 import world.bentobox.level.commands.island.IslandTopCommand;
+import world.bentobox.level.commands.island.IslandValueCommand;
 import world.bentobox.level.config.Settings;
 import world.bentobox.level.listeners.IslandTeamListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
@@ -130,6 +131,7 @@ public class Level extends Addon {
             gm.getPlayerCommand().ifPresent(playerCmd -> {
                 new IslandLevelCommand(this, playerCmd);
                 new IslandTopCommand(this, playerCmd);
+                new IslandValueCommand(this, playerCmd);
             });
             // Register placeholders
             if (getPlugin().getPlaceholdersManager() != null) {
