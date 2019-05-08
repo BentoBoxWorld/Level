@@ -31,7 +31,7 @@ island:
 
   value:
     description: "muestra el valor de cualquier bloque"
-    success: "§7El valor de este bloque es: §e[value]"
-    success-underwater: "§7El valor de este bloque bajo el nivel del mar: §e[value]"
-    empty-hand: "§cNo hay bloques en tu mano"
-no-value: "§cEse item no tiene valor"
+    success: "&7El valor de este bloque es: &e[value]"
+    success-underwater: "&7El valor de este bloque bajo el nivel del mar: &e[value]"
+    empty-hand: "&cNo hay bloques en tu mano"
+    no-value: "&cEse item no tiene valor"
