@@ -1,0 +1,37 @@
+###########################################################################################################
+# Este es un archivo YML. Tenga cuidado al editar. Revisa tus ediciones en un verificador de YAML como    #
+# el de http://yaml-online-parser.appspot.com                                                             #
+###########################################################################################################
+
+admin:
+  level:
+    parameters: "<player>"
+    description: "calcula el nivel de la isla para el jugador"
+  top:
+    description: "mostrar la lista de los diez primeros"
+    unknown-world: "&cMundo Desconocido!"
+    display: "&f[rank]. &a[name] &7- &b[level]"
+
+island:
+  level: 
+    parameters: "[player]"
+    description: "calcula tu nivel de isla o muestra el nivel de [player]"
+    calculating: "&aCalculando nivel..." 
+    island-level-is: "&aNivel de isla es de &b[level]"
+    required-points-to-next-level: "&a[points] Puntos requeridos hasta el siguiente nivel."
+    deaths: "&c([number] Muertes)"
+    cooldown: "&cDebes esperar &b[time] &csegundos para poder volver a hacer eso"
+    
+  top:
+    description: "mostrar los diez primeros"
+    gui-title: "&aDiez primeros"
+    gui-heading: "&6[name]: &B[rank]"
+    island-level: "&BNivel [level]"
+    warp-to: "&ATeletransportandote a la isla de [name]"
+
+  value:
+    description: "muestra el valor de cualquier bloque"
+    success: "§7El valor de este bloque es: §e[value]"
+    success-underwater: "§7El valor de este bloque bajo el nivel del mar: §e[value]"
+    empty-hand: "§cNo hay bloques en tu mano"
+no-value: "§cEse item no tiene valor"
