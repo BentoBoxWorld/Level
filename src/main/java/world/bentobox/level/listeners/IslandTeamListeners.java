@@ -39,6 +39,8 @@ public class IslandTeamListeners implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onNewIsland(IslandCreatedEvent e) {
+        // Clear the island setting
+        addon.setInitialIslandLevel(e.getIsland(), 0L);
         if (e.getIsland().getOwner() != null && e.getIsland().getWorld() != null) {
             cil.putIfAbsent(e.getIsland(), new CalcIslandLevel(addon, e.getIsland(), () -> zeroLevel(e.getIsland())));
         }
@@ -46,6 +48,8 @@ public class IslandTeamListeners implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onNewIsland(IslandResettedEvent e) {
+        // Clear the island setting
+        addon.setInitialIslandLevel(e.getIsland(), 0L);
         if (e.getIsland().getOwner() != null && e.getIsland().getWorld() != null) {
             cil.putIfAbsent(e.getIsland(), new CalcIslandLevel(addon, e.getIsland(), () -> zeroLevel(e.getIsland())));
         }
@@ -95,7 +99,8 @@ public class IslandTeamListeners implements Listener {
 
     private void zeroLevel(Island island) {
         if (cil.containsKey(island)) {
-            addon.setInitialIslandLevel(island, cil.get(island).getResult().getLevel());
+            long level = cil.get(island).getResult().getLevel();
+            addon.setInitialIslandLevel(island, level);
             cil.remove(island);
         }
     }
