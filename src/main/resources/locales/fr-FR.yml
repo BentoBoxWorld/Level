@@ -1,0 +1,37 @@
+###########################################################################################
+# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
+# the one at http://yaml-online-parser.appspot.com                                        #
+###########################################################################################
+
+admin:
+  level:
+    parameters: "<player>"
+    description: "calculer le niveau de l'île du joueur"
+  top:
+    description: "voir le top 10 des îles"
+    unknown-world: "&cMonde inconnu"
+    display: "&f[rank]. &a[name] &7- &b[level]"
+
+island:
+  level:
+    parameters: "[player]"
+    description: "calculer ton niveau d'île de voir le niveau de [player]"
+    calculating: "&aCalcul du niveau en cours..."
+    island-level-is: "&aLe niveau de l'île est &b[level]"
+    required-points-to-next-level: "&a[points] points sont requis pour passer de niveau"
+    deaths: "&c([number] deaths)"
+    cooldown: "&cVous devez attendre &b[time] &csecondes avant de pouvoir refaire la commande"
+
+  top:
+    description: "voir le top 10 des îles"
+    gui-title: "&aTop 10"
+    gui-heading: "&6[name]: &B[rank]"
+    island-level: "&BLevel [level]"
+    warp-to: "&aTéléportation sur l'île de [name]"
+
+  value:
+    description: "voir la valeur d'un bloc"
+    success: "&7La valeur de ce bloc est: &e[value]"
+    success-underwater: "&7La valeur de ce bloc sous l'eau est: &e[value]"
+    empty-hand: "&cIl n'y a aucun bloc dans votre main"
+    no-value: "&cCet item n'a pas de valeur."
