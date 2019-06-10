@@ -3,6 +3,10 @@
 # the one at http://yaml-online-parser.appspot.com                                        #
 ###########################################################################################
 
+meta:
+  authors:
+  - plagoutte
+
 admin:
   level:
     parameters: "<joueur>"
