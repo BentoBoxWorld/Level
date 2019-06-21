@@ -308,10 +308,11 @@ public class CalcIslandLevel {
             if (addon.getSettings().getBlockValues().containsKey(type)) {
                 // Specific
                 value = addon.getSettings().getBlockValues().get(type);
+
+                r.add(type.toString() + ":"
+                        + String.format("%,d", en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
+                total += (value * en.getCount());
             }
-            r.add(type.toString() + ":"
-                    + String.format("%,d", en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
-            total += (value * en.getCount());
         }
         r.add("Subtotal = " + total);
         r.add(LINE_BREAK);
