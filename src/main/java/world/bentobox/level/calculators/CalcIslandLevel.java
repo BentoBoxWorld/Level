@@ -12,7 +12,10 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.World;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Slab;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.google.common.collect.HashMultiset;
@@ -126,11 +129,18 @@ public class CalcIslandLevel {
                 }
 
                 for (int y = 0; y < island.getCenter().getWorld().getMaxHeight(); y++) {
-                    Material blockData = chunk.getBlockType(x, y, z);
+                    BlockData blockData = chunk.getBlockData(x, y, z);
                     int seaHeight = addon.getPlugin().getIWM().getSeaHeight(world);
                     boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
                     // Air is free
-                    if (!blockData.equals(Material.AIR)) {
+                    if (!blockData.getMaterial().equals(Material.AIR)) {
+                        // Slabs can be doubled, so check them twice
+                        if (Tag.SLABS.isTagged(blockData.getMaterial())) {
+                            Slab slab = (Slab)blockData;
+                            if (slab.getType().equals(Slab.Type.DOUBLE)) {
+                                checkBlock(blockData, belowSeaLevel);
+                            }
+                        }
                         checkBlock(blockData, belowSeaLevel);
                     }
                 }
@@ -138,14 +148,14 @@ public class CalcIslandLevel {
         }
     }
 
-    private void checkBlock(Material md, boolean belowSeaLevel) {
-        int count = limitCount(md);
+    private void checkBlock(BlockData bd, boolean belowSeaLevel) {
+        int count = limitCount(bd.getMaterial());
         if (belowSeaLevel) {
             result.underWaterBlockCount += count;
-            result.uwCount.add(md);
+            result.uwCount.add(bd.getMaterial());
         } else {
             result.rawBlockCount += count;
-            result.mdCount.add(md);
+            result.mdCount.add(bd.getMaterial());
         }
     }
 
