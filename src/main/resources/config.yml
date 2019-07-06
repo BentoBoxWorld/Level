@@ -33,15 +33,7 @@ deathpenalty: 100
 # Sum team deaths - if true, all the teams deaths are summed
 # If false, only the leader's deaths counts
 sumteamdeaths: false
-# Max deaths
-# If player dies more than this, it doesn't count anymore
-# Stops players from getting into an impossible situation
-maxdeaths: 10
-# Reset deaths on island reset
-islandresetdeathreset: true
-# Reset deaths on team join
-teamjoindeathreset: true
-
+# For other death related settings, see the GameModeAddon's config.yml settings.
 
 # This section lists the limits for any particular block. Blocks over this amount
 # are not counted.
@@ -651,7 +643,7 @@ blocks:
 # If a block is not listed, the default value will be used
 # Prefix with world name
 worlds:
-  AcidIsland_world:
+  acidisland_world:
     SAND: 0
     SANDSTONE: 0
     ICE: 0

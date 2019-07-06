@@ -16,26 +16,26 @@ import world.bentobox.level.objects.TopTenData;
  */
 public class TopTenRequestHandler extends AddonRequestHandler {
 
-	/**
-	 * The level addon field.
-	 */
-	private Level addon;
+    /**
+     * The level addon field.
+     */
+    private Level addon;
 
-	/**
-	 * This constructor creates a new TopTenRequestHandler instance.
-	 *
-	 * @param addon of type Level
-	 */
-	public TopTenRequestHandler(Level addon) {
-		super("top-ten-level");
-		this.addon = addon;
-	}
+    /**
+     * This constructor creates a new TopTenRequestHandler instance.
+     *
+     * @param addon of type Level
+     */
+    public TopTenRequestHandler(Level addon) {
+        super("top-ten-level");
+        this.addon = addon;
+    }
 
-	/**
-	 * @see AddonRequestHandler#handle(Map<String, Object>)
-	 */
-	@Override
-	public Object handle(Map<String, Object> map) {
+    /**
+     * @see {@link AddonRequestHandler#handle(Map)}
+     */
+    @Override
+    public Object handle(Map<String, Object> map) {
         /*
             What we need in the map:
 
@@ -47,14 +47,14 @@ public class TopTenRequestHandler extends AddonRequestHandler {
             - the map of top ten player UUIDs and their island levels. Can be less then 10.
          */
 
-		if (map == null || map.isEmpty()
-			|| map.get("world-name") == null || !(map.get("world-name") instanceof String)
-			|| Bukkit.getWorld((String) map.get("world-name")) == null) {
-			return Collections.emptyMap();
-		}
+        if (map == null || map.isEmpty()
+                || map.get("world-name") == null || !(map.get("world-name") instanceof String)
+                || Bukkit.getWorld((String) map.get("world-name")) == null) {
+            return Collections.emptyMap();
+        }
 
-		// Null-point check.
-		TopTenData data = addon.getTopTen().getTopTenList(Bukkit.getWorld((String) map.get("world-name")));
-		return data != null ? data.getTopTen() : Collections.emptyMap();
-	}
+        // Null-point check.
+        TopTenData data = addon.getTopTen().getTopTenList(Bukkit.getWorld((String) map.get("world-name")));
+        return data != null ? data.getTopTen() : Collections.emptyMap();
+    }
 }

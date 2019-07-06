@@ -140,7 +140,14 @@ public class TopTen implements Listener {
      */
     private void loadTopTen() {
         topTenList = new HashMap<>();
-        handler.loadObjects().forEach(tt -> topTenList.put(Bukkit.getWorld(tt.getUniqueId()), tt));
+        handler.loadObjects().forEach(tt -> {
+            World world = Bukkit.getWorld(tt.getUniqueId());
+            if (world != null) {
+                topTenList.put(world, tt);
+            } else {
+                addon.logError("TopTen world " + tt.getUniqueId() + " is not known on server. Skipping...");
+            }
+        });
     }
 
     /**

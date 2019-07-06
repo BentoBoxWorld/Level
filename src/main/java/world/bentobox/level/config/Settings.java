@@ -22,9 +22,6 @@ public class Settings {
     private int deathpenalty;
     private long levelCost;
     private int levelWait;
-    private int maxDeaths;
-    private boolean islandResetDeathReset;
-    private boolean teamJoinDeathReset;
     private List<String> gameModes = new ArrayList<>();
 
     public Settings(Level level) {
@@ -40,9 +37,6 @@ public class Settings {
         }
         setDeathpenalty(level.getConfig().getInt("deathpenalty", 0));
         setSumTeamDeaths(level.getConfig().getBoolean("sumteamdeaths"));
-        setMaxDeaths(level.getConfig().getInt("maxdeaths", 10));
-        setIslandResetDeathReset(level.getConfig().getBoolean("islandresetdeathreset", true));
-        setTeamJoinDeathReset(level.getConfig().getBoolean("teamjoindeathreset", true));
         setUnderWaterMultiplier(level.getConfig().getDouble("underwater", 1D));
         setLevelCost(level.getConfig().getInt("levelcost", 100));
         if (getLevelCost() < 1) {
@@ -91,7 +85,7 @@ public class Settings {
                         worldBlockValues.put(bWorld, values);
                     }
                 } else {
-                    level.getLogger().severe(() -> "Level Addon: No such world : " + world);
+                    level.getLogger().severe(() -> "Level Addon: No such world in config.yml : " + world);
                 }
             }
         }
@@ -182,44 +176,6 @@ public class Settings {
     private void setLevelWait(int levelWait) {
         this.levelWait = levelWait;
     }
-    /**
-     * TODO: Use max deaths
-     * @return the maxDeaths
-     */
-    public final int getMaxDeaths() {
-        return maxDeaths;
-    }
-    /**
-     * @param maxDeaths the maxDeaths to set
-     */
-    private void setMaxDeaths(int maxDeaths) {
-        this.maxDeaths = maxDeaths;
-    }
-    /**
-     * @return the islandResetDeathReset
-     */
-    public final boolean isIslandResetDeathReset() {
-        return islandResetDeathReset;
-    }
-    /**
-     * @param islandResetDeathReset the islandResetDeathReset to set
-     */
-    private void setIslandResetDeathReset(boolean islandResetDeathReset) {
-        this.islandResetDeathReset = islandResetDeathReset;
-    }
-    /**
-     * @return the teamJoinDeathReset
-     */
-    public final boolean isTeamJoinDeathReset() {
-        return teamJoinDeathReset;
-    }
-    /**
-     * @param teamJoinDeathReset the teamJoinDeathReset to set
-     */
-    private void setTeamJoinDeathReset(boolean teamJoinDeathReset) {
-        this.teamJoinDeathReset = teamJoinDeathReset;
-    }
-
     /**
      * @return the worldBlockValues
      */

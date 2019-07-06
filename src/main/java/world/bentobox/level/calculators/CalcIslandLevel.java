@@ -232,9 +232,6 @@ public class CalcIslandLevel {
                 this.addon.getPlayers().getDeaths(this.world, this.island.getOwner());
         }
 
-        // Just lazy check for min death count.
-        this.result.deathHandicap = Math.min(this.result.deathHandicap, this.addon.getSettings().getMaxDeaths());
-
         long blockAndDeathPoints = this.result.rawBlockCount;
 
         if (this.addon.getSettings().getDeathPenalty() > 0)

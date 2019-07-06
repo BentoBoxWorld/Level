@@ -36,12 +36,14 @@ public class TopTenData implements DataObject {
 
     @Override
     public String getUniqueId() {
+        // This is the world name
         return uniqueId;
     }
 
     @Override
     public void setUniqueId(String uniqueId) {
-        this.uniqueId = uniqueId;
+        // This is the world name - make it always lowercase
+        this.uniqueId = uniqueId.toLowerCase();
     }
 
     /**
