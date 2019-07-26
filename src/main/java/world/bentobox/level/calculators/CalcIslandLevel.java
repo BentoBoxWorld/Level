@@ -204,8 +204,7 @@ public class CalcIslandLevel {
         Set<Pair<Integer, Integer>> chunkSnapshot = new HashSet<>();
         for (int x = island.getMinProtectedX(); x < (island.getMinProtectedX() + island.getProtectionRange() * 2 + 16); x += 16) {
             for (int z = island.getMinProtectedZ(); z < (island.getMinProtectedZ() + island.getProtectionRange() * 2 + 16); z += 16) {
-                Pair<Integer, Integer> pair = new Pair<>(world.getBlockAt(x, 0, z).getChunk().getX(), world.getBlockAt(x, 0, z).getChunk().getZ());
-                chunkSnapshot.add(pair);
+                chunkSnapshot.add(new Pair<>(x >> 4, z >> 4));
             }
         }
         return chunkSnapshot;
