@@ -28,11 +28,11 @@ import world.bentobox.level.objects.TopTenData;
  *
  */
 public class TopTen implements Listener {
-    private final Level addon;
+    private Level addon;
     // Top ten list of players
     private Map<World,TopTenData> topTenList;
     private final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
-    private final Database<TopTenData> handler;
+    private Database<TopTenData> handler;
 
     public TopTen(Level addon) {
         this.addon = addon;
@@ -40,6 +40,21 @@ public class TopTen implements Listener {
         // Note that these are saved in the BSkyBlock database
         handler = new Database<>(addon, TopTenData.class);
         loadTopTen();
+    }
+
+    /**
+     * Loads all the top tens from the database
+     */
+    private void loadTopTen() {
+        topTenList = new HashMap<>();
+        handler.loadObjects().forEach(tt -> {
+            World world = Bukkit.getWorld(tt.getUniqueId());
+            if (world != null) {
+                topTenList.put(world, tt);
+            } else {
+                addon.logError("TopTen world " + tt.getUniqueId() + " is not known on server. Skipping...");
+            }
+        });
     }
 
     /**
@@ -58,8 +73,8 @@ public class TopTen implements Listener {
         topTenList.get(world).setUniqueId(world.getName());
 
         // Try and see if the player is online
-        Player player = addon.getServer().getPlayer(ownerUUID);
-        if (player != null && !player.hasPermission(addon.getPlugin().getIWM().getPermissionPrefix(world) + ".intopten")) {
+        Player player = Bukkit.getServer().getPlayer(ownerUUID);
+        if (player != null && !player.hasPermission(addon.getPlugin().getIWM().getPermissionPrefix(world) + "intopten")) {
             topTenList.get(world).remove(ownerUUID);
             return;
         }
@@ -131,23 +146,14 @@ public class TopTen implements Listener {
         return builder.build();
     }
 
-    public TopTenData getTopTenList(World world) {
-        return topTenList.get(world);
-    }
-
     /**
-     * Loads all the top tens from the database
+     * Get the top ten list for this world
+     * @param world - world
+     * @return top ten data object
      */
-    private void loadTopTen() {
-        topTenList = new HashMap<>();
-        handler.loadObjects().forEach(tt -> {
-            World world = Bukkit.getWorld(tt.getUniqueId());
-            if (world != null) {
-                topTenList.put(world, tt);
-            } else {
-                addon.logError("TopTen world " + tt.getUniqueId() + " is not known on server. Skipping...");
-            }
-        });
+    public TopTenData getTopTenList(World world) {
+        topTenList.putIfAbsent(world, new TopTenData());
+        return topTenList.get(world);
     }
 
     /**
