@@ -101,7 +101,7 @@ public class TopTen implements Listener {
             Map.Entry<UUID, Long> m = it.next();
             UUID topTenUUID = m.getKey();
             // Remove from TopTen if the player is online and has the permission
-            Player entry = addon.getServer().getPlayer(topTenUUID);
+            Player entry = Bukkit.getServer().getPlayer(topTenUUID);
             boolean show = true;
             if (entry != null) {
                 if (!entry.hasPermission(permPrefix + "intopten")) {

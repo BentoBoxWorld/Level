@@ -1,20 +1,17 @@
 package world.bentobox.level;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.beans.IntrospectionException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,26 +20,34 @@ import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFactory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
 import world.bentobox.bentobox.BentoBox;
+import world.bentobox.bentobox.api.panels.builders.PanelBuilder;
+import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.AbstractDatabaseHandler;
 import world.bentobox.bentobox.database.DatabaseSetup;
 import world.bentobox.bentobox.managers.IslandWorldManager;
 import world.bentobox.bentobox.managers.IslandsManager;
+import world.bentobox.bentobox.managers.PlayersManager;
 import world.bentobox.level.objects.TopTenData;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Bukkit.class, BentoBox.class, DatabaseSetup.class})
+@PrepareForTest({Bukkit.class, BentoBox.class, DatabaseSetup.class, PanelBuilder.class})
 public class TopTenTest {
 
     @Mock
@@ -52,7 +57,7 @@ public class TopTenTest {
     @Mock
     private BentoBox plugin;
     @Mock
-    private AbstractDatabaseHandler<Object> handler;
+    private static AbstractDatabaseHandler<Object> handler;
     private List<Object> topTen;
     @Mock
     private IslandsManager im;
@@ -60,6 +65,25 @@ public class TopTenTest {
     private Player player;
     @Mock
     private IslandWorldManager iwm;
+    @Mock
+    private User user;
+    @Mock
+    private PlayersManager pm;
+    @Mock
+    private Inventory inv;
+
+    @SuppressWarnings("unchecked")
+    @BeforeClass
+    public static void beforeClass() {
+        // This has to be done beforeClass otherwise the tests will interfere with each other
+        handler = mock(AbstractDatabaseHandler.class);
+        // Database
+        PowerMockito.mockStatic(DatabaseSetup.class);
+        DatabaseSetup dbSetup = mock(DatabaseSetup.class);
+        when(DatabaseSetup.getDatabase()).thenReturn(dbSetup);
+        when(dbSetup.getHandler(any())).thenReturn(handler);
+    }
+
 
     @Before
     public void setUp() throws Exception {
@@ -74,11 +98,6 @@ public class TopTenTest {
         when(Bukkit.getServer()).thenReturn(server);
         // Has perms
         when(player.hasPermission(anyString())).thenReturn(true);
-        // Database
-        PowerMockito.mockStatic(DatabaseSetup.class);
-        DatabaseSetup dbSetup = mock(DatabaseSetup.class);
-        when(DatabaseSetup.getDatabase()).thenReturn(dbSetup);
-        when(dbSetup.getHandler(any())).thenReturn(handler);
         // Fill the top ten
         TopTenData ttd = new TopTenData();
         ttd.setUniqueId("world");
@@ -96,6 +115,33 @@ public class TopTenTest {
         // IWM
         when(plugin.getIWM()).thenReturn(iwm);
 
+        // User
+        when(user.getTranslation(anyString())).thenAnswer((Answer<String>) invocation -> invocation.getArgumentAt(0, String.class));
+        when(user.getTranslation(eq("island.top.gui-heading"), eq("[name]"), anyString(), eq("[rank]"), anyString())).thenReturn("gui-heading");
+        when(user.getTranslation(eq("island.top.island-level"),eq("[level]"), anyString())).thenReturn("island-level");
+        when(user.getPlayer()).thenReturn(player);
+
+        // Player Manager
+        when(addon.getPlayers()).thenReturn(pm);
+        when(pm.getName(any())).thenReturn("player1",
+                "player2",
+                "player3",
+                "player4",
+                "player5",
+                "player6",
+                "player7",
+                "player8",
+                "player9",
+                "player10"
+                );
+        // Mock item factory (for itemstacks)
+        ItemFactory itemFactory = mock(ItemFactory.class);
+        when(Bukkit.getItemFactory()).thenReturn(itemFactory);
+        ItemMeta itemMeta = mock(ItemMeta.class);
+        when(itemFactory.getItemMeta(any())).thenReturn(itemMeta);
+
+        // Inventory GUI
+        when(Bukkit.createInventory(any(), anyInt(), anyString())).thenReturn(inv);
     }
 
     @After
@@ -117,20 +163,17 @@ public class TopTenTest {
     }
 
     @Test
-    @Ignore("Runs differently singularly vs in order - bug somewhere")
-    public void testAddEntryNotOwner() throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException, NoSuchMethodException, IntrospectionException {
+    public void testAddEntryNotOwner() throws Exception {
+        // Database
         when(handler.loadObjects()).thenReturn(new ArrayList<>());
         TopTen tt = new TopTen(addon);
         UUID ownerUUID = UUID.randomUUID();
         tt.addEntry(world, ownerUUID, 200L);
-        tt.getTopTenList(world).getTopTen().forEach((k,v) -> {
-            System.out.println(k + " --> " + v);
-        });
         assertEquals(0, tt.getTopTenList(world).getTopTen().size());
     }
 
     @Test
-    public void testAddEntryIsOwner() throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException, NoSuchMethodException, IntrospectionException {
+    public void testAddEntryIsOwner() throws Exception  {
         when(im.isOwner(any(), any())).thenReturn(true);
         when(handler.loadObjects()).thenReturn(new ArrayList<>());
         TopTen tt = new TopTen(addon);
@@ -140,7 +183,7 @@ public class TopTenTest {
     }
 
     @Test
-    public void testAddEntryIsOwnerNoPermission() throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException, NoSuchMethodException, IntrospectionException {
+    public void testAddEntryIsOwnerNoPermission() throws Exception  {
         when(player.hasPermission(anyString())).thenReturn(false);
         when(im.isOwner(any(), any())).thenReturn(true);
         when(handler.loadObjects()).thenReturn(new ArrayList<>());
@@ -154,27 +197,79 @@ public class TopTenTest {
     }
 
     @Test
-    @Ignore
-    public void testGetGUI() {
-        fail("Not yet implemented"); // TODO
+    public void testGetGUIFullTopTen() {
+        TopTen tt = new TopTen(addon);
+        tt.getGUI(world, user, "bskyblock");
+        verify(user).getTranslation(eq("island.top.gui-title"));
+        verify(player).openInventory(inv);
+        int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
+        for (int i : SLOTS) {
+            verify(inv).setItem(eq(i), any());
+        }
+
     }
 
     @Test
-    @Ignore
+    public void testGetGUINoPerms() {
+        when(player.hasPermission(anyString())).thenReturn(false);
+        TopTen tt = new TopTen(addon);
+        tt.getGUI(world, user, "bskyblock");
+        verify(user).getTranslation(eq("island.top.gui-title"));
+        verify(player).openInventory(inv);
+        int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
+        for (int i : SLOTS) {
+            verify(inv, Mockito.never()).setItem(eq(i), any());
+        }
+
+    }
+
+    @Test
+    public void testGetGUINoTopTen() throws Exception {
+        when(handler.loadObjects()).thenReturn(new ArrayList<>());
+        TopTen tt = new TopTen(addon);
+        tt.getGUI(world, user, "bskyblock");
+        verify(user).getTranslation(eq("island.top.gui-title"));
+        verify(player).openInventory(inv);
+        int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
+        for (int i : SLOTS) {
+            verify(inv, Mockito.never()).setItem(eq(i), any());
+        }
+
+    }
+
+    @Test
     public void testGetTopTenList() {
-        fail("Not yet implemented"); // TODO
+        TopTen tt = new TopTen(addon);
+        TopTenData ttdList = tt.getTopTenList(world);
+        assertEquals(plugin, ttdList.getPlugin());
     }
 
     @Test
-    @Ignore
-    public void testRemoveEntry() {
-        fail("Not yet implemented"); // TODO
+    public void testGetTopTenListNewWorld() {
+        TopTen tt = new TopTen(addon);
+        TopTenData ttdList = tt.getTopTenList(mock(World.class));
+        assertEquals(plugin, ttdList.getPlugin());
     }
 
     @Test
-    @Ignore
-    public void testSaveTopTen() {
-        fail("Not yet implemented"); // TODO
+    public void testRemoveEntry() throws Exception {
+        // Add entry
+        when(im.isOwner(any(), any())).thenReturn(true);
+        when(handler.loadObjects()).thenReturn(new ArrayList<>());
+        TopTen tt = new TopTen(addon);
+        UUID ownerUUID = UUID.randomUUID();
+        tt.addEntry(world, ownerUUID, 200L);
+        assertTrue(tt.getTopTenList(world).getTopTen().get(ownerUUID) == 200L);
+        // Remove it
+        tt.removeEntry(world, ownerUUID);
+        assertNull(tt.getTopTenList(world).getTopTen().get(ownerUUID));
+    }
+
+    @Test
+    public void testSaveTopTen() throws Exception {
+        TopTen tt = new TopTen(addon);
+        tt.saveTopTen();
+        verify(handler).saveObject(any());
     }
 
 }
