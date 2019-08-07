@@ -132,17 +132,14 @@ public class CalcIslandLevel {
                     BlockData blockData = chunk.getBlockData(x, y, z);
                     int seaHeight = addon.getPlugin().getIWM().getSeaHeight(world);
                     boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
-                    // Air is free
-                    if (!blockData.getMaterial().equals(Material.AIR)) {
-                        // Slabs can be doubled, so check them twice
-                        if (Tag.SLABS.isTagged(blockData.getMaterial())) {
-                            Slab slab = (Slab)blockData;
-                            if (slab.getType().equals(Slab.Type.DOUBLE)) {
-                                checkBlock(blockData, belowSeaLevel);
-                            }
+                    // Slabs can be doubled, so check them twice
+                    if (Tag.SLABS.isTagged(blockData.getMaterial())) {
+                        Slab slab = (Slab)blockData;
+                        if (slab.getType().equals(Slab.Type.DOUBLE)) {
+                            checkBlock(blockData, belowSeaLevel);
                         }
-                        checkBlock(blockData, belowSeaLevel);
                     }
+                    checkBlock(blockData, belowSeaLevel);
                 }
             }
         }
