@@ -48,7 +48,7 @@ public class LevelPresenterTest {
         when(im.inTeam(Mockito.any(), Mockito.any())).thenReturn(true);
         // team leader
         when(im.getOwner(Mockito.any(), Mockito.any())).thenReturn(UUID.randomUUID());
-        
+
         pl = mock(PlayerLevel.class);
         PowerMockito.whenNew(PlayerLevel.class).withAnyArguments().thenReturn(pl);
 
@@ -72,10 +72,8 @@ public class LevelPresenterTest {
         User sender = mock(User.class);
         UUID targetPlayer = UUID.randomUUID();
         lp.calculateIslandLevel(world, sender, targetPlayer);
-        
+
         Mockito.verify(sender).sendMessage("island.level.calculating");
-        // Verify PlayerLevel was called
-        Mockito.verify(pl);
     }
 
 }

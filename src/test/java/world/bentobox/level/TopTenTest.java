@@ -116,7 +116,7 @@ public class TopTenTest {
         when(plugin.getIWM()).thenReturn(iwm);
 
         // User
-        when(user.getTranslation(anyString())).thenAnswer((Answer<String>) invocation -> invocation.getArgumentAt(0, String.class));
+        when(user.getTranslation(anyString())).thenAnswer((Answer<String>) invocation -> invocation.getArgument(0, String.class));
         when(user.getTranslation(eq("island.top.gui-heading"), eq("[name]"), anyString(), eq("[rank]"), anyString())).thenReturn("gui-heading");
         when(user.getTranslation(eq("island.top.island-level"),eq("[level]"), anyString())).thenReturn("island-level");
         when(user.getPlayer()).thenReturn(player);
