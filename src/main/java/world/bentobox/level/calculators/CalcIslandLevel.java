@@ -41,12 +41,13 @@ public class CalcIslandLevel {
 
     private final Set<Pair<Integer, Integer>> chunksToScan;
     private final Island island;
-    private final World world;
     private final Results result;
     private final Runnable onExit;
 
     // Copy the limits hash map
     private final HashMap<Material, Integer> limitCount;
+    private final World world;
+    private final List<World> worlds;
 
 
     /**
@@ -59,7 +60,17 @@ public class CalcIslandLevel {
     public CalcIslandLevel(final Level addon, final Island island, final Runnable onExit) {
         this.addon = addon;
         this.island = island;
-        this.world = island.getCenter().getWorld();
+        this.world = island.getWorld();
+        this.worlds = new ArrayList<>();
+        this.worlds.add(world);
+        if (addon.getSettings().isNether()) {
+            World netherWorld = addon.getPlugin().getIWM().getNetherWorld(world);
+            if (netherWorld != null) this.worlds.add(netherWorld);
+        }
+        if (addon.getSettings().isEnd()) {
+            World endWorld = addon.getPlugin().getIWM().getEndWorld(world);
+            if (endWorld != null) this.worlds.add(endWorld);
+        }
         this.limitCount = new HashMap<>(addon.getSettings().getBlockLimits());
         this.onExit = onExit;
 
@@ -88,12 +99,14 @@ public class CalcIslandLevel {
                 // Add chunk snapshots to the list
                 while (it.hasNext() && chunkSnapshot.size() < MAX_CHUNKS) {
                     Pair<Integer, Integer> pair = it.next();
-                    if (!world.isChunkLoaded(pair.x, pair.z)) {
-                        world.loadChunk(pair.x, pair.z);
-                        chunkSnapshot.add(world.getChunkAt(pair.x, pair.z).getChunkSnapshot());
-                        world.unloadChunk(pair.x, pair.z);
-                    } else {
-                        chunkSnapshot.add(world.getChunkAt(pair.x, pair.z).getChunkSnapshot());
+                    for (World world : worlds) {
+                        if (!world.isChunkLoaded(pair.x, pair.z)) {
+                            world.loadChunk(pair.x, pair.z);
+                            chunkSnapshot.add(world.getChunkAt(pair.x, pair.z).getChunkSnapshot());
+                            world.unloadChunk(pair.x, pair.z);
+                        } else {
+                            chunkSnapshot.add(world.getChunkAt(pair.x, pair.z).getChunkSnapshot());
+                        }
                     }
                     it.remove();
                 }
@@ -117,6 +130,10 @@ public class CalcIslandLevel {
     }
 
     private void scanChunk(ChunkSnapshot chunk) {
+        World chunkWorld = Bukkit.getWorld(chunk.getWorldName());
+        if (chunkWorld == null) return;
+        int maxHeight = chunkWorld.getMaxHeight();
+
         for (int x = 0; x< 16; x++) {
             // Check if the block coordinate is inside the protection zone and if not, don't count it
             if (chunk.getX() * 16 + x < island.getMinProtectedX() || chunk.getX() * 16 + x >= island.getMinProtectedX() + island.getProtectionRange() * 2) {
@@ -128,9 +145,9 @@ public class CalcIslandLevel {
                     continue;
                 }
 
-                for (int y = 0; y < island.getCenter().getWorld().getMaxHeight(); y++) {
+                for (int y = 0; y < maxHeight; y++) {
                     BlockData blockData = chunk.getBlockData(x, y, z);
-                    int seaHeight = addon.getPlugin().getIWM().getSeaHeight(world);
+                    int seaHeight = addon.getPlugin().getIWM().getSeaHeight(chunkWorld);
                     boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
                     // Slabs can be doubled, so check them twice
                     if (Tag.SLABS.isTagged(blockData.getMaterial())) {

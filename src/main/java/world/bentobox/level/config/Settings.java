@@ -14,6 +14,7 @@ import world.bentobox.level.Level;
 
 public class Settings {
 
+    private Level level;
     private boolean sumTeamDeaths;
     private Map<Material, Integer> blockLimits = new HashMap<>();
     private Map<Material, Integer> blockValues = new HashMap<>();
@@ -25,7 +26,7 @@ public class Settings {
     private List<String> gameModes = new ArrayList<>();
 
     public Settings(Level level) {
-
+        this.level = level;
         level.saveDefaultConfig();
 
         // GameModes
@@ -188,6 +189,20 @@ public class Settings {
      */
     public List<String> getGameModes() {
         return gameModes;
+    }
+
+    /**
+     * @return if the nether island should be included in the level calc or not
+     */
+    public boolean isNether() {
+        return level.getConfig().getBoolean("nether");
+    }
+
+    /**
+     * @return if the end island should be included in the level calc or not
+     */
+    public boolean isEnd() {
+        return level.getConfig().getBoolean("end");
     }
 
 }

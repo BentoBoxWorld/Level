@@ -14,6 +14,16 @@ game-modes:
 # Players with the permission askyblock.island.multiplier.# will have their blocks
 # multiplied in value by that amount.
 
+# Include nether island in level calculations.
+# Warning: Enabling this mid-game will give players with an island a jump in
+# island level. New islands will be correctly zeroed.
+nether: false
+
+# Include end island in level calculations
+# Warning: Enabling this mid-game will give players with an island a jump in
+# island level. New islands will be correctly zeroed.
+end: false
+
 # Underwater block multiplier
 # If blocks are below sea-level, they can have a higher value. e.g. 2x
 # Promotes under-water development if there is a sea. Value can be fractional.
