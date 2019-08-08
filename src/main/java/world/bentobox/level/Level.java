@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.World;
+import org.eclipse.jdt.annotation.Nullable;
 
 import world.bentobox.bentobox.api.addons.Addon;
 import world.bentobox.bentobox.api.user.User;
@@ -54,7 +55,7 @@ public class Level extends Addon {
      * @param user - the user who is asking, or null if none
      * @param playerUUID - the target island member's UUID
      */
-    public void calculateIslandLevel(World world, User user, UUID playerUUID) {
+    public void calculateIslandLevel(World world, @Nullable User user, UUID playerUUID) {
         levelCalc.calculateIslandLevel(world, user, playerUUID);
     }
 
@@ -208,7 +209,7 @@ public class Level extends Addon {
     public long getInitialIslandLevel(Island island) {
         return levelsCache.containsKey(island.getOwner()) ? levelsCache.get(island.getOwner()).getInitialLevel(island.getWorld()) : 0L;
     }
-    
+
     public Database<LevelsData> getHandler() {
         return handler;
     }

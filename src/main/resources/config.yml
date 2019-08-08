@@ -14,6 +14,11 @@ game-modes:
 # Players with the permission askyblock.island.multiplier.# will have their blocks
 # multiplied in value by that amount.
 
+# Calculate island level on login
+# This silently calculates the player's island level when they login
+# This applies to all islands the player has on the server, e.g., BSkyBlock, AcidIsland
+login: false
+
 # Include nether island in level calculations.
 # Warning: Enabling this mid-game will give players with an island a jump in
 # island level. New islands will be correctly zeroed.

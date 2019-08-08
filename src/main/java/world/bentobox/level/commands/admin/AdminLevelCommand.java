@@ -13,11 +13,11 @@ import world.bentobox.level.Level;
 
 public class AdminLevelCommand extends CompositeCommand {
 
-    private final Level levelPlugin;
+    private final Level addon;
 
-    public AdminLevelCommand(Level levelPlugin, CompositeCommand parent) {
+    public AdminLevelCommand(Level addon, CompositeCommand parent) {
         super(parent, "level");
-        this.levelPlugin = levelPlugin;
+        this.addon = addon;
     }
 
     @Override
@@ -38,7 +38,7 @@ public class AdminLevelCommand extends CompositeCommand {
                 user.sendMessage("general.errors.unknown-player", TextVariables.NAME, args.get(0));
                 return true;
             } else {
-                levelPlugin.calculateIslandLevel(getWorld(), user, playerUUID);
+                addon.calculateIslandLevel(getWorld(), user, playerUUID);
             }
             return true;
         } else {

@@ -41,16 +41,18 @@ class LevelPresenter {
                 targetPlayer = plugin.getIslands().getOwner(world, targetPlayer);
                 inTeam = true;
             } else {
-                sender.sendMessage("general.errors.player-has-no-island");
+                if (sender != null) sender.sendMessage("general.errors.player-has-no-island");
                 return;
             }
         }
         // Player asking for their own island calc
-        if (inTeam || !sender.isPlayer() || sender.getUniqueId().equals(targetPlayer) || sender.isOp() || sender.hasPermission(permPrefix + "mod.info")) {
+        if (sender == null || inTeam || !sender.isPlayer() || sender.getUniqueId().equals(targetPlayer) || sender.isOp() || sender.hasPermission(permPrefix + "mod.info")) {
             // Newer better system - uses chunks
-            if (!onLevelWaitTime(sender) || levelWait <= 0 || sender.isOp() || sender.hasPermission(permPrefix + "mod.info")) {
-                sender.sendMessage("island.level.calculating");
-                setLevelWaitTime(sender);
+            if (sender == null || !onLevelWaitTime(sender) || levelWait <= 0 || sender.isOp() || sender.hasPermission(permPrefix + "mod.info")) {
+                if (sender != null) {
+                    sender.sendMessage("island.level.calculating");
+                    setLevelWaitTime(sender);
+                }
                 new PlayerLevel(addon, plugin.getIslands().getIsland(world, targetPlayer), targetPlayer, sender);
             } else {
                 // Cooldown

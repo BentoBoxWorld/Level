@@ -205,4 +205,11 @@ public class Settings {
         return level.getConfig().getBoolean("end");
     }
 
+    /**
+     * @return true if level should be calculated on login
+     */
+    public boolean isLogin() {
+        return level.getConfig().getBoolean("login");
+    }
+
 }
