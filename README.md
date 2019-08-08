@@ -1,4 +1,6 @@
 # Level
+[![Build Status](https://ci.codemc.org/buildStatus/icon?job=BentoBoxWorld/Level)](https://ci.codemc.org/job/BentoBoxWorld/job/Level/)
+
 Add-on for BentoBox to calculate island levels for BSkyBlock and AcidIsland. This add-on will work
 for game modes listed in the config.yml.
 
