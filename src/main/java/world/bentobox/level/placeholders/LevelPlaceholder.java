@@ -1,6 +1,3 @@
-/**
- *
- */
 package world.bentobox.level.placeholders;
 
 import world.bentobox.bentobox.api.addons.GameModeAddon;
@@ -32,7 +29,7 @@ public class LevelPlaceholder implements PlaceholderReplacer {
      */
     @Override
     public String onReplace(User user) {
-        return String.valueOf(addon.getIslandLevel(gm.getOverWorld(), user.getUniqueId()));
+        return addon.getLevelPresenter().getLevelString(addon.getIslandLevel(gm.getOverWorld(), user.getUniqueId()));
     }
 
 }

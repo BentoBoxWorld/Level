@@ -1,7 +1,11 @@
 package world.bentobox.level;
 
+import java.math.BigInteger;
+import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 
 import org.bukkit.World;
@@ -10,7 +14,18 @@ import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.level.calculators.PlayerLevel;
 
-class LevelPresenter {
+public class LevelPresenter {
+
+    private static final BigInteger THOUSAND = BigInteger.valueOf(1000);
+    private static final TreeMap<BigInteger, String> LEVELS;
+    static {
+        LEVELS = new TreeMap<>();
+
+        LEVELS.put(THOUSAND, "k");
+        LEVELS.put(THOUSAND.pow(2), "M");
+        LEVELS.put(THOUSAND.pow(3), "G");
+        LEVELS.put(THOUSAND.pow(4), "T");
+    }
 
     private int levelWait;
     private final Level addon;
@@ -60,9 +75,34 @@ class LevelPresenter {
             }
 
         } else {
-            // Asking for the level of another player
-            sender.sendMessage("island.level.island-level-is","[level]", String.valueOf(addon.getIslandLevel(world, targetPlayer)));
+            long lvl = addon.getIslandLevel(world, targetPlayer);
+
+            sender.sendMessage("island.level.island-level-is","[level]", getLevelString(lvl));
         }
+    }
+
+    /**
+     * Get the string representation of the level. May be converted to shorthand notation, e.g., 104556 -> 10.5k
+     * @param lvl - long value to represent
+     * @return string of the level.
+     */
+    public String getLevelString(long lvl) {
+        String level = String.valueOf(lvl);
+        // Asking for the level of another player
+        if(addon.getSettings().isShortHand()) {
+            BigInteger levelValue = BigInteger.valueOf(lvl);
+
+            Map.Entry<BigInteger, String> stage = LEVELS.floorEntry(levelValue);
+
+            if (stage != null) { // level > 1000
+                // 1 052 -> 1.0k
+                // 1 527 314 -> 1.5M
+                // 3 874 130 021 -> 3.8G
+                // 4 002 317 889 -> 4.0T
+                level = new DecimalFormat("#.#").format(levelValue.divide(stage.getKey().divide(THOUSAND)).doubleValue()/1000.0) + stage.getValue();
+            }
+        }
+        return level;
     }
 
     /**

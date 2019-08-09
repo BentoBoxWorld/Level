@@ -3,10 +3,11 @@ package world.bentobox.level;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -23,7 +24,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -44,6 +44,7 @@ import world.bentobox.bentobox.database.DatabaseSetup;
 import world.bentobox.bentobox.managers.IslandWorldManager;
 import world.bentobox.bentobox.managers.IslandsManager;
 import world.bentobox.bentobox.managers.PlayersManager;
+import world.bentobox.level.config.Settings;
 import world.bentobox.level.objects.TopTenData;
 
 @RunWith(PowerMockRunner.class)
@@ -71,6 +72,11 @@ public class TopTenTest {
     private PlayersManager pm;
     @Mock
     private Inventory inv;
+    @Mock
+    private LevelPresenter lp;
+    @Mock
+    private Settings settings;
+
 
     @SuppressWarnings("unchecked")
     @BeforeClass
@@ -87,7 +93,6 @@ public class TopTenTest {
 
     @Before
     public void setUp() throws Exception {
-        plugin = mock(BentoBox.class);
         Whitebox.setInternalState(BentoBox.class, "instance", plugin);
         when(addon.getPlugin()).thenReturn(plugin);
 
@@ -142,10 +147,10 @@ public class TopTenTest {
 
         // Inventory GUI
         when(Bukkit.createInventory(any(), anyInt(), anyString())).thenReturn(inv);
-    }
 
-    @After
-    public void tearDown() throws Exception {
+        // Level presenter
+        when(addon.getLevelPresenter()).thenReturn(lp);
+        when(lp.getLevelString(anyLong())).thenAnswer((Answer<String>) invocation -> String.valueOf(invocation.getArgument(0, Long.class)));
     }
 
     @Test

@@ -50,6 +50,10 @@ deathpenalty: 100
 sumteamdeaths: false
 # For other death related settings, see the GameModeAddon's config.yml settings.
 
+# Shorthand island level
+# Shows large level values rounded down, e.g., 10,345 -> 10k
+shorthand: false
+
 # This section lists the limits for any particular block. Blocks over this amount
 # are not counted.
 # Format:

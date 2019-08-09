@@ -47,7 +47,7 @@ public class Level extends Addon {
     private TopTen topTen;
 
     // Level calculator
-    private LevelPresenter levelCalc;
+    private LevelPresenter levelPresenter;
 
     /**
      * Calculates a user's island
@@ -56,7 +56,7 @@ public class Level extends Addon {
      * @param playerUUID - the target island member's UUID
      */
     public void calculateIslandLevel(World world, @Nullable User user, UUID playerUUID) {
-        levelCalc.calculateIslandLevel(world, user, playerUUID);
+        levelPresenter.calculateIslandLevel(world, user, playerUUID);
     }
 
     /**
@@ -86,12 +86,19 @@ public class Level extends Addon {
     /**
      * @return the settings
      */
-    public final Settings getSettings() {
+    public Settings getSettings() {
         return settings;
     }
 
     public TopTen getTopTen() {
         return topTen;
+    }
+
+    /**
+     * @return the levelPresenter
+     */
+    public LevelPresenter getLevelPresenter() {
+        return levelPresenter;
     }
 
     @Override
@@ -116,7 +123,7 @@ public class Level extends Addon {
         // Initialize the cache
         levelsCache = new HashMap<>();
         // Load the calculator
-        levelCalc = new LevelPresenter(this, this.getPlugin());
+        levelPresenter = new LevelPresenter(this, this.getPlugin());
         // Start the top ten and register it for clicks
         topTen = new TopTen(this);
         registerListener(topTen);
