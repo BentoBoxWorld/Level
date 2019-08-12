@@ -40,6 +40,14 @@ levelcost: 100
 # Cooldown between level requests in seconds
 levelwait: 60
 
+# Delay between each task that loads chunks for calculating island level.
+# Increasing this will increase time to calculate island level.
+updatetickdelay: 1
+
+# Number of chunks that will be processed at the same tick.
+# Decreasing this will increase time to calculate island level.
+chunkspertick: 200
+
 # Death penalty
 # How many block values a player will lose per death.
 # Default value of 100 means that for every death, the player will lose 1 level (if levelcost is 100)
