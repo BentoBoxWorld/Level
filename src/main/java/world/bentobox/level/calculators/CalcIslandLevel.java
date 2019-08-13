@@ -31,8 +31,8 @@ import world.bentobox.level.Level;
 
 public class CalcIslandLevel {
 
-    private static final int MAX_CHUNKS = 200;
-    private static final long SPEED = 1;
+    private final int MAX_CHUNKS;
+    private final long SPEED;
     private static final String LINE_BREAK = "==================================";
     private boolean checking;
     private final BukkitTask task;
@@ -79,6 +79,9 @@ public class CalcIslandLevel {
 
         // Set the initial island handicap
         result.initialLevel = addon.getInitialIslandLevel(island);
+
+        SPEED = addon.getSettings().getUpdateTickDelay();
+        MAX_CHUNKS = addon.getSettings().getChunksPerTick();
 
         // Get chunks to scan
         chunksToScan = getChunksToScan(island);
