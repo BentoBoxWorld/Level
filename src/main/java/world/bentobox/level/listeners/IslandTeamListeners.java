@@ -100,6 +100,13 @@ public class IslandTeamListeners implements Listener {
     private void zeroLevel(Island island) {
         if (cil.containsKey(island)) {
             long level = cil.get(island).getResult().getLevel();
+            // Get deaths
+            int deaths = addon.getPlayers().getDeaths(island.getWorld(), island.getOwner());
+            // Death penalty calculation.
+            if (addon.getSettings().getLevelCost() != 0) {
+                // Add the deaths because this makes the original island that much "bigger"
+                level += deaths * addon.getSettings().getDeathPenalty() / addon.getSettings().getLevelCost();
+            }
             addon.setInitialIslandLevel(island, level);
             cil.remove(island);
         }

@@ -28,11 +28,11 @@ import world.bentobox.level.objects.TopTenData;
  *
  */
 public class TopTen implements Listener {
-    private final Level addon;
+    private Level addon;
     // Top ten list of players
     private Map<World,TopTenData> topTenList;
     private final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
-    private final Database<TopTenData> handler;
+    private Database<TopTenData> handler;
 
     public TopTen(Level addon) {
         this.addon = addon;
@@ -40,6 +40,21 @@ public class TopTen implements Listener {
         // Note that these are saved in the BSkyBlock database
         handler = new Database<>(addon, TopTenData.class);
         loadTopTen();
+    }
+
+    /**
+     * Loads all the top tens from the database
+     */
+    private void loadTopTen() {
+        topTenList = new HashMap<>();
+        handler.loadObjects().forEach(tt -> {
+            World world = Bukkit.getWorld(tt.getUniqueId());
+            if (world != null) {
+                topTenList.put(world, tt);
+            } else {
+                addon.logError("TopTen world " + tt.getUniqueId() + " is not known on server. Skipping...");
+            }
+        });
     }
 
     /**
@@ -58,8 +73,8 @@ public class TopTen implements Listener {
         topTenList.get(world).setUniqueId(world.getName());
 
         // Try and see if the player is online
-        Player player = addon.getServer().getPlayer(ownerUUID);
-        if (player != null && !player.hasPermission(addon.getPlugin().getIWM().getPermissionPrefix(world) + ".intopten")) {
+        Player player = Bukkit.getServer().getPlayer(ownerUUID);
+        if (player != null && !player.hasPermission(addon.getPlugin().getIWM().getPermissionPrefix(world) + "intopten")) {
             topTenList.get(world).remove(ownerUUID);
             return;
         }
@@ -86,7 +101,7 @@ public class TopTen implements Listener {
             Map.Entry<UUID, Long> m = it.next();
             UUID topTenUUID = m.getKey();
             // Remove from TopTen if the player is online and has the permission
-            Player entry = addon.getServer().getPlayer(topTenUUID);
+            Player entry = Bukkit.getServer().getPlayer(topTenUUID);
             boolean show = true;
             if (entry != null) {
                 if (!entry.hasPermission(permPrefix + "intopten")) {
@@ -110,12 +125,12 @@ public class TopTen implements Listener {
      * @param asker - the asker of the top ten
      * @return PanelItem
      */
-    private PanelItem getHead(int rank, Long level, UUID playerUUID, User asker, World world) {
+    private PanelItem getHead(int rank, long level, UUID playerUUID, User asker, World world) {
         final String name = addon.getPlayers().getName(playerUUID);
         List<String> description = new ArrayList<>();
         if (name != null) {
             description.add(asker.getTranslation("island.top.gui-heading", "[name]", name, "[rank]", String.valueOf(rank)));
-            description.add(asker.getTranslation("island.top.island-level","[level]", String.valueOf(level)));
+            description.add(asker.getTranslation("island.top.island-level","[level]", addon.getLevelPresenter().getLevelString(level)));
             if (addon.getIslands().inTeam(world, playerUUID)) {
                 List<String> memberList = new ArrayList<>();
                 for (UUID members : addon.getIslands().getMembers(world, playerUUID)) {
@@ -131,16 +146,14 @@ public class TopTen implements Listener {
         return builder.build();
     }
 
-    public TopTenData getTopTenList(World world) {
-        return topTenList.get(world);
-    }
-
     /**
-     * Loads all the top tens from the database
+     * Get the top ten list for this world
+     * @param world - world
+     * @return top ten data object
      */
-    private void loadTopTen() {
-        topTenList = new HashMap<>();
-        handler.loadObjects().forEach(tt -> topTenList.put(Bukkit.getWorld(tt.getUniqueId()), tt));
+    public TopTenData getTopTenList(World world) {
+        topTenList.putIfAbsent(world, new TopTenData());
+        return topTenList.get(world);
     }
 
     /**

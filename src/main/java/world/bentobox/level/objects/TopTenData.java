@@ -24,6 +24,8 @@ public class TopTenData implements DataObject {
     private Map<UUID, Long> topTen = new LinkedHashMap<>();
 
     public Map<UUID, Long> getTopTen() {
+        // Remove any entries that have level values less than 1
+        topTen.values().removeIf(l -> l < 1);
         return topTen.entrySet().stream()
                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).limit(10)
                 .collect(Collectors.toMap(
@@ -36,12 +38,14 @@ public class TopTenData implements DataObject {
 
     @Override
     public String getUniqueId() {
+        // This is the world name
         return uniqueId;
     }
 
     @Override
     public void setUniqueId(String uniqueId) {
-        this.uniqueId = uniqueId;
+        // This is the world name - make it always lowercase
+        this.uniqueId = uniqueId.toLowerCase();
     }
 
     /**

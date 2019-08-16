@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import world.bentobox.bentobox.api.commands.CompositeCommand;
+import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.level.Level;
 
@@ -31,7 +32,7 @@ public class IslandLevelCommand extends CompositeCommand {
             // Convert name to a UUID
             final UUID playerUUID = getPlugin().getPlayers().getUUID(args.get(0));
             if (playerUUID == null) {
-                user.sendMessage("general.errors.unknown-player");
+                user.sendMessage("general.errors.unknown-player", TextVariables.NAME, args.get(0));
                 return true;
             } else if (user.getUniqueId().equals(playerUUID) ) {
                 return this.calculateLevel(user);

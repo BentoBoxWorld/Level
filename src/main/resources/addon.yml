@@ -1,6 +1,6 @@
 name: Level
 main: world.bentobox.level.Level
-version: ${version}
+version: ${version}${build.number}
 
 softdepend: AcidIsland, BSkyBlock
 

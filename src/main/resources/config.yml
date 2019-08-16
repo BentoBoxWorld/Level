@@ -14,6 +14,21 @@ game-modes:
 # Players with the permission askyblock.island.multiplier.# will have their blocks
 # multiplied in value by that amount.
 
+# Calculate island level on login
+# This silently calculates the player's island level when they login
+# This applies to all islands the player has on the server, e.g., BSkyBlock, AcidIsland
+login: false
+
+# Include nether island in level calculations.
+# Warning: Enabling this mid-game will give players with an island a jump in
+# island level. New islands will be correctly zeroed.
+nether: false
+
+# Include end island in level calculations
+# Warning: Enabling this mid-game will give players with an island a jump in
+# island level. New islands will be correctly zeroed.
+end: false
+
 # Underwater block multiplier
 # If blocks are below sea-level, they can have a higher value. e.g. 2x
 # Promotes under-water development if there is a sea. Value can be fractional.
@@ -25,6 +40,14 @@ levelcost: 100
 # Cooldown between level requests in seconds
 levelwait: 60
 
+# Delay between each task that loads chunks for calculating island level.
+# Increasing this will increase time to calculate island level.
+updatetickdelay: 1
+
+# Number of chunks that will be processed at the same tick.
+# Decreasing this will increase time to calculate island level.
+chunkspertick: 200
+
 # Death penalty
 # How many block values a player will lose per death.
 # Default value of 100 means that for every death, the player will lose 1 level (if levelcost is 100)
@@ -33,15 +56,11 @@ deathpenalty: 100
 # Sum team deaths - if true, all the teams deaths are summed
 # If false, only the leader's deaths counts
 sumteamdeaths: false
-# Max deaths
-# If player dies more than this, it doesn't count anymore
-# Stops players from getting into an impossible situation
-maxdeaths: 10
-# Reset deaths on island reset
-islandresetdeathreset: true
-# Reset deaths on team join
-teamjoindeathreset: true
+# For other death related settings, see the GameModeAddon's config.yml settings.
 
+# Shorthand island level
+# Shows large level values rounded down, e.g., 10,345 -> 10k
+shorthand: false
 
 # This section lists the limits for any particular block. Blocks over this amount
 # are not counted.
@@ -651,7 +670,7 @@ blocks:
 # If a block is not listed, the default value will be used
 # Prefix with world name
 worlds:
-  AcidIsland_world:
+  acidisland_world:
     SAND: 0
     SANDSTONE: 0
     ICE: 0

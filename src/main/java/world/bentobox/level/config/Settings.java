@@ -1,6 +1,5 @@
 package world.bentobox.level.config;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +13,7 @@ import world.bentobox.level.Level;
 
 public class Settings {
 
+    private Level level;
     private boolean sumTeamDeaths;
     private Map<Material, Integer> blockLimits = new HashMap<>();
     private Map<Material, Integer> blockValues = new HashMap<>();
@@ -22,17 +22,42 @@ public class Settings {
     private int deathpenalty;
     private long levelCost;
     private int levelWait;
-    private int maxDeaths;
-    private boolean islandResetDeathReset;
-    private boolean teamJoinDeathReset;
-    private List<String> gameModes = new ArrayList<>();
+
+    /**
+     * Stores number of chunks that can be updated in single tick.
+     */
+    private int chunksPerTick;
+
+    /**
+     * Stores number of tick delay between each chunk loading.
+     */
+    private long updateTickDelay;
+
+    private List<String> gameModes;
+
 
     public Settings(Level level) {
-
+        this.level = level;
         level.saveDefaultConfig();
 
         // GameModes
         gameModes = level.getConfig().getStringList("game-modes");
+
+        // Level calculation chunk load speed
+        this.setUpdateTickDelay(level.getConfig().getLong("updatetickdelay", 1));
+
+        if (this.getUpdateTickDelay() <= 0)
+        {
+            this.setUpdateTickDelay(1);
+        }
+
+        // Level calculation chunk count per update
+        this.setChunksPerTick(level.getConfig().getInt("chunkspertick", 200));
+
+        if (this.getChunksPerTick() <= 0)
+        {
+            this.setChunksPerTick(200);
+        }
 
         setLevelWait(level.getConfig().getInt("levelwait", 60));
         if (getLevelWait() < 0) {
@@ -40,9 +65,6 @@ public class Settings {
         }
         setDeathpenalty(level.getConfig().getInt("deathpenalty", 0));
         setSumTeamDeaths(level.getConfig().getBoolean("sumteamdeaths"));
-        setMaxDeaths(level.getConfig().getInt("maxdeaths", 10));
-        setIslandResetDeathReset(level.getConfig().getBoolean("islandresetdeathreset", true));
-        setTeamJoinDeathReset(level.getConfig().getBoolean("teamjoindeathreset", true));
         setUnderWaterMultiplier(level.getConfig().getDouble("underwater", 1D));
         setLevelCost(level.getConfig().getInt("levelcost", 100));
         if (getLevelCost() < 1) {
@@ -91,7 +113,7 @@ public class Settings {
                         worldBlockValues.put(bWorld, values);
                     }
                 } else {
-                    level.getLogger().severe(() -> "Level Addon: No such world : " + world);
+                    level.getLogger().severe(() -> "Level Addon: No such world in config.yml : " + world);
                 }
             }
         }
@@ -183,44 +205,6 @@ public class Settings {
         this.levelWait = levelWait;
     }
     /**
-     * TODO: Use max deaths
-     * @return the maxDeaths
-     */
-    public final int getMaxDeaths() {
-        return maxDeaths;
-    }
-    /**
-     * @param maxDeaths the maxDeaths to set
-     */
-    private void setMaxDeaths(int maxDeaths) {
-        this.maxDeaths = maxDeaths;
-    }
-    /**
-     * @return the islandResetDeathReset
-     */
-    public final boolean isIslandResetDeathReset() {
-        return islandResetDeathReset;
-    }
-    /**
-     * @param islandResetDeathReset the islandResetDeathReset to set
-     */
-    private void setIslandResetDeathReset(boolean islandResetDeathReset) {
-        this.islandResetDeathReset = islandResetDeathReset;
-    }
-    /**
-     * @return the teamJoinDeathReset
-     */
-    public final boolean isTeamJoinDeathReset() {
-        return teamJoinDeathReset;
-    }
-    /**
-     * @param teamJoinDeathReset the teamJoinDeathReset to set
-     */
-    private void setTeamJoinDeathReset(boolean teamJoinDeathReset) {
-        this.teamJoinDeathReset = teamJoinDeathReset;
-    }
-
-    /**
      * @return the worldBlockValues
      */
     public Map<World, Map<Material, Integer>> getWorldBlockValues() {
@@ -234,4 +218,73 @@ public class Settings {
         return gameModes;
     }
 
+    /**
+     * @return if the nether island should be included in the level calc or not
+     */
+    public boolean isNether() {
+        return level.getConfig().getBoolean("nether");
+    }
+
+    /**
+     * @return if the end island should be included in the level calc or not
+     */
+    public boolean isEnd() {
+        return level.getConfig().getBoolean("end");
+    }
+
+    /**
+     * @return true if level should be calculated on login
+     */
+    public boolean isLogin() {
+        return level.getConfig().getBoolean("login");
+    }
+
+    /**
+     * @return true if levels should be shown in shorthand notation, e.g., 10,234 -> 10k
+     */
+    public boolean isShortHand() {
+        return level.getConfig().getBoolean("shorthand");
+    }
+
+
+    /**
+     * This method returns the number of chunks that can be processed at single tick.
+     * @return the value of chunksPerTick.
+     */
+    public int getChunksPerTick()
+    {
+        return this.chunksPerTick;
+    }
+
+
+    /**
+     * This method sets the chunksPerTick value.
+     * @param chunksPerTick the chunksPerTick new value.
+     *
+     */
+    public void setChunksPerTick(int chunksPerTick)
+    {
+        this.chunksPerTick = chunksPerTick;
+    }
+
+
+    /**
+     * This method returns the delay between each update call.
+     * @return the value of updateTickDelay.
+     */
+    public long getUpdateTickDelay()
+    {
+        return this.updateTickDelay;
+    }
+
+
+    /**
+     * This method sets the updateTickDelay value.
+     * @param updateTickDelay the updateTickDelay new value.
+     *
+     */
+    public void setUpdateTickDelay(long updateTickDelay)
+    {
+        this.updateTickDelay = updateTickDelay;
+    }
 }

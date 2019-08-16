@@ -12,7 +12,10 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.World;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Slab;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.google.common.collect.HashMultiset;
@@ -28,8 +31,8 @@ import world.bentobox.level.Level;
 
 public class CalcIslandLevel {
 
-    private static final int MAX_CHUNKS = 200;
-    private static final long SPEED = 1;
+    private final int MAX_CHUNKS;
+    private final long SPEED;
     private static final String LINE_BREAK = "==================================";
     private boolean checking;
     private final BukkitTask task;
@@ -38,12 +41,13 @@ public class CalcIslandLevel {
 
     private final Set<Pair<Integer, Integer>> chunksToScan;
     private final Island island;
-    private final World world;
     private final Results result;
     private final Runnable onExit;
 
     // Copy the limits hash map
     private final HashMap<Material, Integer> limitCount;
+    private final World world;
+    private final List<World> worlds;
 
 
     /**
@@ -56,7 +60,17 @@ public class CalcIslandLevel {
     public CalcIslandLevel(final Level addon, final Island island, final Runnable onExit) {
         this.addon = addon;
         this.island = island;
-        this.world = island.getCenter().getWorld();
+        this.world = island.getWorld();
+        this.worlds = new ArrayList<>();
+        this.worlds.add(world);
+        if (addon.getSettings().isNether()) {
+            World netherWorld = addon.getPlugin().getIWM().getNetherWorld(world);
+            if (netherWorld != null) this.worlds.add(netherWorld);
+        }
+        if (addon.getSettings().isEnd()) {
+            World endWorld = addon.getPlugin().getIWM().getEndWorld(world);
+            if (endWorld != null) this.worlds.add(endWorld);
+        }
         this.limitCount = new HashMap<>(addon.getSettings().getBlockLimits());
         this.onExit = onExit;
 
@@ -65,6 +79,9 @@ public class CalcIslandLevel {
 
         // Set the initial island handicap
         result.initialLevel = addon.getInitialIslandLevel(island);
+
+        SPEED = addon.getSettings().getUpdateTickDelay();
+        MAX_CHUNKS = addon.getSettings().getChunksPerTick();
 
         // Get chunks to scan
         chunksToScan = getChunksToScan(island);
@@ -85,12 +102,14 @@ public class CalcIslandLevel {
                 // Add chunk snapshots to the list
                 while (it.hasNext() && chunkSnapshot.size() < MAX_CHUNKS) {
                     Pair<Integer, Integer> pair = it.next();
-                    if (!world.isChunkLoaded(pair.x, pair.z)) {
-                        world.loadChunk(pair.x, pair.z);
-                        chunkSnapshot.add(world.getChunkAt(pair.x, pair.z).getChunkSnapshot());
-                        world.unloadChunk(pair.x, pair.z);
-                    } else {
-                        chunkSnapshot.add(world.getChunkAt(pair.x, pair.z).getChunkSnapshot());
+                    for (World world : worlds) {
+                        if (!world.isChunkLoaded(pair.x, pair.z)) {
+                            world.loadChunk(pair.x, pair.z);
+                            chunkSnapshot.add(world.getChunkAt(pair.x, pair.z).getChunkSnapshot());
+                            world.unloadChunk(pair.x, pair.z);
+                        } else {
+                            chunkSnapshot.add(world.getChunkAt(pair.x, pair.z).getChunkSnapshot());
+                        }
                     }
                     it.remove();
                 }
@@ -114,6 +133,10 @@ public class CalcIslandLevel {
     }
 
     private void scanChunk(ChunkSnapshot chunk) {
+        World chunkWorld = Bukkit.getWorld(chunk.getWorldName());
+        if (chunkWorld == null) return;
+        int maxHeight = chunkWorld.getMaxHeight();
+
         for (int x = 0; x< 16; x++) {
             // Check if the block coordinate is inside the protection zone and if not, don't count it
             if (chunk.getX() * 16 + x < island.getMinProtectedX() || chunk.getX() * 16 + x >= island.getMinProtectedX() + island.getProtectionRange() * 2) {
@@ -125,27 +148,31 @@ public class CalcIslandLevel {
                     continue;
                 }
 
-                for (int y = 0; y < island.getCenter().getWorld().getMaxHeight(); y++) {
-                    Material blockData = chunk.getBlockType(x, y, z);
-                    int seaHeight = addon.getPlugin().getIWM().getSeaHeight(world);
+                for (int y = 0; y < maxHeight; y++) {
+                    BlockData blockData = chunk.getBlockData(x, y, z);
+                    int seaHeight = addon.getPlugin().getIWM().getSeaHeight(chunkWorld);
                     boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
-                    // Air is free
-                    if (!blockData.equals(Material.AIR)) {
-                        checkBlock(blockData, belowSeaLevel);
+                    // Slabs can be doubled, so check them twice
+                    if (Tag.SLABS.isTagged(blockData.getMaterial())) {
+                        Slab slab = (Slab)blockData;
+                        if (slab.getType().equals(Slab.Type.DOUBLE)) {
+                            checkBlock(blockData, belowSeaLevel);
+                        }
                     }
+                    checkBlock(blockData, belowSeaLevel);
                 }
             }
         }
     }
 
-    private void checkBlock(Material md, boolean belowSeaLevel) {
-        int count = limitCount(md);
+    private void checkBlock(BlockData bd, boolean belowSeaLevel) {
+        int count = limitCount(bd.getMaterial());
         if (belowSeaLevel) {
             result.underWaterBlockCount += count;
-            result.uwCount.add(md);
+            result.uwCount.add(bd.getMaterial());
         } else {
             result.rawBlockCount += count;
-            result.mdCount.add(md);
+            result.mdCount.add(bd.getMaterial());
         }
     }
 
@@ -194,8 +221,7 @@ public class CalcIslandLevel {
         Set<Pair<Integer, Integer>> chunkSnapshot = new HashSet<>();
         for (int x = island.getMinProtectedX(); x < (island.getMinProtectedX() + island.getProtectionRange() * 2 + 16); x += 16) {
             for (int z = island.getMinProtectedZ(); z < (island.getMinProtectedZ() + island.getProtectionRange() * 2 + 16); z += 16) {
-                Pair<Integer, Integer> pair = new Pair<>(world.getBlockAt(x, 0, z).getChunk().getX(), world.getBlockAt(x, 0, z).getChunk().getZ());
-                chunkSnapshot.add(pair);
+                chunkSnapshot.add(new Pair<>(x >> 4, z >> 4));
             }
         }
         return chunkSnapshot;
@@ -221,9 +247,6 @@ public class CalcIslandLevel {
             this.result.deathHandicap = this.island.getOwner() == null ? 0 :
                 this.addon.getPlayers().getDeaths(this.world, this.island.getOwner());
         }
-
-        // Just lazy check for min death count.
-        this.result.deathHandicap = Math.min(this.result.deathHandicap, this.addon.getSettings().getMaxDeaths());
 
         long blockAndDeathPoints = this.result.rawBlockCount;
 
@@ -308,10 +331,11 @@ public class CalcIslandLevel {
             if (addon.getSettings().getBlockValues().containsKey(type)) {
                 // Specific
                 value = addon.getSettings().getBlockValues().get(type);
+
+                r.add(type.toString() + ":"
+                        + String.format("%,d", en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
+                total += (value * en.getCount());
             }
-            r.add(type.toString() + ":"
-                    + String.format("%,d", en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
-            total += (value * en.getCount());
         }
         r.add("Subtotal = " + total);
         r.add(LINE_BREAK);

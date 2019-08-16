@@ -1,0 +1,37 @@
+###########################################################################################
+# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
+# the one at http://yaml-online-parser.appspot.com                                        #
+###########################################################################################
+
+admin:
+  level:
+    parameters: "<spēlētājs>"
+    description: "aprēķina spēlētāja salas līmeni"
+  top:
+    description: "rādīt labākās 10 salas"
+    unknown-world: "&cNezināma pasaule!"
+    display: "&f[rank]. &a[name] &7- &b[level]"
+
+island:
+  level: 
+    parameters: "[player]"
+    description: "aprēķina tavas salas līmeni, vai parāda spēlētāja [player] līmeni"
+    calculating: "&aAprēķina līmeni..." 
+    island-level-is: "&aSalas līmenis ir &b[level]"
+    required-points-to-next-level: "&aNepieciešami [points] punkti, lai sasniegtu nākošo līmeni"
+    deaths: "&c([number] nāves)"
+    cooldown: "&cTev ir jāuzgaida &b[time]&c sekundes, lai vēlreiz aprēķinātu salas līmeni!"
+    
+  top:
+    description: "rādīt labākos 10"
+    gui-title: "&aLabākie 10"
+    gui-heading: "&6[name]: &B[rank]"
+    island-level: "&BLīmenis [level]"
+    warp-to: "&APārvietoties uz [name] salu."
+
+  value:
+    description: "rādīt vērtību jebkuram blokam"
+    success: "&7Vērtība šim blokam ir: &e[value]"
+    success-underwater: "&7Vērtība šim blokam zem jūras līmeņa: &e[value]"
+    empty-hand: "&cTev nav bloks rokās."
+    no-value: "&cŠim blokam/priekšmetam nav vērtības."

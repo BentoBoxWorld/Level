@@ -1,7 +1,7 @@
 package world.bentobox.level.objects;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 
 import org.bukkit.World;
@@ -20,12 +20,12 @@ public class LevelsData implements DataObject {
      * Map of world name and island level
      */
     @Expose
-    private Map<String, Long> levels = new HashMap<>();
+    private Map<String, Long> levels = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     /**
      * Map of world name to island initial level
      */
     @Expose
-    private Map<String, Long> initialLevel = new HashMap<>();
+    private Map<String, Long> initialLevel = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     public LevelsData() {} // For Bean loading
 
@@ -89,7 +89,7 @@ public class LevelsData implements DataObject {
      * @param level - level
      */
     public void setInitialLevel(World world, long level) {
-        this.initialLevel.put(world.getName(), level);        
+        this.initialLevel.put(world.getName(), level);
     }
 
     /**

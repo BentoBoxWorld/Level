@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.World;
+import org.eclipse.jdt.annotation.Nullable;
 
 import world.bentobox.bentobox.api.events.addon.AddonEvent;
 import world.bentobox.bentobox.api.user.User;
@@ -34,7 +35,7 @@ public class PlayerLevel {
     private CalcIslandLevel calc;
 
 
-    public PlayerLevel(final Level addon, final Island island, final UUID targetPlayer, final User asker) {
+    public PlayerLevel(final Level addon, final Island island, final UUID targetPlayer, @Nullable final User asker) {
         this.addon = addon;
         this.island = island;
         this.world = island.getCenter().getWorld();
@@ -70,7 +71,7 @@ public class PlayerLevel {
         // Save the results
         island.getMemberSet().forEach(m -> addon.setIslandLevel(world, m, results.getLevel()));
         // Display result if event is not cancelled
-        if (!ilce.isCancelled()) {
+        if (!ilce.isCancelled() && asker != null) {
             informPlayers(results);
         }
     }
