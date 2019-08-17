@@ -330,15 +330,12 @@ public class CalcIslandLevel {
         for (Entry<Material> en : entriesSortedByCount) {
             Material type = en.getElement();
 
-            int value = 0;
-            if (addon.getSettings().getBlockValues().containsKey(type)) {
-                // Specific
-                value = addon.getSettings().getBlockValues().get(type);
+            int value = getValue(type);
 
-                r.add(type.toString() + ":"
-                        + String.format("%,d", en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
-                total += (value * en.getCount());
-            }
+            r.add(type.toString() + ":"
+                    + String.format("%,d", en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
+            total += (value * en.getCount());
+
         }
         r.add("Subtotal = " + total);
         r.add(LINE_BREAK);
