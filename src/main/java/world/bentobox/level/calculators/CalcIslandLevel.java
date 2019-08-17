@@ -191,12 +191,8 @@ public class CalcIslandLevel {
                 result.ofCount.add(md);
                 return 0;
             }
-        } else if (addon.getSettings().getBlockValues().containsKey(md)) {
-            return getValue(md);
-        } else {
-            result.ncCount.add(md);
-            return 0;
         }
+        return getValue(md);
     }
 
     /**
@@ -206,10 +202,17 @@ public class CalcIslandLevel {
      * @return value of a material
      */
     private int getValue(Material md) {
+        // Check world settings
         if (addon.getSettings().getWorldBlockValues().containsKey(world) && addon.getSettings().getWorldBlockValues().get(world).containsKey(md)) {
             return addon.getSettings().getWorldBlockValues().get(world).get(md);
         }
-        return addon.getSettings().getBlockValues().getOrDefault(md, 0);
+        // Check baseline
+        if (addon.getSettings().getBlockValues().containsKey(md)) {
+            return addon.getSettings().getBlockValues().get(md);
+        }
+        // Not in config
+        result.ncCount.add(md);
+        return 0;
     }
 
     /**

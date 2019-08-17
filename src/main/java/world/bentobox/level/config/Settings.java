@@ -109,7 +109,7 @@ public class Settings {
                     for (String material : worldValues.getKeys(false)) {
                         Material mat = Material.valueOf(material);
                         Map<Material, Integer> values = worldBlockValues.getOrDefault(bWorld, new HashMap<>());
-                        values.put(mat, worldValues.getInt("blocks." + material, 0));
+                        values.put(mat, worldValues.getInt(material));
                         worldBlockValues.put(bWorld, values);
                     }
                 } else {
