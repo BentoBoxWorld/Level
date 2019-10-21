@@ -16,6 +16,31 @@ for game modes listed in the config.yml.
 
 1. Read the release notes carefully, but you may have to delete the old config.yml to use a new one.
 
+## Permissons
+Permissions are given automatically to players as listed below for BSkyBlock, AcidIsland and CaveBlock. If your permissions plugin strips permissions then you may have to allocate these manually. Note that if a player doesn't have the intopten permission, they will not be listed in the top ten.
+
+```
+permissions:    
+  bskyblock.intopten:
+    description: Player is in the top ten.
+    default: true
+  bskyblock.island.level:
+    description: Player can use level command
+    default: true
+  bskyblock.island.top:
+    description: Player can use top ten command
+    default: true
+  bskyblock.island.value:
+    description: Player can use value command
+    default: true
+  bskyblock.admin.level:
+    description: Player can use admin level command
+    default: true
+  bskyblock.admin.topten:
+    description: Player can use admin top ten command
+    default: true
+```
+
 ## Config.yml
 
 The config.yml has the following sections:

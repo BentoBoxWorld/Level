@@ -69,7 +69,7 @@ public class Settings {
         setLevelCost(level.getConfig().getInt("levelcost", 100));
         if (getLevelCost() < 1) {
             setLevelCost(1);
-            level.getLogger().warning("levelcost in blockvalues.yml cannot be less than 1. Setting to 1.");
+            level.logWarning("levelcost in blockvalues.yml cannot be less than 1. Setting to 1.");
         }
 
         if (level.getConfig().isSet("limits")) {
@@ -79,7 +79,7 @@ public class Settings {
                     Material mat = Material.valueOf(material);
                     bl.put(mat, level.getConfig().getInt("limits." + material, 0));
                 } catch (Exception e) {
-                    level.getLogger().warning(() -> "Unknown material (" + material + ") in blockvalues.yml Limits section. Skipping...");
+                    level.logWarning("Unknown material (" + material + ") in blockvalues.yml Limits section. Skipping...");
                 }
             }
             setBlockLimits(bl);
@@ -92,12 +92,12 @@ public class Settings {
                     Material mat = Material.valueOf(material);
                     bv.put(mat, level.getConfig().getInt("blocks." + material, 0));
                 } catch (Exception e) {
-                    level.getLogger().warning(()-> "Unknown material (" + material + ") in config.yml blocks section. Skipping...");
+                    level.logWarning("Unknown material (" + material + ") in config.yml blocks section. Skipping...");
                 }
             }
             setBlockValues(bv);
         } else {
-            level.getLogger().severe("No block values in config.yml! All island levels will be zero!");
+            level.logWarning("No block values in config.yml! All island levels will be zero!");
         }
         // Worlds
         if (level.getConfig().isSet("worlds")) {
@@ -109,11 +109,11 @@ public class Settings {
                     for (String material : worldValues.getKeys(false)) {
                         Material mat = Material.valueOf(material);
                         Map<Material, Integer> values = worldBlockValues.getOrDefault(bWorld, new HashMap<>());
-                        values.put(mat, worldValues.getInt("blocks." + material, 0));
+                        values.put(mat, worldValues.getInt(material));
                         worldBlockValues.put(bWorld, values);
                     }
                 } else {
-                    level.getLogger().severe(() -> "Level Addon: No such world in config.yml : " + world);
+                    level.logWarning("Level Addon: No such world in config.yml : " + world);
                 }
             }
         }
