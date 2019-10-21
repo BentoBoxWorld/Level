@@ -126,23 +126,26 @@ public class TopTen implements Listener {
      * @return PanelItem
      */
     private PanelItem getHead(int rank, long level, UUID playerUUID, User asker, World world) {
-        String playerName = addon.getPlayers().getName(playerUUID);            
-        String name = addon.getIslands().getIsland(world, playerUUID).getName();
+        String playerName = addon.getPlayers().getName(playerUUID);
+        String name = "";
+        if (addon.getIslands().hasIsland(world, playerUUID)) {
+            name = addon.getIslands().getIsland(world, playerUUID).getName();
+        }         
         if (name == null) {
-               name = playerName;
+            name = playerName;
         }    
         name = asker.getTranslation("island.top.gui-heading", "[name]", name, "[rank]", String.valueOf(rank));        
         List<String> description = new ArrayList<>();
-        if (name != null) {          
-            description.add(asker.getTranslation("island.top.island-level","[level]", addon.getLevelPresenter().getLevelString(level)));
-            if (addon.getIslands().inTeam(world, playerUUID)) {
-                List<String> memberList = new ArrayList<>();
-                for (UUID members : addon.getIslands().getMembers(world, playerUUID)) {
-                    memberList.add(ChatColor.AQUA + addon.getPlayers().getName(members));
-                }
-                description.addAll(memberList);
+       
+        description.add(asker.getTranslation("island.top.island-level","[level]", addon.getLevelPresenter().getLevelString(level)));
+        if (addon.getIslands().inTeam(world, playerUUID)) {
+            List<String> memberList = new ArrayList<>();
+            for (UUID members : addon.getIslands().getMembers(world, playerUUID)) {
+                memberList.add(ChatColor.AQUA + addon.getPlayers().getName(members));
             }
+            description.addAll(memberList);
         }
+        
         PanelItemBuilder builder = new PanelItemBuilder()
                 .icon(playerName)
                 .name(name)
