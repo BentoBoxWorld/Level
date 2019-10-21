@@ -126,10 +126,14 @@ public class TopTen implements Listener {
      * @return PanelItem
      */
     private PanelItem getHead(int rank, long level, UUID playerUUID, User asker, World world) {
-        final String name = addon.getPlayers().getName(playerUUID);
+        String playerName = addon.getPlayers().getName(playerUUID);            
+        String name = addon.getIslands().getIsland(world, playerUUID).getName();
+        if (name == null) {
+               name = playerName;
+        }    
+        name = asker.getTranslation("island.top.gui-heading", "[name]", name, "[rank]", String.valueOf(rank));        
         List<String> description = new ArrayList<>();
-        if (name != null) {
-            description.add(asker.getTranslation("island.top.gui-heading", "[name]", name, "[rank]", String.valueOf(rank)));
+        if (name != null) {          
             description.add(asker.getTranslation("island.top.island-level","[level]", addon.getLevelPresenter().getLevelString(level)));
             if (addon.getIslands().inTeam(world, playerUUID)) {
                 List<String> memberList = new ArrayList<>();
@@ -140,7 +144,7 @@ public class TopTen implements Listener {
             }
         }
         PanelItemBuilder builder = new PanelItemBuilder()
-                .icon(name)
+                .icon(playerName)
                 .name(name)
                 .description(description);
         return builder.build();
