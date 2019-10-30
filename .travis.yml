@@ -2,7 +2,7 @@ language: java
 sudo: false
 addons:
     sonarcloud:
-        organization: "tastybento-github"
+        organization: "bentobox-world"
         token:
             secure: $SONAR_TOKEN
         branches:
@@ -17,7 +17,7 @@ matrix:
     - jdk: openjdk11
     
 script:
-    - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent package -P sonar sonar:sonar -B
+    - mvn clean verify sonar:sonar -Pcoverage -Dsonar.projectKey=BentoBoxWorld_Level
     - echo "${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}"
 cache:
     directories:
