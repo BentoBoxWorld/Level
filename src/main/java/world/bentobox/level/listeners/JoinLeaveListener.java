@@ -32,9 +32,7 @@ public class JoinLeaveListener implements Listener {
         if (addon.getSettings().isLogin()) {
             addon.getPlugin().getAddonsManager().getGameModeAddons().stream()
             .filter(gm -> addon.getSettings().getGameModes().contains(gm.getDescription().getName()))
-            .forEach(gm -> {
-                addon.calculateIslandLevel(gm.getOverWorld(), null, e.getPlayer().getUniqueId());
-            });
+            .forEach(gm -> addon.calculateIslandLevel(gm.getOverWorld(), null, e.getPlayer().getUniqueId()));
         }
     }
 

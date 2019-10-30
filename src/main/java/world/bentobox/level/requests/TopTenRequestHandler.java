@@ -16,6 +16,7 @@ import world.bentobox.level.objects.TopTenData;
  */
 public class TopTenRequestHandler extends AddonRequestHandler {
 
+    private static final String WORLD_NAME = "world-name";
     /**
      * The level addon field.
      */
@@ -48,13 +49,13 @@ public class TopTenRequestHandler extends AddonRequestHandler {
          */
 
         if (map == null || map.isEmpty()
-                || map.get("world-name") == null || !(map.get("world-name") instanceof String)
-                || Bukkit.getWorld((String) map.get("world-name")) == null) {
+                || map.get(WORLD_NAME) == null || !(map.get(WORLD_NAME) instanceof String)
+                || Bukkit.getWorld((String) map.get(WORLD_NAME)) == null) {
             return Collections.emptyMap();
         }
 
         // Null-point check.
-        TopTenData data = addon.getTopTen().getTopTenList(Bukkit.getWorld((String) map.get("world-name")));
+        TopTenData data = addon.getTopTen().getTopTenList(Bukkit.getWorld((String) map.get(WORLD_NAME)));
         return data != null ? data.getTopTen() : Collections.emptyMap();
     }
 }

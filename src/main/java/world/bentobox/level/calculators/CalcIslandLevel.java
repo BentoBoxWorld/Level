@@ -31,8 +31,8 @@ import world.bentobox.level.Level;
 
 public class CalcIslandLevel {
 
-    private final int MAX_CHUNKS;
-    private final long SPEED;
+    private final int maxChunks;
+    private final long speed;
     private static final String LINE_BREAK = "==================================";
     private boolean checking;
     private final BukkitTask task;
@@ -80,8 +80,8 @@ public class CalcIslandLevel {
         // Set the initial island handicap
         result.initialLevel = addon.getInitialIslandLevel(island);
 
-        SPEED = addon.getSettings().getUpdateTickDelay();
-        MAX_CHUNKS = addon.getSettings().getChunksPerTick();
+        speed = addon.getSettings().getUpdateTickDelay();
+        maxChunks = addon.getSettings().getChunksPerTick();
 
         // Get chunks to scan
         chunksToScan = getChunksToScan(island);
@@ -100,15 +100,15 @@ public class CalcIslandLevel {
                     return;
                 }
                 // Add chunk snapshots to the list
-                while (it.hasNext() && chunkSnapshot.size() < MAX_CHUNKS) {
+                while (it.hasNext() && chunkSnapshot.size() < maxChunks) {
                     Pair<Integer, Integer> pair = it.next();
-                    for (World world : worlds) {
-                        if (!world.isChunkLoaded(pair.x, pair.z)) {
-                            world.loadChunk(pair.x, pair.z);
-                            chunkSnapshot.add(world.getChunkAt(pair.x, pair.z).getChunkSnapshot());
-                            world.unloadChunk(pair.x, pair.z);
+                    for (World worldToScan : worlds) {
+                        if (!worldToScan.isChunkLoaded(pair.x, pair.z)) {
+                            worldToScan.loadChunk(pair.x, pair.z);
+                            chunkSnapshot.add(worldToScan.getChunkAt(pair.x, pair.z).getChunkSnapshot());
+                            worldToScan.unloadChunk(pair.x, pair.z);
                         } else {
-                            chunkSnapshot.add(world.getChunkAt(pair.x, pair.z).getChunkSnapshot());
+                            chunkSnapshot.add(worldToScan.getChunkAt(pair.x, pair.z).getChunkSnapshot());
                         }
                     }
                     it.remove();
@@ -117,7 +117,7 @@ public class CalcIslandLevel {
                 checking = false;
                 checkChunksAsync(chunkSnapshot);
             }
-        }, 0L, SPEED);
+        }, 0L, speed);
     }
 
     private void checkChunksAsync(final Set<ChunkSnapshot> chunkSnapshot) {
