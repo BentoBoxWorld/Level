@@ -16,13 +16,13 @@ import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Slab;
-import org.bukkit.scheduler.BukkitTask;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
 
+import io.papermc.lib.PaperLib;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.util.Pair;
 import world.bentobox.bentobox.util.Util;
@@ -31,11 +31,7 @@ import world.bentobox.level.Level;
 
 public class CalcIslandLevel {
 
-    private final int maxChunks;
-    private final long speed;
     private static final String LINE_BREAK = "==================================";
-    private boolean checking;
-    private final BukkitTask task;
 
     private final Level addon;
 
@@ -48,6 +44,8 @@ public class CalcIslandLevel {
     private final HashMap<Material, Integer> limitCount;
     private final World world;
     private final List<World> worlds;
+
+    private int count;
 
 
     /**
@@ -80,54 +78,19 @@ public class CalcIslandLevel {
         // Set the initial island handicap
         result.initialLevel = addon.getInitialIslandLevel(island);
 
-        speed = addon.getSettings().getUpdateTickDelay();
-        maxChunks = addon.getSettings().getChunksPerTick();
-
         // Get chunks to scan
         chunksToScan = getChunksToScan(island);
-
-        // Start checking
-        checking = true;
-
-        // Start a recurring task until done or cancelled
-        task = addon.getServer().getScheduler().runTaskTimer(addon.getPlugin(), () -> {
-            Set<ChunkSnapshot> chunkSnapshot = new HashSet<>();
-            if (checking) {
-                Iterator<Pair<Integer, Integer>> it = chunksToScan.iterator();
-                if (!it.hasNext()) {
-                    // Nothing left
-                    tidyUp();
-                    return;
+        count = 0;
+        chunksToScan.forEach(c -> {
+            PaperLib.getChunkAtAsync(world, c.x, c.z).thenAccept(ch -> {
+                if (ch != null) {
+                    this.scanChunk(ch.getChunkSnapshot());
                 }
-                // Add chunk snapshots to the list
-                while (it.hasNext() && chunkSnapshot.size() < maxChunks) {
-                    Pair<Integer, Integer> pair = it.next();
-                    for (World worldToScan : worlds) {
-                        if (!worldToScan.isChunkLoaded(pair.x, pair.z)) {
-                            //worldToScan.loadChunk(pair.x, pair.z);
-                            chunkSnapshot.add(worldToScan.getChunkAt(pair.x, pair.z).getChunkSnapshot());
-                            worldToScan.unloadChunk(pair.x, pair.z, false);
-                        } else {
-                            chunkSnapshot.add(worldToScan.getChunkAt(pair.x, pair.z).getChunkSnapshot());
-                        }
-                    }
-                    it.remove();
+                count++;
+                if (count == chunksToScan.size()) {
+                    this.tidyUp();
                 }
-                // Move to next step
-                checking = false;
-                checkChunksAsync(chunkSnapshot);
-            }
-        }, 0L, speed);
-    }
-
-    private void checkChunksAsync(final Set<ChunkSnapshot> chunkSnapshot) {
-        // Run async task to scan chunks
-        addon.getServer().getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
-            for (ChunkSnapshot chunk: chunkSnapshot) {
-                scanChunk(chunk);
-            }
-            // Nothing happened, change state
-            checking = true;
+            });
         });
 
     }
@@ -231,8 +194,6 @@ public class CalcIslandLevel {
     }
 
     private void tidyUp() {
-        // Cancel
-        task.cancel();
         // Finalize calculations
         result.rawBlockCount += (long)(result.underWaterBlockCount * addon.getSettings().getUnderWaterMultiplier());
 
