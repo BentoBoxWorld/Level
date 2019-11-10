@@ -23,16 +23,6 @@ public class Settings {
     private long levelCost;
     private int levelWait;
 
-    /**
-     * Stores number of chunks that can be updated in single tick.
-     */
-    private int chunksPerTick;
-
-    /**
-     * Stores number of tick delay between each chunk loading.
-     */
-    private long updateTickDelay;
-
     private List<String> gameModes;
 
 
@@ -42,22 +32,6 @@ public class Settings {
 
         // GameModes
         gameModes = level.getConfig().getStringList("game-modes");
-
-        // Level calculation chunk load speed
-        this.setUpdateTickDelay(level.getConfig().getLong("updatetickdelay", 1));
-
-        if (this.getUpdateTickDelay() <= 0)
-        {
-            this.setUpdateTickDelay(1);
-        }
-
-        // Level calculation chunk count per update
-        this.setChunksPerTick(level.getConfig().getInt("chunkspertick", 200));
-
-        if (this.getChunksPerTick() <= 0)
-        {
-            this.setChunksPerTick(200);
-        }
 
         setLevelWait(level.getConfig().getInt("levelwait", 60));
         if (getLevelWait() < 0) {
@@ -246,45 +220,4 @@ public class Settings {
         return level.getConfig().getBoolean("shorthand");
     }
 
-
-    /**
-     * This method returns the number of chunks that can be processed at single tick.
-     * @return the value of chunksPerTick.
-     */
-    public int getChunksPerTick()
-    {
-        return this.chunksPerTick;
-    }
-
-
-    /**
-     * This method sets the chunksPerTick value.
-     * @param chunksPerTick the chunksPerTick new value.
-     *
-     */
-    public void setChunksPerTick(int chunksPerTick)
-    {
-        this.chunksPerTick = chunksPerTick;
-    }
-
-
-    /**
-     * This method returns the delay between each update call.
-     * @return the value of updateTickDelay.
-     */
-    public long getUpdateTickDelay()
-    {
-        return this.updateTickDelay;
-    }
-
-
-    /**
-     * This method sets the updateTickDelay value.
-     * @param updateTickDelay the updateTickDelay new value.
-     *
-     */
-    public void setUpdateTickDelay(long updateTickDelay)
-    {
-        this.updateTickDelay = updateTickDelay;
-    }
 }
