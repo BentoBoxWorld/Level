@@ -104,7 +104,7 @@ public class CalcIslandLevel {
                     Pair<Integer, Integer> pair = it.next();
                     for (World worldToScan : worlds) {
                         if (!worldToScan.isChunkLoaded(pair.x, pair.z)) {
-                            worldToScan.loadChunk(pair.x, pair.z);
+                            //worldToScan.loadChunk(pair.x, pair.z);
                             chunkSnapshot.add(worldToScan.getChunkAt(pair.x, pair.z).getChunkSnapshot());
                             worldToScan.unloadChunk(pair.x, pair.z, false);
                         } else {
