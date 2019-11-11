@@ -83,13 +83,14 @@ public class CalcIslandLevel {
         count = 0;
         chunksToScan.forEach(c -> {
             PaperLib.getChunkAtAsync(world, c.x, c.z).thenAccept(ch -> {
-                if (ch != null) {
-                    this.scanChunk(ch.getChunkSnapshot());
-                }
-                count++;
-                if (count == chunksToScan.size()) {
-                    this.tidyUp();
-                }
+                ChunkSnapshot snapShot = ch.getChunkSnapshot();
+                Bukkit.getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
+                    this.scanChunk(snapShot);
+                    count++;
+                    if (count == chunksToScan.size()) {
+                        this.tidyUp();
+                    }
+                });
             });
         });
 
