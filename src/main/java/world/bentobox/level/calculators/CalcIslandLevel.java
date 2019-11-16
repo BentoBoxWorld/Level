@@ -24,7 +24,6 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
 
-import io.papermc.lib.PaperLib;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.util.Pair;
 import world.bentobox.bentobox.util.Util;
@@ -86,7 +85,7 @@ public class CalcIslandLevel {
         chunksToScan = getChunksToScan(island);
         count = 0;
         chunksToScan.forEach(c -> {
-            PaperLib.getChunkAtAsync(world, c.x, c.z).thenAccept(ch -> {
+            Util.getChunkAtAsync(world, c.x, c.z).thenAccept(ch -> {
                 ChunkSnapshot snapShot = ch.getChunkSnapshot();
                 Bukkit.getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
                     this.scanChunk(snapShot);
