@@ -37,6 +37,14 @@ underwater: 1.0
 # Value of one island level. Default 100. Minimum value is 1.
 levelcost: 100
 
+# Island level calculation formula
+# blocks - the sum total of all block values, less any death penalty
+# level_cost - in a linear equation, the value of one level
+# This formula can include +,=,*,/,sqrt,^,sin,cos,tan. Result will always be rounded to a long integer
+# for example, an alternative non-linear option could be: 3 * sqrt(blocks / level_cost)
+level-calc: blocks / level_cost
+
+
 # Cooldown between level requests in seconds
 levelwait: 60
 

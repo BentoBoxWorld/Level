@@ -220,4 +220,11 @@ public class Settings {
         return level.getConfig().getBoolean("shorthand");
     }
 
+    /**
+     * @return the formula to calculate island levels
+     */
+    public String getLevelCalc() {
+        return level.getConfig().getString("level-calc", "blocks / level_cost");
+    }
+
 }

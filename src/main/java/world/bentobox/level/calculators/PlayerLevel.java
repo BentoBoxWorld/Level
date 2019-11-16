@@ -90,7 +90,7 @@ public class PlayerLevel {
             asker.sendMessage("island.level.deaths", "[number]", String.valueOf(results.getDeathHandicap()));
         }
         // Send player how many points are required to reach next island level
-        if (results.getPointsToNextLevel() >= 0) {
+        if (results.getPointsToNextLevel() >= 0 && results.getPointsToNextLevel() < CalcIslandLevel.MAX_AMOUNT) {
             asker.sendMessage("island.level.required-points-to-next-level", "[points]", String.valueOf(results.getPointsToNextLevel()));
         }
         // Tell other team members
