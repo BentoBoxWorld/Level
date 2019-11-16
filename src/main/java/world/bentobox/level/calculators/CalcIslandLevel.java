@@ -8,6 +8,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChunkSnapshot;
@@ -16,13 +18,13 @@ import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Slab;
-import org.bukkit.scheduler.BukkitTask;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
 
+import io.papermc.lib.PaperLib;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.util.Pair;
 import world.bentobox.bentobox.util.Util;
@@ -31,11 +33,9 @@ import world.bentobox.level.Level;
 
 public class CalcIslandLevel {
 
-    private final int maxChunks;
-    private final long speed;
     private static final String LINE_BREAK = "==================================";
-    private boolean checking;
-    private final BukkitTask task;
+
+    public  static final long MAX_AMOUNT = 10000;
 
     private final Level addon;
 
@@ -48,6 +48,8 @@ public class CalcIslandLevel {
     private final HashMap<Material, Integer> limitCount;
     private final World world;
     private final List<World> worlds;
+
+    private int count;
 
 
     /**
@@ -78,56 +80,22 @@ public class CalcIslandLevel {
         result = new Results();
 
         // Set the initial island handicap
-        result.initialLevel = addon.getInitialIslandLevel(island);
-
-        speed = addon.getSettings().getUpdateTickDelay();
-        maxChunks = addon.getSettings().getChunksPerTick();
+        result.setInitialLevel(addon.getInitialIslandLevel(island));
 
         // Get chunks to scan
         chunksToScan = getChunksToScan(island);
-
-        // Start checking
-        checking = true;
-
-        // Start a recurring task until done or cancelled
-        task = addon.getServer().getScheduler().runTaskTimer(addon.getPlugin(), () -> {
-            Set<ChunkSnapshot> chunkSnapshot = new HashSet<>();
-            if (checking) {
-                Iterator<Pair<Integer, Integer>> it = chunksToScan.iterator();
-                if (!it.hasNext()) {
-                    // Nothing left
-                    tidyUp();
-                    return;
-                }
-                // Add chunk snapshots to the list
-                while (it.hasNext() && chunkSnapshot.size() < maxChunks) {
-                    Pair<Integer, Integer> pair = it.next();
-                    for (World worldToScan : worlds) {
-                        if (!worldToScan.isChunkLoaded(pair.x, pair.z)) {
-                            //worldToScan.loadChunk(pair.x, pair.z);
-                            chunkSnapshot.add(worldToScan.getChunkAt(pair.x, pair.z).getChunkSnapshot());
-                            worldToScan.unloadChunk(pair.x, pair.z, false);
-                        } else {
-                            chunkSnapshot.add(worldToScan.getChunkAt(pair.x, pair.z).getChunkSnapshot());
-                        }
+        count = 0;
+        chunksToScan.forEach(c -> {
+            PaperLib.getChunkAtAsync(world, c.x, c.z).thenAccept(ch -> {
+                ChunkSnapshot snapShot = ch.getChunkSnapshot();
+                Bukkit.getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
+                    this.scanChunk(snapShot);
+                    count++;
+                    if (count == chunksToScan.size()) {
+                        this.tidyUp();
                     }
-                    it.remove();
-                }
-                // Move to next step
-                checking = false;
-                checkChunksAsync(chunkSnapshot);
-            }
-        }, 0L, speed);
-    }
-
-    private void checkChunksAsync(final Set<ChunkSnapshot> chunkSnapshot) {
-        // Run async task to scan chunks
-        addon.getServer().getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
-            for (ChunkSnapshot chunk: chunkSnapshot) {
-                scanChunk(chunk);
-            }
-            // Nothing happened, change state
-            checking = true;
+                });
+            });
         });
 
     }
@@ -168,10 +136,10 @@ public class CalcIslandLevel {
     private void checkBlock(BlockData bd, boolean belowSeaLevel) {
         int count = limitCount(bd.getMaterial());
         if (belowSeaLevel) {
-            result.underWaterBlockCount += count;
+            result.underWaterBlockCount.addAndGet(count);
             result.uwCount.add(bd.getMaterial());
         } else {
-            result.rawBlockCount += count;
+            result.rawBlockCount.addAndGet(count);
             result.mdCount.add(bd.getMaterial());
         }
     }
@@ -231,40 +199,40 @@ public class CalcIslandLevel {
     }
 
     private void tidyUp() {
-        // Cancel
-        task.cancel();
         // Finalize calculations
-        result.rawBlockCount += (long)(result.underWaterBlockCount * addon.getSettings().getUnderWaterMultiplier());
+        result.rawBlockCount.addAndGet((long)(result.underWaterBlockCount.get() * addon.getSettings().getUnderWaterMultiplier()));
 
         // Set the death penalty
         if (this.addon.getSettings().isSumTeamDeaths())
         {
             for (UUID uuid : this.island.getMemberSet())
             {
-                this.result.deathHandicap += this.addon.getPlayers().getDeaths(this.world, uuid);
+                this.result.deathHandicap.addAndGet(this.addon.getPlayers().getDeaths(this.world, uuid));
             }
         }
         else
         {
             // At this point, it may be that the island has become unowned.
-            this.result.deathHandicap = this.island.getOwner() == null ? 0 :
-                this.addon.getPlayers().getDeaths(this.world, this.island.getOwner());
+            this.result.deathHandicap.set(this.island.getOwner() == null ? 0 :
+                this.addon.getPlayers().getDeaths(this.world, this.island.getOwner()));
         }
 
-        long blockAndDeathPoints = this.result.rawBlockCount;
+        long blockAndDeathPoints = this.result.rawBlockCount.get();
 
         if (this.addon.getSettings().getDeathPenalty() > 0)
         {
             // Proper death penalty calculation.
-            blockAndDeathPoints -= this.result.deathHandicap * this.addon.getSettings().getDeathPenalty();
+            blockAndDeathPoints -= this.result.deathHandicap.get() * this.addon.getSettings().getDeathPenalty();
         }
-
-        this.result.level = blockAndDeathPoints / this.addon.getSettings().getLevelCost() - this.island.getLevelHandicap() - result.initialLevel;
-
+        this.result.level.set(calculateLevel(blockAndDeathPoints));
 
         // Calculate how many points are required to get to the next level
-        this.result.pointsToNextLevel = this.addon.getSettings().getLevelCost() -
-                (blockAndDeathPoints % this.addon.getSettings().getLevelCost());
+        long nextLevel = this.result.level.get();
+        long blocks = blockAndDeathPoints;
+        while (nextLevel < this.result.level.get() + 1 && blocks - blockAndDeathPoints < MAX_AMOUNT) {
+            nextLevel = calculateLevel(++blocks);
+        }
+        this.result.pointsToNextLevel.set(blocks - blockAndDeathPoints);
 
         // Report
         result.report = getReport();
@@ -275,16 +243,23 @@ public class CalcIslandLevel {
     }
 
 
+    private long calculateLevel(long blockAndDeathPoints) {
+        String calcString = addon.getSettings().getLevelCalc();
+        String withValues = calcString.replace("blocks", String.valueOf(blockAndDeathPoints)).replace("level_cost", String.valueOf(this.addon.getSettings().getLevelCost()));
+        return (long)eval(withValues) - this.island.getLevelHandicap() - result.initialLevel.get();
+    }
+
     private List<String> getReport() {
         List<String> reportLines = new ArrayList<>();
         // provide counts
         reportLines.add("Level Log for island in " + addon.getPlugin().getIWM().getFriendlyName(island.getWorld()) + " at " + Util.xyz(island.getCenter().toVector()));
         reportLines.add("Island owner UUID = " + island.getOwner());
-        reportLines.add("Total block value count = " + String.format("%,d",result.rawBlockCount));
+        reportLines.add("Total block value count = " + String.format("%,d",result.rawBlockCount.get()));
+        reportLines.add("Formula to calculate island level: " + addon.getSettings().getLevelCalc());
         reportLines.add("Level cost = " + addon.getSettings().getLevelCost());
-        reportLines.add("Deaths handicap = " + result.deathHandicap);
-        reportLines.add("Initial island level = " + (0L - result.initialLevel));
-        reportLines.add("Level calculated = " + result.level);
+        reportLines.add("Deaths handicap = " + result.deathHandicap.get());
+        reportLines.add("Initial island level = " + (0L - result.initialLevel.get()));
+        reportLines.add("Level calculated = " + result.level.get());
         reportLines.add(LINE_BREAK);
         int total = 0;
         if (!result.uwCount.isEmpty()) {
@@ -359,18 +334,19 @@ public class CalcIslandLevel {
         private final Multiset<Material> uwCount = HashMultiset.create();
         private final Multiset<Material> ncCount = HashMultiset.create();
         private final Multiset<Material> ofCount = HashMultiset.create();
-        private long rawBlockCount = 0;
-        private long underWaterBlockCount = 0;
-        private long level = 0;
-        private int deathHandicap = 0;
-        private long pointsToNextLevel = 0;
-        private long initialLevel = 0;
+        // AtomicLong and AtomicInteger must be used because they are changed by multiple concurrent threads
+        private AtomicLong rawBlockCount = new AtomicLong(0);
+        private AtomicLong underWaterBlockCount = new AtomicLong(0);
+        private AtomicLong level = new AtomicLong(0);
+        private AtomicInteger deathHandicap = new AtomicInteger(0);
+        private AtomicLong pointsToNextLevel = new AtomicLong(0);
+        private AtomicLong initialLevel = new AtomicLong(0);
 
         /**
          * @return the deathHandicap
          */
         public int getDeathHandicap() {
-            return deathHandicap;
+            return deathHandicap.get();
         }
 
         /**
@@ -384,27 +360,27 @@ public class CalcIslandLevel {
          * @param level - level
          */
         public void setLevel(int level) {
-            this.level = level;
+            this.level.set(level);
         }
         /**
          * @return the level
          */
         public long getLevel() {
-            return level;
+            return level.get();
         }
         /**
          * @return the pointsToNextLevel
          */
         public long getPointsToNextLevel() {
-            return pointsToNextLevel;
+            return pointsToNextLevel.get();
         }
 
         public long getInitialLevel() {
-            return initialLevel;
+            return initialLevel.get();
         }
 
         public void setInitialLevel(long initialLevel) {
-            this.initialLevel = initialLevel;
+            this.initialLevel.set(initialLevel);
         }
 
         /* (non-Javadoc)
@@ -418,5 +394,85 @@ public class CalcIslandLevel {
                     + ", pointsToNextLevel=" + pointsToNextLevel + ", initialLevel=" + initialLevel + "]";
         }
 
+    }
+
+    private static double eval(final String str) {
+        return new Object() {
+            int pos = -1, ch;
+
+            void nextChar() {
+                ch = (++pos < str.length()) ? str.charAt(pos) : -1;
+            }
+
+            boolean eat(int charToEat) {
+                while (ch == ' ') nextChar();
+                if (ch == charToEat) {
+                    nextChar();
+                    return true;
+                }
+                return false;
+            }
+
+            double parse() {
+                nextChar();
+                double x = parseExpression();
+                if (pos < str.length()) throw new RuntimeException("Unexpected: " + (char)ch);
+                return x;
+            }
+
+            // Grammar:
+            // expression = term | expression `+` term | expression `-` term
+            // term = factor | term `*` factor | term `/` factor
+            // factor = `+` factor | `-` factor | `(` expression `)`
+            //        | number | functionName factor | factor `^` factor
+
+            double parseExpression() {
+                double x = parseTerm();
+                for (;;) {
+                    if      (eat('+')) x += parseTerm(); // addition
+                    else if (eat('-')) x -= parseTerm(); // subtraction
+                    else return x;
+                }
+            }
+
+            double parseTerm() {
+                double x = parseFactor();
+                for (;;) {
+                    if      (eat('*')) x *= parseFactor(); // multiplication
+                    else if (eat('/')) x /= parseFactor(); // division
+                    else return x;
+                }
+            }
+
+            double parseFactor() {
+                if (eat('+')) return parseFactor(); // unary plus
+                if (eat('-')) return -parseFactor(); // unary minus
+
+                double x;
+                int startPos = this.pos;
+                if (eat('(')) { // parentheses
+                    x = parseExpression();
+                    eat(')');
+                } else if ((ch >= '0' && ch <= '9') || ch == '.') { // numbers
+                    while ((ch >= '0' && ch <= '9') || ch == '.') nextChar();
+                    x = Double.parseDouble(str.substring(startPos, this.pos));
+                } else if (ch >= 'a' && ch <= 'z') { // functions
+                    while (ch >= 'a' && ch <= 'z') nextChar();
+                    String func = str.substring(startPos, this.pos);
+                    x = parseFactor();
+                    if (func.equals("sqrt")) x = Math.sqrt(x);
+                    else if (func.equals("sin")) x = Math.sin(Math.toRadians(x));
+                    else if (func.equals("cos")) x = Math.cos(Math.toRadians(x));
+                    else if (func.equals("tan")) x = Math.tan(Math.toRadians(x));
+                    else throw new RuntimeException("Unknown function: " + func);
+                } else {
+                    throw new RuntimeException("Unexpected: " + (char)ch);
+                }
+
+                if (eat('^')) x = Math.pow(x, parseFactor()); // exponentiation
+
+                return x;
+            }
+        }.parse();
     }
 }
