@@ -107,6 +107,8 @@ public class TopTen implements Listener {
                 if (!entry.hasPermission(permPrefix + "intopten")) {
                     it.remove();
                     show = false;
+                    // Remove from Top Ten completely
+                    topTenList.get(world).remove(topTenUUID);
                 }
             }
             if (show) {
