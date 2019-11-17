@@ -13,6 +13,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.eclipse.jdt.annotation.NonNull;
 
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.builders.PanelBuilder;
@@ -152,6 +153,7 @@ public class TopTen implements Listener {
      * @param world - world
      * @return top ten data object
      */
+    @NonNull
     public TopTenData getTopTenList(World world) {
         topTenList.putIfAbsent(world, new TopTenData());
         return topTenList.get(world);

@@ -16,6 +16,7 @@ public class AdminTopCommand extends CompositeCommand {
     public AdminTopCommand(Level levelPlugin, CompositeCommand parent) {
         super(parent, "top", "topten");
         this.levelPlugin = levelPlugin;
+        new AdminTopRemoveCommand(levelPlugin, this);
     }
 
     @Override
