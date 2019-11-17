@@ -20,7 +20,7 @@ public class TopTenRequestHandler extends AddonRequestHandler {
     /**
      * The level addon field.
      */
-    private Level addon;
+    private final Level addon;
 
     /**
      * This constructor creates a new TopTenRequestHandler instance.
@@ -33,7 +33,7 @@ public class TopTenRequestHandler extends AddonRequestHandler {
     }
 
     /**
-     * @see {@link AddonRequestHandler#handle(Map)}
+     * See {@link AddonRequestHandler#handle(Map)}
      */
     @Override
     public Object handle(Map<String, Object> map) {

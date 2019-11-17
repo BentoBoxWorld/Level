@@ -11,8 +11,8 @@ import world.bentobox.level.Level;
  */
 public class LevelPlaceholder implements PlaceholderReplacer {
 
-    private Level addon;
-    private GameModeAddon gm;
+    private final Level addon;
+    private final GameModeAddon gm;
 
     /**
      * Provides placeholder support

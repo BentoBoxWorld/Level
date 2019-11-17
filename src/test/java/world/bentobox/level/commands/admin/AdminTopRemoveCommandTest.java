@@ -77,11 +77,8 @@ public class AdminTopRemoveCommandTest {
     @Mock
     private TopTenData ttd;
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // Set up plugin
         BentoBox plugin = mock(BentoBox.class);
         Whitebox.setInternalState(BentoBox.class, "instance", plugin);
@@ -118,11 +115,8 @@ public class AdminTopRemoveCommandTest {
         atrc = new AdminTopRemoveCommand(addon, ic);
     }
 
-    /**
-     * @throws java.lang.Exception
-     */
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         User.clearUsers();
     }
 

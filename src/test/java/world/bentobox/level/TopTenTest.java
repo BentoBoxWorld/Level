@@ -2,7 +2,6 @@ package world.bentobox.level;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -59,7 +58,6 @@ public class TopTenTest {
     private BentoBox plugin;
     @Mock
     private static AbstractDatabaseHandler<Object> handler;
-    private List<Object> topTen;
     @Mock
     private IslandsManager im;
     @Mock
@@ -106,7 +104,7 @@ public class TopTenTest {
         // Fill the top ten
         TopTenData ttd = new TopTenData();
         ttd.setUniqueId("world");
-        topTen = new ArrayList<>();
+        List<Object> topTen = new ArrayList<>();
         for (long i = -100; i < 100; i ++) {
             ttd.addLevel(UUID.randomUUID(), i);
             topTen.add(ttd);
@@ -184,7 +182,7 @@ public class TopTenTest {
         TopTen tt = new TopTen(addon);
         UUID ownerUUID = UUID.randomUUID();
         tt.addEntry(world, ownerUUID, 200L);
-        assertTrue(tt.getTopTenList(world).getTopTen().get(ownerUUID) == 200L);
+        assertEquals(200L, (long) tt.getTopTenList(world).getTopTen().get(ownerUUID));
     }
 
     @Test
@@ -264,7 +262,7 @@ public class TopTenTest {
         TopTen tt = new TopTen(addon);
         UUID ownerUUID = UUID.randomUUID();
         tt.addEntry(world, ownerUUID, 200L);
-        assertTrue(tt.getTopTenList(world).getTopTen().get(ownerUUID) == 200L);
+        assertEquals(200L, (long) tt.getTopTenList(world).getTopTen().get(ownerUUID));
         // Remove it
         tt.removeEntry(world, ownerUUID);
         assertNull(tt.getTopTenList(world).getTopTen().get(ownerUUID));

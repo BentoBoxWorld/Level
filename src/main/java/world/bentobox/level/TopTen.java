@@ -29,11 +29,11 @@ import world.bentobox.level.objects.TopTenData;
  *
  */
 public class TopTen implements Listener {
-    private Level addon;
+    private final Level addon;
     // Top ten list of players
     private Map<World,TopTenData> topTenList;
     private final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
-    private Database<TopTenData> handler;
+    private final Database<TopTenData> handler;
 
     public TopTen(Level addon) {
         this.addon = addon;

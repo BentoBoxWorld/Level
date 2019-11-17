@@ -16,8 +16,8 @@ for game modes listed in the config.yml.
 
 1. Read the release notes carefully, but you may have to delete the old config.yml to use a new one.
 
-## Permissons
-Permissions are given automatically to players as listed below for BSkyBlock, AcidIsland and CaveBlock. If your permissions plugin strips permissions then you may have to allocate these manually. Note that if a player doesn't have the intopten permission, they will not be listed in the top ten.
+## Permissions
+Permissions are given automatically to players as listed below for BSkyBlock, AcidIsland and CaveBlock. If your permissions plugin strips permissions then you may have to allocate these manually. Note that if a player doesn't have the `intopten` permission, they will not be listed in the top ten.
 
 ```
 permissions:    
@@ -61,7 +61,7 @@ This section defines a number of overall settings for the add-on.
 
 * Underwater block multiplier - default value = 1. If this value is > 1 then blocks below sea level will have a greater value.
 * Level cost - Value of one island level. Default 100. Minimum value is 1.
-* Level wait - Cooldown between level requests in seconds
+* Level wait - Cool down between level requests in seconds
 * Death penalty - How many block values a player will lose per death. Default value of 100 means that for every death, the player will lose 1 level (if levelcost is 100)
 * Sum Team Deaths - if true, all the team member deaths are summed. If false, only the leader's deaths counts.
 * Max deaths - If player dies more than this, it doesn't count anymore.

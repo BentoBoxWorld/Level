@@ -5,6 +5,6 @@ public interface IslandLevelCalculator {
     /**
      * @return the results of the island calculation
      */
-    public Results getResult();
+    Results getResult();
 
 }

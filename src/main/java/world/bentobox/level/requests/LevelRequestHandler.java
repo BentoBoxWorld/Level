@@ -10,7 +10,7 @@ import world.bentobox.level.Level;
 
 public class LevelRequestHandler extends AddonRequestHandler {
 
-    private Level addon;
+    private final Level addon;
 
     public LevelRequestHandler(Level addon) {
         super("island-level");
