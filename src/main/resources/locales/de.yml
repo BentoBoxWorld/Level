@@ -1,0 +1,17 @@
+---
+admin:
+  level:
+    parameters: "<Spieler>"
+  top:
+    remove:
+      description: entferne Spieler von Top-10
+      parameters: "<Spieler>"
+island:
+  level:
+    parameters: "[Spieler]"
+    description: Berechne dein Insel Level oder zeige das Level von [Spieler]
+    required-points-to-next-level: "&a[points] Punkte werden für das nächste Level
+      benötigt"
+  value:
+    description: Zeige den Wert jedes Blockes
+    success-underwater: "&7Wert des Blockes Unterwasser: &e[value]"
