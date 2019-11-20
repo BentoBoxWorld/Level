@@ -107,7 +107,7 @@ public class CalcIslandLevel {
 
     }
 
-    private synchronized void addChunkQueue(Chunk ch) {
+    private void addChunkQueue(Chunk ch) {
         q.add(ch);
     }
 
