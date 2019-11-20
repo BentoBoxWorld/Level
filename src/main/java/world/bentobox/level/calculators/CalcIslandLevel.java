@@ -1,13 +1,6 @@
 package world.bentobox.level.calculators;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -49,10 +42,11 @@ public class CalcIslandLevel {
     private final List<World> worlds;
     private final World world;
 
-    private int count;
+    private AtomicInteger count;
 
     private int total;
-
+    private Queue<Chunk> q;
+    private int queueid;
 
     /**
      * Calculate the island's level
@@ -69,7 +63,7 @@ public class CalcIslandLevel {
         this.onExit = onExit;
         this.worlds = new ArrayList<>();
         this.worlds.add(world);
-
+        q = new LinkedList<>();
 
         // Results go here
         result = new Results();
@@ -79,7 +73,7 @@ public class CalcIslandLevel {
 
         // Get chunks to scan
         chunksToScan = getChunksToScan(island);
-        count = 0;
+        count = new AtomicInteger();
         // Total number of chunks to scan
         total = chunksToScan.size();
         // Add nether world scanning
@@ -98,17 +92,33 @@ public class CalcIslandLevel {
                 total += chunksToScan.size();
             }
         }
-
-        chunksToScan.forEach(c -> worlds.forEach(w -> Util.getChunkAtAsync(w, c.x, c.z).thenAccept(this::getChunk)));
+        queueid = Bukkit.getScheduler().scheduleSyncRepeatingTask(addon.getPlugin(), new Runnable() {
+            public void run() {
+                for (int i = 0; i < 10; i++) {
+                    if (q.size() == 0) {
+                        return;
+                    }
+                    Chunk c = q.remove();
+                    getChunk(c);
+                }
+            }
+        }, 1L, 1L);
+        chunksToScan.forEach(c -> worlds.forEach(w -> Util.getChunkAtAsync(w, c.x, c.z).thenAccept(this::addChunkQueue)));
 
     }
 
-    private void getChunk(Chunk ch) {        
+    private synchronized void addChunkQueue(Chunk ch) {
+        q.add(ch);
+    }
+
+    private void getChunk(Chunk ch) {
         ChunkSnapshot snapShot = ch.getChunkSnapshot();
+
         Bukkit.getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
             this.scanChunk(snapShot);
-            count++;
-            if (count == total) {
+            count.getAndIncrement();
+            if (count.get() == total) {
+                Bukkit.getScheduler().cancelTask(queueid);
                 this.tidyUp();
             }
         });
