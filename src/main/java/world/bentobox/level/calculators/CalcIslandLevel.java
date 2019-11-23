@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
 import org.bukkit.Tag;
@@ -45,9 +46,12 @@ public class CalcIslandLevel {
 
     // Copy the limits hash map
     private final HashMap<Material, Integer> limitCount;
+    private final List<World> worlds;
     private final World world;
 
     private int count;
+
+    private int total;
 
 
     /**
@@ -63,6 +67,9 @@ public class CalcIslandLevel {
         this.world = island.getWorld();
         this.limitCount = new HashMap<>(addon.getSettings().getBlockLimits());
         this.onExit = onExit;
+        this.worlds = new ArrayList<>();
+        this.worlds.add(world);
+
 
         // Results go here
         result = new Results();
@@ -73,17 +80,38 @@ public class CalcIslandLevel {
         // Get chunks to scan
         chunksToScan = getChunksToScan(island);
         count = 0;
-        chunksToScan.forEach(c -> Util.getChunkAtAsync(world, c.x, c.z).thenAccept(ch -> {
-            ChunkSnapshot snapShot = ch.getChunkSnapshot();
-            Bukkit.getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
-                this.scanChunk(snapShot);
-                count++;
-                if (count == chunksToScan.size()) {
-                    this.tidyUp();
-                }
-            });
-        }));
+        // Total number of chunks to scan
+        total = chunksToScan.size();
+        // Add nether world scanning
+        if (addon.getSettings().isNether()) {
+            World netherWorld = addon.getPlugin().getIWM().getNetherWorld(world);
+            if (netherWorld != null) {
+                this.worlds.add(netherWorld);
+                total += chunksToScan.size();
+            }
+        }
+        // Add End world scanning
+        if (addon.getSettings().isEnd()) {
+            World endWorld = addon.getPlugin().getIWM().getEndWorld(world);
+            if (endWorld != null) {
+                this.worlds.add(endWorld);
+                total += chunksToScan.size();
+            }
+        }
 
+        chunksToScan.forEach(c -> worlds.forEach(w -> Util.getChunkAtAsync(w, c.x, c.z).thenAccept(this::getChunk)));
+
+    }
+
+    private void getChunk(Chunk ch) {        
+        ChunkSnapshot snapShot = ch.getChunkSnapshot();
+        Bukkit.getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
+            this.scanChunk(snapShot);
+            count++;
+            if (count == total) {
+                this.tidyUp();
+            }
+        });
     }
 
     private void scanChunk(ChunkSnapshot chunk) {
@@ -447,20 +475,20 @@ public class CalcIslandLevel {
                     String func = str.substring(startPos, this.pos);
                     x = parseFactor();
                     switch (func) {
-                        case "sqrt":
-                            x = Math.sqrt(x);
-                            break;
-                        case "sin":
-                            x = Math.sin(Math.toRadians(x));
-                            break;
-                        case "cos":
-                            x = Math.cos(Math.toRadians(x));
-                            break;
-                        case "tan":
-                            x = Math.tan(Math.toRadians(x));
-                            break;
-                        default:
-                            throw new RuntimeException("Unknown function: " + func);
+                    case "sqrt":
+                        x = Math.sqrt(x);
+                        break;
+                    case "sin":
+                        x = Math.sin(Math.toRadians(x));
+                        break;
+                    case "cos":
+                        x = Math.cos(Math.toRadians(x));
+                        break;
+                    case "tan":
+                        x = Math.tan(Math.toRadians(x));
+                        break;
+                    default:
+                        throw new RuntimeException("Unknown function: " + func);
                     }
                 } else {
                     throw new RuntimeException("Unexpected: " + (char)ch);
