@@ -32,7 +32,7 @@ public class TopTenNamePlaceholder implements PlaceholderReplacer {
     public String onReplace(User user) {
         level.logWarning("You are using a deprecated placeholder.");
         level.log("Please replace any occurrence of 'Level_" + gm.getDescription().getName().toLowerCase() + "-island-top-name-#'");
-        level.log("by 'Level_" + gm.getDescription().getName().toLowerCase() + "_island_top_name_#'");
+        level.log("by 'Level_" + gm.getDescription().getName().toLowerCase() + "_top_name_#'");
         Collection<UUID> values = level.getTopTen().getTopTenList(gm.getOverWorld()).getTopTen().keySet();
         return values.size() < i ? "" : level.getPlayers().getName(values.stream().skip(i).findFirst().orElse(null));
     }

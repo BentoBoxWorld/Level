@@ -1,5 +1,6 @@
 package world.bentobox.level;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -165,6 +166,26 @@ public class Level extends Addon {
                                 .map(island -> getIslandLevel(gm.getOverWorld(), island.getOwner()))
                                 .map(level -> getLevelPresenter().getLevelString(level))
                                 .orElse("0"));
+
+                // Top Ten
+                for (int i = 1; i <= 10; i++) {
+                    final int rank = i;
+                    // Value
+                    getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                            gm.getDescription().getName().toLowerCase() + "_top_value_" + rank,
+                            user -> {
+                                Collection<Long> values = getTopTen().getTopTenList(gm.getOverWorld()).getTopTen().values();
+                                return values.size() < rank ? "" : values.stream().skip(rank).findFirst().map(String::valueOf).orElse("");
+                            });
+
+                    // Name
+                    getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                            gm.getDescription().getName().toLowerCase() + "_top_name_" + rank,
+                            user -> {
+                                Collection<UUID> values = getTopTen().getTopTenList(gm.getOverWorld()).getTopTen().keySet();
+                                return values.size() < rank ? "" : getPlayers().getName(values.stream().skip(rank).findFirst().orElse(null));
+                            });
+                }
             }
         });
 
