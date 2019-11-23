@@ -31,7 +31,7 @@ public class TopTenPlaceholder implements PlaceholderReplacer {
     @Override
     public String onReplace(User user) {
         level.logWarning("You are using a deprecated placeholder.");
-        level.log("Please replace any occurrence of 'Level_" + gm.getDescription().getName().toLowerCase() + "-island-top-value-#'");
+        level.log("Please replace any occurrence of 'Level_" + gm.getDescription().getName().toLowerCase() + "-island-level-top-value-#'");
         level.log("by 'Level_" + gm.getDescription().getName().toLowerCase() + "_top_value_#'");
         Collection<Long> values = level.getTopTen().getTopTenList(gm.getOverWorld()).getTopTen().values();
         return values.size() < i ? "" : values.stream().skip(i).findFirst().map(String::valueOf).orElse("");
