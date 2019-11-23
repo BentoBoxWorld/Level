@@ -143,6 +143,8 @@ public class Level extends Addon {
             });
             // Register placeholders
             if (getPlugin().getPlaceholdersManager() != null) {
+                // DEPRECATED PLACEHOLDERS - remove in an upcoming version
+
                 getPlugin().getPlaceholdersManager().registerPlaceholder(this, gm.getDescription().getName().toLowerCase() + "-island-level", new LevelPlaceholder(this, gm));
                 // Top Ten
                 for (int i = 1; i < 11; i++) {

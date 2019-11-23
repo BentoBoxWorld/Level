@@ -10,8 +10,9 @@ import world.bentobox.level.Level;
 
 /**
  * @author tastybento
- *
+ * @deprecated As of 1.9.0, for removal.
  */
+@Deprecated
 public class TopTenNamePlaceholder implements PlaceholderReplacer {
 
     private final Level level;
@@ -29,6 +30,9 @@ public class TopTenNamePlaceholder implements PlaceholderReplacer {
      */
     @Override
     public String onReplace(User user) {
+        level.logWarning("You are using a deprecated placeholder.");
+        level.log("Please replace any occurrence of 'Level_" + gm.getDescription().getName().toLowerCase() + "-island-top-name-#'");
+        level.log("by 'Level_" + gm.getDescription().getName().toLowerCase() + "_island_top_name_#'");
         Collection<UUID> values = level.getTopTen().getTopTenList(gm.getOverWorld()).getTopTen().keySet();
         return values.size() < i ? "" : level.getPlayers().getName(values.stream().skip(i).findFirst().orElse(null));
     }
