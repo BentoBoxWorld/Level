@@ -26,7 +26,6 @@ import world.bentobox.level.placeholders.TopTenPlaceholder;
 import world.bentobox.level.requests.LevelRequestHandler;
 import world.bentobox.level.requests.TopTenRequestHandler;
 
-
 /**
  * Addon to BSkyBlock/AcidIsland that enables island level scoring and top ten functionality
  * @author tastybento
@@ -151,6 +150,21 @@ public class Level extends Addon {
                     getPlugin().getPlaceholdersManager().registerPlaceholder(this, gm.getDescription().getName().toLowerCase() + "-island-level-top-value-" + i, new TopTenPlaceholder(this, gm, i));
                     getPlugin().getPlaceholdersManager().registerPlaceholder(this, gm.getDescription().getName().toLowerCase() + "-island-level-top-name-" + i, new TopTenNamePlaceholder(this, gm, i));
                 }
+
+                // ---------------------
+
+                // Island Level
+                getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                        gm.getDescription().getName().toLowerCase() + "_island_level",
+                        user -> getLevelPresenter().getLevelString(getIslandLevel(gm.getOverWorld(), user.getUniqueId())));
+
+                // Visited Island Level
+                getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                        gm.getDescription().getName().toLowerCase() + "_visited_island_level",
+                        user -> getPlugin().getIslands().getIslandAt(user.getLocation())
+                                .map(island -> getIslandLevel(gm.getOverWorld(), island.getOwner()))
+                                .map(level -> getLevelPresenter().getLevelString(level))
+                                .orElse("0"));
             }
         });
 
