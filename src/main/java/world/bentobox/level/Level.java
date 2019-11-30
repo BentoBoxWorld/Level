@@ -1,5 +1,6 @@
 package world.bentobox.level;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -25,7 +26,6 @@ import world.bentobox.level.placeholders.TopTenNamePlaceholder;
 import world.bentobox.level.placeholders.TopTenPlaceholder;
 import world.bentobox.level.requests.LevelRequestHandler;
 import world.bentobox.level.requests.TopTenRequestHandler;
-
 
 /**
  * Addon to BSkyBlock/AcidIsland that enables island level scoring and top ten functionality
@@ -143,11 +143,48 @@ public class Level extends Addon {
             });
             // Register placeholders
             if (getPlugin().getPlaceholdersManager() != null) {
+                // DEPRECATED PLACEHOLDERS - remove in an upcoming version
+
                 getPlugin().getPlaceholdersManager().registerPlaceholder(this, gm.getDescription().getName().toLowerCase() + "-island-level", new LevelPlaceholder(this, gm));
                 // Top Ten
                 for (int i = 1; i < 11; i++) {
                     getPlugin().getPlaceholdersManager().registerPlaceholder(this, gm.getDescription().getName().toLowerCase() + "-island-level-top-value-" + i, new TopTenPlaceholder(this, gm, i));
                     getPlugin().getPlaceholdersManager().registerPlaceholder(this, gm.getDescription().getName().toLowerCase() + "-island-level-top-name-" + i, new TopTenNamePlaceholder(this, gm, i));
+                }
+
+                // ---------------------
+
+                // Island Level
+                getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                        gm.getDescription().getName().toLowerCase() + "_island_level",
+                        user -> getLevelPresenter().getLevelString(getIslandLevel(gm.getOverWorld(), user.getUniqueId())));
+
+                // Visited Island Level
+                getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                        gm.getDescription().getName().toLowerCase() + "_visited_island_level",
+                        user -> getPlugin().getIslands().getIslandAt(user.getLocation())
+                                .map(island -> getIslandLevel(gm.getOverWorld(), island.getOwner()))
+                                .map(level -> getLevelPresenter().getLevelString(level))
+                                .orElse("0"));
+
+                // Top Ten
+                for (int i = 1; i <= 10; i++) {
+                    final int rank = i;
+                    // Value
+                    getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                            gm.getDescription().getName().toLowerCase() + "_top_value_" + rank,
+                            user -> {
+                                Collection<Long> values = getTopTen().getTopTenList(gm.getOverWorld()).getTopTen().values();
+                                return values.size() < rank ? "" : values.stream().skip(rank).findFirst().map(String::valueOf).orElse("");
+                            });
+
+                    // Name
+                    getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                            gm.getDescription().getName().toLowerCase() + "_top_name_" + rank,
+                            user -> {
+                                Collection<UUID> values = getTopTen().getTopTenList(gm.getOverWorld()).getTopTen().keySet();
+                                return values.size() < rank ? "" : getPlayers().getName(values.stream().skip(rank).findFirst().orElse(null));
+                            });
                 }
             }
         });

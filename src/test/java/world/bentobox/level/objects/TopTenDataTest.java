@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,15 +16,12 @@ import org.junit.Test;
  */
 public class TopTenDataTest {
 
-    private Map<UUID, Long> topTen = new LinkedHashMap<>();
+    private final Map<UUID, Long> topTen = new LinkedHashMap<>();
     private TopTenData ttd;
-    private UUID uuid = UUID.randomUUID();
+    private final UUID uuid = UUID.randomUUID();
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // Create a top ten map
         for (long i = 0; i < 100; i++) {
             topTen.put(UUID.randomUUID(), i);
@@ -37,13 +33,6 @@ public class TopTenDataTest {
             topTen.put(UUID.randomUUID(), - i);
         }
         ttd = new TopTenData();
-    }
-
-    /**
-     * @throws java.lang.Exception
-     */
-    @After
-    public void tearDown() throws Exception {
     }
 
     /**
@@ -93,9 +82,7 @@ public class TopTenDataTest {
     @Test
     public void testAddAndGetLevel() {
         topTen.forEach(ttd::addLevel);
-        topTen.keySet().forEach(k -> {
-            assertTrue(topTen.get(k) == ttd.getLevel(k));
-        });
+        topTen.keySet().forEach(k -> assertEquals((long) topTen.get(k), ttd.getLevel(k)));
     }
 
     /**

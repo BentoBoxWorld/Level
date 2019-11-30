@@ -34,7 +34,7 @@ public class IslandValueCommand extends CompositeCommand {
                 int value = plugin.getConfig().getInt("blocks." + material.toString());
                 user.sendMessage("island.value.success", "[value]", value + "");
                 if (plugin.getConfig().get("underwater") != null) {
-                    Double underWater = plugin.getConfig().getDouble("underwater");
+                    double underWater = plugin.getConfig().getDouble("underwater");
                     if (underWater > 1.0) {
                         user.sendMessage("island.value.success-underwater", "[value]", (underWater * value) + "");
                     }

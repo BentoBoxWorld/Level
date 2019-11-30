@@ -13,6 +13,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.eclipse.jdt.annotation.NonNull;
 
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.builders.PanelBuilder;
@@ -28,11 +29,11 @@ import world.bentobox.level.objects.TopTenData;
  *
  */
 public class TopTen implements Listener {
-    private Level addon;
+    private final Level addon;
     // Top ten list of players
     private Map<World,TopTenData> topTenList;
     private final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
-    private Database<TopTenData> handler;
+    private final Database<TopTenData> handler;
 
     public TopTen(Level addon) {
         this.addon = addon;
@@ -107,6 +108,8 @@ public class TopTen implements Listener {
                 if (!entry.hasPermission(permPrefix + "intopten")) {
                     it.remove();
                     show = false;
+                    // Remove from Top Ten completely
+                    topTenList.get(world).remove(topTenUUID);
                 }
             }
             if (show) {
@@ -150,6 +153,7 @@ public class TopTen implements Listener {
      * @param world - world
      * @return top ten data object
      */
+    @NonNull
     public TopTenData getTopTenList(World world) {
         topTenList.putIfAbsent(world, new TopTenData());
         return topTenList.get(world);

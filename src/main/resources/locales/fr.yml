@@ -1,41 +1,37 @@
-###########################################################################################
-# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
-# the one at http://yaml-online-parser.appspot.com                                        #
-###########################################################################################
-
+---
+admin:
+  level:
+    description: calcule le niveau d'île d'un joueur
+    parameters: "<joueur>"
+  top:
+    description: affiche le top 10 des îles
+    display: "&f[rank]. &a[name] &7- &b[level]"
+    unknown-world: "&cMonde inconnu."
+    remove:
+      description: retire le joueur du top 10
+      parameters: "<joueur>"
+island:
+  level:
+    calculating: "&aCalcul du niveau en cours..."
+    deaths: "&c([number] morts)"
+    description: calcule le niveau de votre île ou affiche le niveau d'un [joueur]
+    island-level-is: "&aLe niveau d'île est &b[level]"
+    parameters: "[joueur]"
+    required-points-to-next-level: "&a[points] points avant le prochain niveau"
+    cooldown: "&cVous devez attendre &b[time] &csecondes avant de pouvoir refaire
+      cette action"
+  top:
+    description: affiche le top 10
+    gui-heading: "&6[name]: &B[rank]"
+    gui-title: "&aTop 10"
+    island-level: "&BNiveau [level]"
+    warp-to: "&ATéléportation vers l'île de [name]"
+  value:
+    description: affiche la valeur d'un bloc
+    success: "&7Valeur de ce bloc : &e[value]"
+    success-underwater: "&7Valeur de ce bloc en dessous du niveau de la mer : &e[value]"
+    empty-hand: "&cIl n'y a aucun bloc dans votre main"
+    no-value: "&cCet objet n'a pas de valeur."
 meta:
   authors:
   - plagoutte
-
-admin:
-  level:
-    parameters: "<joueur>"
-    description: "calcule le niveau d'île d'un joueur"
-  top:
-    description: "affiche le top 10 des îles"
-    unknown-world: "&cMonde inconnu."
-    display: "&f[rank]. &a[name] &7- &b[level]"
-
-island:
-  level: 
-    parameters: "[joueur]"
-    description: "calcule le niveau de votre île ou affiche le niveau d'un [joueur]"
-    calculating: "&aCalcul du niveau en cours..." 
-    island-level-is: "&aLe niveau d'île est &b[level]"
-    required-points-to-next-level: "&a[points] points avant le prochain niveau"
-    deaths: "&c([number] morts)"
-    cooldown: "&cVous devez attendre &b[time] &csecondes avant de pouvoir re-faire cette action"
-    
-  top:
-    description: "affiche le top 10"
-    gui-title: "&aTop 10"
-    gui-heading: "&6[name]: &B[rank]"
-    island-level: "&BNiveau [level]"
-    warp-to: "&ATéléportation vers l'île de [name]"
-
-  value:
-    description: "affiche la valeur d'un bloc"
-    success: "§7Valeur de ce bloc : §e[value]"
-    success-underwater: "§7Valeur de ce bloc en dessous du niveau de la mer : §e[value]"
-    empty-hand: "§cIl n'y a aucun bloc dans votre main"
-    no-value: "§cCet objet n'a pas de valeur."

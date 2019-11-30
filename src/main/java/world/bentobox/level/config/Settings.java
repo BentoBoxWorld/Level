@@ -3,6 +3,7 @@ package world.bentobox.level.config;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -13,7 +14,7 @@ import world.bentobox.level.Level;
 
 public class Settings {
 
-    private Level level;
+    private final Level level;
     private boolean sumTeamDeaths;
     private Map<Material, Integer> blockLimits = new HashMap<>();
     private Map<Material, Integer> blockValues = new HashMap<>();
@@ -22,16 +23,6 @@ public class Settings {
     private int deathpenalty;
     private long levelCost;
     private int levelWait;
-
-    /**
-     * Stores number of chunks that can be updated in single tick.
-     */
-    private int chunksPerTick;
-
-    /**
-     * Stores number of tick delay between each chunk loading.
-     */
-    private long updateTickDelay;
 
     private List<String> gameModes;
 
@@ -42,22 +33,6 @@ public class Settings {
 
         // GameModes
         gameModes = level.getConfig().getStringList("game-modes");
-
-        // Level calculation chunk load speed
-        this.setUpdateTickDelay(level.getConfig().getLong("updatetickdelay", 1));
-
-        if (this.getUpdateTickDelay() <= 0)
-        {
-            this.setUpdateTickDelay(1);
-        }
-
-        // Level calculation chunk count per update
-        this.setChunksPerTick(level.getConfig().getInt("chunkspertick", 200));
-
-        if (this.getChunksPerTick() <= 0)
-        {
-            this.setChunksPerTick(200);
-        }
 
         setLevelWait(level.getConfig().getInt("levelwait", 60));
         if (getLevelWait() < 0) {
@@ -74,7 +49,7 @@ public class Settings {
 
         if (level.getConfig().isSet("limits")) {
             HashMap<Material, Integer> bl = new HashMap<>();
-            for (String material : level.getConfig().getConfigurationSection("limits").getKeys(false)) {
+            for (String material : Objects.requireNonNull(level.getConfig().getConfigurationSection("limits")).getKeys(false)) {
                 try {
                     Material mat = Material.valueOf(material);
                     bl.put(mat, level.getConfig().getInt("limits." + material, 0));
@@ -86,7 +61,7 @@ public class Settings {
         }
         if (level.getConfig().isSet("blocks")) {
             Map<Material, Integer> bv = new HashMap<>();
-            for (String material : level.getConfig().getConfigurationSection("blocks").getKeys(false)) {
+            for (String material : Objects.requireNonNull(level.getConfig().getConfigurationSection("blocks")).getKeys(false)) {
 
                 try {
                     Material mat = Material.valueOf(material);
@@ -102,11 +77,11 @@ public class Settings {
         // Worlds
         if (level.getConfig().isSet("worlds")) {
             ConfigurationSection worlds = level.getConfig().getConfigurationSection("worlds");
-            for (String world : worlds.getKeys(false)) {
+            for (String world : Objects.requireNonNull(worlds).getKeys(false)) {
                 World bWorld = Bukkit.getWorld(world);
                 if (bWorld != null) {
                     ConfigurationSection worldValues = worlds.getConfigurationSection(world);
-                    for (String material : worldValues.getKeys(false)) {
+                    for (String material : Objects.requireNonNull(worldValues).getKeys(false)) {
                         Material mat = Material.valueOf(material);
                         Map<Material, Integer> values = worldBlockValues.getOrDefault(bWorld, new HashMap<>());
                         values.put(mat, worldValues.getInt(material));
@@ -246,45 +221,11 @@ public class Settings {
         return level.getConfig().getBoolean("shorthand");
     }
 
-
     /**
-     * This method returns the number of chunks that can be processed at single tick.
-     * @return the value of chunksPerTick.
+     * @return the formula to calculate island levels
      */
-    public int getChunksPerTick()
-    {
-        return this.chunksPerTick;
+    public String getLevelCalc() {
+        return level.getConfig().getString("level-calc", "blocks / level_cost");
     }
 
-
-    /**
-     * This method sets the chunksPerTick value.
-     * @param chunksPerTick the chunksPerTick new value.
-     *
-     */
-    public void setChunksPerTick(int chunksPerTick)
-    {
-        this.chunksPerTick = chunksPerTick;
-    }
-
-
-    /**
-     * This method returns the delay between each update call.
-     * @return the value of updateTickDelay.
-     */
-    public long getUpdateTickDelay()
-    {
-        return this.updateTickDelay;
-    }
-
-
-    /**
-     * This method sets the updateTickDelay value.
-     * @param updateTickDelay the updateTickDelay new value.
-     *
-     */
-    public void setUpdateTickDelay(long updateTickDelay)
-    {
-        this.updateTickDelay = updateTickDelay;
-    }
 }

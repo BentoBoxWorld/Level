@@ -11,6 +11,9 @@ admin:
     description: "show the top ten list"
     unknown-world: "&cUnknown world!"
     display: "&f[rank]. &a[name] &7- &b[level]"
+    remove:
+      description: "remove player from Top Ten"
+      parameters: "<player>"
 
 island:
   level: 
