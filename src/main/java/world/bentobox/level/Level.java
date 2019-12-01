@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.World;
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import world.bentobox.bentobox.api.addons.Addon;
@@ -55,16 +56,17 @@ public class Level extends Addon {
      * @param user - the user who is asking, or null if none
      * @param playerUUID - the target island member's UUID
      */
-    public void calculateIslandLevel(World world, @Nullable User user, UUID playerUUID) {
+    public void calculateIslandLevel(World world, @Nullable User user, @NonNull UUID playerUUID) {
         levelPresenter.calculateIslandLevel(world, user, playerUUID);
     }
 
     /**
-     * Get level from cache for a player
-     * @param targetPlayer - target player
-     * @return Level of player
+     * Get level from cache for a player.
+     * @param targetPlayer - target player UUID
+     * @return Level of player or zero if player is unknown or UUID is null
      */
-    public long getIslandLevel(World world, UUID targetPlayer) {
+    public long getIslandLevel(World world, @Nullable UUID targetPlayer) {
+        if (targetPlayer == null) return 0L;
         LevelsData ld = getLevelsData(targetPlayer);
         return ld == null ? 0L : ld.getLevel(world);
     }
@@ -74,7 +76,7 @@ public class Level extends Addon {
      * @param targetPlayer - UUID of target player
      * @return LevelsData object or null if not found
      */
-    public LevelsData getLevelsData(UUID targetPlayer) {
+    public LevelsData getLevelsData(@NonNull UUID targetPlayer) {
         // Get from database if not in cache
         if (!levelsCache.containsKey(targetPlayer) && handler.objectExists(targetPlayer.toString())) {
             levelsCache.put(targetPlayer, handler.loadObject(targetPlayer.toString()));
@@ -163,9 +165,9 @@ public class Level extends Addon {
                 getPlugin().getPlaceholdersManager().registerPlaceholder(this,
                         gm.getDescription().getName().toLowerCase() + "_visited_island_level",
                         user -> getPlugin().getIslands().getIslandAt(user.getLocation())
-                                .map(island -> getIslandLevel(gm.getOverWorld(), island.getOwner()))
-                                .map(level -> getLevelPresenter().getLevelString(level))
-                                .orElse("0"));
+                        .map(island -> getIslandLevel(gm.getOverWorld(), island.getOwner()))
+                        .map(level -> getLevelPresenter().getLevelString(level))
+                        .orElse("0"));
 
                 // Top Ten
                 for (int i = 1; i <= 10; i++) {
@@ -236,7 +238,7 @@ public class Level extends Addon {
      * @param island - island
      * @param level - initial calculated island level
      */
-    public void setInitialIslandLevel(Island island, long level) {
+    public void setInitialIslandLevel(@NonNull Island island, long level) {
         if (island.getWorld() == null || island.getOwner() == null) {
             this.logError("Level: request to store a null (initial) " + island.getWorld() + " " + island.getOwner());
             return;
@@ -250,15 +252,19 @@ public class Level extends Addon {
      * @param island - island
      * @return level or 0 by default
      */
-    public long getInitialIslandLevel(Island island) {
+    public long getInitialIslandLevel(@NonNull Island island) {
         return levelsCache.containsKey(island.getOwner()) ? levelsCache.get(island.getOwner()).getInitialLevel(island.getWorld()) : 0L;
     }
 
+    /**
+     * @return database handler
+     */
+    @Nullable
     public Database<LevelsData> getHandler() {
         return handler;
     }
 
-    public void uncachePlayer(UUID uniqueId) {
+    public void uncachePlayer(@Nullable UUID uniqueId) {
         if (levelsCache.containsKey(uniqueId) && levelsCache.get(uniqueId) != null) {
             handler.saveObject(levelsCache.get(uniqueId));
         }
