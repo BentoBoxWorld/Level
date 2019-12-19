@@ -1,16 +1,6 @@
 package world.bentobox.level.calculators;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -48,7 +38,7 @@ public class CalcIslandLevel {
     private final Runnable onExit;
 
     // Copy the limits hash map
-    private final Map<Material, Integer> limitCount;
+    private final HashMap<Material, Integer> limitCount;
     private final List<World> worlds;
     private final World world;
 
@@ -69,7 +59,7 @@ public class CalcIslandLevel {
         this.addon = addon;
         this.island = island;
         this.world = island.getWorld();
-        this.limitCount = new EnumMap<>(addon.getSettings().getBlockLimits());
+        this.limitCount = new HashMap<>(addon.getSettings().getBlockLimits());
         this.onExit = onExit;
         this.worlds = new ArrayList<>();
         this.worlds.add(world);
@@ -103,7 +93,6 @@ public class CalcIslandLevel {
             }
         }
         queueid = Bukkit.getScheduler().scheduleSyncRepeatingTask(addon.getPlugin(), new Runnable() {
-            @Override
             public void run() {
                 for (int i = 0; i < 10; i++) {
                     if (q.size() == 0) {
