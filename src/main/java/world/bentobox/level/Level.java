@@ -177,7 +177,7 @@ public class Level extends Addon {
                             gm.getDescription().getName().toLowerCase() + "_top_value_" + rank,
                             user -> {
                                 Collection<Long> values = getTopTen().getTopTenList(gm.getOverWorld()).getTopTen().values();
-                                return values.size() < rank ? "" : values.stream().skip(rank).findFirst().map(String::valueOf).orElse("");
+                                return values.size() < rank ? "" : values.stream().skip(rank - 1).findFirst().map(String::valueOf).orElse("");
                             });
 
                     // Name
@@ -185,7 +185,7 @@ public class Level extends Addon {
                             gm.getDescription().getName().toLowerCase() + "_top_name_" + rank,
                             user -> {
                                 Collection<UUID> values = getTopTen().getTopTenList(gm.getOverWorld()).getTopTen().keySet();
-                                return values.size() < rank ? "" : getPlayers().getName(values.stream().skip(rank).findFirst().orElse(null));
+                                return values.size() < rank ? "" : getPlayers().getName(values.stream().skip(rank - 1).findFirst().orElse(null));
                             });
                 }
             }
