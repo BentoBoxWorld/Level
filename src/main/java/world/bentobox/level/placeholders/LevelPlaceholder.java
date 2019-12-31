@@ -31,9 +31,6 @@ public class LevelPlaceholder implements PlaceholderReplacer {
      */
     @Override
     public String onReplace(User user) {
-        addon.logWarning("You are using a deprecated placeholder.");
-        addon.log("Please replace any occurrence of 'Level_" + gm.getDescription().getName().toLowerCase() + "-island-level'");
-        addon.log("by 'Level_" + gm.getDescription().getName().toLowerCase() + "_island_level'");
         return addon.getLevelPresenter().getLevelString(addon.getIslandLevel(gm.getOverWorld(), user.getUniqueId()));
     }
 
