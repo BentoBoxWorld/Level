@@ -6,35 +6,35 @@
 admin:
   level:
     parameters: "<player>"
-    description: "calculate the island level for player"
+    description: "计算某玩家的岛屿等级"
   top:
-    description: "show the top ten list"
-    unknown-world: "&cUnknown world!"
+    description: "显示前十名"
+    unknown-world: "&c未知世界!"
     display: "&f[rank]. &a[name] &7- &b[level]"
     remove:
-      description: "remove player from Top Ten"
+      description: "将玩家移出前十"
       parameters: "<player>"
 
 island:
   level: 
     parameters: "[player]"
-    description: "calculate your island level or show the level of [player]"
-    calculating: "&aCalculating level..." 
-    island-level-is: "&aIsland level is &b[level]"
-    required-points-to-next-level: "&a[points] points required until the next level"
-    deaths: "&c([number] deaths)"
-    cooldown: "&cYou must wait &b[time] &cseconds until you can do that again"
+    description: "计算你或玩家 [player] 的岛屿等级"
+    calculating: "&a计算等级中..." 
+    island-level-is: "&a岛屿等级为 &b[level]"
+    required-points-to-next-level: "&a还需 [points] 才能升到下一级"
+    deaths: "&c([number] 次死亡)"
+    cooldown: "&c再等 &b[time] &c秒才能再次使用"
     
   top:
-    description: "show the Top Ten"
-    gui-title: "&aTop Ten"
+    description: "显示前十名"
+    gui-title: "&a前十"
     gui-heading: "&6[name]: &B[rank]"
-    island-level: "&BLevel [level]"
-    warp-to: "&AWarping to [name]'s island"
+    island-level: "&B等级 [level]"
+    warp-to: "&A正传送到 [name] 的岛屿"
 
   value:
-    description: "shows the value of any block"
-    success: "&7The value of this block is: &e[value]"
-    success-underwater: "&7The value of this block below sea-level: &e[value]"
-    empty-hand: "&cThere are no blocks in your hand"
-    no-value: "&cThat item has no value."
+    description: "查看某方块的价值"
+    success: "&7本方块的价值: &e[value]"
+    success-underwater: "&7本方块的水下价值: &e[value]"
+    empty-hand: "&c你手里没有方块"
+    no-value: "&c这个东西一文不值."
