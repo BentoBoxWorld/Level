@@ -215,7 +215,7 @@ public class Settings {
     }
 
     /**
-     * @return true if levels should be shown in shorthand notation, e.g., 10,234 -> 10k
+     * @return true if levels should be shown in shorthand notation, e.g., 10,234 = 10k
      */
     public boolean isShortHand() {
         return level.getConfig().getBoolean("shorthand");
