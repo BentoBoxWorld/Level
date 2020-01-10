@@ -66,7 +66,7 @@ public class PlayerLevel {
         keyValues.put("pointsToNextLevel", calc.getResult().getPointsToNextLevel());
         keyValues.put("deathHandicap", calc.getResult().getDeathHandicap());
         keyValues.put("initialLevel", calc.getResult().getInitialLevel());
-        addon.getServer().getPluginManager().callEvent(new AddonEvent().builder().addon(addon).keyValues(keyValues).build());
+        AddonEvent.builder().addon(addon).keyValues(keyValues).build();
         Results results = ilce.getResults();
         // Save the results
         island.getMemberSet().forEach(m -> addon.setIslandLevel(world, m, results.getLevel()));
