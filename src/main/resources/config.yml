@@ -10,8 +10,8 @@ game-modes:
 #- SkyGrid
 
 # Performance settings
-# Level is very processor intensive, so these settings may need to be tweaked to optimize for your server
-# Delay between each task that loads chunks for calulcating levels
+# Level is very processor-intensive, so these settings may need to be tweaked to optimize for your server
+# Delay between each task that loads chunks for calculating levels
 # Increasing this will slow down level calculations but reduce average load
 task-delay: 1
 
