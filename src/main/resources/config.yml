@@ -9,6 +9,15 @@ game-modes:
 - CaveBlock
 #- SkyGrid
 
+# Performance settings
+# Level is very processor intensive, so these settings may need to be tweaked to optimize for your server
+# Delay between each task that loads chunks for calulcating levels
+# Increasing this will slow down level calculations but reduce average load
+task-delay: 1
+
+# Number of chunks that will be processed per task
+chunks: 10
+
 # This file lists the values for various blocks that are used to calculate the
 # island level. Level = total of all blocks in island boundary / 100.
 # Players with the permission askyblock.island.multiplier.# will have their blocks

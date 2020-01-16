@@ -1,6 +1,15 @@
 package world.bentobox.level.calculators;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -92,17 +101,15 @@ public class CalcIslandLevel {
                 total += chunksToScan.size();
             }
         }
-        queueid = Bukkit.getScheduler().scheduleSyncRepeatingTask(addon.getPlugin(), new Runnable() {
-            public void run() {
-                for (int i = 0; i < 10; i++) {
-                    if (q.size() == 0) {
-                        return;
-                    }
-                    Chunk c = q.remove();
-                    getChunk(c);
+        queueid = Bukkit.getScheduler().scheduleSyncRepeatingTask(addon.getPlugin(), () -> {
+            for (int i = 0; i < addon.getSettings().getChunks(); i++) {
+                if (q.size() == 0) {
+                    return;
                 }
+                Chunk c = q.remove();
+                getChunk(c);
             }
-        }, 1L, 1L);
+        }, addon.getSettings().getTickDelay(), addon.getSettings().getTickDelay());
         chunksToScan.forEach(c -> worlds.forEach(w -> Util.getChunkAtAsync(w, c.x, c.z).thenAccept(this::addChunkQueue)));
 
     }
