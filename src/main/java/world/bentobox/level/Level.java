@@ -13,6 +13,7 @@ import world.bentobox.bentobox.api.addons.Addon;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.Database;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.level.calculators.CalcIslandLevel;
 import world.bentobox.level.commands.admin.AdminLevelCommand;
 import world.bentobox.level.commands.admin.AdminTopCommand;
 import world.bentobox.level.commands.island.IslandLevelCommand;
@@ -198,6 +199,13 @@ public class Level extends Addon {
         // Register request handlers
         registerRequestHandler(new LevelRequestHandler(this));
         registerRequestHandler(new TopTenRequestHandler(this));
+
+        // Check if WildStackers is enabled on the server
+        if (getPlugin().getServer().getPluginManager().getPlugin("WildStacker") != null) {
+            // I only added support for counting blocks into the island level
+            // Someone else can PR if they want spawners added to the Leveling system :)
+            CalcIslandLevel.stackersEnabled = true;
+        } else CalcIslandLevel.stackersEnabled = false;
 
         // Done
     }

@@ -13,12 +13,15 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.bgsoftware.wildstacker.api.WildStackerAPI;
+import com.bgsoftware.wildstacker.api.objects.StackedBarrel;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Slab;
 
@@ -37,7 +40,8 @@ public class CalcIslandLevel {
 
     private static final String LINE_BREAK = "==================================";
 
-    public  static final long MAX_AMOUNT = 10000;
+    public static final long MAX_AMOUNT = 10000;
+    public static Boolean stackersEnabled;
 
     private final Level addon;
 
@@ -122,7 +126,7 @@ public class CalcIslandLevel {
         ChunkSnapshot snapShot = ch.getChunkSnapshot();
 
         Bukkit.getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
-            this.scanChunk(snapShot);
+            this.scanChunk(snapShot, ch);
             count.getAndIncrement();
             if (count.get() == total) {
                 Bukkit.getScheduler().cancelTask(queueid);
@@ -131,7 +135,7 @@ public class CalcIslandLevel {
         });
     }
 
-    private void scanChunk(ChunkSnapshot chunk) {
+    private void scanChunk(ChunkSnapshot chunk, Chunk physicalChunk) {
         World chunkWorld = Bukkit.getWorld(chunk.getWorldName());
         if (chunkWorld == null) return;
         int maxHeight = chunkWorld.getMaxHeight();
@@ -158,9 +162,33 @@ public class CalcIslandLevel {
                             checkBlock(blockData, belowSeaLevel);
                         }
                     }
+
+                    // Hook for Wild Stackers (Blocks Only)
+                    if (stackersEnabled && blockData.getMaterial() == Material.CAULDRON) {
+                        Block cauldronBlock = physicalChunk.getBlock(x, y, z);
+                        if (WildStackerAPI.getWildStacker().getSystemManager().isStackedBarrel(cauldronBlock)) {
+                            StackedBarrel barrel = WildStackerAPI.getStackedBarrel(cauldronBlock);
+                            int barrelAmt = WildStackerAPI.getBarrelAmount(cauldronBlock);
+                            for (int _x = 0; _x < barrelAmt; _x++) {
+                                checkStackedBlock(barrel.getType(), belowSeaLevel);
+                            }
+                        }
+                    }
+
                     checkBlock(blockData, belowSeaLevel);
                 }
             }
+        }
+    }
+
+    private void checkStackedBlock(Material mat, boolean belowSeaLevel) {
+        int count = limitCount(mat);
+        if (belowSeaLevel) {
+            result.underWaterBlockCount.addAndGet(count);
+            result.uwCount.add(mat);
+        } else {
+            result.rawBlockCount.addAndGet(count);
+            result.mdCount.add(mat);
         }
     }
 

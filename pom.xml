@@ -147,6 +147,11 @@
             <id>codemc-public</id>
             <url>https://repo.codemc.org/repository/maven-public/</url>
         </repository>
+        <!--Wild Stacker repo-->
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -181,6 +186,12 @@
             <artifactId>bentobox</artifactId>
             <version>${bentobox.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <!-- Wild Stacker dependency-->
+        <dependency>
+            <groupId>com.github.OmerBenGera</groupId>
+            <artifactId>WildStackerAPI</artifactId>
+            <version>b17</version>
         </dependency>
     </dependencies>
 
