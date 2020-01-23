@@ -159,7 +159,7 @@ public class CalcIslandLevel {
                     if (Tag.SLABS.isTagged(blockData.getMaterial())) {
                         Slab slab = (Slab)blockData;
                         if (slab.getType().equals(Slab.Type.DOUBLE)) {
-                            checkBlock(blockData, belowSeaLevel);
+                            checkBlock(blockData.getMaterial(), belowSeaLevel);
                         }
                     }
 
@@ -170,18 +170,19 @@ public class CalcIslandLevel {
                             StackedBarrel barrel = WildStackerAPI.getStackedBarrel(cauldronBlock);
                             int barrelAmt = WildStackerAPI.getBarrelAmount(cauldronBlock);
                             for (int _x = 0; _x < barrelAmt; _x++) {
-                                checkStackedBlock(barrel.getType(), belowSeaLevel);
+                                checkBlock(barrel.getType(), belowSeaLevel);
                             }
                         }
                     }
 
-                    checkBlock(blockData, belowSeaLevel);
+                    checkBlock(blockData.getMaterial(), belowSeaLevel);
                 }
             }
         }
     }
 
-    private void checkStackedBlock(Material mat, boolean belowSeaLevel) {
+    // Didnt see a reason to pass BlockData when all that's used was the material
+    private void checkBlock(Material mat, boolean belowSeaLevel) {
         int count = limitCount(mat);
         if (belowSeaLevel) {
             result.underWaterBlockCount.addAndGet(count);
@@ -189,17 +190,6 @@ public class CalcIslandLevel {
         } else {
             result.rawBlockCount.addAndGet(count);
             result.mdCount.add(mat);
-        }
-    }
-
-    private void checkBlock(BlockData bd, boolean belowSeaLevel) {
-        int count = limitCount(bd.getMaterial());
-        if (belowSeaLevel) {
-            result.underWaterBlockCount.addAndGet(count);
-            result.uwCount.add(bd.getMaterial());
-        } else {
-            result.rawBlockCount.addAndGet(count);
-            result.mdCount.add(bd.getMaterial());
         }
     }
 
