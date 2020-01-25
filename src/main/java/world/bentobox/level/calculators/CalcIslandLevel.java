@@ -390,7 +390,7 @@ public class CalcIslandLevel {
          * Set level
          * @param level - level
          */
-        public void setLevel(int level) {
+        public void setLevel(long level) {
             this.level.set(level);
         }
         /**

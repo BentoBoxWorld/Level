@@ -60,13 +60,22 @@ public class IslandLevelCalculatedEvent extends IslandBaseEvent {
         return results.getLevel();
     }
     
+
+    /**
+     * Overwrite the level. This level will be used instead of the calculated level.
+     * @param level - the level to set
+     */
+    public void setLevel(long level) {
+        results.setLevel(level);
+    }
+    
     /**
      * @return number of points required to next level
      */
     public long getPointsToNextLevel() {
         return results.getPointsToNextLevel();
     }
-    
+        
     /**
      * @return a human readable report explaining how the calculation was made
      */
@@ -94,6 +103,5 @@ public class IslandLevelCalculatedEvent extends IslandBaseEvent {
     public void setTargetPlayer(UUID targetPlayer) {
         this.targetPlayer = targetPlayer;
     }
-
 
 }
