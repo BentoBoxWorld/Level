@@ -3,6 +3,7 @@ package world.bentobox.level;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -81,7 +82,12 @@ public class Level extends Addon {
     public LevelsData getLevelsData(@NonNull UUID targetPlayer) {
         // Get from database if not in cache
         if (!levelsCache.containsKey(targetPlayer) && handler.objectExists(targetPlayer.toString())) {
-            levelsCache.put(targetPlayer, handler.loadObject(targetPlayer.toString()));
+            LevelsData ld = handler.loadObject(targetPlayer.toString());
+            if (ld != null) {
+                levelsCache.put(targetPlayer, ld);
+            } else {
+                handler.deleteID(targetPlayer.toString());
+            }
         }
         // Return cached value or null
         return levelsCache.get(targetPlayer);
@@ -215,7 +221,8 @@ public class Level extends Addon {
      * Save the levels to the database
      */
     private void save(){
-        // No async for now
+        // Remove any potential null values from the cache
+        levelsCache.values().removeIf(Objects::isNull);
         levelsCache.values().forEach(handler::saveObject);
     }
 
@@ -262,6 +269,8 @@ public class Level extends Addon {
      * @return level or 0 by default
      */
     public long getInitialIslandLevel(@NonNull Island island) {
+        // Remove any potential null values from the cache
+        levelsCache.values().removeIf(Objects::isNull);
         return levelsCache.containsKey(island.getOwner()) ? levelsCache.get(island.getOwner()).getInitialLevel(island.getWorld()) : 0L;
     }
 
