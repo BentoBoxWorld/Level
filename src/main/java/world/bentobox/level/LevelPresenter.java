@@ -82,7 +82,7 @@ public class LevelPresenter {
     }
 
     /**
-     * Get the string representation of the level. May be converted to shorthand notation, e.g., 104556 -> 10.5k
+     * Get the string representation of the level. May be converted to shorthand notation, e.g., 104556 = 10.5k
      * @param lvl - long value to represent
      * @return string of the level.
      */

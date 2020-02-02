@@ -1,15 +1,27 @@
 package world.bentobox.level.calculators;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.bgsoftware.wildstacker.api.WildStackerAPI;
+import com.bgsoftware.wildstacker.api.objects.StackedBarrel;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Slab;
 
@@ -28,7 +40,8 @@ public class CalcIslandLevel {
 
     private static final String LINE_BREAK = "==================================";
 
-    public  static final long MAX_AMOUNT = 10000;
+    public static final long MAX_AMOUNT = 10000;
+    public static Boolean stackersEnabled;
 
     private final Level addon;
 
@@ -92,17 +105,15 @@ public class CalcIslandLevel {
                 total += chunksToScan.size();
             }
         }
-        queueid = Bukkit.getScheduler().scheduleSyncRepeatingTask(addon.getPlugin(), new Runnable() {
-            public void run() {
-                for (int i = 0; i < 10; i++) {
-                    if (q.size() == 0) {
-                        return;
-                    }
-                    Chunk c = q.remove();
-                    getChunk(c);
+        queueid = Bukkit.getScheduler().scheduleSyncRepeatingTask(addon.getPlugin(), () -> {
+            for (int i = 0; i < addon.getSettings().getChunks(); i++) {
+                if (q.size() == 0) {
+                    return;
                 }
+                Chunk c = q.remove();
+                getChunk(c);
             }
-        }, 1L, 1L);
+        }, addon.getSettings().getTickDelay(), addon.getSettings().getTickDelay());
         chunksToScan.forEach(c -> worlds.forEach(w -> Util.getChunkAtAsync(w, c.x, c.z).thenAccept(this::addChunkQueue)));
 
     }
@@ -115,7 +126,7 @@ public class CalcIslandLevel {
         ChunkSnapshot snapShot = ch.getChunkSnapshot();
 
         Bukkit.getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
-            this.scanChunk(snapShot);
+            this.scanChunk(snapShot, ch);
             count.getAndIncrement();
             if (count.get() == total) {
                 Bukkit.getScheduler().cancelTask(queueid);
@@ -124,7 +135,7 @@ public class CalcIslandLevel {
         });
     }
 
-    private void scanChunk(ChunkSnapshot chunk) {
+    private void scanChunk(ChunkSnapshot chunk, Chunk physicalChunk) {
         World chunkWorld = Bukkit.getWorld(chunk.getWorldName());
         if (chunkWorld == null) return;
         int maxHeight = chunkWorld.getMaxHeight();
@@ -148,23 +159,37 @@ public class CalcIslandLevel {
                     if (Tag.SLABS.isTagged(blockData.getMaterial())) {
                         Slab slab = (Slab)blockData;
                         if (slab.getType().equals(Slab.Type.DOUBLE)) {
-                            checkBlock(blockData, belowSeaLevel);
+                            checkBlock(blockData.getMaterial(), belowSeaLevel);
                         }
                     }
-                    checkBlock(blockData, belowSeaLevel);
+
+                    // Hook for Wild Stackers (Blocks Only)
+                    if (stackersEnabled && blockData.getMaterial() == Material.CAULDRON) {
+                        Block cauldronBlock = physicalChunk.getBlock(x, y, z);
+                        if (WildStackerAPI.getWildStacker().getSystemManager().isStackedBarrel(cauldronBlock)) {
+                            StackedBarrel barrel = WildStackerAPI.getStackedBarrel(cauldronBlock);
+                            int barrelAmt = WildStackerAPI.getBarrelAmount(cauldronBlock);
+                            for (int _x = 0; _x < barrelAmt; _x++) {
+                                checkBlock(barrel.getType(), belowSeaLevel);
+                            }
+                        }
+                    }
+
+                    checkBlock(blockData.getMaterial(), belowSeaLevel);
                 }
             }
         }
     }
 
-    private void checkBlock(BlockData bd, boolean belowSeaLevel) {
-        int count = limitCount(bd.getMaterial());
+    // Didnt see a reason to pass BlockData when all that's used was the material
+    private void checkBlock(Material mat, boolean belowSeaLevel) {
+        int count = limitCount(mat);
         if (belowSeaLevel) {
             result.underWaterBlockCount.addAndGet(count);
-            result.uwCount.add(bd.getMaterial());
+            result.uwCount.add(mat);
         } else {
             result.rawBlockCount.addAndGet(count);
-            result.mdCount.add(bd.getMaterial());
+            result.mdCount.add(mat);
         }
     }
 
@@ -383,7 +408,7 @@ public class CalcIslandLevel {
          * Set level
          * @param level - level
          */
-        public void setLevel(int level) {
+        public void setLevel(long level) {
             this.level.set(level);
         }
         /**

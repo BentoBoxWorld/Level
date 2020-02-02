@@ -7,7 +7,6 @@ import org.bukkit.Bukkit;
 
 import world.bentobox.bentobox.api.addons.request.AddonRequestHandler;
 import world.bentobox.level.Level;
-import world.bentobox.level.objects.TopTenData;
 
 
 /**
@@ -54,8 +53,7 @@ public class TopTenRequestHandler extends AddonRequestHandler {
             return Collections.emptyMap();
         }
 
-        // Null-point check.
-        TopTenData data = addon.getTopTen().getTopTenList(Bukkit.getWorld((String) map.get(WORLD_NAME)));
-        return data != null ? data.getTopTen() : Collections.emptyMap();
+        // No null check required
+        return addon.getTopTen().getTopTenList(Bukkit.getWorld((String) map.get(WORLD_NAME))).getTopTen();
     }
 }

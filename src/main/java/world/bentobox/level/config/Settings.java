@@ -23,6 +23,8 @@ public class Settings {
     private int deathpenalty;
     private long levelCost;
     private int levelWait;
+    private int chunks;
+    private long taskDelay;
 
     private List<String> gameModes;
 
@@ -33,9 +35,22 @@ public class Settings {
 
         // GameModes
         gameModes = level.getConfig().getStringList("game-modes");
+        
+        // Performance
+        setTickDelay(level.getConfig().getLong("task-delay",1));
+        if (taskDelay < 1L) {
+            level.logError("task-delay must be at least 1");
+            setTickDelay(1L);
+        }
+        setChunks(level.getConfig().getInt("chunks", 10));
+        if (chunks < 1) {
+            level.logError("chunks must be at least 1");
+            setChunks(1);
+        }
 
         setLevelWait(level.getConfig().getInt("levelwait", 60));
         if (getLevelWait() < 0) {
+            level.logError("levelwait must be at least 0");
             setLevelWait(0);
         }
         setDeathpenalty(level.getConfig().getInt("deathpenalty", 0));
@@ -215,7 +230,7 @@ public class Settings {
     }
 
     /**
-     * @return true if levels should be shown in shorthand notation, e.g., 10,234 -> 10k
+     * @return true if levels should be shown in shorthand notation, e.g., 10,234 = 10k
      */
     public boolean isShortHand() {
         return level.getConfig().getBoolean("shorthand");
@@ -226,6 +241,34 @@ public class Settings {
      */
     public String getLevelCalc() {
         return level.getConfig().getString("level-calc", "blocks / level_cost");
+    }
+
+    /**
+     * @return the chunks
+     */
+    public int getChunks() {
+        return chunks;
+    }
+
+    /**
+     * @param chunks the chunks to set
+     */
+    public void setChunks(int chunks) {
+        this.chunks = chunks;
+    }
+
+    /**
+     * @return the tickDelay
+     */
+    public long getTickDelay() {
+        return taskDelay;
+    }
+
+    /**
+     * @param tickDelay the tickDelay to set
+     */
+    public void setTickDelay(long tickDelay) {
+        this.taskDelay = tickDelay;
     }
 
 }
