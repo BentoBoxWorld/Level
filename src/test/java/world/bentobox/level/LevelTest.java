@@ -111,6 +111,9 @@ public class LevelTest {
     private World world;
     private UUID uuid;
 
+    @Mock
+    private PluginManager pim;
+
     @BeforeClass
     public static void beforeClass() throws IOException {
         jFile = new File("addon.jar");
@@ -135,7 +138,6 @@ public class LevelTest {
     /**
      * @throws java.lang.Exception
      */
-    @SuppressWarnings("deprecation")
     @Before
     public void setUp() throws Exception {
         // Set up plugin
@@ -217,6 +219,7 @@ public class LevelTest {
         UnsafeValues unsafe = mock(UnsafeValues.class);
         when(unsafe.getDataVersion()).thenReturn(777);
         when(Bukkit.getUnsafe()).thenReturn(unsafe);
+        when(Bukkit.getPluginManager()).thenReturn(pim);
 
         // placeholders
         when(plugin.getPlaceholdersManager()).thenReturn(phm);

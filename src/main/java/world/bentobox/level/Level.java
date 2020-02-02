@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -201,7 +202,7 @@ public class Level extends Addon {
         registerRequestHandler(new TopTenRequestHandler(this));
 
         // Check if WildStackers is enabled on the server
-        if (getPlugin().getServer().getPluginManager().getPlugin("WildStacker") != null) {
+        if (Bukkit.getPluginManager().getPlugin("WildStacker") != null) {
             // I only added support for counting blocks into the island level
             // Someone else can PR if they want spawners added to the Leveling system :)
             CalcIslandLevel.stackersEnabled = true;
