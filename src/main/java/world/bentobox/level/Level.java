@@ -2,7 +2,6 @@ package world.bentobox.level;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -10,6 +9,7 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.eclipse.jdt.annotation.NonNull;
@@ -146,16 +146,47 @@ public class Level extends Addon {
         // Save the default config from config.yml
         saveDefaultConfig();
         // Load settings from config.yml. This will check if there are any issues with it too.
-        loadSettings();
+        if (loadSettings()) {
+            configObject.saveConfigObject(settings);
+        }
     }
 
-    private void loadSettings() {
+    private boolean loadSettings() {
         // Load settings again to get worlds
         settings = configObject.loadConfigObject();
         if (settings == null) {
             // Disable
             logError("Level settings could not load! Addon disabled.");
             setState(State.DISABLED);
+            return false;
+        }
+        // Check for legacy blocks and limits etc.
+        if (getConfig().isConfigurationSection("blocks")
+                || getConfig().isConfigurationSection("limits")
+                || getConfig().isConfigurationSection("worlds")) {
+            logWarning("Converting old config.yml format - shifting blocks, limits and worlds to blockconfig.yml");
+            File blockConfigFile = new File(this.getDataFolder(), "blockconfig.yml");
+            if (blockConfigFile.exists()) {
+                logError("blockconfig.yml already exists! Saving config as blockconfig.yml.2");
+                blockConfigFile = new File(this.getDataFolder(), "blockconfig.yml.2");
+            }
+            YamlConfiguration blockConfig = new YamlConfiguration();
+            copyConfigSection(blockConfig, "limits");
+            copyConfigSection(blockConfig, "blocks");
+            copyConfigSection(blockConfig, "worlds");
+            try {
+                blockConfig.save(blockConfigFile);
+            } catch (IOException e) {
+                logError("Could not save! " + e.getMessage());
+            }
+        }
+        return true;
+    }
+
+    private void copyConfigSection(YamlConfiguration blockConfig, String sectionName) {
+        ConfigurationSection section = getConfig().getConfigurationSection(sectionName);
+        for (String k:section.getKeys(true)) {
+            blockConfig.set(sectionName + "." + k, section.get(k));
         }
     }
 
@@ -165,15 +196,17 @@ public class Level extends Addon {
 
         YamlConfiguration blockValues = new YamlConfiguration();
         try {
-            blockValues.load(new File(this.getDataFolder(), "blockconfig.yml"));
+            File file = new File(this.getDataFolder(), "blockconfig.yml");
+            blockValues.load(file);
+            // Load the block config class
+            blockConfig = new BlockConfig(this, blockValues, file);
         } catch (IOException | InvalidConfigurationException e) {
             // Disable
             logError("Level blockconfig.yml settings could not load! Addon disabled.");
             setState(State.DISABLED);
             return;
         }
-        // Load the block config class
-        blockConfig = new BlockConfig(this, blockValues);
+
     }
 
     @Override
@@ -238,27 +271,19 @@ public class Level extends Addon {
             final int rank = i;
             // Value
             getPlugin().getPlaceholdersManager().registerPlaceholder(this,
-                    gm.getDescription().getName().toLowerCase() + "_top_value_" + rank,
-                    user -> {
-                        Collection<Long> values = getTopTen().getTopTenList(gm.getOverWorld()).getTopTen().values();
-                        return values.size() < rank ? "" : values.stream().skip(rank - 1).findFirst().map(String::valueOf).orElse("");
-                    });
+                    gm.getDescription().getName().toLowerCase() + "_top_value_" + rank, u -> String.valueOf(getTopTen().getTopTenLevel(gm.getOverWorld(), rank)));
 
             // Name
             getPlugin().getPlaceholdersManager().registerPlaceholder(this,
                     gm.getDescription().getName().toLowerCase() + "_top_name_" + rank,
-                    user -> {
-                        Collection<UUID> values = getTopTen().getTopTenList(gm.getOverWorld()).getTopTen().keySet();
-                        return values.size() < rank ? "" : getPlayers().getName(values.stream().skip(rank - 1).findFirst().orElse(null));
-                    });
+                    u -> getPlayers().getName(getTopTen().getTopTenUUID(gm.getOverWorld(), rank)));
         }
 
     }
 
     private String getVisitedIslandLevel(GameModeAddon gm, User user) {
         return getIslands().getIslandAt(user.getLocation())
-                .map(island -> getIslandLevel(gm.getOverWorld(), island.getOwner()))
-                .map(level -> getLevelPresenter().getLevelString(level))
+                .map(island -> getLevelPresenter().getLevelString(getIslandLevel(gm.getOverWorld(), island.getOwner())))
                 .orElse("0");
     }
 

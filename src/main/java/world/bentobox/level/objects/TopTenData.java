@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.google.gson.annotations.Expose;
 
 import world.bentobox.bentobox.database.objects.DataObject;
@@ -30,6 +32,27 @@ public class TopTenData implements DataObject {
                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).limit(10)
                 .collect(Collectors.toMap(
                         Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+    }
+
+    /**
+     * Get the level for the rank
+     * @param rank - rank
+     * @return level value or 0 if none.
+     */
+    public long getTopTenLevel(int rank) {
+        Map<UUID, Long> tt = getTopTen();
+        return tt.size() < rank ? (long)tt.values().toArray()[(rank-1)] : 0;
+    }
+
+    /**
+     * Get the UUID of the rank
+     * @param rank - rank
+     * @return UUID or null
+     */
+    @Nullable
+    public UUID getTopTenUUID(int rank) {
+        Map<UUID, Long> tt = getTopTen();
+        return tt.size() < rank ? (UUID)tt.keySet().toArray()[(rank-1)] : null;
     }
 
     public void setTopTen(Map<UUID, Long> topTen) {

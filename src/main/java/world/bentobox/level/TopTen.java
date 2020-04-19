@@ -14,6 +14,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.builders.PanelBuilder;
@@ -157,6 +158,27 @@ public class TopTen implements Listener {
     public TopTenData getTopTenList(World world) {
         topTenList.putIfAbsent(world, new TopTenData());
         return topTenList.get(world);
+    }
+
+    /**
+     * Get the UUID for this rank in this world
+     * @param world - world
+     * @param rank - rank between 1 and 10
+     * @return UUID or null
+     */
+    @Nullable
+    public UUID getTopTenUUID(World world, int rank) {
+        return getTopTenList(world).getTopTenUUID(rank);
+    }
+
+    /**
+     * Get the island level for this rank in this world
+     * @param world - world
+     * @param rank - rank between 1 and 10
+     * @return level or 0
+     */
+    public long getTopTenLevel(World world, int rank) {
+        return getTopTenList(world).getTopTenLevel(rank);
     }
 
     /**

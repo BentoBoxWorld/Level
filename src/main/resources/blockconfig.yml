@@ -1,8 +1,8 @@
 # Block Config file for Level add-on Version ${version}
-
+# 
 # This file lists the values for various blocks that are used to calculate the
 # island level.
-
+# 
 # This section lists the limits for any particular block. Blocks over this amount
 # are not counted.
 # Format:
@@ -10,11 +10,6 @@
 limits:
   COBBLESTONE: 10000
   NETHERRACK: 1000
-  
-# This section lists the value of a block. Value must be an integer.
-# Any blocks not listed will have a value of 0. AIR is always zero.
-# Format is MATERIAL: value 
-
 blocks:
   ACACIA_BUTTON: 1
   ACACIA_DOOR: 2
@@ -678,14 +673,27 @@ blocks:
   YELLOW_WOOL: 2
   ZOMBIE_HEAD: 1
   ZOMBIE_WALL_HEAD: 1
-
-# World differences
-# List any blocks that have a different value in a specific world
-# If a block is not listed, the default value will be used
-# Prefix with world name
+  AIR: 1
+  BEEHIVE: 1
+  BEE_NEST: 1
+  DEAD_BRAIN_CORAL: 1
+  DEAD_BUBBLE_CORAL: 1
+  DEAD_FIRE_CORAL: 1
+  DEAD_HORN_CORAL: 1
+  DEAD_TUBE_CORAL: 1
+  HONEYCOMB_BLOCK: 1
+  HONEY_BLOCK: 1
+  HORN_CORAL: 1
+  JIGSAW: 1
+  MOVING_PISTON: 1
+  MUSHROOM_STEM: 1
+  NETHER_WART: 1
+  PISTON_HEAD: 1
+  STRUCTURE_BLOCK: 1
+  STRUCTURE_VOID: 1
+  TUBE_CORAL: 1
 worlds:
   acidisland_world:
     SAND: 0
     SANDSTONE: 0
     ICE: 0
-  

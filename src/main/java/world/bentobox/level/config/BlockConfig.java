@@ -1,5 +1,8 @@
 package world.bentobox.level.config;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -18,38 +21,40 @@ public class BlockConfig {
     private Map<Material, Integer> blockValues = new HashMap<>();
     private final Map<World, Map<Material, Integer>> worldBlockValues = new HashMap<>();
 
-    public BlockConfig(Level level, YamlConfiguration blockValues) {
+    public BlockConfig(Level level, YamlConfiguration blockValues, File file) throws IOException {
 
-        if (blockValues.isSet("limits")) {
+        if (blockValues.isConfigurationSection("limits")) {
             HashMap<Material, Integer> bl = new HashMap<>();
-            for (String material : Objects.requireNonNull(blockValues.getConfigurationSection("limits")).getKeys(false)) {
+            ConfigurationSection limits = Objects.requireNonNull(blockValues.getConfigurationSection("limits"));
+            for (String material : limits.getKeys(false)) {
                 try {
                     Material mat = Material.valueOf(material);
-                    bl.put(mat, blockValues.getInt("limits." + material, 0));
+                    bl.put(mat, limits.getInt(material, 0));
                 } catch (Exception e) {
                     level.logWarning("Unknown material (" + material + ") in blockconfig.yml Limits section. Skipping...");
                 }
             }
             setBlockLimits(bl);
         }
-        if (blockValues.isSet("blocks")) {
+        if (blockValues.isConfigurationSection("blocks")) {
+            ConfigurationSection blocks = Objects.requireNonNull(blockValues.getConfigurationSection("blocks"));
             Map<Material, Integer> bv = new HashMap<>();
-            for (String material : Objects.requireNonNull(blockValues.getConfigurationSection("blocks")).getKeys(false)) {
-
-                try {
-                    Material mat = Material.valueOf(material);
-                    bv.put(mat, blockValues.getInt("blocks." + material, 0));
-                } catch (Exception e) {
-                    level.logWarning("Unknown material (" + material + ") in blockconfig.yml blocks section. Skipping...");
+            // Update blockvalues to latest settings
+            Arrays.stream(Material.values()).filter(Material::isBlock)
+            .filter(m -> !m.name().startsWith("LEGACY_"))
+            .forEach(m -> {
+                if (!blocks.contains(m.name(), true)) {
+                    blocks.set(m.name(), 1);
                 }
-            }
+                bv.put(m, blocks.getInt(m.name(), 1));
+            });
             setBlockValues(bv);
         } else {
             level.logWarning("No block values in blockconfig.yml! All island levels will be zero!");
         }
         // Worlds
-        if (blockValues.isSet("worlds")) {
-            ConfigurationSection worlds = blockValues.getConfigurationSection("worlds");
+        if (blockValues.isConfigurationSection("worlds")) {
+            ConfigurationSection worlds = Objects.requireNonNull(blockValues.getConfigurationSection("worlds"));
             for (String world : Objects.requireNonNull(worlds).getKeys(false)) {
                 World bWorld = Bukkit.getWorld(world);
                 if (bWorld != null) {
@@ -66,6 +71,7 @@ public class BlockConfig {
             }
         }
         // All done
+        blockValues.save(file);
     }
 
     /**
