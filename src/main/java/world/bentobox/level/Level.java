@@ -1,5 +1,7 @@
 package world.bentobox.level;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,10 +10,13 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import world.bentobox.bentobox.api.addons.Addon;
+import world.bentobox.bentobox.api.configuration.Config;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.Database;
 import world.bentobox.bentobox.database.objects.Island;
@@ -21,7 +26,8 @@ import world.bentobox.level.commands.admin.AdminTopCommand;
 import world.bentobox.level.commands.island.IslandLevelCommand;
 import world.bentobox.level.commands.island.IslandTopCommand;
 import world.bentobox.level.commands.island.IslandValueCommand;
-import world.bentobox.level.config.Settings;
+import world.bentobox.level.config.BlockConfig;
+import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandTeamListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
 import world.bentobox.level.objects.LevelsData;
@@ -35,8 +41,11 @@ import world.bentobox.level.requests.TopTenRequestHandler;
  */
 public class Level extends Addon {
 
+    private static Addon addon;
+
     // Settings
-    private Settings settings;
+    private ConfigSettings settings;
+    private Config<ConfigSettings> configObject = new Config<>(this, ConfigSettings.class);
 
     // Database handler for level data
     private Database<LevelsData> handler;
@@ -49,6 +58,10 @@ public class Level extends Addon {
 
     // Level calculator
     private LevelPresenter levelPresenter;
+
+
+
+    private BlockConfig blockConfig;
 
     /**
      * Calculates a user's island
@@ -93,7 +106,7 @@ public class Level extends Addon {
     /**
      * @return the settings
      */
-    public Settings getSettings() {
+    public ConfigSettings getSettings() {
         return settings;
     }
 
@@ -120,9 +133,44 @@ public class Level extends Addon {
     }
 
     @Override
+    public void onLoad() {
+        // Save the default config from config.yml
+        saveDefaultConfig();
+        // Load settings from config.yml. This will check if there are any issues with it too.
+        loadSettings();
+    }
+
+    private void loadSettings() {
+        // Load settings again to get worlds
+        settings = configObject.loadConfigObject();
+        if (settings == null) {
+            // Disable
+            logError("Level settings could not load! Addon disabled.");
+            setState(State.DISABLED);
+        }
+    }
+
+    private void loadBlockSettings() {
+        // Save the default blockconfig.yml
+        this.saveResource("blockconfig.yml", false);
+
+        YamlConfiguration blockValues = new YamlConfiguration();
+        try {
+            blockValues.load(new File(this.getDataFolder(), "blockconfig.yml"));
+        } catch (IOException | InvalidConfigurationException e) {
+            // Disable
+            logError("Level blockconfig.yml settings could not load! Addon disabled.");
+            setState(State.DISABLED);
+            return;
+        }
+        // Load the block config class
+        blockConfig = new BlockConfig(this, blockValues);
+    }
+
+    @Override
     public void onEnable() {
-        // Load the plugin's config
-        settings = new Settings(this);
+        addon = this;
+        loadBlockSettings();
         // Get the BSkyBlock database
         // Set up the database handler to store and retrieve Island classes
         // Note that these are saved by the BSkyBlock database
@@ -273,6 +321,17 @@ public class Level extends Addon {
             handler.saveObject(levelsCache.get(uniqueId));
         }
         levelsCache.remove(uniqueId);
+    }
+
+    public static Addon getInstance() {
+        return addon;
+    }
+
+    /**
+     * @return the blockConfig
+     */
+    public BlockConfig getBlockConfig() {
+        return blockConfig;
     }
 
 }

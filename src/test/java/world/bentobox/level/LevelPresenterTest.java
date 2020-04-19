@@ -22,7 +22,7 @@ import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.managers.IslandWorldManager;
 import world.bentobox.bentobox.managers.IslandsManager;
 import world.bentobox.level.calculators.PlayerLevel;
-import world.bentobox.level.config.Settings;
+import world.bentobox.level.config.BlockConfig;
 
 /**
  * @author tastybento
@@ -39,7 +39,7 @@ public class LevelPresenterTest {
     @Mock
     private PlayerLevel pl;
     @Mock
-    private Settings settings;
+    private BlockConfig settings;
 
     @Before
     public void setUp() throws Exception {

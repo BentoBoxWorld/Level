@@ -72,7 +72,7 @@ public class CalcIslandLevel {
         this.addon = addon;
         this.island = island;
         this.world = island.getWorld();
-        this.limitCount = new HashMap<>(addon.getSettings().getBlockLimits());
+        this.limitCount = new HashMap<>(addon.getBlockConfig().getBlockLimits());
         this.onExit = onExit;
         this.worlds = new ArrayList<>();
         this.worlds.add(world);
@@ -113,7 +113,7 @@ public class CalcIslandLevel {
                 Chunk c = q.remove();
                 getChunk(c);
             }
-        }, addon.getSettings().getTickDelay(), addon.getSettings().getTickDelay());
+        }, addon.getSettings().getTaskDelay(), addon.getSettings().getTaskDelay());
         chunksToScan.forEach(c -> worlds.forEach(w -> Util.getChunkAtAsync(w, c.x, c.z).thenAccept(this::addChunkQueue)));
 
     }
@@ -220,12 +220,12 @@ public class CalcIslandLevel {
      */
     private int getValue(Material md) {
         // Check world settings
-        if (addon.getSettings().getWorldBlockValues().containsKey(world) && addon.getSettings().getWorldBlockValues().get(world).containsKey(md)) {
-            return addon.getSettings().getWorldBlockValues().get(world).get(md);
+        if (addon.getBlockConfig().getWorldBlockValues().containsKey(world) && addon.getBlockConfig().getWorldBlockValues().get(world).containsKey(md)) {
+            return addon.getBlockConfig().getWorldBlockValues().get(world).get(md);
         }
         // Check baseline
-        if (addon.getSettings().getBlockValues().containsKey(md)) {
-            return addon.getSettings().getBlockValues().get(md);
+        if (addon.getBlockConfig().getBlockValues().containsKey(md)) {
+            return addon.getBlockConfig().getBlockValues().get(md);
         }
         // Not in config
         result.ncCount.add(md);
@@ -325,11 +325,11 @@ public class CalcIslandLevel {
         Iterator<Entry<Material>> it = entriesSortedByCount.iterator();
         while (it.hasNext()) {
             Entry<Material> type = it.next();
-            Integer limit = addon.getSettings().getBlockLimits().get(type.getElement());
+            Integer limit = addon.getBlockConfig().getBlockLimits().get(type.getElement());
             String explain = ")";
             if (limit == null) {
                 Material generic = type.getElement();
-                limit = addon.getSettings().getBlockLimits().get(generic);
+                limit = addon.getBlockConfig().getBlockLimits().get(generic);
                 explain = " - All types)";
             }
             reportLines.add(type.getElement().toString() + ": " + String.format("%,d",type.getCount()) + " blocks (max " + limit + explain);

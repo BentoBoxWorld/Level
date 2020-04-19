@@ -43,7 +43,7 @@ import world.bentobox.bentobox.database.DatabaseSetup;
 import world.bentobox.bentobox.managers.IslandWorldManager;
 import world.bentobox.bentobox.managers.IslandsManager;
 import world.bentobox.bentobox.managers.PlayersManager;
-import world.bentobox.level.config.Settings;
+import world.bentobox.level.config.BlockConfig;
 import world.bentobox.level.objects.TopTenData;
 
 @RunWith(PowerMockRunner.class)
@@ -73,7 +73,7 @@ public class TopTenTest {
     @Mock
     private LevelPresenter lp;
     @Mock
-    private Settings settings;
+    private BlockConfig settings;
 
 
     @SuppressWarnings("unchecked")

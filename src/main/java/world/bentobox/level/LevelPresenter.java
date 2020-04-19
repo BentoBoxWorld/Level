@@ -89,7 +89,7 @@ public class LevelPresenter {
     public String getLevelString(long lvl) {
         String level = String.valueOf(lvl);
         // Asking for the level of another player
-        if(addon.getSettings().isShortHand()) {
+        if(addon.getSettings().isShorthand()) {
             BigInteger levelValue = BigInteger.valueOf(lvl);
 
             Map.Entry<BigInteger, String> stage = LEVELS.floorEntry(levelValue);

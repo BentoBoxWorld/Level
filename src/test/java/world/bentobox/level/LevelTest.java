@@ -266,11 +266,6 @@ public class LevelTest {
         verify(cmd, times(3)).getAddon(); // Three commands
         verify(adminCmd, times(2)).getAddon(); // Two commands
         // Placeholders
-        verify(phm).registerPlaceholder(eq(addon), eq("bskyblock-island-level"), any());
-        for (int i = 1; i < 11; i++) {
-            verify(phm).registerPlaceholder(eq(addon), eq("bskyblock-island-level-top-name-" + i), any());
-            verify(phm).registerPlaceholder(eq(addon), eq("bskyblock-island-level-top-value-" + i), any());
-        }
         verify(phm).registerPlaceholder(eq(addon), eq("bskyblock_island_level"), any());
         verify(phm).registerPlaceholder(eq(addon), eq("bskyblock_visited_island_level"), any());
         for (int i = 1; i < 11; i++) {
@@ -316,7 +311,7 @@ public class LevelTest {
     @Test
     public void testGetSettings() {
         addon.onEnable();
-        world.bentobox.level.config.Settings s = addon.getSettings();
+        world.bentobox.level.config.BlockConfig s = addon.getSettings();
         assertEquals(100, s.getDeathPenalty());
     }
 

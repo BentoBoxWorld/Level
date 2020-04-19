@@ -29,7 +29,7 @@ public class JoinLeaveListener implements Listener {
         // Load player into cache
         addon.getLevelsData(e.getPlayer().getUniqueId());
         // If level calc on login is enabled, run through all the worlds and calculate the level
-        if (addon.getSettings().isLogin()) {
+        if (addon.getSettings().isCalcOnLogin()) {
             addon.getPlugin().getAddonsManager().getGameModeAddons().stream()
             .filter(gm -> addon.getSettings().getGameModes().contains(gm.getDescription().getName()))
             .forEach(gm -> addon.calculateIslandLevel(gm.getOverWorld(), null, e.getPlayer().getUniqueId()));
