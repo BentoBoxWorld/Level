@@ -25,9 +25,6 @@ import world.bentobox.level.config.Settings;
 import world.bentobox.level.listeners.IslandTeamListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
 import world.bentobox.level.objects.LevelsData;
-import world.bentobox.level.placeholders.LevelPlaceholder;
-import world.bentobox.level.placeholders.TopTenNamePlaceholder;
-import world.bentobox.level.placeholders.TopTenPlaceholder;
 import world.bentobox.level.requests.LevelRequestHandler;
 import world.bentobox.level.requests.TopTenRequestHandler;
 
@@ -153,17 +150,6 @@ public class Level extends Addon {
             });
             // Register placeholders
             if (getPlugin().getPlaceholdersManager() != null) {
-                // DEPRECATED PLACEHOLDERS - remove in an upcoming version
-
-                getPlugin().getPlaceholdersManager().registerPlaceholder(this, gm.getDescription().getName().toLowerCase() + "-island-level", new LevelPlaceholder(this, gm));
-                // Top Ten
-                for (int i = 1; i < 11; i++) {
-                    getPlugin().getPlaceholdersManager().registerPlaceholder(this, gm.getDescription().getName().toLowerCase() + "-island-level-top-value-" + i, new TopTenPlaceholder(this, gm, i));
-                    getPlugin().getPlaceholdersManager().registerPlaceholder(this, gm.getDescription().getName().toLowerCase() + "-island-level-top-name-" + i, new TopTenNamePlaceholder(this, gm, i));
-                }
-
-                // ---------------------
-
                 // Island Level
                 getPlugin().getPlaceholdersManager().registerPlaceholder(this,
                         gm.getDescription().getName().toLowerCase() + "_island_level",
