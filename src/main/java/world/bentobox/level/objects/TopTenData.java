@@ -41,7 +41,7 @@ public class TopTenData implements DataObject {
      */
     public long getTopTenLevel(int rank) {
         Map<UUID, Long> tt = getTopTen();
-        return tt.size() < rank ? (long)tt.values().toArray()[(rank-1)] : 0;
+        return rank <= tt.size() ? (long)tt.values().toArray()[(rank-1)] : 0;
     }
 
     /**
@@ -52,7 +52,7 @@ public class TopTenData implements DataObject {
     @Nullable
     public UUID getTopTenUUID(int rank) {
         Map<UUID, Long> tt = getTopTen();
-        return tt.size() < rank ? (UUID)tt.keySet().toArray()[(rank-1)] : null;
+        return rank <= tt.size() ? (UUID)tt.keySet().toArray()[(rank-1)] : null;
     }
 
     public void setTopTen(Map<UUID, Long> topTen) {

@@ -53,6 +53,7 @@ public class TopTen implements Listener {
             World world = Bukkit.getWorld(tt.getUniqueId());
             if (world != null) {
                 topTenList.put(world, tt);
+                addon.log("Loaded TopTen for " + world.getName());
             } else {
                 addon.logError("TopTen world " + tt.getUniqueId() + " is not known on server. Skipping...");
             }
@@ -156,8 +157,7 @@ public class TopTen implements Listener {
      */
     @NonNull
     public TopTenData getTopTenList(World world) {
-        topTenList.putIfAbsent(world, new TopTenData());
-        return topTenList.get(world);
+        return topTenList.computeIfAbsent(world, k -> new TopTenData());
     }
 
     /**

@@ -282,6 +282,7 @@ public class Level extends Addon {
     }
 
     private String getVisitedIslandLevel(GameModeAddon gm, User user) {
+        if (!gm.inWorld(user.getLocation())) return "";
         return getIslands().getIslandAt(user.getLocation())
                 .map(island -> getLevelPresenter().getLevelString(getIslandLevel(gm.getOverWorld(), island.getOwner())))
                 .orElse("0");
