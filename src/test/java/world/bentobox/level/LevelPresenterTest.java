@@ -23,6 +23,7 @@ import world.bentobox.bentobox.managers.IslandWorldManager;
 import world.bentobox.bentobox.managers.IslandsManager;
 import world.bentobox.level.calculators.PlayerLevel;
 import world.bentobox.level.config.BlockConfig;
+import world.bentobox.level.config.ConfigSettings;
 
 /**
  * @author tastybento
@@ -39,7 +40,9 @@ public class LevelPresenterTest {
     @Mock
     private PlayerLevel pl;
     @Mock
-    private BlockConfig settings;
+    private ConfigSettings settings;
+    @Mock
+    private BlockConfig blockConfig;
 
     @Before
     public void setUp() throws Exception {
@@ -60,6 +63,7 @@ public class LevelPresenterTest {
 
         // Settings
         when(addon.getSettings()).thenReturn(settings);
+        when(addon.getBlockConfig()).thenReturn(blockConfig);
     }
 
     /**
@@ -99,7 +103,7 @@ public class LevelPresenterTest {
      */
     @Test
     public void testGetLevelStringLongShorthand() {
-        when(settings.isShortHand()).thenReturn(true);
+        when(settings.isShorthand()).thenReturn(true);
         LevelPresenter lp = new LevelPresenter(addon, plugin);
         assertEquals("123.5M", lp.getLevelString(123456789L));
         assertEquals("1.2k", lp.getLevelString(1234L));

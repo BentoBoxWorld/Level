@@ -65,6 +65,8 @@ import world.bentobox.bentobox.managers.FlagsManager;
 import world.bentobox.bentobox.managers.IslandWorldManager;
 import world.bentobox.bentobox.managers.IslandsManager;
 import world.bentobox.bentobox.managers.PlaceholdersManager;
+import world.bentobox.level.config.BlockConfig;
+import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandTeamListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
 
@@ -94,8 +96,6 @@ public class LevelTest {
     private AddonsManager am;
     @Mock
     private BukkitScheduler scheduler;
-    @Mock
-    private Settings settings;
 
     private Level addon;
 
@@ -113,13 +113,22 @@ public class LevelTest {
 
     @Mock
     private PluginManager pim;
+    @Mock
+    private BlockConfig blockConfig;
+    @Mock
+    private Settings pluginSettings;
 
     @BeforeClass
     public static void beforeClass() throws IOException {
+        // Make the addon jar
         jFile = new File("addon.jar");
         // Copy over config file from src folder
         Path fromPath = Paths.get("src/main/resources/config.yml");
         Path path = Paths.get("config.yml");
+        Files.copy(fromPath, path);
+        // Copy over block config file from src folder
+        fromPath = Paths.get("src/main/resources/blockconfig.yml");
+        path = Paths.get("blockconfig.yml");
         Files.copy(fromPath, path);
         try (JarOutputStream tempJarOutputStream = new JarOutputStream(new FileOutputStream(jFile))) {
             //Added the new files to the jar.
@@ -185,6 +194,7 @@ public class LevelTest {
         addon.setFile(jFile);
         AddonDescription desc = new AddonDescription.Builder("bentobox", "Level", "1.3").description("test").authors("tastybento").build();
         addon.setDescription(desc);
+        addon.setSettings(new ConfigSettings());
         // Addons manager
         when(plugin.getAddonsManager()).thenReturn(am);
         // One game mode
@@ -205,9 +215,9 @@ public class LevelTest {
         when(fm.getFlags()).thenReturn(Collections.emptyList());
 
         // The database type has to be created one line before the thenReturn() to work!
-        when(plugin.getSettings()).thenReturn(settings);
         DatabaseType value = DatabaseType.JSON;
-        when(settings.getDatabaseType()).thenReturn(value);
+        when(plugin.getSettings()).thenReturn(pluginSettings);
+        when(pluginSettings.getDatabaseType()).thenReturn(value);
 
         // Bukkit
         PowerMockito.mockStatic(Bukkit.class);
@@ -243,6 +253,7 @@ public class LevelTest {
     public static void cleanUp() throws Exception {
         new File("addon.jar").delete();
         new File("config.yml").delete();
+        new File("blockconfig.yml").delete();
         deleteAll(new File("addons"));
     }
 
@@ -261,7 +272,7 @@ public class LevelTest {
     @Test
     public void testOnEnable() {
         addon.onEnable();
-        verify(plugin).logWarning("[Level] Level Addon: No such world in config.yml : acidisland_world");
+        verify(plugin).logWarning("[Level] Level Addon: No such world in blockconfig.yml : acidisland_world");
         verify(plugin).log("[Level] Level hooking into BSkyBlock");
         verify(cmd, times(3)).getAddon(); // Three commands
         verify(adminCmd, times(2)).getAddon(); // Two commands
@@ -311,8 +322,8 @@ public class LevelTest {
     @Test
     public void testGetSettings() {
         addon.onEnable();
-        world.bentobox.level.config.BlockConfig s = addon.getSettings();
-        assertEquals(100, s.getDeathPenalty());
+        ConfigSettings s = addon.getSettings();
+        assertEquals(100, s.getLevelCost());
     }
 
     /**

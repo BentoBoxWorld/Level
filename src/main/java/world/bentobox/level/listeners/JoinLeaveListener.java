@@ -4,12 +4,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
 import world.bentobox.level.Level;
 
 /**
- * Listens for when players join and leave
+ * Listens for when players join
  * @author tastybento
  *
  */
@@ -35,11 +34,5 @@ public class JoinLeaveListener implements Listener {
             .forEach(gm -> addon.calculateIslandLevel(gm.getOverWorld(), null, e.getPlayer().getUniqueId()));
         }
     }
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onPlayerQuit(PlayerQuitEvent e) {
-        addon.uncachePlayer(e.getPlayer().getUniqueId());
-    }
-
 
 }

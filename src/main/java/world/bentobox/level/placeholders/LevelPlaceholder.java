@@ -7,10 +7,7 @@ import world.bentobox.level.Level;
 
 /**
  * @author tastybento
- *
- * @deprecated As of 1.9.0, for removal.
  */
-@Deprecated
 public class LevelPlaceholder implements PlaceholderReplacer {
 
     private final Level addon;

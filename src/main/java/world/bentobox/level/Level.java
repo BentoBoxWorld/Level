@@ -16,6 +16,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import world.bentobox.bentobox.api.addons.Addon;
+import world.bentobox.bentobox.api.addons.GameModeAddon;
 import world.bentobox.bentobox.api.configuration.Config;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.Database;
@@ -46,6 +47,13 @@ public class Level extends Addon {
     // Settings
     private ConfigSettings settings;
     private Config<ConfigSettings> configObject = new Config<>(this, ConfigSettings.class);
+
+    /**
+     * @param settings the settings to set
+     */
+    public void setSettings(ConfigSettings settings) {
+        this.settings = settings;
+    }
 
     // Database handler for level data
     private Database<LevelsData> handler;
@@ -89,6 +97,7 @@ public class Level extends Addon {
      * @param targetPlayer - UUID of target player
      * @return LevelsData object or null if not found
      */
+    @Nullable
     public LevelsData getLevelsData(@NonNull UUID targetPlayer) {
         // Get from database if not in cache
         if (!levelsCache.containsKey(targetPlayer) && handler.objectExists(targetPlayer.toString())) {
@@ -182,54 +191,19 @@ public class Level extends Addon {
         // Start the top ten and register it for clicks
         topTen = new TopTen(this);
         registerListener(topTen);
-        // Register commands for AcidIsland and BSkyBlock
+        // Register commands for GameModes
         getPlugin().getAddonsManager().getGameModeAddons().stream()
-        .filter(gm -> settings.getGameModes().contains(gm.getDescription().getName()))
+        .filter(gm -> settings
+                .getGameModes()
+                .contains(gm
+                        .getDescription()
+                        .getName()))
         .forEach(gm -> {
             log("Level hooking into " + gm.getDescription().getName());
-            gm.getAdminCommand().ifPresent(adminCommand ->  {
-                new AdminLevelCommand(this, adminCommand);
-                new AdminTopCommand(this, adminCommand);
-            });
-            gm.getPlayerCommand().ifPresent(playerCmd -> {
-                new IslandLevelCommand(this, playerCmd);
-                new IslandTopCommand(this, playerCmd);
-                new IslandValueCommand(this, playerCmd);
-            });
+            registerCommands(gm);
             // Register placeholders
             if (getPlugin().getPlaceholdersManager() != null) {
-                // Island Level
-                getPlugin().getPlaceholdersManager().registerPlaceholder(this,
-                        gm.getDescription().getName().toLowerCase() + "_island_level",
-                        user -> getLevelPresenter().getLevelString(getIslandLevel(gm.getOverWorld(), user.getUniqueId())));
-
-                // Visited Island Level
-                getPlugin().getPlaceholdersManager().registerPlaceholder(this,
-                        gm.getDescription().getName().toLowerCase() + "_visited_island_level",
-                        user -> getPlugin().getIslands().getIslandAt(user.getLocation())
-                        .map(island -> getIslandLevel(gm.getOverWorld(), island.getOwner()))
-                        .map(level -> getLevelPresenter().getLevelString(level))
-                        .orElse("0"));
-
-                // Top Ten
-                for (int i = 1; i <= 10; i++) {
-                    final int rank = i;
-                    // Value
-                    getPlugin().getPlaceholdersManager().registerPlaceholder(this,
-                            gm.getDescription().getName().toLowerCase() + "_top_value_" + rank,
-                            user -> {
-                                Collection<Long> values = getTopTen().getTopTenList(gm.getOverWorld()).getTopTen().values();
-                                return values.size() < rank ? "" : values.stream().skip(rank - 1).findFirst().map(String::valueOf).orElse("");
-                            });
-
-                    // Name
-                    getPlugin().getPlaceholdersManager().registerPlaceholder(this,
-                            gm.getDescription().getName().toLowerCase() + "_top_name_" + rank,
-                            user -> {
-                                Collection<UUID> values = getTopTen().getTopTenList(gm.getOverWorld()).getTopTen().keySet();
-                                return values.size() < rank ? "" : getPlayers().getName(values.stream().skip(rank - 1).findFirst().orElse(null));
-                            });
-                }
+                registerPlaceholders(gm);
             }
         });
 
@@ -242,13 +216,62 @@ public class Level extends Addon {
         registerRequestHandler(new TopTenRequestHandler(this));
 
         // Check if WildStackers is enabled on the server
-        if (Bukkit.getPluginManager().getPlugin("WildStacker") != null) {
-            // I only added support for counting blocks into the island level
-            // Someone else can PR if they want spawners added to the Leveling system :)
-            CalcIslandLevel.stackersEnabled = true;
-        } else CalcIslandLevel.stackersEnabled = false;
+        // I only added support for counting blocks into the island level
+        // Someone else can PR if they want spawners added to the Leveling system :)
+        CalcIslandLevel.stackersEnabled = Bukkit.getPluginManager().getPlugin("WildStacker") != null;
 
         // Done
+    }
+
+    private void registerPlaceholders(GameModeAddon gm) {
+        // Island Level
+        getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                gm.getDescription().getName().toLowerCase() + "_island_level",
+                user -> getLevelPresenter().getLevelString(getIslandLevel(gm.getOverWorld(), user.getUniqueId())));
+
+        // Visited Island Level
+        getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                gm.getDescription().getName().toLowerCase() + "_visited_island_level", user -> getVisitedIslandLevel(gm, user));
+
+        // Top Ten
+        for (int i = 1; i <= 10; i++) {
+            final int rank = i;
+            // Value
+            getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                    gm.getDescription().getName().toLowerCase() + "_top_value_" + rank,
+                    user -> {
+                        Collection<Long> values = getTopTen().getTopTenList(gm.getOverWorld()).getTopTen().values();
+                        return values.size() < rank ? "" : values.stream().skip(rank - 1).findFirst().map(String::valueOf).orElse("");
+                    });
+
+            // Name
+            getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                    gm.getDescription().getName().toLowerCase() + "_top_name_" + rank,
+                    user -> {
+                        Collection<UUID> values = getTopTen().getTopTenList(gm.getOverWorld()).getTopTen().keySet();
+                        return values.size() < rank ? "" : getPlayers().getName(values.stream().skip(rank - 1).findFirst().orElse(null));
+                    });
+        }
+
+    }
+
+    private String getVisitedIslandLevel(GameModeAddon gm, User user) {
+        return getIslands().getIslandAt(user.getLocation())
+                .map(island -> getIslandLevel(gm.getOverWorld(), island.getOwner()))
+                .map(level -> getLevelPresenter().getLevelString(level))
+                .orElse("0");
+    }
+
+    private void registerCommands(GameModeAddon gm) {
+        gm.getAdminCommand().ifPresent(adminCommand ->  {
+            new AdminLevelCommand(this, adminCommand);
+            new AdminTopCommand(this, adminCommand);
+        });
+        gm.getPlayerCommand().ifPresent(playerCmd -> {
+            new IslandLevelCommand(this, playerCmd);
+            new IslandTopCommand(this, playerCmd);
+            new IslandValueCommand(this, playerCmd);
+        });
     }
 
     /**
@@ -314,13 +337,6 @@ public class Level extends Addon {
     @Nullable
     public Database<LevelsData> getHandler() {
         return handler;
-    }
-
-    public void uncachePlayer(@Nullable UUID uniqueId) {
-        if (levelsCache.containsKey(uniqueId) && levelsCache.get(uniqueId) != null) {
-            handler.saveObject(levelsCache.get(uniqueId));
-        }
-        levelsCache.remove(uniqueId);
     }
 
     public static Addon getInstance() {
