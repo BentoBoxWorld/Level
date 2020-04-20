@@ -184,6 +184,7 @@ public class Level extends Addon {
     }
 
     private void copyConfigSection(YamlConfiguration blockConfig, String sectionName) {
+        if (!getConfig().isConfigurationSection(sectionName)) return;
         ConfigurationSection section = getConfig().getConfigurationSection(sectionName);
         for (String k:section.getKeys(true)) {
             blockConfig.set(sectionName + "." + k, section.get(k));
