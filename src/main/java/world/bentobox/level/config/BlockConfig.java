@@ -42,6 +42,8 @@ public class BlockConfig {
             // Update blockvalues to latest settings
             Arrays.stream(Material.values()).filter(Material::isBlock)
             .filter(m -> !m.name().startsWith("LEGACY_"))
+            .filter(m -> !m.isAir())
+            .filter(m -> !m.equals(Material.WATER))
             .forEach(m -> {
                 if (!blocks.contains(m.name(), true)) {
                     blocks.set(m.name(), 1);
