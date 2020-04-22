@@ -219,17 +219,13 @@ public class CalcIslandLevel {
      * @return value of a material
      */
     private int getValue(Material md) {
-        // Check world settings
-        if (addon.getBlockConfig().getWorldBlockValues().containsKey(world) && addon.getBlockConfig().getWorldBlockValues().get(world).containsKey(md)) {
-            return addon.getBlockConfig().getWorldBlockValues().get(world).get(md);
+        Integer value = addon.getBlockConfig().getValue(world, md);
+        if (value == null) {
+            // Not in config
+            result.ncCount.add(md);
+            return 0;
         }
-        // Check baseline
-        if (addon.getBlockConfig().getBlockValues().containsKey(md)) {
-            return addon.getBlockConfig().getBlockValues().get(md);
-        }
-        // Not in config
-        result.ncCount.add(md);
-        return 0;
+        return value;
     }
 
     /**

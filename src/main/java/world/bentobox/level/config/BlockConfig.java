@@ -107,4 +107,24 @@ public class BlockConfig {
     public Map<World, Map<Material, Integer>> getWorldBlockValues() {
         return worldBlockValues;
     }
+
+    /**
+     * Get the value of material in world
+     * @param world - world
+     * @param md - material
+     * @return value or null if not configured with a value
+     */
+    public Integer getValue(World world, Material md) {
+        // Check world settings
+        if (getWorldBlockValues().containsKey(world) && getWorldBlockValues().get(world).containsKey(md)) {
+            return getWorldBlockValues().get(world).get(md);
+        }
+        // Check baseline
+        if (getBlockValues().containsKey(md)) {
+            return getBlockValues().get(md);
+        }
+        return null;
+    }
+
+
 }

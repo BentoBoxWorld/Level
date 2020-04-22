@@ -10,11 +10,11 @@ import world.bentobox.level.Level;
 import java.util.List;
 
 public class IslandValueCommand extends CompositeCommand {
-    private final Level plugin;
+    private final Level addon;
 
-    public IslandValueCommand(Level plugin, CompositeCommand parent) {
+    public IslandValueCommand(Level addon, CompositeCommand parent) {
         super(parent, "value");
-        this.plugin = plugin;
+        this.addon = addon;
     }
 
     @Override
@@ -30,14 +30,12 @@ public class IslandValueCommand extends CompositeCommand {
         PlayerInventory inventory = player.getInventory();
         if (!inventory.getItemInMainHand().getType().equals(Material.AIR)) {
             Material material = inventory.getItemInMainHand().getType();
-            if (plugin.getConfig().get("blocks." + material.toString()) != null) {
-                int value = plugin.getConfig().getInt("blocks." + material.toString());
-                user.sendMessage("island.value.success", "[value]", value + "");
-                if (plugin.getConfig().get("underwater") != null) {
-                    double underWater = plugin.getConfig().getDouble("underwater");
-                    if (underWater > 1.0) {
-                        user.sendMessage("island.value.success-underwater", "[value]", (underWater * value) + "");
-                    }
+            Integer value = addon.getBlockConfig().getValue(getWorld(), material);
+            if (value != null) {
+                user.sendMessage("island.value.success", "[value]", String.valueOf(value));
+                double underWater = addon.getSettings().getUnderWaterMultiplier();
+                if (underWater > 1.0) {
+                    user.sendMessage("island.value.success-underwater", "[value]", (underWater * value) + "");
                 }
             } else {
                 user.sendMessage("island.value.no-value");
@@ -47,4 +45,5 @@ public class IslandValueCommand extends CompositeCommand {
         }
         return true;
     }
+
 }
