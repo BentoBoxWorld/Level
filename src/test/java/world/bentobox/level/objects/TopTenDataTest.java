@@ -60,6 +60,29 @@ public class TopTenDataTest {
     }
 
     /**
+     * Test method for {@link world.bentobox.level.objects.TopTenData#setTopTen(java.util.Map)}.
+     */
+    @Test
+    public void testSetAndGetTopTenShort() {
+        Map<UUID, Long> topTen2 = new LinkedHashMap<>();
+        // Create a top ten map
+        for (long i = 0; i < 3; i++) {
+            topTen2.put(UUID.randomUUID(), i);
+        }
+        // Add the top player
+        topTen2.put(uuid,  3L);
+        ttd.setTopTen(topTen2);
+        // Three only
+        assertEquals(3, ttd.getTopTen().size());
+        // Check order
+        long i = 3;
+        for (long l : ttd.getTopTen().values()) {
+            System.out.println(l);
+            assertEquals(i--, l);
+        }
+    }
+
+    /**
      * Test method for {@link world.bentobox.level.objects.TopTenData#getUniqueId()}.
      */
     @Test

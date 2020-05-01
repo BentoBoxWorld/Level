@@ -14,7 +14,7 @@ import world.bentobox.bentobox.database.objects.DataObject;
 
 /**
  * This class stores and sorts the top ten.
- * @author ben
+ * @author tastybento
  *
  */
 public class TopTenData implements DataObject {
@@ -27,8 +27,11 @@ public class TopTenData implements DataObject {
 
     public Map<UUID, Long> getTopTen() {
         // Remove any entries that have level values less than 1
-        topTen.values().removeIf(l -> l < 1);
-        return topTen.entrySet().stream()
+        //topTen.values().removeIf(l -> l < 1);
+        // make copy
+        Map<UUID, Long> snapTopTen = Collections.unmodifiableMap(topTen);
+        return snapTopTen.entrySet().stream()
+                .filter(l -> l.getValue() > 0)
                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).limit(10)
                 .collect(Collectors.toMap(
                         Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
