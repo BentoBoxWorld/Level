@@ -11,12 +11,14 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.google.gson.annotations.Expose;
 
 import world.bentobox.bentobox.database.objects.DataObject;
+import world.bentobox.bentobox.database.objects.Table;
 
 /**
  * This class stores and sorts the top ten.
  * @author tastybento
  *
  */
+@Table(name = "TopTenData")
 public class TopTenData implements DataObject {
 
     // UniqueId is the world name

@@ -9,7 +9,9 @@ import org.bukkit.World;
 import com.google.gson.annotations.Expose;
 
 import world.bentobox.bentobox.database.objects.DataObject;
+import world.bentobox.bentobox.database.objects.Table;
 
+@Table(name = "LevelsData")
 public class LevelsData implements DataObject {
 
     // uniqueId is the player's UUID

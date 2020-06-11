@@ -307,7 +307,7 @@ public class Level extends Addon {
     private void save(){
         // Remove any potential null values from the cache
         levelsCache.values().removeIf(Objects::isNull);
-        levelsCache.values().forEach(handler::saveObject);
+        levelsCache.values().forEach(handler::saveObjectAsync);
     }
 
     /**
@@ -330,7 +330,7 @@ public class Level extends Addon {
         // Add to cache
         levelsCache.put(targetPlayer, ld);
         topTen.addEntry(world, targetPlayer, getIslandLevel(world, targetPlayer));
-        handler.saveObject(ld);
+        handler.saveObjectAsync(ld);
     }
 
     /**

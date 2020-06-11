@@ -193,7 +193,7 @@ public class TopTen implements Listener {
     }
 
     public void saveTopTen() {
-        topTenList.values().forEach(handler::saveObject);
+        topTenList.values().forEach(handler::saveObjectAsync);
     }
 
 }
