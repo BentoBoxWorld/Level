@@ -2,12 +2,15 @@ package world.bentobox.level.listeners;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
+import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandCreatedEvent;
+import world.bentobox.bentobox.api.events.island.IslandEvent.IslandPreclearEvent;
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandRegisteredEvent;
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandResettedEvent;
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandUnregisteredEvent;
@@ -53,6 +56,15 @@ public class IslandTeamListeners implements Listener {
         if (e.getIsland().getOwner() != null && e.getIsland().getWorld() != null) {
             cil.putIfAbsent(e.getIsland(), new CalcIslandLevel(addon, e.getIsland(), () -> zeroLevel(e.getIsland())));
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onIslandDelete(IslandPreclearEvent e) {
+        // Remove player from the top ten and level
+        final UUID owner = e.getIsland().getOwner();
+        final World world = e.getIsland().getWorld();
+        addon.setIslandLevel(world, owner, 0);
+        addon.getTopTen().removeEntry(world, owner);
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
