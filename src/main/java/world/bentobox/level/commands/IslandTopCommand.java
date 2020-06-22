@@ -1,4 +1,4 @@
-package world.bentobox.level.commands.island;
+package world.bentobox.level.commands;
 
 import java.util.List;
 
@@ -8,11 +8,11 @@ import world.bentobox.level.Level;
 
 public class IslandTopCommand extends CompositeCommand {
 
-    private final Level plugin;
+    private final Level addon;
 
-    public IslandTopCommand(Level plugin, CompositeCommand parent) {
+    public IslandTopCommand(Level addon, CompositeCommand parent) {
         super(parent, "top", "topten");
-        this.plugin = plugin;
+        this.addon = addon;
     }
 
     @Override
@@ -24,7 +24,7 @@ public class IslandTopCommand extends CompositeCommand {
 
     @Override
     public boolean execute(User user, String label, List<String> list) {
-        plugin.getTopTen().getGUI(getWorld(), user, getPermissionPrefix());
+        addon.getManager().getGUI(getWorld(), user);
         return true;
     }
 }

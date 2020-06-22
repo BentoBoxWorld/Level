@@ -54,6 +54,6 @@ public class TopTenRequestHandler extends AddonRequestHandler {
         }
 
         // No null check required
-        return addon.getTopTen().getTopTenList(Bukkit.getWorld((String) map.get(WORLD_NAME))).getTopTen();
+        return addon.getManager().getTopTen(Bukkit.getWorld((String) map.get(WORLD_NAME)), 10);
     }
 }

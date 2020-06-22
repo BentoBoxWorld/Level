@@ -9,7 +9,7 @@ admin:
     description: "calculate the island level for player"
   top:
     description: "show the top ten list"
-    unknown-world: "&cUnknown world!"
+    unknown-world: "&c Unknown world!"
     display: "&f[rank]. &a[name] &7- &b[level]"
     remove:
       description: "remove player from Top Ten"
@@ -19,22 +19,23 @@ island:
   level: 
     parameters: "[player]"
     description: "calculate your island level or show the level of [player]"
-    calculating: "&aCalculating level..." 
-    island-level-is: "&aIsland level is &b[level]"
-    required-points-to-next-level: "&a[points] points required until the next level"
+    calculating: "&a Calculating level..." 
+    in-queue: "&a You are number [number] in the queue"
+    island-level-is: "&a Island level is &b[level]"
+    required-points-to-next-level: "&a [points] points required until the next level"
     deaths: "&c([number] deaths)"
-    cooldown: "&cYou must wait &b[time] &cseconds until you can do that again"
+    cooldown: "&c You must wait &b[time] &c seconds until you can do that again"
     
   top:
     description: "show the Top Ten"
-    gui-title: "&aTop Ten"
+    gui-title: "&a Top Ten"
     gui-heading: "&6[name]: &B[rank]"
-    island-level: "&BLevel [level]"
-    warp-to: "&AWarping to [name]'s island"
+    island-level: "&b Level [level]"
+    warp-to: "&A Warping to [name]'s island"
 
   value:
     description: "shows the value of any block"
-    success: "&7The value of this block is: &e[value]"
-    success-underwater: "&7The value of this block below sea-level: &e[value]"
-    empty-hand: "&cThere are no blocks in your hand"
-    no-value: "&cThat item has no value."
+    success: "&7 The value of this block is: &e[value]"
+    success-underwater: "&7 The value of this block below sea-level: &e[value]"
+    empty-hand: "&c There are no blocks in your hand"
+    no-value: "&c That item has no value."

@@ -1,13 +1,14 @@
-package world.bentobox.level.commands.island;
+package world.bentobox.level.commands;
+
+import java.util.List;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.PlayerInventory;
+
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.level.Level;
-
-import java.util.List;
 
 public class IslandValueCommand extends CompositeCommand {
     private final Level addon;

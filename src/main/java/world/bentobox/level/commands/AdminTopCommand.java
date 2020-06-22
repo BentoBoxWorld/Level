@@ -1,4 +1,4 @@
-package world.bentobox.level.commands.admin;
+package world.bentobox.level.commands;
 
 import java.util.List;
 import java.util.Map;
@@ -13,10 +13,10 @@ public class AdminTopCommand extends CompositeCommand {
 
     private final Level levelPlugin;
 
-    public AdminTopCommand(Level levelPlugin, CompositeCommand parent) {
+    public AdminTopCommand(Level addon, CompositeCommand parent) {
         super(parent, "top", "topten");
-        this.levelPlugin = levelPlugin;
-        new AdminTopRemoveCommand(levelPlugin, this);
+        this.levelPlugin = addon;
+        new AdminTopRemoveCommand(addon, this);
     }
 
     @Override
@@ -28,8 +28,9 @@ public class AdminTopCommand extends CompositeCommand {
 
     @Override
     public boolean execute(User user, String label, List<String> args) {
+        user.sendMessage("island.top.gui-title");
         int rank = 0;
-        for (Map.Entry<UUID, Long> topTen : levelPlugin.getTopTen().getTopTenList(getWorld()).getTopTen().entrySet()) {
+        for (Map.Entry<UUID, Long> topTen : levelPlugin.getManager().getTopTen(getWorld(), 10).entrySet()) {
             Island island = getPlugin().getIslands().getIsland(getWorld(), topTen.getKey());
             if (island != null) {
                 rank++;

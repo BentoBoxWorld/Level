@@ -38,6 +38,6 @@ public class LevelRequestHandler extends AddonRequestHandler {
             return 0L;
         }
 
-        return addon.getIslandLevel(Bukkit.getWorld((String) map.get("world-name")), (UUID) map.get("player"));
+        return addon.getManager().getIslandLevel(Bukkit.getWorld((String) map.get("world-name")), (UUID) map.get("player"));
     }
 }

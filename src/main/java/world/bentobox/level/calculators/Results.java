@@ -1,78 +1,33 @@
 package world.bentobox.level.calculators;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.bukkit.Material;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
-/**
- * Results class
- *
- */
 public class Results {
-    private int deathHandicap = 0;
-    private long initialLevel = 0;
-    private long level = 0;
-    private final Multiset<Material> mdCount = HashMultiset.create();
-    private final Multiset<Material> ncCount = HashMultiset.create();
-    private final Multiset<Material> ofCount = HashMultiset.create();
-    private long pointsToNextLevel = 0;
-    private long rawBlockCount = 0;
-    private List<String> report = new ArrayList<>();
-    private long underWaterBlockCount = 0;
-    private final Multiset<Material> uwCount = HashMultiset.create();
+    List<String> report;
+    final Multiset<Material> mdCount = HashMultiset.create();
+    final Multiset<Material> uwCount = HashMultiset.create();
+    final Multiset<Material> ncCount = HashMultiset.create();
+    final Multiset<Material> ofCount = HashMultiset.create();
+    // AtomicLong and AtomicInteger must be used because they are changed by multiple concurrent threads
+    AtomicLong rawBlockCount = new AtomicLong(0);
+    AtomicLong underWaterBlockCount = new AtomicLong(0);
+    AtomicLong level = new AtomicLong(0);
+    AtomicInteger deathHandicap = new AtomicInteger(0);
+    AtomicLong pointsToNextLevel = new AtomicLong(0);
+    AtomicLong initialLevel = new AtomicLong(0);
 
     /**
      * @return the deathHandicap
      */
     public int getDeathHandicap() {
-        return deathHandicap;
-    }
-
-    public long getInitialLevel() {
-        return initialLevel;
-    }
-    /**
-     * @return the level
-     */
-    public long getLevel() {
-        return level;
-    }
-    /**
-     * @return the mdCount
-     */
-    public Multiset<Material> getMdCount() {
-        return mdCount;
-    }
-    /**
-     * @return the ncCount
-     */
-    public Multiset<Material> getNcCount() {
-        return ncCount;
-    }
-
-    /**
-     * @return the ofCount
-     */
-    public Multiset<Material> getOfCount() {
-        return ofCount;
-    }
-
-    /**
-     * @return the pointsToNextLevel
-     */
-    public long getPointsToNextLevel() {
-        return pointsToNextLevel;
-    }
-
-    /**
-     * @return the rawBlockCount
-     */
-    public long getRawBlockCount() {
-        return rawBlockCount;
+        return deathHandicap.get();
     }
 
     /**
@@ -81,82 +36,32 @@ public class Results {
     public List<String> getReport() {
         return report;
     }
-
-    /**
-     * @return the underWaterBlockCount
-     */
-    public long getUnderWaterBlockCount() {
-        return underWaterBlockCount;
-    }
-
-    /**
-     * @return the uwCount
-     */
-    public Multiset<Material> getUwCount() {
-        return uwCount;
-    }
-
-    /**
-     * @param deathHandicap the deathHandicap to set
-     */
-    public void setDeathHandicap(int deathHandicap) {
-        this.deathHandicap = deathHandicap;
-    }
-
-    public void setInitialLevel(long initialLevel) {
-        this.initialLevel = initialLevel;
-    }
-
     /**
      * Set level
      * @param level - level
      */
-    public void setLevel(int level) {
-        this.level = level;
-    }
-
-    /**
-     * @param level the level to set
-     */
     public void setLevel(long level) {
-        this.level = level;
+        this.level.set(level);
+    }
+    /**
+     * @return the level
+     */
+    public long getLevel() {
+        return level.get();
+    }
+    /**
+     * @return the pointsToNextLevel
+     */
+    public long getPointsToNextLevel() {
+        return pointsToNextLevel.get();
     }
 
-    /**
-     * @param pointsToNextLevel the pointsToNextLevel to set
-     */
-    public void setPointsToNextLevel(long pointsToNextLevel) {
-        this.pointsToNextLevel = pointsToNextLevel;
+    public long getInitialLevel() {
+        return initialLevel.get();
     }
 
-    /**
-     * @param rawBlockCount the rawBlockCount to set
-     */
-    public void setRawBlockCount(long rawBlockCount) {
-        this.rawBlockCount = rawBlockCount;
-    }
-
-    /**
-     * @param report the report to set
-     */
-    public void setReport(List<String> report) {
-        this.report = report;
-    }
-
-    /**
-     * @param underWaterBlockCount the underWaterBlockCount to set
-     */
-    public void setUnderWaterBlockCount(long underWaterBlockCount) {
-        this.underWaterBlockCount = underWaterBlockCount;
-    }
-
-    /**
-     * Add to death handicap
-     * @param deaths - number to add
-     */
-    public void addToDeathHandicap(int deaths) {
-        this.deathHandicap += deaths;
-
+    public void setInitialLevel(long initialLevel) {
+        this.initialLevel.set(initialLevel);
     }
 
     /* (non-Javadoc)
@@ -164,9 +69,9 @@ public class Results {
      */
     @Override
     public String toString() {
-        return "Results [report=" + report + ", mdCount=" + mdCount + ", uwCount=" + getUwCount() + ", ncCount="
+        return "Results [report=" + report + ", mdCount=" + mdCount + ", uwCount=" + uwCount + ", ncCount="
                 + ncCount + ", ofCount=" + ofCount + ", rawBlockCount=" + rawBlockCount + ", underWaterBlockCount="
-                + getUnderWaterBlockCount() + ", level=" + level + ", deathHandicap=" + deathHandicap
+                + underWaterBlockCount + ", level=" + level + ", deathHandicap=" + deathHandicap
                 + ", pointsToNextLevel=" + pointsToNextLevel + ", initialLevel=" + initialLevel + "]";
     }
 

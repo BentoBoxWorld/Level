@@ -4,83 +4,24 @@ version: ${version}${build.number}
 icon: DIAMOND
 api-version: 1.14
 
-softdepend: AcidIsland, BSkyBlock, CaveBlock, AOneBlock, SkyGrid
-
 authors: tastybento
 
 permissions:    
-  bskyblock.intopten:
+  '[gamemode].intopten':
     description: Player is in the top ten.
     default: true
-  bskyblock.island.level:
+  '[gamemode].island.level':
     description: Player can use level command
     default: true
-  bskyblock.island.top:
+  '[gamemode].island.top':
     description: Player can use top ten command
     default: true
-  bskyblock.island.value:
+  '[gamemode].island.value':
     description: Player can use value command
     default: true
-  bskyblock.admin.level:
+  '[gamemode].admin.level':
     description: Player can use admin level command
     default: true
-  bskyblock.admin.topten:
-    description: Player can use admin top ten command
-    default: true
-
-  acidisland.intopten:
-    description: Player is in the top ten.
-    default: true
-  acidisland.island.level:
-    description: Player can use level command
-    default: true
-  acidisland.island.top:
-    description: Player can use top ten command
-    default: true
-  acidisland.island.value:
-    description: Player can use value command
-    default: true
-  acidisland.admin.level:
-    description: Player can use admin level command
-    default: true
-  acidisland.admin.topten:
-    description: Player can use admin top ten command
-    default: true
-
-  caveblock.intopten:
-    description: Player is in the top ten.
-    default: true
-  caveblock.island.level:
-    description: Player can use level command
-    default: true
-  caveblock.island.top:
-    description: Player can use top ten command
-    default: true
-  caveblock.island.value:
-    description: Player can use value command
-    default: true
-  caveblock.admin.level:
-    description: Player can use admin level command
-    default: true
-  caveblock.admin.topten:
-    description: Player can use admin top ten command
-    default: true
-
-  aoneblock.intopten:
-    description: Player is in the top ten.
-    default: true
-  aoneblock.island.level:
-    description: Player can use level command
-    default: true
-  aoneblock.island.top:
-    description: Player can use top ten command
-    default: true
-  aoneblock.island.value:
-    description: Player can use value command
-    default: true
-  aoneblock.admin.level:
-    description: Player can use admin level command
-    default: true
-  aoneblock.admin.topten:
+  '[gamemode].admin.topten':
     description: Player can use admin top ten command
     default: true

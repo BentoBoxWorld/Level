@@ -1,13 +1,9 @@
 package world.bentobox.level;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -67,7 +63,7 @@ import world.bentobox.bentobox.managers.IslandsManager;
 import world.bentobox.bentobox.managers.PlaceholdersManager;
 import world.bentobox.level.config.BlockConfig;
 import world.bentobox.level.config.ConfigSettings;
-import world.bentobox.level.listeners.IslandTeamListeners;
+import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
 
 /**
@@ -97,6 +93,9 @@ public class LevelTest {
     @Mock
     private BukkitScheduler scheduler;
 
+    @Mock
+    private Settings pluginSettings;
+
     private Level addon;
 
     @Mock
@@ -115,8 +114,6 @@ public class LevelTest {
     private PluginManager pim;
     @Mock
     private BlockConfig blockConfig;
-    @Mock
-    private Settings pluginSettings;
 
     @BeforeClass
     public static void beforeClass() throws IOException {
@@ -152,6 +149,12 @@ public class LevelTest {
         // Set up plugin
         Whitebox.setInternalState(BentoBox.class, "instance", plugin);
         when(plugin.getLogger()).thenReturn(Logger.getAnonymousLogger());
+
+        // The database type has to be created one line before the thenReturn() to work!
+        DatabaseType value = DatabaseType.JSON;
+        when(plugin.getSettings()).thenReturn(pluginSettings);
+        when(pluginSettings.getDatabaseType()).thenReturn(value);
+
         //when(plugin.isEnabled()).thenReturn(true);
         // Command manager
         CommandsManager cm = mock(CommandsManager.class);
@@ -170,6 +173,7 @@ public class LevelTest {
         // Island World Manager
         IslandWorldManager iwm = mock(IslandWorldManager.class);
         when(plugin.getIWM()).thenReturn(iwm);
+
 
 
         // Player has island to begin with
@@ -201,6 +205,7 @@ public class LevelTest {
         when(am.getGameModeAddons()).thenReturn(Collections.singletonList(gameMode));
         AddonDescription desc2 = new AddonDescription.Builder("bentobox", "BSkyBlock", "1.3").description("test").authors("tasty").build();
         when(gameMode.getDescription()).thenReturn(desc2);
+        when(gameMode.getOverWorld()).thenReturn(world);
 
         // Player command
         @NonNull
@@ -214,10 +219,6 @@ public class LevelTest {
         when(plugin.getFlagsManager()).thenReturn(fm);
         when(fm.getFlags()).thenReturn(Collections.emptyList());
 
-        // The database type has to be created one line before the thenReturn() to work!
-        DatabaseType value = DatabaseType.JSON;
-        when(plugin.getSettings()).thenReturn(pluginSettings);
-        when(pluginSettings.getDatabaseType()).thenReturn(value);
 
         // Bukkit
         PowerMockito.mockStatic(Bukkit.class);
@@ -275,45 +276,18 @@ public class LevelTest {
         verify(plugin).logWarning("[Level] Level Addon: No such world in blockconfig.yml : acidisland_world");
         verify(plugin).log("[Level] Level hooking into BSkyBlock");
         verify(cmd, times(3)).getAddon(); // Three commands
-        verify(adminCmd, times(2)).getAddon(); // Two commands
+        verify(adminCmd, times(3)).getAddon(); // Three commands
         // Placeholders
         verify(phm).registerPlaceholder(eq(addon), eq("bskyblock_island_level"), any());
         verify(phm).registerPlaceholder(eq(addon), eq("bskyblock_visited_island_level"), any());
+        verify(phm).registerPlaceholder(eq(addon), eq("bskyblock_points_to_next_level"), any());
         for (int i = 1; i < 11; i++) {
             verify(phm).registerPlaceholder(eq(addon), eq("bskyblock_top_name_" + i), any());
             verify(phm).registerPlaceholder(eq(addon), eq("bskyblock_top_value_" + i), any());
         }
         // Commands
-        verify(am).registerListener(eq(addon), any(IslandTeamListeners.class));
+        verify(am).registerListener(eq(addon), any(IslandActivitiesListeners.class));
         verify(am).registerListener(eq(addon), any(JoinLeaveListener.class));
-    }
-
-    /**
-     * Test method for {@link world.bentobox.level.Level#getIslandLevel(org.bukkit.World, java.util.UUID)}.
-     */
-    @Test
-    public void testGetIslandLevelUnknown() {
-        addon.onEnable();
-        assertEquals(0L, addon.getIslandLevel(world, UUID.randomUUID()));
-    }
-
-    /**
-     * Test method for {@link world.bentobox.level.Level#getIslandLevel(org.bukkit.World, java.util.UUID)}.
-     */
-    @Test
-    public void testGetIslandLevelNullTarget() {
-        addon.onEnable();
-        assertEquals(0L, addon.getIslandLevel(world, UUID.randomUUID()));
-
-    }
-
-    /**
-     * Test method for {@link world.bentobox.level.Level#getLevelsData(java.util.UUID)}.
-     */
-    @Test
-    public void testGetLevelsDataUnknown() {
-        addon.onEnable();
-        assertNull(addon.getLevelsData(UUID.randomUUID()));
     }
 
     /**
@@ -324,56 +298,6 @@ public class LevelTest {
         addon.onEnable();
         ConfigSettings s = addon.getSettings();
         assertEquals(100, s.getLevelCost());
-    }
-
-    /**
-     * Test method for {@link world.bentobox.level.Level#getTopTen()}.
-     */
-    @Test
-    public void testGetTopTen() {
-        addon.onEnable();
-        assertNotNull(addon.getTopTen());
-    }
-
-    /**
-     * Test method for {@link world.bentobox.level.Level#getLevelPresenter()}.
-     */
-    @Test
-    public void testGetLevelPresenter() {
-        addon.onEnable();
-        assertNotNull(addon.getLevelPresenter());
-    }
-
-    /**
-     * Test method for {@link world.bentobox.level.Level#setIslandLevel(org.bukkit.World, java.util.UUID, long)}.
-     */
-    @Test
-    public void testSetIslandLevel() {
-        addon.onEnable();
-        addon.setIslandLevel(world, uuid, 345L);
-        assertEquals(345L, addon.getIslandLevel(world, uuid));
-        verify(plugin, never()).logError(anyString());
-    }
-
-    /**
-     * Test method for {@link world.bentobox.level.Level#getInitialIslandLevel(world.bentobox.bentobox.database.objects.Island)}.
-     */
-    @Test
-    public void testGetInitialIslandLevel() {
-        addon.onEnable();
-        addon.setInitialIslandLevel(island, 40);
-        verify(plugin, never()).logError(anyString());
-        assertEquals(40, addon.getInitialIslandLevel(island));
-
-    }
-
-    /**
-     * Test method for {@link world.bentobox.level.Level#getHandler()}.
-     */
-    @Test
-    public void testGetHandler() {
-        addon.onEnable();
-        assertNotNull(addon.getHandler());
     }
 
 

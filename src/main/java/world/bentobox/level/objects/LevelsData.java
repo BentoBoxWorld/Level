@@ -1,5 +1,6 @@
 package world.bentobox.level.objects;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -28,8 +29,11 @@ public class LevelsData implements DataObject {
      */
     @Expose
     private Map<String, Long> initialLevel = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-
-    public LevelsData() {} // For Bean loading
+    /**
+     * Map of world name to points to next level
+     */
+    @Expose
+    private Map<String, Long> pointsToNextLevel = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     /**
      * Create a level entry for target player
@@ -37,9 +41,8 @@ public class LevelsData implements DataObject {
      * @param level - level
      * @param world - world
      */
-    public LevelsData(UUID targetPlayer, long level, World world) {
+    public LevelsData(UUID targetPlayer) {
         uniqueId = targetPlayer.toString();
-        levels.put(world.getName(), level);
     }
 
     /* (non-Javadoc)
@@ -81,8 +84,14 @@ public class LevelsData implements DataObject {
         this.levels = levels;
     }
 
+    /**
+     * Sets the island level to level - the initial level
+     * @param world - world where island is
+     * @param lv - level
+     */
     public void setLevel(World world, Long lv) {
-        levels.put(world.getName(),lv);
+        String name = world.getName().toLowerCase(Locale.ENGLISH);
+        levels.put(name, lv - this.initialLevel.getOrDefault(name, 0L));
     }
 
     /**
@@ -91,7 +100,7 @@ public class LevelsData implements DataObject {
      * @param level - level
      */
     public void setInitialLevel(World world, long level) {
-        this.initialLevel.put(world.getName(), level);
+        this.initialLevel.put(world.getName().toLowerCase(Locale.ENGLISH), level);
     }
 
     /**
@@ -114,6 +123,51 @@ public class LevelsData implements DataObject {
      * @return initial island level or 0 by default
      */
     public long getInitialLevel(World world) {
-        return initialLevel.getOrDefault(world.getName(), 0L);
+        return initialLevel.getOrDefault(world.getName().toLowerCase(Locale.ENGLISH), 0L);
     }
+
+    /**
+     * Remove a world from a player's data
+     * @param world - world to remove
+     */
+    public void remove(World world) {
+        levels.remove(world.getName().toLowerCase(Locale.ENGLISH));
+        initialLevel.remove(world.getName().toLowerCase(Locale.ENGLISH));
+    }
+
+    /**
+     * @return the pointsToNextLevel
+     */
+    public Map<String, Long> getPointsToNextLevel() {
+        return pointsToNextLevel;
+    }
+
+    /**
+     * @param pointsToNextLevel the pointsToNextLevel to set
+     */
+    public void setPointsToNextLevel(Map<String, Long> pointsToNextLevel) {
+        this.pointsToNextLevel = pointsToNextLevel;
+    }
+
+    /**
+     * Sets the island points to next level.
+     * This is calculated the last time the level was calculated and will not change dynamically.
+     * @param world - world where island is
+     * @param points - points to next level
+     */
+    public void setPointsToNextLevel(World world, Long points) {
+        pointsToNextLevel.put(world.getName().toLowerCase(Locale.ENGLISH), points);
+    }
+
+    /**
+     * Get the points required to get to the next island level for this world.
+     * This is calculated when the island level is calculated and will not change dynamically.
+     * @param world - world
+     * @return points to next level or zero if unknown
+     */
+    public long getPointsToNextLevel(World world) {
+        return pointsToNextLevel.getOrDefault(world.getName().toLowerCase(Locale.ENGLISH), 0L);
+    }
+
+
 }

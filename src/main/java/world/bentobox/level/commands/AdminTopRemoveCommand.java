@@ -1,6 +1,8 @@
-package world.bentobox.level.commands.admin;
+package world.bentobox.level.commands;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.localization.TextVariables;
@@ -44,12 +46,20 @@ public class AdminTopRemoveCommand extends CompositeCommand {
             user.sendMessage("general.errors.unknown-player", TextVariables.NAME, args.get(0));
             return false;
         }
+
         return true;
     }
+
     @Override
     public boolean execute(User user, String label, List<String> args) {
-        addon.getTopTen().getTopTenList(getWorld()).remove(target.getUniqueId());
+        addon.getManager().removeEntry(getWorld(), target.getUniqueId());
         user.sendMessage("general.success");
         return true;
+    }
+
+    @Override
+    public Optional<List<String>> tabComplete(User user, String alias, List<String> args) {
+        return Optional.of(addon.getManager().getTopTen(getWorld(), 10).keySet().stream().map(addon.getPlayers()::getName)
+                .filter(n -> !n.isEmpty()).collect(Collectors.toList()));
     }
 }

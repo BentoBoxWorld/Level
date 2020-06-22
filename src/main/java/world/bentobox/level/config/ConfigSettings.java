@@ -1,37 +1,23 @@
 package world.bentobox.level.config;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.configuration.ConfigComment;
 import world.bentobox.bentobox.api.configuration.ConfigEntry;
 import world.bentobox.bentobox.api.configuration.ConfigObject;
 import world.bentobox.bentobox.api.configuration.StoreAt;
-import world.bentobox.level.Level;
 
 @StoreAt(filename="config.yml", path="addons/Level")
 @ConfigComment("Level Configuration [version]")
 @ConfigComment("")
 public class ConfigSettings implements ConfigObject {
     @ConfigComment("")
-    @ConfigComment("Game Mode Addons")
-    @ConfigComment("Level will hook into these game mode addons. Don't forget to set any world-specific")
-    @ConfigComment("block values below!")
-    @ConfigEntry(path = "game-modes")
-    private List<String> gameModes = Arrays.asList("BSkyBlock","AcidIsland","CaveBlock");
-
-    @ConfigComment("")
-    @ConfigComment("Performance settings")
-    @ConfigComment("Level is very processor-intensive, so these settings may need to be tweaked to optimize for your server")
-    @ConfigComment("Delay between each task that loads chunks for calculating levels")
-    @ConfigComment("Increasing this will slow down level calculations but reduce average load")
-    @ConfigEntry(path = "task-delay")
-    private long taskDelay = 1;
-
-    @ConfigComment("")
-    @ConfigComment("Number of chunks that will be processed per task")
-    @ConfigEntry(path = "chunks")
-    private int chunks = 10;
+    @ConfigComment("Disabled Game Mode Addons")
+    @ConfigComment("Level will NOT hook into these game mode addons.")
+    @ConfigEntry(path = "disabled-game-modes")
+    private List<String> gameModes = Collections.emptyList();
 
     @ConfigComment("")
     @ConfigComment("Calculate island level on login")
@@ -53,6 +39,12 @@ public class ConfigSettings implements ConfigObject {
     @ConfigComment("island level. New islands will be correctly zeroed.")
     @ConfigEntry(path = "end")
     private boolean end = false;
+
+    @ConfigComment("")
+    @ConfigComment("Include chest contents in level calculations.")
+    @ConfigComment("Will count blocks in chests or containers.")
+    @ConfigEntry(path = "include-chests")
+    private boolean includeChests = false;
 
     @ConfigComment("")
     @ConfigComment("Underwater block multiplier")
@@ -115,48 +107,6 @@ public class ConfigSettings implements ConfigObject {
     public void setGameModes(List<String> gameModes) {
         this.gameModes = gameModes;
     }
-
-
-    /**
-     * @return the taskDelay
-     */
-    public long getTaskDelay() {
-        if (taskDelay < 1L) {
-            Level.getInstance().logError("task-delay must be at least 1");
-            taskDelay = 1;
-        }
-        return taskDelay;
-    }
-
-
-    /**
-     * @param taskDelay the taskDelay to set
-     */
-    public void setTaskDelay(long taskDelay) {
-        this.taskDelay = taskDelay;
-    }
-
-
-    /**
-     * @return the chunks
-     */
-    public int getChunks() {
-        if (chunks < 1) {
-            Level.getInstance().logError("chunks must be at least 1");
-            chunks = 1;
-        }
-
-        return chunks;
-    }
-
-
-    /**
-     * @param chunks the chunks to set
-     */
-    public void setChunks(int chunks) {
-        this.chunks = chunks;
-    }
-
 
     /**
      * @return the calcOnLogin
@@ -228,7 +178,7 @@ public class ConfigSettings implements ConfigObject {
     public long getLevelCost() {
         if (levelCost < 1) {
             levelCost = 1;
-            Level.getInstance().logError("levelcost in config.yml cannot be less than 1. Setting to 1.");
+            BentoBox.getInstance().logError("levelcost in config.yml cannot be less than 1. Setting to 1.");
         }
         return levelCost;
     }
@@ -263,7 +213,7 @@ public class ConfigSettings implements ConfigObject {
      */
     public int getLevelWait() {
         if (levelWait < 0) {
-            Level.getInstance().logError("levelwait must be at least 0");
+            BentoBox.getInstance().logError("levelwait must be at least 0");
             levelWait = 0;
         }
         return levelWait;
@@ -324,6 +274,25 @@ public class ConfigSettings implements ConfigObject {
     public void setShorthand(boolean shorthand) {
         this.shorthand = shorthand;
     }
+
+
+    /**
+     * @return the includeChests
+     */
+    public boolean isIncludeChests() {
+        return includeChests;
+    }
+
+
+    /**
+     * @param includeChests the includeChests to set
+     */
+    public void setIncludeChests(boolean includeChests) {
+        this.includeChests = includeChests;
+    }
+
+
+
 
 
 

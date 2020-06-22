@@ -1,11 +1,11 @@
-package world.bentobox.level.event;
+package world.bentobox.level.events;
 
 import java.util.List;
 import java.util.UUID;
 
 import world.bentobox.bentobox.api.events.IslandBaseEvent;
 import world.bentobox.bentobox.database.objects.Island;
-import world.bentobox.level.calculators.CalcIslandLevel.Results;
+import world.bentobox.level.calculators.Results;
 
 /**
  * This event is fired after the island level is calculated and before the results are saved.
@@ -36,30 +36,30 @@ public class IslandLevelCalculatedEvent extends IslandBaseEvent {
     public Results getResults() {
         return results;
     }
-    
+
     /**
      * @return death handicap value
      */
     public int getDeathHandicap() {
         return results.getDeathHandicap();
     }
-    
+
     /**
-     * Get the island's initial level. It may be zero if it was never calculated 
+     * Get the island's initial level. It may be zero if it was never calculated
      * or if a player was registered to the island after it was made.
      * @return initial level of island as calculated when the island was created.
      */
     public long getInitialLevel() {
         return results.getInitialLevel();
     }
-    
+
     /**
      * @return the level calculated
      */
     public long getLevel() {
         return results.getLevel();
     }
-    
+
 
     /**
      * Overwrite the level. This level will be used instead of the calculated level.
@@ -68,14 +68,14 @@ public class IslandLevelCalculatedEvent extends IslandBaseEvent {
     public void setLevel(long level) {
         results.setLevel(level);
     }
-    
+
     /**
      * @return number of points required to next level
      */
     public long getPointsToNextLevel() {
         return results.getPointsToNextLevel();
     }
-        
+
     /**
      * @return a human readable report explaining how the calculation was made
      */

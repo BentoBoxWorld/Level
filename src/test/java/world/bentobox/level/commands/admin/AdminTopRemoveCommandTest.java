@@ -36,7 +36,8 @@ import world.bentobox.bentobox.managers.IslandsManager;
 import world.bentobox.bentobox.managers.LocalesManager;
 import world.bentobox.bentobox.managers.PlayersManager;
 import world.bentobox.level.Level;
-import world.bentobox.level.TopTen;
+import world.bentobox.level.LevelsManager;
+import world.bentobox.level.commands.AdminTopRemoveCommand;
 import world.bentobox.level.objects.TopTenData;
 
 /**
@@ -73,9 +74,9 @@ public class AdminTopRemoveCommandTest {
 
     private AdminTopRemoveCommand atrc;
     @Mock
-    private TopTen tt;
-    @Mock
     private TopTenData ttd;
+    @Mock
+    private LevelsManager manager;
 
     @Before
     public void setUp() {
@@ -105,8 +106,7 @@ public class AdminTopRemoveCommandTest {
         when(plugin.getPlayers()).thenReturn(pm);
         when(pm.getUser(anyString())).thenReturn(user);
         // topTen
-        when(addon.getTopTen()).thenReturn(tt);
-        when(tt.getTopTenList(any())).thenReturn(ttd);
+        when(addon.getManager()).thenReturn(manager);
         // User
         uuid = UUID.randomUUID();
         when(user.getUniqueId()).thenReturn(uuid);
@@ -175,7 +175,7 @@ public class AdminTopRemoveCommandTest {
     public void testExecuteUserStringListOfString() {
         testCanExecuteKnown();
         assertTrue(atrc.execute(user, "delete", Collections.singletonList("tastybento")));
-        verify(ttd).remove(eq(uuid));
+        verify(manager).removeEntry(any(World.class), eq(uuid));
         verify(user).sendMessage(eq("general.success"));
     }
 

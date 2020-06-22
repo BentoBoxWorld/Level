@@ -1,23 +1,18 @@
-package world.bentobox.level.commands.admin;
+package world.bentobox.level.commands;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import world.bentobox.bentobox.api.commands.CompositeCommand;
-import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
 
-public class AdminLevelCommand extends CompositeCommand {
-
-    private final Level addon;
+public class AdminLevelCommand extends IslandLevelCommand {
 
     public AdminLevelCommand(Level addon, CompositeCommand parent) {
-        super(parent, "level");
-        this.addon = addon;
+        super(addon, parent);
     }
 
     @Override
@@ -26,25 +21,6 @@ public class AdminLevelCommand extends CompositeCommand {
         this.setOnlyPlayer(false);
         this.setParametersHelp("admin.level.parameters");
         this.setDescription("admin.level.description");
-    }
-
-    @Override
-    public boolean execute(User user, String label, List<String> args) {
-        if (args.size() == 1) {
-            // Asking for another player's level?
-            // Convert name to a UUID
-            final UUID playerUUID = getPlugin().getPlayers().getUUID(args.get(0));
-            if (playerUUID == null) {
-                user.sendMessage("general.errors.unknown-player", TextVariables.NAME, args.get(0));
-                return true;
-            } else {
-                addon.calculateIslandLevel(getWorld(), user, playerUUID);
-            }
-            return true;
-        } else {
-            showHelp(this, user);
-            return false;
-        }
     }
 
     @Override
