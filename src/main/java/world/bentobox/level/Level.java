@@ -2,16 +2,20 @@ package world.bentobox.level;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import world.bentobox.bentobox.api.addons.Addon;
 import world.bentobox.bentobox.api.addons.GameModeAddon;
 import world.bentobox.bentobox.api.configuration.Config;
 import world.bentobox.bentobox.api.user.User;
+import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.level.calculators.Pipeliner;
 import world.bentobox.level.commands.AdminLevelCommand;
 import world.bentobox.level.commands.AdminLevelStatusCommand;
@@ -221,4 +225,53 @@ public class Level extends Addon {
         return stackersEnabled;
     }
 
+    /**
+     * Get level from cache for a player.
+     * @param targetPlayer - target player UUID
+     * @return Level of player or zero if player is unknown or UUID is null
+     */
+    public long getIslandLevel(World world, @Nullable UUID targetPlayer) {
+        return getManager().getIslandLevel(world, targetPlayer);
+    }
+
+    /**
+     * Sets the player's level to a value
+     * @param world - world
+     * @param targetPlayer - target player
+     * @param level - level
+     */
+    public void setIslandLevel(World world, UUID targetPlayer, long level) {
+        getManager().setIslandLevel(world, targetPlayer, level);
+    }
+
+    /**
+     * Zeros the initial island level
+     * @param island - island
+     * @param level - initial calculated island level
+     */
+    public void setInitialIslandLevel(@NonNull Island island, long level) {
+        getManager().setInitialIslandLevel(island, level);
+    }
+
+    /**
+     * Get the initial island level
+     * @param island - island
+     * @return level or 0 by default
+     */
+    public long getInitialIslandLevel(@NonNull Island island) {
+        return getManager().getInitialLevel(island);
+    }
+
+    /**
+     * Calculates a user's island
+     * @param world - the world where this island is
+     * @param user - not used! See depecration message
+     * @param playerUUID - the target island member's UUID
+     * @deprecated Do not use this anymore. Use getManager().calculateLevel(playerUUID, island)
+     */
+    @Deprecated
+    public void calculateIslandLevel(World world, @Nullable User user, @NonNull UUID playerUUID) {
+        Island island = getIslands().getIsland(world, playerUUID);
+        if (island != null) getManager().calculateLevel(playerUUID, island);
+    }
 }
