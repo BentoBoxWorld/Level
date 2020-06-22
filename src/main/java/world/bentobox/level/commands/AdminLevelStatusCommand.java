@@ -3,6 +3,7 @@ package world.bentobox.level.commands;
 import java.util.List;
 
 import world.bentobox.bentobox.api.commands.CompositeCommand;
+import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.level.Level;
 
@@ -24,7 +25,7 @@ public class AdminLevelStatusCommand extends CompositeCommand {
 
     @Override
     public boolean execute(User user, String label, List<String> args) {
-        user.sendRawMessage("Islands in queue: " + addon.getPipeliner().getIslandsInQueue());
+        user.sendMessage("islands-in-queue", TextVariables.NUMBER, String.valueOf(addon.getPipeliner().getIslandsInQueue()));
         return true;
     }
 }

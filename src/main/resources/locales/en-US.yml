@@ -7,6 +7,9 @@ admin:
   level:
     parameters: "<player>"
     description: "calculate the island level for player"
+  levelstatus:
+    description: "show how many islands are in the queue for scanning"
+    islands-in-queue: "&a Islands in queue: [number]"
   top:
     description: "show the top ten list"
     unknown-world: "&c Unknown world!"
