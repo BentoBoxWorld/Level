@@ -41,7 +41,6 @@ import world.bentobox.level.Level;
 public class IslandLevelCalculator {
     private static final String LINE_BREAK = "==================================";
     public static final long MAX_AMOUNT = 10000;
-    public static Boolean stackersEnabled;
 
     /**
      * Method to evaluate a mathematical equation
@@ -381,7 +380,7 @@ public class IslandLevelCalculator {
                         }
                     }
                     // Hook for Wild Stackers (Blocks Only) - this has to use the real chunk
-                    if (stackersEnabled && blockData.getMaterial() == Material.CAULDRON) {
+                    if (addon.isStackersEnabled() && blockData.getMaterial() == Material.CAULDRON) {
                         Block cauldronBlock = chunk.getBlock(x, y, z);
                         if (WildStackerAPI.getWildStacker().getSystemManager().isStackedBarrel(cauldronBlock)) {
                             StackedBarrel barrel = WildStackerAPI.getStackedBarrel(cauldronBlock);
@@ -431,9 +430,6 @@ public class IslandLevelCalculator {
      * @return future that completes when the scan is done and supplies a boolean that will be true if the scan was successful, false if not
      */
     private CompletableFuture<Boolean> scanChunk(@NonNull Chunk chunk) {
-        if (chunk == null) {
-            return CompletableFuture.completedFuture(false);
-        }
         // Scan chests
         if (addon.getSettings().isIncludeChests()) {
             scanChests(chunk);

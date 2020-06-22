@@ -12,7 +12,6 @@ import world.bentobox.bentobox.api.addons.Addon;
 import world.bentobox.bentobox.api.addons.GameModeAddon;
 import world.bentobox.bentobox.api.configuration.Config;
 import world.bentobox.bentobox.api.user.User;
-import world.bentobox.level.calculators.IslandLevelCalculator;
 import world.bentobox.level.calculators.Pipeliner;
 import world.bentobox.level.commands.AdminLevelCommand;
 import world.bentobox.level.commands.AdminLevelStatusCommand;
@@ -39,6 +38,7 @@ public class Level extends Addon {
     private BlockConfig blockConfig;
     private Pipeliner pipeliner;
     private LevelsManager manager;
+    private boolean stackersEnabled;
 
     @Override
     public void onLoad() {
@@ -85,7 +85,7 @@ public class Level extends Addon {
         // Check if WildStackers is enabled on the server
         // I only added support for counting blocks into the island level
         // Someone else can PR if they want spawners added to the Leveling system :)
-        IslandLevelCalculator.stackersEnabled = Bukkit.getPluginManager().getPlugin("WildStacker") != null;
+        stackersEnabled = Bukkit.getPluginManager().getPlugin("WildStacker") != null;
 
     }
 
@@ -119,13 +119,13 @@ public class Level extends Addon {
     private String getRankName(World world, int rank) {
         if (rank < 1) rank = 1;
         if (rank > 10) rank = 10;
-        return getPlayers().getName(getManager().getTopTen(world, 10).keySet().stream().skip(rank - 1).limit(1).findFirst().orElse(null));
+        return getPlayers().getName(getManager().getTopTen(world, 10).keySet().stream().skip(rank - 1L).limit(1L).findFirst().orElse(null));
     }
 
     private String getRankLevel(World world, int rank) {
         if (rank < 1) rank = 1;
         if (rank > 10) rank = 10;
-        return getManager().formatLevel(getManager().getTopTen(world, 10).values().stream().skip(rank - 1).limit(1).findFirst().orElse(null));
+        return getManager().formatLevel(getManager().getTopTen(world, 10).values().stream().skip(rank - 1L).limit(1L).findFirst().orElse(null));
     }
 
     private String getVisitedIslandLevel(GameModeAddon gm, User user) {
@@ -212,6 +212,13 @@ public class Level extends Addon {
     void setSettings(ConfigSettings configSettings) {
         this.settings = configSettings;
 
+    }
+
+    /**
+     * @return the stackersEnabled
+     */
+    public boolean isStackersEnabled() {
+        return stackersEnabled;
     }
 
 }

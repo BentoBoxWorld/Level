@@ -72,7 +72,7 @@ public class Pipeliner {
             if (!Bukkit.isPrimaryThread()) {
                 addon.getPlugin().logError("scanChunk not on Primary Thread!");
             }
-            if (r) {
+            if (Boolean.TRUE.equals(r)) {
                 // scanNextChunk returns true if there are more chunks to scan
                 scanChunk(iD);
             } else {

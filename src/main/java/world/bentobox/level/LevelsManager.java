@@ -36,6 +36,7 @@ import world.bentobox.level.objects.TopTenData;
 public class LevelsManager {
     private static final String INTOPTEN = "intopten";
     private static final TreeMap<BigInteger, String> LEVELS;
+    private static final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
     private static final BigInteger THOUSAND = BigInteger.valueOf(1000);
     static {
         LEVELS = new TreeMap<>();
@@ -53,7 +54,6 @@ public class LevelsManager {
     // A cache of island levels.
     private final Map<UUID, LevelsData> levelsCache;
 
-    private final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
     private final Database<TopTenData> topTenHandler;
     // Top ten lists
     private Map<World,TopTenData> topTenLists;
@@ -125,7 +125,6 @@ public class LevelsManager {
         keyValues.put("deathHandicap", results.getDeathHandicap());
         keyValues.put("initialLevel", results.getInitialLevel());
         new AddonEvent().builder().addon(addon).keyValues(keyValues).build();
-        results = ilce.getResults();
         return ilce.isCancelled();
     }
 
@@ -272,7 +271,7 @@ public class LevelsManager {
      * @return sorted top ten map
      */
     public Map<UUID, Long> getTopTen(World world, int size) {
-        topTenLists.computeIfAbsent(world, k -> new TopTenData(k));
+        topTenLists.computeIfAbsent(world, TopTenData::new);
         // Remove player from top ten if they are online and do not have the perm
         topTenLists.get(world).getTopTen().keySet().removeIf(u -> !hasTopTenPerm(world, u));
         // Return the sorted map
@@ -291,8 +290,7 @@ public class LevelsManager {
      */
     boolean hasTopTenPerm(@NonNull World world, @NonNull UUID targetPlayer) {
         String permPrefix = addon.getPlugin().getIWM().getPermissionPrefix(world);
-        boolean hasPerm = Bukkit.getPlayer(targetPlayer) != null && Bukkit.getPlayer(targetPlayer).hasPermission(permPrefix + INTOPTEN);
-        return hasPerm;
+        return Bukkit.getPlayer(targetPlayer) != null && Bukkit.getPlayer(targetPlayer).hasPermission(permPrefix + INTOPTEN);
     }
 
     /**
@@ -348,12 +346,12 @@ public class LevelsManager {
      */
     public void setInitialIslandLevel(@NonNull Island island, long lv) {
         if (island.getOwner() == null || island.getWorld() == null) return;
-        levelsCache.computeIfAbsent(island.getOwner(), k -> new LevelsData(k)).setInitialLevel(island.getWorld(), lv);
+        levelsCache.computeIfAbsent(island.getOwner(), LevelsData::new).setInitialLevel(island.getWorld(), lv);
         handler.saveObjectAsync(levelsCache.get(island.getOwner()));
     }
 
     public void setIslandLevel(@NonNull World world, @NonNull UUID targetPlayer, long lv) {
-        levelsCache.computeIfAbsent(targetPlayer, k -> new LevelsData(targetPlayer)).setLevel(world, lv);
+        levelsCache.computeIfAbsent(targetPlayer, LevelsData::new).setLevel(world, lv);
         handler.saveObjectAsync(levelsCache.get(targetPlayer));
         // Add to Top Ten
         addToTopTen(world, targetPlayer, lv);

@@ -49,9 +49,8 @@ public class IslandActivitiesListeners implements Listener {
     private void zeroIsland(final Island island) {
         // Clear the island setting
         if (island.getOwner() != null && island.getWorld() != null) {
-            addon.getPipeliner().addIsland(island).thenAccept(results -> {
-                addon.getManager().setInitialIslandLevel(island, results.getLevel());
-            });
+            addon.getPipeliner().addIsland(island).thenAccept(results ->
+            addon.getManager().setInitialIslandLevel(island, results.getLevel()));
         }
     }
 

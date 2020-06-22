@@ -9,9 +9,12 @@ import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.level.Level;
+import world.bentobox.level.calculators.Results;
 
 public class IslandLevelCommand extends CompositeCommand {
 
+    private static final String ISLAND_LEVEL_IS = "island.level.island-level-is";
+    private static final String LEVEL = "[level]";
     private final Level addon;
 
     public IslandLevelCommand(Level addon, CompositeCommand parent) {
@@ -43,7 +46,7 @@ public class IslandLevelCommand extends CompositeCommand {
             }
             // Request for another player's island level
             if (!user.getUniqueId().equals(playerUUID) ) {
-                user.sendMessage("island.level.island-level-is", "[level]", addon.getManager().getIslandLevelString(getWorld(), playerUUID));
+                user.sendMessage(ISLAND_LEVEL_IS, LEVEL, addon.getManager().getIslandLevelString(getWorld(), playerUUID));
                 return true;
             }
         }
@@ -66,40 +69,45 @@ public class IslandLevelCommand extends CompositeCommand {
 
     private boolean scanIsland(User user, UUID playerUUID) {
         Island island = getIslands().getIsland(getWorld(), playerUUID);
-        if (island != null) {
-            user.sendMessage("island.level.calculating");
-            int inQueue = addon.getPipeliner().getIslandsInQueue();
-            if (inQueue > 1) {
-                user.sendMessage("island.level.in-queue", TextVariables.NUMBER, String.valueOf(inQueue + 1));
-            }
-            // Get the old level
-            long oldLevel = addon.getManager().getIslandLevel(getWorld(), playerUUID);
-            addon.getManager().calculateLevel(playerUUID, island).thenAccept(results -> {
-                if (results == null) return; // island was deleted or become unowned
-                if (user.isPlayer()) {
-                    user.sendMessage("island.level.island-level-is", "[level]", addon.getManager().getIslandLevelString(getWorld(), playerUUID));
-                    // Player
-                    if (addon.getSettings().getDeathPenalty() != 0) {
-                        user.sendMessage("island.level.deaths", "[number]", String.valueOf(results.getDeathHandicap()));
-                    }
-                    // Send player how many points are required to reach next island level
-                    if (results.getPointsToNextLevel() >= 0 && results.getPointsToNextLevel() < 10000) {
-                        user.sendMessage("island.level.required-points-to-next-level", "[points]", String.valueOf(results.getPointsToNextLevel()));
-                    }
-                    // Tell other team members
-                    if (results.getLevel() != oldLevel) {
-                        island.getMemberSet().stream()
-                        .filter(u -> !u.equals(user.getUniqueId()))
-                        .forEach(m -> User.getInstance(m).sendMessage("island.level.island-level-is", "[level]", addon.getManager().getIslandLevelString(getWorld(), playerUUID)));
-                    }
-                } else {
-                    results.getReport().forEach(BentoBox.getInstance()::log);
-                }
-            });
-            return true;
-        } else {
+        if (island == null) {
             user.sendMessage("general.errors.player-has-no-island");
             return false;
+
+        }
+        user.sendMessage("island.level.calculating");
+        int inQueue = addon.getPipeliner().getIslandsInQueue();
+        if (inQueue > 1) {
+            user.sendMessage("island.level.in-queue", TextVariables.NUMBER, String.valueOf(inQueue + 1));
+        }
+        // Get the old level
+        long oldLevel = addon.getManager().getIslandLevel(getWorld(), playerUUID);
+        addon.getManager().calculateLevel(playerUUID, island).thenAccept(results -> {
+            if (results == null) return; // island was deleted or become unowned
+            showResult(user, playerUUID, island, oldLevel, results);
+        });
+        return true;
+
+    }
+
+    private void showResult(User user, UUID playerUUID, Island island, long oldLevel, Results results) {
+        if (user.isPlayer()) {
+            user.sendMessage(ISLAND_LEVEL_IS, LEVEL, addon.getManager().getIslandLevelString(getWorld(), playerUUID));
+            // Player
+            if (addon.getSettings().getDeathPenalty() != 0) {
+                user.sendMessage("island.level.deaths", "[number]", String.valueOf(results.getDeathHandicap()));
+            }
+            // Send player how many points are required to reach next island level
+            if (results.getPointsToNextLevel() >= 0 && results.getPointsToNextLevel() < 10000) {
+                user.sendMessage("island.level.required-points-to-next-level", "[points]", String.valueOf(results.getPointsToNextLevel()));
+            }
+            // Tell other team members
+            if (results.getLevel() != oldLevel) {
+                island.getMemberSet().stream()
+                .filter(u -> !u.equals(user.getUniqueId()))
+                .forEach(m -> User.getInstance(m).sendMessage(ISLAND_LEVEL_IS, LEVEL, addon.getManager().getIslandLevelString(getWorld(), playerUUID)));
+            }
+        } else {
+            results.getReport().forEach(BentoBox.getInstance()::log);
         }
 
     }

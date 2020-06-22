@@ -246,7 +246,7 @@ public class LevelsManagerTest {
         lm.calculateLevel(uuid, island);
         cf.complete(results);
 
-        assertTrue(lm.getLevelsData(uuid).getLevel(world) == 10000);
+        assertEquals(Long.valueOf(10000), lm.getLevelsData(uuid).getLevel(world));
         //Map<UUID, Long> tt = lm.getTopTen(world, 10);
         //assertEquals(1, tt.size());
         //assertTrue(tt.get(uuid) == 10000);
