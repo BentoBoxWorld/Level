@@ -25,6 +25,7 @@ import org.bukkit.block.data.type.Slab;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.bgsoftware.wildstacker.api.WildStackerAPI;
 import com.bgsoftware.wildstacker.api.objects.StackedBarrel;
@@ -429,12 +430,13 @@ public class IslandLevelCalculator {
      * @param chunk - the chunk to scan
      * @return future that completes when the scan is done and supplies a boolean that will be true if the scan was successful, false if not
      */
-    private CompletableFuture<Boolean> scanChunk(@NonNull Chunk chunk) {
+    private CompletableFuture<Boolean> scanChunk(@Nullable Chunk chunk) {
+        // If the chunk hasn't been generated, return
+        if (chunk == null) return CompletableFuture.completedFuture(false);
         // Scan chests
         if (addon.getSettings().isIncludeChests()) {
             scanChests(chunk);
         }
-
         // Count blocks in chunk
         CompletableFuture<Boolean> result = new CompletableFuture<>();
         Bukkit.getScheduler().runTaskAsynchronously(BentoBox.getInstance(), () -> scanAsync(result, chunk));
@@ -447,6 +449,7 @@ public class IslandLevelCalculator {
      */
     public CompletableFuture<Boolean> scanNextChunk() {
         if (chunksToCheck.isEmpty()) {
+            addon.logError("Unexpected: no chunks to scan!");
             // This should not be needed, but just in case
             return CompletableFuture.completedFuture(false);
         }

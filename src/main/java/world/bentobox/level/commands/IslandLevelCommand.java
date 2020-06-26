@@ -50,6 +50,10 @@ public class IslandLevelCommand extends CompositeCommand {
                 return true;
             }
         }
+        if (!user.isPlayer()) {
+            user.sendMessage("general.errors.use-in-game");
+            return false;
+        }
         // Self request
         // Check player cooldown
         int coolDown = this.addon.getSettings().getLevelWait();

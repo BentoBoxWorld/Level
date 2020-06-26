@@ -37,6 +37,7 @@ public class Pipeliner {
             }
             // One island at a time
             if (inProcess || processQueue.isEmpty()) return;
+
             IslandLevelCalculator iD = processQueue.poll();
             // Ignore deleted or unonwed islands
             if (iD.getIsland().isDeleted() || iD.getIsland().isUnowned()) return;
@@ -63,6 +64,7 @@ public class Pipeliner {
     private void scanChunk(IslandLevelCalculator iD) {
         if (iD.getIsland().isDeleted() || iD.getIsland().isUnowned()) {
             // Island is deleted, so finish early with nothing
+            addon.log("Canceling island level calculation - island has been deleted, or has become unowned.");
             inProcess = false;
             iD.getR().complete(null);
             return;

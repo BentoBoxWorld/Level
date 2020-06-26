@@ -25,7 +25,7 @@ public class AdminLevelStatusCommand extends CompositeCommand {
 
     @Override
     public boolean execute(User user, String label, List<String> args) {
-        user.sendMessage("islands-in-queue", TextVariables.NUMBER, String.valueOf(addon.getPipeliner().getIslandsInQueue()));
+        user.sendMessage("admin.levelstatus.islands-in-queue", TextVariables.NUMBER, String.valueOf(addon.getPipeliner().getIslandsInQueue()));
         return true;
     }
 }
