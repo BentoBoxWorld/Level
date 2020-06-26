@@ -120,19 +120,27 @@ public class Level extends Addon {
 
     }
 
-    private String getRankName(World world, int rank) {
+    String getRankName(World world, int rank) {
         if (rank < 1) rank = 1;
         if (rank > 10) rank = 10;
         return getPlayers().getName(getManager().getTopTen(world, 10).keySet().stream().skip(rank - 1L).limit(1L).findFirst().orElse(null));
     }
 
-    private String getRankLevel(World world, int rank) {
+    String getRankLevel(World world, int rank) {
         if (rank < 1) rank = 1;
         if (rank > 10) rank = 10;
-        return getManager().formatLevel(getManager().getTopTen(world, 10).values().stream().skip(rank - 1L).limit(1L).findFirst().orElse(null));
+        return getManager()
+                .formatLevel(getManager()
+                        .getTopTen(world, 10)
+                        .values()
+                        .stream()
+                        .skip(rank - 1L)
+                        .limit(1L)
+                        .findFirst()
+                        .orElse(null));
     }
 
-    private String getVisitedIslandLevel(GameModeAddon gm, User user) {
+    String getVisitedIslandLevel(GameModeAddon gm, User user) {
         if (!gm.inWorld(user.getLocation())) return "";
         return getIslands().getIslandAt(user.getLocation())
                 .map(island -> getManager().getIslandLevelString(gm.getOverWorld(), island.getOwner()))

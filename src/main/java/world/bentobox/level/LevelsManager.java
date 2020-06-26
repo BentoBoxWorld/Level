@@ -133,7 +133,8 @@ public class LevelsManager {
      * @param lvl - long value to represent
      * @return string of the level.
      */
-    public String formatLevel(long lvl) {
+    public String formatLevel(@Nullable Long lvl) {
+        if (lvl == null) return "";
         String level = String.valueOf(lvl);
         // Asking for the level of another player
         if(addon.getSettings().isShorthand()) {
@@ -270,7 +271,8 @@ public class LevelsManager {
      * @param size - size of the top ten
      * @return sorted top ten map
      */
-    public Map<UUID, Long> getTopTen(World world, int size) {
+    @NonNull
+    public Map<UUID, Long> getTopTen(@NonNull World world, int size) {
         topTenLists.computeIfAbsent(world, TopTenData::new);
         // Remove player from top ten if they are online and do not have the perm
         topTenLists.get(world).getTopTen().keySet().removeIf(u -> !hasTopTenPerm(world, u));
@@ -286,7 +288,7 @@ public class LevelsManager {
      * Checks if player has the correct top ten perm to have their level saved
      * @param world
      * @param targetPlayer
-     * @return
+     * @return true if player has the perm
      */
     boolean hasTopTenPerm(@NonNull World world, @NonNull UUID targetPlayer) {
         String permPrefix = addon.getPlugin().getIWM().getPermissionPrefix(world);
