@@ -53,6 +53,7 @@ import world.bentobox.bentobox.database.DatabaseSetup;
 import world.bentobox.bentobox.database.DatabaseSetup.DatabaseType;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.managers.IslandWorldManager;
+import world.bentobox.bentobox.managers.IslandsManager;
 import world.bentobox.bentobox.managers.PlayersManager;
 import world.bentobox.level.calculators.Pipeliner;
 import world.bentobox.level.calculators.Results;
@@ -104,6 +105,8 @@ public class LevelsManagerTest {
     private PluginManager pim;
     @Mock
     private LevelsData levelsData;
+    @Mock
+    private IslandsManager im;
 
 
 
@@ -145,6 +148,7 @@ public class LevelsManagerTest {
         when(pipeliner.addIsland(any())).thenReturn(cf);
 
         // Island
+        when(addon.getIslands()).thenReturn(im);
         uuid = UUID.randomUUID();
         ImmutableSet<UUID> iset = ImmutableSet.of(uuid);
         when(island.getMemberSet()).thenReturn(iset);
