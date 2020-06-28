@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -38,6 +39,7 @@ public class LevelsManager {
     private static final TreeMap<BigInteger, String> LEVELS;
     private static final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
     private static final BigInteger THOUSAND = BigInteger.valueOf(1000);
+    private static final PanelItem BACKGROUND = new PanelItemBuilder().icon(Material.BLACK_STAINED_GLASS_PANE).name("").build();
     static {
         LEVELS = new TreeMap<>();
 
@@ -164,11 +166,23 @@ public class LevelsManager {
 
         PanelBuilder panel = new PanelBuilder()
                 .name(user.getTranslation("island.top.gui-title"))
+                .size(54)
                 .user(user);
+        // Background
+        for (int j = 0; j < 54; panel.item(j++, BACKGROUND));
+
+        // Top Ten
         int i = 0;
         for (Entry<UUID, Long> m : topTen.entrySet()) {
-            panel.item(SLOTS[i], getHead(i + 1, m.getValue(), m.getKey(), user, world));
+            panel.item(SLOTS[i], getHead(i++, m.getValue(), m.getKey(), user, world));
         }
+        // Show remaining slots
+        for (; i < SLOTS.length; i++) {
+            panel.item(SLOTS[i], new PanelItemBuilder().icon(Material.GREEN_STAINED_GLASS_PANE).name("").build());
+        }
+
+        // Add yourself
+        panel.item(49, getHead(0, this.getIslandLevel(world, user.getUniqueId()), user.getUniqueId(), user, world));
         panel.build();
     }
 
@@ -183,7 +197,9 @@ public class LevelsManager {
     private PanelItem getHead(int rank, long level, UUID playerUUID, User asker, World world) {
         final String name = addon.getPlayers().getName(playerUUID);
         List<String> description = new ArrayList<>();
-        description.add(asker.getTranslation("island.top.gui-heading", "[name]", name, "[rank]", String.valueOf(rank)));
+        if (rank > 0) {
+            description.add(asker.getTranslation("island.top.gui-heading", "[name]", name, "[rank]", String.valueOf(rank)));
+        }
         description.add(asker.getTranslation("island.top.island-level","[level]", formatLevel(level)));
         if (addon.getIslands().inTeam(world, playerUUID)) {
             List<String> memberList = new ArrayList<>();
