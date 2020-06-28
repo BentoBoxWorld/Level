@@ -39,7 +39,6 @@ public class LevelsManager {
     private static final TreeMap<BigInteger, String> LEVELS;
     private static final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
     private static final BigInteger THOUSAND = BigInteger.valueOf(1000);
-    private static final PanelItem BACKGROUND = new PanelItemBuilder().icon(Material.BLACK_STAINED_GLASS_PANE).name("").build();
     static {
         LEVELS = new TreeMap<>();
 
@@ -59,6 +58,9 @@ public class LevelsManager {
     private final Database<TopTenData> topTenHandler;
     // Top ten lists
     private Map<World,TopTenData> topTenLists;
+    // Background
+    private final PanelItem background;
+
 
 
     public LevelsManager(Level addon) {
@@ -73,6 +75,8 @@ public class LevelsManager {
         levelsCache = new HashMap<>();
         // Initialize top ten lists
         topTenLists = new HashMap<>();
+        // Background
+        background = new PanelItemBuilder().icon(Material.BLACK_STAINED_GLASS_PANE).name("").build();
     }
 
     private void addToTopTen(@NonNull World world, @NonNull UUID targetPlayer, long lv) {
@@ -169,7 +173,7 @@ public class LevelsManager {
                 .size(54)
                 .user(user);
         // Background
-        for (int j = 0; j < 54; panel.item(j++, BACKGROUND));
+        for (int j = 0; j < 54; panel.item(j++, background));
 
         // Top Ten
         int i = 0;

@@ -14,13 +14,17 @@ import java.util.Collections;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFactory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
@@ -77,6 +81,8 @@ public class AdminTopRemoveCommandTest {
     private TopTenData ttd;
     @Mock
     private LevelsManager manager;
+    @Mock
+    private Server server;
 
     @Before
     public void setUp() {
@@ -111,6 +117,17 @@ public class AdminTopRemoveCommandTest {
         uuid = UUID.randomUUID();
         when(user.getUniqueId()).thenReturn(uuid);
         when(user.getTranslation(any())).thenAnswer(invocation -> invocation.getArgument(0, String.class));
+
+        // Bukkit
+        PowerMockito.mockStatic(Bukkit.class);
+        when(Bukkit.getServer()).thenReturn(server);
+        // Mock item factory (for itemstacks)
+        ItemFactory itemFactory = mock(ItemFactory.class);
+        ItemMeta itemMeta = mock(ItemMeta.class);
+        when(itemFactory.getItemMeta(any())).thenReturn(itemMeta);
+        when(server.getItemFactory()).thenReturn(itemFactory);
+        when(Bukkit.getItemFactory()).thenReturn(itemFactory);
+
 
         atrc = new AdminTopRemoveCommand(addon, ic);
     }
