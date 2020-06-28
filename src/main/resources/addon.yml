@@ -21,7 +21,7 @@ permissions:
     default: true
   '[gamemode].admin.level':
     description: Player can use admin level command
-    default: true
+    default: op
   '[gamemode].admin.topten':
     description: Player can use admin top ten command
-    default: true
+    default: op
