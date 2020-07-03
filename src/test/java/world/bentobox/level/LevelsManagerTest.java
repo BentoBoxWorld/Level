@@ -154,7 +154,9 @@ public class LevelsManagerTest {
         when(island.getMemberSet()).thenReturn(iset);
         when(island.getOwner()).thenReturn(uuid);
         when(island.getWorld()).thenReturn(world);
-
+        // Default to uuid's being island owners
+        when(im.isOwner(eq(world), any())).thenReturn(true);
+        when(im.getOwner(any(), any(UUID.class))).thenAnswer(in -> in.getArgument(1, UUID.class));
 
         // Player
         when(player.getUniqueId()).thenReturn(uuid);
@@ -336,6 +338,17 @@ public class LevelsManagerTest {
     }
 
     /**
+     * Test method for {@link world.bentobox.level.LevelsManager#getTopTen(org.bukkit.World, int)}.
+     */
+    @Test
+    public void testGetTopTenNoOwners() {
+        when(im.isOwner(eq(world), any())).thenReturn(false);
+        testLoadTopTens();
+        Map<UUID, Long> tt = lm.getTopTen(world, 10);
+        assertTrue(tt.isEmpty());
+    }
+
+    /**
      * Test method for {@link world.bentobox.level.LevelsManager#hasTopTenPerm(org.bukkit.World, java.util.UUID)}.
      */
     @Test
@@ -403,6 +416,7 @@ public class LevelsManagerTest {
     public void testSetIslandLevel() {
         lm.setIslandLevel(world, uuid, 1234);
         assertEquals(1234, lm.getIslandLevel(world, uuid));
+
     }
 
     /**

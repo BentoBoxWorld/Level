@@ -21,6 +21,7 @@ import org.bukkit.World;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.events.addon.AddonEvent;
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.builders.PanelBuilder;
@@ -76,17 +77,27 @@ public class LevelsManager {
         // Initialize top ten lists
         topTenLists = new HashMap<>();
         // Background
-        background = new PanelItemBuilder().icon(Material.BLACK_STAINED_GLASS_PANE).name("").build();
+        background = new PanelItemBuilder().icon(Material.BLACK_STAINED_GLASS_PANE).name(" ").build();
     }
 
+    /**
+     * Add a score to the top players list
+     * @param world - world
+     * @param targetPlayer - target player
+     * @param lv - island level
+     */
     private void addToTopTen(@NonNull World world, @NonNull UUID targetPlayer, long lv) {
-        topTenLists.computeIfAbsent(world, k -> new TopTenData(world));
-        if (hasTopTenPerm(world, targetPlayer)) {
-            topTenLists.get(world).getTopTen().put(targetPlayer, lv);
-        } else {
-            topTenLists.get(world).getTopTen().remove(targetPlayer);
-        }
+        // Get top ten
+        Map<UUID, Long> topTen = topTenLists.computeIfAbsent(world, k -> new TopTenData(world)).getTopTen();
+        // Remove this player from the top list no matter what (we'll put them back later if required)
+        topTen.remove(targetPlayer);
 
+        // Get the island
+        Island island = addon.getIslands().getIsland(world, targetPlayer);
+        if (island != null && island.getOwner() != null && hasTopTenPerm(world, island.getOwner())) {
+            // Insert the owner into the top ten
+            topTen.put(island.getOwner(), lv);
+        }
     }
 
     /**
@@ -110,8 +121,8 @@ public class LevelsManager {
                 result.complete(null);
             }
             // Save result
-            island.getMemberSet().forEach(uuid -> setIslandLevel(island.getWorld(), uuid, r.getLevel()));
-            addToTopTen(island.getWorld(), island.getOwner(), r.getLevel());
+            setIslandLevel(island.getWorld(), island.getOwner(), r.getLevel());
+            addon.getManager().saveTopTen(island.getWorld());
             result.complete(r);
         });
         return result;
@@ -182,7 +193,7 @@ public class LevelsManager {
         }
         // Show remaining slots
         for (; i < SLOTS.length; i++) {
-            panel.item(SLOTS[i], new PanelItemBuilder().icon(Material.GREEN_STAINED_GLASS_PANE).name("").build());
+            panel.item(SLOTS[i], new PanelItemBuilder().icon(Material.GREEN_STAINED_GLASS_PANE).name(String.valueOf(i + 1)).build());
         }
 
         // Add yourself
@@ -232,14 +243,17 @@ public class LevelsManager {
     }
 
     /**
-     * Get level from cache for a player.
+     * Get level of island from cache for a player.
      * @param world - world where the island is
      * @param targetPlayer - target player UUID
-     * @return Level of player or zero if player is unknown or UUID is null
+     * @return Level of the player's island or zero if player is unknown or UUID is null
      */
     public long getIslandLevel(@NonNull World world, @Nullable UUID targetPlayer) {
         if (targetPlayer == null) return 0L;
-        LevelsData ld = getLevelsData(targetPlayer);
+        // Get the island owner
+        UUID owner = addon.getIslands().getOwner(world, targetPlayer);
+        if (owner == null) return 0L;
+        LevelsData ld = getLevelsData(owner);
         return ld == null ? 0L : ld.getLevel(world);
     }
 
@@ -254,23 +268,23 @@ public class LevelsManager {
     }
 
     /**
-     * Load a player from the cache or database
-     * @param targetPlayer - UUID of target player
+     * Load a level data for the island owner from the cache or database. Only island onwers are stored.
+     * @param islandOwner - UUID of island owner
      * @return LevelsData object or null if not found
      */
     @Nullable
-    public LevelsData getLevelsData(@NonNull UUID targetPlayer) {
+    public LevelsData getLevelsData(@NonNull UUID islandOwner) {
         // Get from database if not in cache
-        if (!levelsCache.containsKey(targetPlayer) && handler.objectExists(targetPlayer.toString())) {
-            LevelsData ld = handler.loadObject(targetPlayer.toString());
+        if (!levelsCache.containsKey(islandOwner) && handler.objectExists(islandOwner.toString())) {
+            LevelsData ld = handler.loadObject(islandOwner.toString());
             if (ld != null) {
-                levelsCache.put(targetPlayer, ld);
+                levelsCache.put(islandOwner, ld);
             } else {
-                handler.deleteID(targetPlayer.toString());
+                handler.deleteID(islandOwner.toString());
             }
         }
         // Return cached value or null
-        return levelsCache.get(targetPlayer);
+        return levelsCache.get(islandOwner);
     }
 
     /**
@@ -281,7 +295,9 @@ public class LevelsManager {
      */
     public String getPointsToNextString(@NonNull World world, @Nullable UUID targetPlayer) {
         if (targetPlayer == null) return "";
-        LevelsData ld = getLevelsData(targetPlayer);
+        UUID owner = addon.getIslands().getOwner(world, targetPlayer);
+        if (owner == null) return "";
+        LevelsData ld = getLevelsData(owner);
         return ld == null ? "" : String.valueOf(ld.getPointsToNextLevel(world));
     }
 
@@ -298,6 +314,7 @@ public class LevelsManager {
         topTenLists.get(world).getTopTen().keySet().removeIf(u -> !hasTopTenPerm(world, u));
         // Return the sorted map
         return Collections.unmodifiableMap(topTenLists.get(world).getTopTen().entrySet().stream()
+                .filter(e -> addon.getIslands().isOwner(world, e.getKey()))
                 .filter(l -> l.getValue() > 0)
                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).limit(size)
                 .collect(Collectors.toMap(
@@ -308,11 +325,11 @@ public class LevelsManager {
      * Checks if player has the correct top ten perm to have their level saved
      * @param world
      * @param targetPlayer
-     * @return true if player has the perm
+     * @return true if player has the perm or the player is offline
      */
     boolean hasTopTenPerm(@NonNull World world, @NonNull UUID targetPlayer) {
         String permPrefix = addon.getPlugin().getIWM().getPermissionPrefix(world);
-        return Bukkit.getPlayer(targetPlayer) != null && Bukkit.getPlayer(targetPlayer).hasPermission(permPrefix + INTOPTEN);
+        return Bukkit.getPlayer(targetPlayer) == null || Bukkit.getPlayer(targetPlayer).hasPermission(permPrefix + INTOPTEN);
     }
 
     /**
@@ -326,6 +343,8 @@ public class LevelsManager {
                 topTenLists.put(world, tt);
                 addon.log("Loaded TopTen for " + world.getName());
                 // Update based on user data
+                // Remove any non island owners
+                tt.getTopTen().keySet().removeIf(u -> !addon.getIslands().isOwner(world, u));
                 for (UUID uuid : tt.getTopTen().keySet()) {
                     tt.getTopTen().compute(uuid, (k,v) -> v = updateLevel(k, world));
                 }
@@ -362,6 +381,14 @@ public class LevelsManager {
     }
 
     /**
+     * Save the top ten for world
+     * @param world - world
+     */
+    public void saveTopTen(World world) {
+        topTenHandler.saveObjectAsync(topTenLists.get(world));
+    }
+
+    /**
      * Set an initial island level for player
      * @param island - the island to set. Must have a non-null world and owner
      * @param lv - initial island level
@@ -372,11 +399,17 @@ public class LevelsManager {
         handler.saveObjectAsync(levelsCache.get(island.getOwner()));
     }
 
+    /**
+     * Set the island level for the owner of the island that targetPlayer is a member
+     * @param world - world
+     * @param targetPlayer - player, may be a team member
+     * @param lv - level
+     */
     public void setIslandLevel(@NonNull World world, @NonNull UUID targetPlayer, long lv) {
         levelsCache.computeIfAbsent(targetPlayer, LevelsData::new).setLevel(world, lv);
         handler.saveObjectAsync(levelsCache.get(targetPlayer));
-        // Add to Top Ten
-        addToTopTen(world, targetPlayer, lv);
+        // Update TopTen
+        addToTopTen(world, targetPlayer, levelsCache.get(targetPlayer).getLevel(world));
     }
 
     private Long updateLevel(UUID uuid, World world) {
