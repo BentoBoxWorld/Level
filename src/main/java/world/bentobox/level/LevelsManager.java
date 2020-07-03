@@ -21,6 +21,7 @@ import org.bukkit.World;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+import world.bentobox.bentobox.api.events.addon.AddonBaseEvent;
 import world.bentobox.bentobox.api.events.addon.AddonEvent;
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.builders.PanelBuilder;
@@ -127,10 +128,18 @@ public class LevelsManager {
         return result;
     }
 
+    /**
+     * Fires the IslandLevelCalculatedEvent and returns true if it is canceled
+     * @param targetPlayer - target player
+     * @param island - island
+     * @param results - results set
+     * @return true if canceled
+     */
     private boolean fireIslandLevelCalcEvent(UUID targetPlayer, Island island, Results results) {
         // Fire post calculation event
         IslandLevelCalculatedEvent ilce = new IslandLevelCalculatedEvent(targetPlayer, island, results);
         Bukkit.getPluginManager().callEvent(ilce);
+        if (ilce.isCancelled()) return true;
         // This exposes these values to plugins via the event
         Map<String, Object> keyValues = new HashMap<>();
         keyValues.put("eventName", "IslandLevelCalculatedEvent");
@@ -140,8 +149,14 @@ public class LevelsManager {
         keyValues.put("pointsToNextLevel", results.getPointsToNextLevel());
         keyValues.put("deathHandicap", results.getDeathHandicap());
         keyValues.put("initialLevel", results.getInitialLevel());
-        new AddonEvent().builder().addon(addon).keyValues(keyValues).build();
-        return ilce.isCancelled();
+        keyValues.put("isCancelled", false);
+        AddonBaseEvent e = new AddonEvent().builder().addon(addon).keyValues(keyValues).build();
+        // Set the values if they were altered
+        results.setLevel((Long)e.getKeyValues().getOrDefault("level", results.getLevel()));
+        results.setInitialLevel((Long)e.getKeyValues().getOrDefault("initialLevel", results.getInitialLevel()));
+        results.setDeathHandicap((int)e.getKeyValues().getOrDefault("deathHandicap", results.getDeathHandicap()));
+        results.setPointsToNextLevel((Long)e.getKeyValues().getOrDefault("pointsToNextLevel", results.getPointsToNextLevel()));
+        return ((Boolean)e.getKeyValues().getOrDefault("isCancelled", false));
     }
 
     /**

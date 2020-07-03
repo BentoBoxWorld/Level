@@ -29,6 +29,13 @@ public class Results {
     public int getDeathHandicap() {
         return deathHandicap.get();
     }
+    /**
+     * Set the death handicap
+     * @param handicap
+     */
+    public void setDeathHandicap(int handicap) {
+        deathHandicap.set(handicap);
+    }
 
     /**
      * @return the report
@@ -54,6 +61,14 @@ public class Results {
      */
     public long getPointsToNextLevel() {
         return pointsToNextLevel.get();
+    }
+
+    /**
+     * Set the points to next level
+     * @param points
+     */
+    public void setPointsToNextLevel(long points) {
+        pointsToNextLevel.set(points);
     }
 
     public long getInitialLevel() {
