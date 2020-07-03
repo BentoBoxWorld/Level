@@ -27,6 +27,7 @@ import world.bentobox.level.config.BlockConfig;
 import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
+import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.requests.LevelRequestHandler;
 import world.bentobox.level.requests.TopTenRequestHandler;
 
@@ -281,5 +282,14 @@ public class Level extends Addon {
     public void calculateIslandLevel(World world, @Nullable User user, @NonNull UUID playerUUID) {
         Island island = getIslands().getIsland(world, playerUUID);
         if (island != null) getManager().calculateLevel(playerUUID, island);
+    }
+
+    /**
+     * Load a player from the cache or database
+     * @param targetPlayer - UUID of target player
+     * @return LevelsData object or null if not found
+     */
+    public LevelsData getLevelsData(UUID targetPlayer) {
+        return getManager().getLevelsData(targetPlayer);
     }
 }
