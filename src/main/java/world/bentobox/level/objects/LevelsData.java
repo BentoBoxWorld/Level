@@ -1,12 +1,16 @@
 package world.bentobox.level.objects;
 
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import org.bukkit.Material;
 import org.bukkit.World;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import com.google.gson.annotations.Expose;
 
 import world.bentobox.bentobox.database.objects.DataObject;
@@ -34,6 +38,12 @@ public class LevelsData implements DataObject {
      */
     @Expose
     private Map<String, Long> pointsToNextLevel = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+    @Expose
+    private Map<String, Map<Material, Integer>> uwCount = new HashMap<>();
+
+    @Expose
+    private Map<String, Map<Material, Integer>> mdCount = new HashMap<>();
 
     /**
      * Create a level entry for target player
@@ -167,6 +177,33 @@ public class LevelsData implements DataObject {
      */
     public long getPointsToNextLevel(World world) {
         return pointsToNextLevel.getOrDefault(world.getName().toLowerCase(Locale.ENGLISH), 0L);
+    }
+
+    /**
+     * @param uwCount the uwCount to set
+     */
+    public void setUwCount(String name, Multiset<Material> uwCount) {
+        Map<Material, Integer> count = new HashMap<>();
+        uwCount.forEach(m -> count.put(m, uwCount.count(m)));
+        if (this.uwCount == null) {
+            System.out.println("Null");
+            this.uwCount = new HashMap<>();
+        }
+        this.uwCount.put(name, count);
+    }
+
+    /**
+     * @param mdCount the mdCount to set
+     */
+    public void setMdCount(String name, Multiset<Material> mdCount) {
+        Map<Material, Integer> count = new HashMap<>();
+        mdCount.forEach(m -> count.put(m, mdCount.count(m)));
+        if (this.mdCount == null) {
+            System.out.println("Null");
+            this.mdCount = new HashMap<>();
+        }
+        this.mdCount.put(name, count);
+
     }
 
 

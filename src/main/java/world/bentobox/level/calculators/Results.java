@@ -89,5 +89,17 @@ public class Results {
                 + underWaterBlockCount + ", level=" + level + ", deathHandicap=" + deathHandicap
                 + ", pointsToNextLevel=" + pointsToNextLevel + ", initialLevel=" + initialLevel + "]";
     }
+    /**
+     * @return the mdCount
+     */
+    public Multiset<Material> getMdCount() {
+        return mdCount;
+    }
+    /**
+     * @return the uwCount
+     */
+    public Multiset<Material> getUwCount() {
+        return uwCount;
+    }
 
 }

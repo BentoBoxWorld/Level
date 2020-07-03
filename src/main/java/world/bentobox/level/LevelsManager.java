@@ -21,11 +21,14 @@ import org.bukkit.World;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.google.common.collect.Multiset;
+
 import world.bentobox.bentobox.api.events.addon.AddonBaseEvent;
 import world.bentobox.bentobox.api.events.addon.AddonEvent;
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.builders.PanelBuilder;
 import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;
+import world.bentobox.bentobox.api.panels.builders.TabbedPanelBuilder;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.Database;
 import world.bentobox.bentobox.database.objects.Island;
@@ -34,6 +37,7 @@ import world.bentobox.level.events.IslandLevelCalculatedEvent;
 import world.bentobox.level.events.IslandPreLevelEvent;
 import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.objects.TopTenData;
+import world.bentobox.level.panels.DetailsGUITab;
 
 public class LevelsManager {
     private static final String INTOPTEN = "intopten";
@@ -118,11 +122,17 @@ public class LevelsManager {
         addon.getPipeliner().addIsland(island).thenAccept(r -> {
             // Results are irrelevant because the island is unowned or deleted, or IslandLevelCalcEvent is cancelled
             if (r == null || fireIslandLevelCalcEvent(targetPlayer, island, r)) {
+                addon.logWarning("Island calcs stopped due to event cancelation");
                 result.complete(null);
             }
             // Save result
-            setIslandLevel(island.getWorld(), island.getOwner(), r.getLevel());
+            addon.logWarning("Saving results");
+            setIslandResults(island.getWorld(), island.getOwner(), r.getLevel(), r.getUwCount(), r.getMdCount());
+            // Save top ten
+            addon.logWarning("Saving top ten");
             addon.getManager().saveTopTen(island.getWorld());
+            // Save the island scan details
+            addon.logWarning("Saved");
             result.complete(r);
         });
         return result;
@@ -211,7 +221,18 @@ public class LevelsManager {
         }
 
         // Add yourself
-        panel.item(49, getHead(0, this.getIslandLevel(world, user.getUniqueId()), user.getUniqueId(), user, world));
+        PanelItem head = getHead(0, this.getIslandLevel(world, user.getUniqueId()), user.getUniqueId(), user, world);
+        head.setClickHandler((p, u, ch, s) -> {
+            new TabbedPanelBuilder()
+            .user(user)
+            .world(world)
+            .tab(1, new DetailsGUITab(addon, world, user))
+            .startingSlot(1)
+            .size(54)
+            .build().openPanel();
+            return true;
+        });
+        panel.item(49, head);
         panel.build();
     }
 
@@ -426,6 +447,28 @@ public class LevelsManager {
         addToTopTen(world, targetPlayer, levelsCache.get(targetPlayer).getLevel(world));
     }
 
+    /**
+     * Set the island level for the owner of the island that targetPlayer is a member
+     * @param world - world
+     * @param owner
+     * @param level
+     * @param uwCount
+     * @param mdCount
+     */
+    private void setIslandResults(World world, @Nullable UUID owner, long level, Multiset<Material> uwCount,
+            Multiset<Material> mdCount) {
+        LevelsData ld = levelsCache.computeIfAbsent(owner, LevelsData::new);
+        String worldName = world.getName();
+        System.out.println("saved world name");
+        ld.setLevel(world, level);
+        ld.setUwCount(worldName, uwCount);
+        ld.setMdCount(worldName, mdCount);
+        levelsCache.put(owner, ld);
+        handler.saveObjectAsync(ld);
+        // Update TopTen
+        addToTopTen(world, owner, ld.getLevel(world));
+    }
+
     private Long updateLevel(UUID uuid, World world) {
         if (handler.objectExists(uuid.toString())) {
             @Nullable
@@ -435,6 +478,17 @@ public class LevelsManager {
             }
         }
         return 0L;
+    }
+
+    /**
+     * Get the island breakdown of blocks
+     * @param world - world
+     * @param user - user
+     * @return report
+     */
+    public List<PanelItem> getIslandReport(World world, UUID owner) {
+        LevelsData ld = getLevelsData(owner);
+        return null;
     }
 
 

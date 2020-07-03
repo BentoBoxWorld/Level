@@ -473,9 +473,9 @@ public class IslandLevelCalculator {
         return result;
     }
 
-    private Collection<String> sortedReport(int total, Multiset<Material> MaterialCount) {
+    private Collection<String> sortedReport(int total, Multiset<Material> materialCount) {
         Collection<String> r = new ArrayList<>();
-        Iterable<Multiset.Entry<Material>> entriesSortedByCount = Multisets.copyHighestCountFirst(MaterialCount).entrySet();
+        Iterable<Multiset.Entry<Material>> entriesSortedByCount = Multisets.copyHighestCountFirst(materialCount).entrySet();
         for (Entry<Material> en : entriesSortedByCount) {
             Material type = en.getElement();
 
@@ -490,6 +490,7 @@ public class IslandLevelCalculator {
         r.add(LINE_BREAK);
         return r;
     }
+
 
     private void tidyUp() {
         // Finalize calculations
