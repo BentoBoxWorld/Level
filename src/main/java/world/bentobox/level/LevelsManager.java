@@ -38,6 +38,7 @@ import world.bentobox.level.events.IslandPreLevelEvent;
 import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.objects.TopTenData;
 import world.bentobox.level.panels.DetailsGUITab;
+import world.bentobox.level.panels.DetailsGUITab.DetailsType;
 
 public class LevelsManager {
     private static final String INTOPTEN = "intopten";
@@ -226,7 +227,10 @@ public class LevelsManager {
             new TabbedPanelBuilder()
             .user(user)
             .world(world)
-            .tab(1, new DetailsGUITab(addon, world, user))
+            .tab(1, new DetailsGUITab(addon, world, user, DetailsType.ALL_BLOCKS))
+            .tab(2, new DetailsGUITab(addon, world, user, DetailsType.ABOVE_SEA_LEVEL_BLOCKS))
+            .tab(3, new DetailsGUITab(addon, world, user, DetailsType.UNDERWATER_BLOCKS))
+            .tab(4, new DetailsGUITab(addon, world, user, DetailsType.SPAWNERS))
             .startingSlot(1)
             .size(54)
             .build().openPanel();
@@ -458,11 +462,9 @@ public class LevelsManager {
     private void setIslandResults(World world, @Nullable UUID owner, long level, Multiset<Material> uwCount,
             Multiset<Material> mdCount) {
         LevelsData ld = levelsCache.computeIfAbsent(owner, LevelsData::new);
-        String worldName = world.getName();
-        System.out.println("saved world name");
         ld.setLevel(world, level);
-        ld.setUwCount(worldName, uwCount);
-        ld.setMdCount(worldName, mdCount);
+        ld.setUwCount(world, uwCount);
+        ld.setMdCount(world, mdCount);
         levelsCache.put(owner, ld);
         handler.saveObjectAsync(ld);
         // Update TopTen
@@ -479,18 +481,5 @@ public class LevelsManager {
         }
         return 0L;
     }
-
-    /**
-     * Get the island breakdown of blocks
-     * @param world - world
-     * @param user - user
-     * @return report
-     */
-    public List<PanelItem> getIslandReport(World world, UUID owner) {
-        LevelsData ld = getLevelsData(owner);
-        return null;
-    }
-
-
 
 }

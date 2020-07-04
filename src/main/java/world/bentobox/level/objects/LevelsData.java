@@ -1,5 +1,6 @@
 package world.bentobox.level.objects;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -9,7 +10,6 @@ import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.World;
 
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.gson.annotations.Expose;
 
@@ -182,28 +182,44 @@ public class LevelsData implements DataObject {
     /**
      * @param uwCount the uwCount to set
      */
-    public void setUwCount(String name, Multiset<Material> uwCount) {
-        Map<Material, Integer> count = new HashMap<>();
-        uwCount.forEach(m -> count.put(m, uwCount.count(m)));
+    public void setUwCount(World world, Multiset<Material> uwCount) {
         if (this.uwCount == null) {
-            System.out.println("Null");
             this.uwCount = new HashMap<>();
         }
-        this.uwCount.put(name, count);
+        Map<Material, Integer> count = new HashMap<>();
+        uwCount.forEach(m -> count.put(m, uwCount.count(m)));
+
+        this.uwCount.put(world.getName(), count);
     }
 
     /**
      * @param mdCount the mdCount to set
      */
-    public void setMdCount(String name, Multiset<Material> mdCount) {
-        Map<Material, Integer> count = new HashMap<>();
-        mdCount.forEach(m -> count.put(m, mdCount.count(m)));
+    public void setMdCount(World world, Multiset<Material> mdCount) {
         if (this.mdCount == null) {
-            System.out.println("Null");
             this.mdCount = new HashMap<>();
         }
-        this.mdCount.put(name, count);
+        Map<Material, Integer> count = new HashMap<>();
+        mdCount.forEach(m -> count.put(m, mdCount.count(m)));
 
+        this.mdCount.put(world.getName(), count);
+
+    }
+
+    /**
+     * Get the underwater block count for world
+     * @return the uwCount
+     */
+    public Map<Material, Integer> getUwCount(World world) {
+        return uwCount.getOrDefault(world.getName(), Collections.emptyMap());
+    }
+
+    /**
+     * Get the over-water block count for world
+     * @return the mdCount
+     */
+    public Map<Material, Integer> getMdCount(World world) {
+        return mdCount.getOrDefault(world.getName(), Collections.emptyMap());
     }
 
 
