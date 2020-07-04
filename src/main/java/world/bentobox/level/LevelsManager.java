@@ -380,7 +380,7 @@ public class LevelsManager {
             World world = Bukkit.getWorld(tt.getUniqueId());
             if (world != null) {
                 topTenLists.put(world, tt);
-                addon.log("Loaded TopTen for " + world.getName());
+                addon.log("Loaded top ten for " + world.getName());
                 // Update based on user data
                 // Remove any non island owners
                 tt.getTopTen().keySet().removeIf(u -> !addon.getIslands().isOwner(world, u));
@@ -479,6 +479,7 @@ public class LevelsManager {
                 return ld.getLevel(world);
             }
         }
+        addon.getPlugin().logDebug("Returning 0L");
         return 0L;
     }
 

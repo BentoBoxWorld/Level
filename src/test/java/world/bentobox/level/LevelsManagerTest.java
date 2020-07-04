@@ -364,7 +364,7 @@ public class LevelsManagerTest {
         lm.loadTopTens();
         PowerMockito.verifyStatic(Bukkit.class); // 1
         Bukkit.getWorld(eq("world"));
-        verify(addon).log(eq("Loaded TopTen for bskyblock-world"));
+        verify(addon).log(eq("Loaded top ten for bskyblock-world"));
     }
 
     /**

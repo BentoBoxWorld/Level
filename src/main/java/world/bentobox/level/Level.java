@@ -8,12 +8,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import world.bentobox.bentobox.api.addons.Addon;
 import world.bentobox.bentobox.api.addons.GameModeAddon;
 import world.bentobox.bentobox.api.configuration.Config;
+import world.bentobox.bentobox.api.events.BentoBoxReadyEvent;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.level.calculators.Pipeliner;
@@ -35,7 +38,7 @@ import world.bentobox.level.requests.TopTenRequestHandler;
  * @author tastybento
  *
  */
-public class Level extends Addon {
+public class Level extends Addon implements Listener {
 
     // Settings
     private ConfigSettings settings;
@@ -71,10 +74,10 @@ public class Level extends Addon {
         pipeliner = new Pipeliner(this);
         // Start Manager
         manager = new LevelsManager(this);
-        manager.loadTopTens();
         // Register listeners
         this.registerListener(new IslandActivitiesListeners(this));
         this.registerListener(new JoinLeaveListener(this));
+        this.registerListener(this);
         // Register commands for GameModes
         getPlugin().getAddonsManager().getGameModeAddons().stream()
         .filter(gm -> !settings.getGameModes().contains(gm.getDescription().getName()))
@@ -92,6 +95,11 @@ public class Level extends Addon {
         // Someone else can PR if they want spawners added to the Leveling system :)
         stackersEnabled = Bukkit.getPluginManager().getPlugin("WildStacker") != null;
 
+    }
+
+    @EventHandler
+    public void onBentoBoxReady(BentoBoxReadyEvent e) {
+        manager.loadTopTens();
     }
 
     private void registerPlaceholders(GameModeAddon gm) {
