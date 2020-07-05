@@ -192,7 +192,6 @@ public class Level extends Addon implements Listener {
             // Disable
             logError("Level blockconfig.yml settings could not load! Addon disabled.");
             setState(State.DISABLED);
-            return;
         }
 
     }

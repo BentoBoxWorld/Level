@@ -10,6 +10,8 @@ import world.bentobox.level.Level;
 
 public class LevelRequestHandler extends AddonRequestHandler {
 
+    private static final Object WORLD_NAME = "world-name";
+    private static final Object PLAYER = "player";
     private final Level addon;
 
     public LevelRequestHandler(Level addon) {
@@ -32,12 +34,12 @@ public class LevelRequestHandler extends AddonRequestHandler {
          */
 
         if (map == null || map.isEmpty()
-                || map.get("world-name") == null || !(map.get("world-name") instanceof String)
-                || map.get("player") == null || !(map.get("player") instanceof UUID)
-                || Bukkit.getWorld((String) map.get("world-name")) == null) {
+                || map.get(WORLD_NAME) == null || !(map.get(WORLD_NAME) instanceof String)
+                || map.get(PLAYER) == null || !(map.get(PLAYER) instanceof UUID)
+                || Bukkit.getWorld((String) map.get(WORLD_NAME)) == null) {
             return 0L;
         }
 
-        return addon.getManager().getIslandLevel(Bukkit.getWorld((String) map.get("world-name")), (UUID) map.get("player"));
+        return addon.getManager().getIslandLevel(Bukkit.getWorld((String) map.get(WORLD_NAME)), (UUID) map.get(PLAYER));
     }
 }

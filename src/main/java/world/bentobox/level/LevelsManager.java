@@ -455,7 +455,7 @@ public class LevelsManager {
      * @param owner - owner of the island
      * @param r - results of the calculation
      */
-    private void setIslandResults(World world, @Nullable UUID owner, Results r) {
+    private void setIslandResults(World world, @NonNull UUID owner, Results r) {
         LevelsData ld = levelsCache.computeIfAbsent(owner, LevelsData::new);
         ld.setLevel(world, r.getLevel());
         ld.setUwCount(world, r.getUwCount());

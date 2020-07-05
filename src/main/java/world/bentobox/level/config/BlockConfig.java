@@ -3,6 +3,7 @@ package world.bentobox.level.config;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -15,65 +16,91 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import world.bentobox.level.Level;
 
+/**
+ * Contains all the block values, limits and world differences
+ * @author tastybento
+ *
+ */
 public class BlockConfig {
 
-    private Map<Material, Integer> blockLimits = new HashMap<>();
-    private Map<Material, Integer> blockValues = new HashMap<>();
+    private Map<Material, Integer> blockLimits = new EnumMap<>(Material.class);
+    private Map<Material, Integer> blockValues = new EnumMap<>(Material.class);
     private final Map<World, Map<Material, Integer>> worldBlockValues = new HashMap<>();
+    private Level addon;
 
-    public BlockConfig(Level level, YamlConfiguration blockValues, File file) throws IOException {
-
+    /**
+     * Loads block limits, values and world settings and then saves them again
+     * @param addon - addon
+     * @param blockValues - yaml configuration file containing the block values
+     * @param file - the file representing the yaml config. Will be saved after readong.
+     * @throws IOException - if there is an error
+     */
+    public BlockConfig(Level addon, YamlConfiguration blockValues, File file) throws IOException {
+        this.addon = addon;
         if (blockValues.isConfigurationSection("limits")) {
-            HashMap<Material, Integer> bl = new HashMap<>();
-            ConfigurationSection limits = Objects.requireNonNull(blockValues.getConfigurationSection("limits"));
-            for (String material : limits.getKeys(false)) {
-                try {
-                    Material mat = Material.valueOf(material);
-                    bl.put(mat, limits.getInt(material, 0));
-                } catch (Exception e) {
-                    level.logWarning("Unknown material (" + material + ") in blockconfig.yml Limits section. Skipping...");
-                }
-            }
-            setBlockLimits(bl);
+            setBlockLimits(loadBlockLimits(blockValues));
         }
         if (blockValues.isConfigurationSection("blocks")) {
-            ConfigurationSection blocks = Objects.requireNonNull(blockValues.getConfigurationSection("blocks"));
-            Map<Material, Integer> bv = new HashMap<>();
-            // Update blockvalues to latest settings
-            Arrays.stream(Material.values()).filter(Material::isBlock)
-            .filter(m -> !m.name().startsWith("LEGACY_"))
-            .filter(m -> !m.isAir())
-            .filter(m -> !m.equals(Material.WATER))
-            .forEach(m -> {
-                if (!blocks.contains(m.name(), true)) {
-                    blocks.set(m.name(), 1);
-                }
-                bv.put(m, blocks.getInt(m.name(), 1));
-            });
-            setBlockValues(bv);
+            setBlockValues(loadBlockValues(blockValues));
         } else {
-            level.logWarning("No block values in blockconfig.yml! All island levels will be zero!");
+            addon.logWarning("No block values in blockconfig.yml! All island levels will be zero!");
         }
         // Worlds
         if (blockValues.isConfigurationSection("worlds")) {
-            ConfigurationSection worlds = Objects.requireNonNull(blockValues.getConfigurationSection("worlds"));
-            for (String world : Objects.requireNonNull(worlds).getKeys(false)) {
-                World bWorld = Bukkit.getWorld(world);
-                if (bWorld != null) {
-                    ConfigurationSection worldValues = worlds.getConfigurationSection(world);
-                    for (String material : Objects.requireNonNull(worldValues).getKeys(false)) {
-                        Material mat = Material.valueOf(material);
-                        Map<Material, Integer> values = worldBlockValues.getOrDefault(bWorld, new HashMap<>());
-                        values.put(mat, worldValues.getInt(material));
-                        worldBlockValues.put(bWorld, values);
-                    }
-                } else {
-                    level.logWarning("Level Addon: No such world in blockconfig.yml : " + world);
-                }
-            }
+            loadWorlds(blockValues);
         }
         // All done
         blockValues.save(file);
+    }
+
+    private void loadWorlds(YamlConfiguration blockValues2) {
+        ConfigurationSection worlds = Objects.requireNonNull(blockValues2.getConfigurationSection("worlds"));
+        for (String world : Objects.requireNonNull(worlds).getKeys(false)) {
+            World bWorld = Bukkit.getWorld(world);
+            if (bWorld != null) {
+                ConfigurationSection worldValues = worlds.getConfigurationSection(world);
+                for (String material : Objects.requireNonNull(worldValues).getKeys(false)) {
+                    Material mat = Material.valueOf(material);
+                    Map<Material, Integer> values = worldBlockValues.getOrDefault(bWorld, new EnumMap<>(Material.class));
+                    values.put(mat, worldValues.getInt(material));
+                    worldBlockValues.put(bWorld, values);
+                }
+            } else {
+                addon.logWarning("Level Addon: No such world in blockconfig.yml : " + world);
+            }
+        }
+
+    }
+
+    private Map<Material, Integer> loadBlockValues(YamlConfiguration blockValues2) {
+        ConfigurationSection blocks = Objects.requireNonNull(blockValues2.getConfigurationSection("blocks"));
+        Map<Material, Integer> bv = new EnumMap<>(Material.class);
+        // Update blockvalues to latest settings
+        Arrays.stream(Material.values()).filter(Material::isBlock)
+        .filter(m -> !m.name().startsWith("LEGACY_"))
+        .filter(m -> !m.isAir())
+        .filter(m -> !m.equals(Material.WATER))
+        .forEach(m -> {
+            if (!blocks.contains(m.name(), true)) {
+                blocks.set(m.name(), 1);
+            }
+            bv.put(m, blocks.getInt(m.name(), 1));
+        });
+        return bv;
+    }
+
+    private Map<Material, Integer> loadBlockLimits(YamlConfiguration blockValues2) {
+        Map<Material, Integer> bl = new EnumMap<>(Material.class);
+        ConfigurationSection limits = Objects.requireNonNull(blockValues2.getConfigurationSection("limits"));
+        for (String material : limits.getKeys(false)) {
+            try {
+                Material mat = Material.valueOf(material);
+                bl.put(mat, limits.getInt(material, 0));
+            } catch (Exception e) {
+                addon.logWarning("Unknown material (" + material + ") in blockconfig.yml Limits section. Skipping...");
+            }
+        }
+        return bl;
     }
 
     /**
@@ -83,10 +110,10 @@ public class BlockConfig {
         return blockLimits;
     }
     /**
-     * @param blockLimits2 the blockLimits to set
+     * @param bl the blockLimits to set
      */
-    private void setBlockLimits(HashMap<Material, Integer> blockLimits2) {
-        this.blockLimits = blockLimits2;
+    private void setBlockLimits(Map<Material, Integer> bl) {
+        this.blockLimits = bl;
     }
     /**
      * @return the blockValues

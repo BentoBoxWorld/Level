@@ -5,7 +5,7 @@ package world.bentobox.level.panels;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +47,7 @@ public class DetailsGUITab implements Tab, ClickHandler {
      */
     private static final Map<Material, Material> M2I;
     static {
-        Map<Material, Material> m2i = new HashMap<>();
+        Map<Material, Material> m2i = new EnumMap<>(Material.class);
         m2i.put(Material.WATER, Material.WATER_BUCKET);
         m2i.put(Material.LAVA, Material.LAVA_BUCKET);
         m2i.put(Material.AIR, Material.BLACK_STAINED_GLASS_PANE);
@@ -133,7 +133,7 @@ public class DetailsGUITab implements Tab, ClickHandler {
         items = new ArrayList<>();
         LevelsData ld = addon.getManager().getLevelsData(island.getOwner());
         // Get the items from the report
-        Map<Material, Integer> sumTotal = new HashMap<>();
+        Map<Material, Integer> sumTotal = new EnumMap<>(Material.class);
         sumTotal.putAll(ld.getMdCount(world));
         sumTotal.putAll(ld.getUwCount(world));
         switch(type) {

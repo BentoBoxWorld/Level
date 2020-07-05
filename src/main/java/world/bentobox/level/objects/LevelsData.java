@@ -1,6 +1,7 @@
 package world.bentobox.level.objects;
 
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -213,7 +214,7 @@ public class LevelsData implements DataObject {
      */
     public void setUwCount(World world, Multiset<Material> uwCount) {
         if (this.uwCount == null) this.uwCount = new HashMap<>();
-        Map<Material, Integer> count = new HashMap<>();
+        Map<Material, Integer> count = new EnumMap<>(Material.class);
         uwCount.forEach(m -> count.put(m, uwCount.count(m)));
 
         this.uwCount.put(world.getName(), count);
@@ -224,7 +225,7 @@ public class LevelsData implements DataObject {
      */
     public void setMdCount(World world, Multiset<Material> mdCount) {
         if (this.mdCount == null) this.mdCount = new HashMap<>();
-        Map<Material, Integer> count = new HashMap<>();
+        Map<Material, Integer> count = new EnumMap<>(Material.class);
         mdCount.forEach(m -> count.put(m, mdCount.count(m)));
 
         this.mdCount.put(world.getName(), count);
