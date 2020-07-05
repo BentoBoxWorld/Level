@@ -78,8 +78,9 @@ public class IslandLevelCommand extends CompositeCommand {
             return false;
 
         }
-        user.sendMessage("island.level.calculating");
         int inQueue = addon.getPipeliner().getIslandsInQueue();
+        user.sendMessage("island.level.calculating");
+        user.sendMessage("island.level.estimated-wait", TextVariables.NUMBER, String.valueOf(addon.getPipeliner().getTime() * (inQueue + 1)));
         if (inQueue > 1) {
             user.sendMessage("island.level.in-queue", TextVariables.NUMBER, String.valueOf(inQueue + 1));
         }

@@ -21,8 +21,7 @@ import org.bukkit.World;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.google.common.collect.Multiset;
-
+import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.events.addon.AddonBaseEvent;
 import world.bentobox.bentobox.api.events.addon.AddonEvent;
 import world.bentobox.bentobox.api.panels.PanelItem;
@@ -128,7 +127,7 @@ public class LevelsManager {
             }
             // Save result
             addon.logWarning("Saving results");
-            setIslandResults(island.getWorld(), island.getOwner(), r.getLevel(), r.getUwCount(), r.getMdCount());
+            setIslandResults(island.getWorld(), island.getOwner(), r);
             // Save top ten
             addon.logWarning("Saving top ten");
             addon.getManager().saveTopTen(island.getWorld());
@@ -307,7 +306,7 @@ public class LevelsManager {
     }
 
     /**
-     * Load a level data for the island owner from the cache or database. Only island onwers are stored.
+     * Load a level data for the island owner from the cache or database. Only island owners are stored.
      * @param islandOwner - UUID of island owner
      * @return LevelsData object or null if not found
      */
@@ -399,6 +398,9 @@ public class LevelsManager {
      * @param uuid - the player's uuid
      */
     public void removeEntry(World world, UUID uuid) {
+        // Load the user if they haven't yet done anything to put them in the cache
+        this.getLevelsData(uuid);
+        // Remove them
         if (levelsCache.containsKey(uuid)) {
             levelsCache.get(uuid).remove(world);
             // Save
@@ -433,7 +435,9 @@ public class LevelsManager {
      * @param lv - initial island level
      */
     public void setInitialIslandLevel(@NonNull Island island, long lv) {
+        BentoBox.getInstance().logDebug("Setting initial island level " + island +" " + lv);
         if (island.getOwner() == null || island.getWorld() == null) return;
+        BentoBox.getInstance().logDebug("saving");
         levelsCache.computeIfAbsent(island.getOwner(), LevelsData::new).setInitialLevel(island.getWorld(), lv);
         handler.saveObjectAsync(levelsCache.get(island.getOwner()));
     }
@@ -454,17 +458,15 @@ public class LevelsManager {
     /**
      * Set the island level for the owner of the island that targetPlayer is a member
      * @param world - world
-     * @param owner
-     * @param level
-     * @param uwCount
-     * @param mdCount
+     * @param owner - owner of the island
+     * @param r - results of the calculation
      */
-    private void setIslandResults(World world, @Nullable UUID owner, long level, Multiset<Material> uwCount,
-            Multiset<Material> mdCount) {
+    private void setIslandResults(World world, @Nullable UUID owner, Results r) {
         LevelsData ld = levelsCache.computeIfAbsent(owner, LevelsData::new);
-        ld.setLevel(world, level);
-        ld.setUwCount(world, uwCount);
-        ld.setMdCount(world, mdCount);
+        ld.setLevel(world, r.getLevel());
+        ld.setUwCount(world, r.getUwCount());
+        ld.setMdCount(world, r.getMdCount());
+        ld.setPointsToNextLevel(world, r.getPointsToNextLevel());
         levelsCache.put(owner, ld);
         handler.saveObjectAsync(ld);
         // Update TopTen

@@ -7,6 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
+import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandCreatedEvent;
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandPreclearEvent;
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandRegisteredEvent;
@@ -38,17 +39,20 @@ public class IslandActivitiesListeners implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onNewIsland(IslandCreatedEvent e) {
+        BentoBox.getInstance().logDebug(e.getEventName());
         zeroIsland(e.getIsland());
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onNewIsland(IslandResettedEvent e) {
+        BentoBox.getInstance().logDebug(e.getEventName());
         zeroIsland(e.getIsland());
     }
 
     private void zeroIsland(final Island island) {
         // Clear the island setting
         if (island.getOwner() != null && island.getWorld() != null) {
+            BentoBox.getInstance().logDebug("Zeroing island");
             addon.getPipeliner().addIsland(island).thenAccept(results ->
             addon.getManager().setInitialIslandLevel(island, results.getLevel()));
         }
@@ -56,9 +60,11 @@ public class IslandActivitiesListeners implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onIslandDelete(IslandPreclearEvent e) {
+        BentoBox.getInstance().logDebug(e.getEventName());
         // Remove player from the top ten and level
         UUID uuid = e.getIsland().getOwner();
         World world = e.getIsland().getWorld();
+        BentoBox.getInstance().logDebug(uuid + " " + world);
         remove(world, uuid);
     }
 
@@ -70,36 +76,42 @@ public class IslandActivitiesListeners implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onNewIslandOwner(TeamSetownerEvent e) {
+        BentoBox.getInstance().logDebug(e.getEventName());
         // Remove player from the top ten and level
         remove(e.getIsland().getWorld(), e.getIsland().getOwner());
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onIsland(TeamJoinedEvent e) {
+        BentoBox.getInstance().logDebug(e.getEventName());
         // Remove player from the top ten and level
         remove(e.getIsland().getWorld(), e.getPlayerUUID());
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onIsland(IslandUnregisteredEvent e) {
+        BentoBox.getInstance().logDebug(e.getEventName());
         // Remove player from the top ten and level
         remove(e.getIsland().getWorld(), e.getPlayerUUID());
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onIsland(IslandRegisteredEvent e) {
+        BentoBox.getInstance().logDebug(e.getEventName());
         // Remove player from the top ten and level
         remove(e.getIsland().getWorld(), e.getPlayerUUID());
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onIsland(TeamLeaveEvent e) {
+        BentoBox.getInstance().logDebug(e.getEventName());
         // Remove player from the top ten and level
         remove(e.getIsland().getWorld(), e.getPlayerUUID());
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onIsland(TeamKickEvent e) {
+        BentoBox.getInstance().logDebug(e.getEventName());
         // Remove player from the top ten and level
         remove(e.getIsland().getWorld(), e.getPlayerUUID());
     }

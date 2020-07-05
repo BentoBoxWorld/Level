@@ -19,6 +19,18 @@ permissions:
   '[gamemode].island.value':
     description: Player can use value command
     default: true
+  '[gamemode].island.level.details.blocks':
+    description: Player see the level details
+    default: true 
+  '[gamemode].island.level.details.spawners':
+    description: Player can see the spawners tab in the level details
+    default: false
+  '[gamemode].island.level.details.underwater':
+    description: Player can see the underwater tab in the level details
+    default: false
+  '[gamemode].island.level.details.above-sea-level':
+    description: Player can see the above sea level tab in the level details
+    default: false
   '[gamemode].admin.level':
     description: Player can use admin level command
     default: op

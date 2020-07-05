@@ -17,6 +17,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Enums;
 
+import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.panels.Panel;
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.PanelItem.ClickHandler;
@@ -41,6 +42,9 @@ public class DetailsGUITab implements Tab, ClickHandler {
         UNDERWATER_BLOCKS
     }
 
+    /**
+     * Converts block materials to item materials
+     */
     private static final Map<Material, Material> M2I;
     static {
         Map<Material, Material> m2i = new HashMap<>();
@@ -72,6 +76,7 @@ public class DetailsGUITab implements Tab, ClickHandler {
         m2i.put(Material.BUBBLE_COLUMN, Material.WATER_BUCKET);
         m2i.put(Material.SWEET_BERRY_BUSH, Material.SWEET_BERRIES);
         m2i.put(Material.BAMBOO_SAPLING, Material.BAMBOO);
+        m2i.put(Material.FIRE, Material.FLINT_AND_STEEL);
         // 1.16.1
         if (Enums.getIfPresent(Material.class, "WEEPING_VINES_PLANT").isPresent()) {
             m2i.put(Material.WEEPING_VINES_PLANT, Material.WEEPING_VINES);
@@ -104,19 +109,22 @@ public class DetailsGUITab implements Tab, ClickHandler {
         // Convert walls
         m = Enums.getIfPresent(Material.class, m.name().replace("WALL_", "")).or(m);
         // Tags
-        if (Tag.FIRE.isTagged(m)) {
-            items.add(new PanelItemBuilder()
-                    .icon(Material.CAMPFIRE)
-                    .name(Util.prettifyText(m.name()) + " x " + count)
-                    .build());
-            return;
+        if (Enums.getIfPresent(Material.class, "SOUL_CAMPFIRE").isPresent()) {
+            if (Tag.FIRE.isTagged(m)) {
+                items.add(new PanelItemBuilder()
+                        .icon(Material.CAMPFIRE)
+                        .name(Util.prettifyText(m.name()) + " x " + count)
+                        .build());
+                return;
+            }
         }
         if (Tag.FLOWER_POTS.isTagged(m)) {
             m = Enums.getIfPresent(Material.class, m.name().replace("POTTED_", "")).or(m);
         }
         items.add(new PanelItemBuilder()
                 .icon(M2I.getOrDefault(m, m))
-                .name(Util.prettifyText(m.name()) + " x " + count)
+                .name(user.getTranslation("island.level-details.syntax", TextVariables.NAME,
+                        Util.prettifyText(m.name()), TextVariables.NUMBER, String.valueOf(count)))
                 .build());
 
     }
@@ -141,30 +149,35 @@ public class DetailsGUITab implements Tab, ClickHandler {
         default:
             sumTotal.forEach(this::createItem);
             break;
-
         }
-
+        if (type.equals(DetailsType.ALL_BLOCKS) && items.isEmpty()) {
+            // Nothing here - looks like they need to run level
+            items.add(new PanelItemBuilder()
+                    .name(user.getTranslation("island.level-details.hint")).icon(Material.WRITTEN_BOOK)
+                    .build());
+        }
     }
 
     @Override
     public PanelItem getIcon() {
         switch(type) {
         case ABOVE_SEA_LEVEL_BLOCKS:
-            return new PanelItemBuilder().icon(Material.GRASS_BLOCK).name("Above Sea Level Blocks").build();
+            return new PanelItemBuilder().icon(Material.GRASS_BLOCK).name(user.getTranslation("island.level-details.above-sea-level-blocks")).build();
         case SPAWNERS:
-            return new PanelItemBuilder().icon(Material.SPAWNER).name("Spawners").build();
+            return new PanelItemBuilder().icon(Material.SPAWNER).name(user.getTranslation("island.level-details.spawners")).build();
         case UNDERWATER_BLOCKS:
-            return new PanelItemBuilder().icon(Material.WATER_BUCKET).name("Underwater Blocks").build();
+            return new PanelItemBuilder().icon(Material.WATER_BUCKET).name(user.getTranslation("island.level-details.underwater-blocks")).build();
         default:
-            return new PanelItemBuilder().icon(Material.GRASS_BLOCK).name("All Blocks").build();
+            return new PanelItemBuilder().icon(Material.GRASS_BLOCK).name(user.getTranslation("island.level-details.all-blocks")).build();
         }
     }
 
     @Override
     public String getName() {
-        String name = "&c No island!";
+        String name = user.getTranslation("island.level-details.no-island");
         if (island.getOwner() != null) {
-            name = island.getName() != null ? island.getName() : addon.getPlayers().getName(island.getOwner()) + "'s island";
+            name = island.getName() != null ? island.getName() :
+                user.getTranslation("island.level-details.names-island", TextVariables.NAME, addon.getPlayers().getName(island.getOwner()));
         }
         return name;
     }
@@ -176,17 +189,16 @@ public class DetailsGUITab implements Tab, ClickHandler {
 
     @Override
     public String getPermission() {
+        String permPrefix = addon.getPlugin().getIWM().getPermissionPrefix(world);
         switch(type) {
         case ABOVE_SEA_LEVEL_BLOCKS:
-            return "";
-        case ALL_BLOCKS:
-            return "";
+            return permPrefix + "island.level.details.above-sea-level";
         case SPAWNERS:
-            return "";
+            return permPrefix + "island.level.details.spawners";
         case UNDERWATER_BLOCKS:
-            return "";
+            return permPrefix + "island.level.details.underwater";
         default:
-            return "";
+            return permPrefix + "island.level.details.blocks";
 
         }
     }

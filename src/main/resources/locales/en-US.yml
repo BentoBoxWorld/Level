@@ -22,7 +22,8 @@ island:
   level: 
     parameters: "[player]"
     description: "calculate your island level or show the level of [player]"
-    calculating: "&a Calculating level..." 
+    calculating: "&a Calculating level..."
+    estimated-wait: "&a Estimated wait: [number] seconds"
     in-queue: "&a You are number [number] in the queue"
     island-level-is: "&a Island level is &b[level]"
     required-points-to-next-level: "&a [points] points required until the next level"
@@ -35,6 +36,16 @@ island:
     gui-heading: "&6[name]: &B[rank]"
     island-level: "&b Level [level]"
     warp-to: "&A Warping to [name]'s island"
+  
+  level-details:
+    above-sea-level-blocks: "Above Sea Level Blocks"
+    spawners: "Spawners"
+    underwater-blocks: "Underwater Blocks"
+    all-blocks: "All Blocks"
+    no-island: "&c No island!"
+    names-island: "[name]'s island"
+    syntax: "[name] x [number]"
+    hint: "&c Run level to see the block report"
 
   value:
     description: "shows the value of any block"

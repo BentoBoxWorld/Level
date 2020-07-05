@@ -18,10 +18,13 @@ import world.bentobox.level.Level;
  */
 public class Pipeliner {
 
+    private static final int START_DURATION = 10; // 10 seconds
     private final Queue<IslandLevelCalculator> processQueue;
     private final BukkitTask task;
     private boolean inProcess;
     private final Level addon;
+    private long time;
+    private long count;
 
     /**
      * Construct the pipeliner
@@ -53,8 +56,11 @@ public class Pipeliner {
         task.cancel();
     }
 
+    /**
+     * @return number of islands currently in the queue or in process
+     */
     public int getIslandsInQueue() {
-        return processQueue.size();
+        return inProcess ? processQueue.size() + 1 : processQueue.size();
     }
 
     /**
@@ -95,7 +101,25 @@ public class Pipeliner {
     public CompletableFuture<Results> addIsland(Island island) {
         CompletableFuture<Results> r = new CompletableFuture<>();
         processQueue.add(new IslandLevelCalculator(addon, island, r));
+        count++;
         return r;
+    }
+
+    /**
+     * Get the average time it takes to run a level check
+     * @return the average time in seconds
+     */
+    public int getTime() {
+        return time == 0 || count == 0 ? START_DURATION : (int)((double)time/count/1000);
+    }
+
+    /**
+     * Submit how long a level check took
+     * @param time the time to set
+     */
+    public void setTime(long time) {
+        // Running average
+        this.time += time;
     }
 
 

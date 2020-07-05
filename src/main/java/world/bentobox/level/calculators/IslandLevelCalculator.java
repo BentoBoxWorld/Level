@@ -146,18 +146,20 @@ public class IslandLevelCalculator {
 
 
     private final Results results;
+    private long duration;
 
     /**
      * Constructor to get the level for an island
      * @param addon - Level addon
      * @param island - the island to scan
-     * @param r - completeable result that will be completed when the calculation is complete
+     * @param r - completable result that will be completed when the calculation is complete
      */
     public IslandLevelCalculator(Level addon, Island island, CompletableFuture<Results> r) {
         this.addon = addon;
         this.island = island;
         this.r = r;
         results = new Results();
+        duration = System.currentTimeMillis();
         chunksToCheck = getChunksToScan(island);
         this.limitCount = new HashMap<>(addon.getBlockConfig().getBlockLimits());
     }
@@ -310,7 +312,7 @@ public class IslandLevelCalculator {
             if (addon.getSettings().isNether()) {
                 World nether = addon.getPlugin().getIWM().getNetherWorld(island.getWorld());
                 if (nether != null) {
-                    return Util.getChunkAtAsync(nether, x, z, false);
+                    return Util.getChunkAtAsync(nether, x, z, true);
                 }
             }
             // There is no chunk to scan, so return a null chunk
@@ -319,13 +321,13 @@ public class IslandLevelCalculator {
             if (addon.getSettings().isEnd()) {
                 World end = addon.getPlugin().getIWM().getEndWorld(island.getWorld());
                 if (end != null) {
-                    return Util.getChunkAtAsync(end, x, z, false);
+                    return Util.getChunkAtAsync(end, x, z, true);
                 }
             }
             // There is no chunk to scan, so return a null chunk
             return CompletableFuture.completedFuture(null);
         default:
-            return Util.getChunkAtAsync(world, x, z, false);
+            return Util.getChunkAtAsync(world, x, z, true);
 
         }
     }
@@ -530,6 +532,8 @@ public class IslandLevelCalculator {
 
         // Report
         results.report = getReport();
+        // Set the duration
+        addon.getPipeliner().setTime(System.currentTimeMillis() - duration);
         // All done.
     }
 }

@@ -13,6 +13,7 @@ import org.bukkit.World;
 import com.google.common.collect.Multiset;
 import com.google.gson.annotations.Expose;
 
+import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.database.objects.DataObject;
 import world.bentobox.bentobox.database.objects.Table;
 
@@ -141,8 +142,12 @@ public class LevelsData implements DataObject {
      * @param world - world to remove
      */
     public void remove(World world) {
-        levels.remove(world.getName().toLowerCase(Locale.ENGLISH));
-        initialLevel.remove(world.getName().toLowerCase(Locale.ENGLISH));
+        BentoBox.getInstance().logDebug("Removing world");
+        this.levels.remove(world.getName().toLowerCase(Locale.ENGLISH));
+        this.initialLevel.remove(world.getName().toLowerCase(Locale.ENGLISH));
+        this.pointsToNextLevel.remove(world.getName().toLowerCase(Locale.ENGLISH));
+        this.mdCount.remove(world.getName().toLowerCase(Locale.ENGLISH));
+        this.uwCount.remove(world.getName().toLowerCase(Locale.ENGLISH));
     }
 
     /**
@@ -211,6 +216,9 @@ public class LevelsData implements DataObject {
      * @return the uwCount
      */
     public Map<Material, Integer> getUwCount(World world) {
+        if (this.uwCount == null) {
+            this.uwCount = new HashMap<>();
+        }
         return uwCount.getOrDefault(world.getName(), Collections.emptyMap());
     }
 
@@ -219,6 +227,9 @@ public class LevelsData implements DataObject {
      * @return the mdCount
      */
     public Map<Material, Integer> getMdCount(World world) {
+        if (this.mdCount == null) {
+            this.mdCount = new HashMap<>();
+        }
         return mdCount.getOrDefault(world.getName(), Collections.emptyMap());
     }
 
