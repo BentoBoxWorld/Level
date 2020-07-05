@@ -21,7 +21,6 @@ import org.bukkit.World;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.events.addon.AddonBaseEvent;
 import world.bentobox.bentobox.api.events.addon.AddonEvent;
 import world.bentobox.bentobox.api.panels.PanelItem;
@@ -126,13 +125,10 @@ public class LevelsManager {
                 result.complete(null);
             }
             // Save result
-            addon.logWarning("Saving results");
             setIslandResults(island.getWorld(), island.getOwner(), r);
             // Save top ten
-            addon.logWarning("Saving top ten");
             addon.getManager().saveTopTen(island.getWorld());
             // Save the island scan details
-            addon.logWarning("Saved");
             result.complete(r);
         });
         return result;
@@ -435,9 +431,7 @@ public class LevelsManager {
      * @param lv - initial island level
      */
     public void setInitialIslandLevel(@NonNull Island island, long lv) {
-        BentoBox.getInstance().logDebug("Setting initial island level " + island +" " + lv);
         if (island.getOwner() == null || island.getWorld() == null) return;
-        BentoBox.getInstance().logDebug("saving");
         levelsCache.computeIfAbsent(island.getOwner(), LevelsData::new).setInitialLevel(island.getWorld(), lv);
         handler.saveObjectAsync(levelsCache.get(island.getOwner()));
     }
