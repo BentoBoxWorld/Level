@@ -236,7 +236,8 @@ public class IslandLevelCalculator {
         reportLines.add("Level cost = " + addon.getSettings().getLevelCost());
         reportLines.add("Deaths handicap = " + results.deathHandicap.get());
         reportLines.add("Initial island level = " + (0L - addon.getManager().getInitialLevel(island)));
-        reportLines.add("Level calculated = " + addon.getManager().getIslandLevel(island.getWorld(), island.getOwner()));
+        reportLines.add("Previous level = " + addon.getManager().getIslandLevel(island.getWorld(), island.getOwner()));
+        reportLines.add("New level = " + (results.getLevel() - addon.getManager().getInitialLevel(island)));
         reportLines.add(LINE_BREAK);
         int total = 0;
         if (!results.uwCount.isEmpty()) {
