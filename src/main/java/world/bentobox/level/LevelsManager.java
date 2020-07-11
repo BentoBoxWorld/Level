@@ -475,7 +475,6 @@ public class LevelsManager {
                 return ld.getLevel(world);
             }
         }
-        addon.getPlugin().logDebug("Returning 0L");
         return 0L;
     }
 

@@ -70,6 +70,14 @@ public class LevelsData implements DataObject {
         mdCount = new HashMap<>();
     }
 
+    private void initialize() {
+        if (levels == null) levels = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        if (initialLevel == null) initialLevel = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        if (pointsToNextLevel == null) pointsToNextLevel = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        if (uwCount == null) uwCount = new HashMap<>();
+        if (mdCount == null) mdCount = new HashMap<>();
+    }
+
     /* (non-Javadoc)
      * @see world.bentobox.bbox.database.objects.DataObject#getUniqueId()
      */
@@ -92,7 +100,7 @@ public class LevelsData implements DataObject {
      * @return island level
      */
     public Long getLevel(World world) {
-        if (levels == null) levels = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        initialize();
         return world == null ? 0L : levels.getOrDefault(world.getName(), 0L);
     }
 
@@ -100,7 +108,7 @@ public class LevelsData implements DataObject {
      * @return the levels
      */
     public Map<String, Long> getLevels() {
-        if (levels == null) levels = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        initialize();
         return levels;
     }
 
@@ -108,7 +116,7 @@ public class LevelsData implements DataObject {
      * @param levels the levels to set
      */
     public void setLevels(Map<String, Long> levels) {
-        if (levels == null) levels = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        initialize();
         this.levels = levels;
     }
 
@@ -118,7 +126,7 @@ public class LevelsData implements DataObject {
      * @param lv - level
      */
     public void setLevel(World world, Long lv) {
-        if (levels == null) levels = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        initialize();
         String name = world.getName().toLowerCase(Locale.ENGLISH);
         levels.put(name, lv - this.initialLevel.getOrDefault(name, 0L));
     }
@@ -129,7 +137,7 @@ public class LevelsData implements DataObject {
      * @param level - level
      */
     public void setInitialLevel(World world, long level) {
-        if (initialLevel == null) initialLevel = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        initialize();
         this.initialLevel.put(world.getName().toLowerCase(Locale.ENGLISH), level);
     }
 
@@ -137,7 +145,7 @@ public class LevelsData implements DataObject {
      * @return the initialLevel
      */
     public Map<String, Long> getInitialLevel() {
-        if (initialLevel == null) initialLevel = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        initialize();
         return initialLevel;
     }
 
@@ -145,7 +153,7 @@ public class LevelsData implements DataObject {
      * @param initialLevel the initialLevel to set
      */
     public void setInitialLevel(Map<String, Long> initialLevel) {
-        if (initialLevel == null) initialLevel = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        initialize();
         this.initialLevel = initialLevel;
     }
 
@@ -155,7 +163,7 @@ public class LevelsData implements DataObject {
      * @return initial island level or 0 by default
      */
     public long getInitialLevel(World world) {
-        if (initialLevel == null) initialLevel = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        initialize();
         return initialLevel.getOrDefault(world.getName().toLowerCase(Locale.ENGLISH), 0L);
     }
 
@@ -164,6 +172,7 @@ public class LevelsData implements DataObject {
      * @param world - world to remove
      */
     public void remove(World world) {
+        initialize();
         this.levels.remove(world.getName().toLowerCase(Locale.ENGLISH));
         this.initialLevel.remove(world.getName().toLowerCase(Locale.ENGLISH));
         this.pointsToNextLevel.remove(world.getName().toLowerCase(Locale.ENGLISH));
@@ -175,7 +184,7 @@ public class LevelsData implements DataObject {
      * @return the pointsToNextLevel
      */
     public Map<String, Long> getPointsToNextLevel() {
-        if (pointsToNextLevel == null) pointsToNextLevel = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        initialize();
         return pointsToNextLevel;
     }
 
@@ -183,7 +192,7 @@ public class LevelsData implements DataObject {
      * @param pointsToNextLevel the pointsToNextLevel to set
      */
     public void setPointsToNextLevel(Map<String, Long> pointsToNextLevel) {
-        if (pointsToNextLevel == null) pointsToNextLevel = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        initialize();
         this.pointsToNextLevel = pointsToNextLevel;
     }
 
@@ -194,7 +203,7 @@ public class LevelsData implements DataObject {
      * @param points - points to next level
      */
     public void setPointsToNextLevel(World world, Long points) {
-        if (pointsToNextLevel == null) pointsToNextLevel = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        initialize();
         pointsToNextLevel.put(world.getName().toLowerCase(Locale.ENGLISH), points);
     }
 
@@ -205,7 +214,7 @@ public class LevelsData implements DataObject {
      * @return points to next level or zero if unknown
      */
     public long getPointsToNextLevel(World world) {
-        if (pointsToNextLevel == null) pointsToNextLevel = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        initialize();
         return pointsToNextLevel.getOrDefault(world.getName().toLowerCase(Locale.ENGLISH), 0L);
     }
 
@@ -213,7 +222,7 @@ public class LevelsData implements DataObject {
      * @param uwCount the uwCount to set
      */
     public void setUwCount(World world, Multiset<Material> uwCount) {
-        if (this.uwCount == null) this.uwCount = new HashMap<>();
+        initialize();
         Map<Material, Integer> count = new EnumMap<>(Material.class);
         uwCount.forEach(m -> count.put(m, uwCount.count(m)));
 
@@ -224,7 +233,7 @@ public class LevelsData implements DataObject {
      * @param mdCount the mdCount to set
      */
     public void setMdCount(World world, Multiset<Material> mdCount) {
-        if (this.mdCount == null) this.mdCount = new HashMap<>();
+        initialize();
         Map<Material, Integer> count = new EnumMap<>(Material.class);
         mdCount.forEach(m -> count.put(m, mdCount.count(m)));
 
@@ -237,7 +246,7 @@ public class LevelsData implements DataObject {
      * @return the uwCount
      */
     public Map<Material, Integer> getUwCount(World world) {
-        if (this.uwCount == null) this.uwCount = new HashMap<>();
+        initialize();
         return uwCount.getOrDefault(world.getName(), Collections.emptyMap());
     }
 
@@ -246,7 +255,7 @@ public class LevelsData implements DataObject {
      * @return the mdCount
      */
     public Map<Material, Integer> getMdCount(World world) {
-        if (this.mdCount == null) this.mdCount = new HashMap<>();
+        initialize();
         return mdCount.getOrDefault(world.getName(), Collections.emptyMap());
     }
 
