@@ -208,16 +208,33 @@ public class LevelsManager {
 
         // Top Ten
         int i = 0;
+        boolean inTopTen = false;
         for (Entry<UUID, Long> m : topTen.entrySet()) {
-            panel.item(SLOTS[i], getHead(i++, m.getValue(), m.getKey(), user, world));
+            PanelItem h = getHead((i+1), m.getValue(), m.getKey(), user, world);
+            panel.item(SLOTS[i], h);
+            // If this is also the asking player
+            if (m.getKey().equals(user.getUniqueId())) {
+                inTopTen = true;
+                panel.item(49, h);
+                setClickHandler(h, user, world);
+            }
+            i++;
         }
         // Show remaining slots
         for (; i < SLOTS.length; i++) {
             panel.item(SLOTS[i], new PanelItemBuilder().icon(Material.GREEN_STAINED_GLASS_PANE).name(String.valueOf(i + 1)).build());
         }
 
-        // Add yourself
-        PanelItem head = getHead(0, this.getIslandLevel(world, user.getUniqueId()), user.getUniqueId(), user, world);
+        // Add yourself if you were not already in the top ten
+        if (!inTopTen) {
+            PanelItem head = getHead(0, this.getIslandLevel(world, user.getUniqueId()), user.getUniqueId(), user, world);
+            setClickHandler(head, user, world);
+            panel.item(49, head);
+        }
+        panel.build();
+    }
+
+    private void setClickHandler(PanelItem head, User user, World world) {
         head.setClickHandler((p, u, ch, s) -> {
             new TabbedPanelBuilder()
             .user(user)
@@ -231,8 +248,7 @@ public class LevelsManager {
             .build().openPanel();
             return true;
         });
-        panel.item(49, head);
-        panel.build();
+
     }
 
     /**
