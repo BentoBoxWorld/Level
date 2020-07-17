@@ -147,7 +147,7 @@
             <id>codemc-public</id>
             <url>https://repo.codemc.org/repository/maven-public/</url>
         </repository>
-        <!--Wild Stacker repo-->
+        <!--Wild Stacker repo -->
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
@@ -187,11 +187,20 @@
             <version>${bentobox.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!-- Wild Stacker dependency-->
+        <!-- Wild Stacker dependency -->
         <dependency>
             <groupId>com.github.OmerBenGera</groupId>
             <artifactId>WildStackerAPI</artifactId>
             <version>b17</version>
+        </dependency>
+        <!-- Static analysis -->
+        <!-- We are using Eclipse's annotations. If you're using IDEA, update 
+            your project settings to take these into account for in real time static 
+            analysis -->
+        <dependency>
+            <groupId>org.eclipse.jdt</groupId>
+            <artifactId>org.eclipse.jdt.annotation</artifactId>
+            <version>2.2.200</version>
         </dependency>
     </dependencies>
 
