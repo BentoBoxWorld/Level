@@ -1,6 +1,8 @@
 package world.bentobox.level.calculators;
 
+import java.util.HashSet;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -19,9 +21,9 @@ import world.bentobox.level.Level;
 public class Pipeliner {
 
     private static final int START_DURATION = 10; // 10 seconds
-    private final Queue<IslandLevelCalculator> processQueue;
+    private final Queue<IslandLevelCalculator> toProcessQueue;
+    private final Set<IslandLevelCalculator> inProcessQueue;
     private final BukkitTask task;
-    private boolean inProcess;
     private final Level addon;
     private long time;
     private long count;
@@ -31,25 +33,26 @@ public class Pipeliner {
      */
     public Pipeliner(Level addon) {
         this.addon = addon;
-        processQueue = new ConcurrentLinkedQueue<>();
+        toProcessQueue = new ConcurrentLinkedQueue<>();
+        inProcessQueue = new HashSet<>();
         // Loop continuously - check every tick if there is an island to scan
         task = Bukkit.getScheduler().runTaskTimer(BentoBox.getInstance(), () -> {
             if (!BentoBox.getInstance().isEnabled()) {
                 cancel();
                 return;
             }
-            // One island at a time
-            if (inProcess || processQueue.isEmpty()) return;
-
-            IslandLevelCalculator iD = processQueue.poll();
-            // Ignore deleted or unonwed islands
-            if (iD.getIsland().isDeleted() || iD.getIsland().isUnowned()) return;
-            // Start the process
-            inProcess = true;
-            // Start the scanning of a island with the first chunk
-            scanChunk(iD);
-
-        }, 1L, 1L);
+            // Complete the current to Process queue first
+            if (!inProcessQueue.isEmpty() || toProcessQueue.isEmpty()) return;
+            for (int j = 0; j < addon.getSettings().getConcurrentIslandCalcs() && !toProcessQueue.isEmpty(); j++) {
+                IslandLevelCalculator iD = toProcessQueue.poll();
+                // Ignore deleted or unonwed islands
+                if (!iD.getIsland().isDeleted() && !iD.getIsland().isUnowned()) {
+                    inProcessQueue.add(iD);
+                    // Start the scanning of a island with the first chunk
+                    scanChunk(iD);
+                }
+            }
+        }, 1L, 10L);
     }
 
     private void cancel() {
@@ -60,7 +63,7 @@ public class Pipeliner {
      * @return number of islands currently in the queue or in process
      */
     public int getIslandsInQueue() {
-        return inProcess ? processQueue.size() + 1 : processQueue.size();
+        return inProcessQueue.size() + toProcessQueue.size();
     }
 
     /**
@@ -68,10 +71,9 @@ public class Pipeliner {
      * @param iD
      */
     private void scanChunk(IslandLevelCalculator iD) {
-        if (iD.getIsland().isDeleted() || iD.getIsland().isUnowned()) {
+        if (iD.getIsland().isDeleted() || iD.getIsland().isUnowned() || task.isCancelled()) {
             // Island is deleted, so finish early with nothing
-            addon.log("Canceling island level calculation - island has been deleted, or has become unowned.");
-            inProcess = false;
+            inProcessQueue.remove(iD);
             iD.getR().complete(null);
             return;
         }
@@ -80,12 +82,12 @@ public class Pipeliner {
             if (!Bukkit.isPrimaryThread()) {
                 addon.getPlugin().logError("scanChunk not on Primary Thread!");
             }
-            if (Boolean.TRUE.equals(r)) {
+            if (Boolean.TRUE.equals(r) || task.isCancelled()) {
                 // scanNextChunk returns true if there are more chunks to scan
                 scanChunk(iD);
             } else {
                 // Done
-                inProcess = false;
+                inProcessQueue.remove(iD);
                 iD.getR().complete(iD.getResults());
             }
         });
@@ -100,7 +102,12 @@ public class Pipeliner {
      */
     public CompletableFuture<Results> addIsland(Island island) {
         CompletableFuture<Results> r = new CompletableFuture<>();
-        processQueue.add(new IslandLevelCalculator(addon, island, r));
+        // Check if queue already contains island
+        /*
+        if (processQueue.parallelStream().map(IslandLevelCalculator::getIsland).anyMatch(island::equals)) {
+            return CompletableFuture.completedFuture(null);
+        }*/
+        toProcessQueue.add(new IslandLevelCalculator(addon, island, r));
         count++;
         return r;
     }
@@ -120,6 +127,16 @@ public class Pipeliner {
     public void setTime(long time) {
         // Running average
         this.time += time;
+    }
+
+    /**
+     * Stop the current queue.
+     */
+    public void stop() {
+        addon.log("Stopping Level queue");
+        task.cancel();
+        this.inProcessQueue.clear();
+        this.toProcessQueue.clear(); 
     }
 
 

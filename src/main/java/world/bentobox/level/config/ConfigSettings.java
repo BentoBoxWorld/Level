@@ -18,6 +18,12 @@ public class ConfigSettings implements ConfigObject {
     @ConfigComment("Level will NOT hook into these game mode addons.")
     @ConfigEntry(path = "disabled-game-modes")
     private List<String> gameModes = Collections.emptyList();
+    
+    @ConfigComment("")
+    @ConfigComment("Number of concurrent island calculations")
+    @ConfigComment("If your CPU can handle it, you can run parallel island calcs if there are more than one in the queue")
+    @ConfigEntry(path = "concurrent-island-calcs")
+    private int concurrentIslandCalcs = 1;
 
     @ConfigComment("")
     @ConfigComment("Calculate island level on login")
@@ -289,6 +295,24 @@ public class ConfigSettings implements ConfigObject {
      */
     public void setIncludeChests(boolean includeChests) {
         this.includeChests = includeChests;
+    }
+
+
+    /**
+     * @return the concurrentIslandCalcs
+     */
+    public int getConcurrentIslandCalcs() {
+        if (concurrentIslandCalcs < 1) concurrentIslandCalcs = 1;
+        return concurrentIslandCalcs;
+    }
+
+
+    /**
+     * @param concurrentIslandCalcs the concurrentIslandCalcs to set
+     */
+    public void setConcurrentIslandCalcs(int concurrentIslandCalcs) {
+        if (concurrentIslandCalcs < 1) concurrentIslandCalcs = 1;
+        this.concurrentIslandCalcs = concurrentIslandCalcs;
     }
 
 

@@ -121,7 +121,6 @@ public class LevelsManager {
         addon.getPipeliner().addIsland(island).thenAccept(r -> {
             // Results are irrelevant because the island is unowned or deleted, or IslandLevelCalcEvent is cancelled
             if (r == null || fireIslandLevelCalcEvent(targetPlayer, island, r)) {
-                addon.logWarning("Island calcs stopped due to event cancelation");
                 result.complete(null);
             }
             // Save result

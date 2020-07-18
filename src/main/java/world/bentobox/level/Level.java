@@ -100,7 +100,32 @@ public class Level extends Addon implements Listener {
     @EventHandler
     public void onBentoBoxReady(BentoBoxReadyEvent e) {
         manager.loadTopTens();
+        /*
+         * DEBUG code to generate fake islands and then try to level them all.
+        Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
+            getPlugin().getAddonsManager().getGameModeAddons().stream()
+            .filter(gm -> !settings.getGameModes().contains(gm.getDescription().getName()))
+            .forEach(gm -> {
+                for (int i = 0; i < 1000; i++) {
+                    try {
+                        NewIsland.builder().addon(gm).player(User.getInstance(UUID.randomUUID())).name("default").reason(Reason.CREATE).noPaste().build();
+                    } catch (IOException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
+                }
+            });
+            // Queue all islands DEBUG
+
+            getIslands().getIslands().stream().filter(Island::isOwned).forEach(is -> {
+
+                this.getManager().calculateLevel(is.getOwner(), is).thenAccept(r -> 
+                log("Result for island calc " + r.getLevel() + " at " + is.getCenter())); 
+
+            });
+       }, 60L);*/
     }
+
 
     private void registerPlaceholders(GameModeAddon gm) {
         if (getPlugin().getPlaceholdersManager() == null) return;
@@ -172,6 +197,9 @@ public class Level extends Addon implements Listener {
 
     @Override
     public void onDisable() {
+        // Stop the pipeline
+        this.getPipeliner().stop();
+        // Save player data and the top tens
         if (manager != null) {
             manager.save();
         }
