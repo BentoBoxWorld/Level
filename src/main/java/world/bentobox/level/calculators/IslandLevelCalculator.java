@@ -356,11 +356,9 @@ public class IslandLevelCalculator {
     /**
      * Count the blocks on the island
      * @param result - the CompletableFuture that should be completed when this scan is done
-     * @param chunk - the chunk to scan
+     * @param chunkSnapshot - the chunk to scan
      */
-    private void scanAsync(CompletableFuture<Boolean> result, Chunk chunk) {
-        // Get a thread-safe snapshot of the chunk
-        ChunkSnapshot chunkSnapshot = chunk.getChunkSnapshot();
+    private void scanAsync(CompletableFuture<Boolean> result, ChunkSnapshot chunkSnapshot, Chunk chunk) {
         for (int x = 0; x< 16; x++) {
             // Check if the block coordinate is inside the protection zone and if not, don't count it
             if (chunkSnapshot.getX() * 16 + x < island.getMinProtectedX() || chunkSnapshot.getX() * 16 + x >= island.getMinProtectedX() + island.getProtectionRange() * 2) {
@@ -442,7 +440,8 @@ public class IslandLevelCalculator {
         }
         // Count blocks in chunk
         CompletableFuture<Boolean> result = new CompletableFuture<>();
-        Bukkit.getScheduler().runTaskAsynchronously(BentoBox.getInstance(), () -> scanAsync(result, chunk));
+        ChunkSnapshot snapshot = chunk.getChunkSnapshot();
+        Bukkit.getScheduler().runTaskAsynchronously(BentoBox.getInstance(), () -> scanAsync(result, snapshot, chunk));
         return result;
     }
 
