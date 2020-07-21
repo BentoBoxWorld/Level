@@ -226,7 +226,7 @@ public class LevelsData implements DataObject {
         Map<Material, Integer> count = new EnumMap<>(Material.class);
         uwCount.forEach(m -> count.put(m, uwCount.count(m)));
 
-        this.uwCount.put(world.getName(), count);
+        this.uwCount.put(world.getName().toLowerCase(Locale.ENGLISH), count);
     }
 
     /**
@@ -237,7 +237,7 @@ public class LevelsData implements DataObject {
         Map<Material, Integer> count = new EnumMap<>(Material.class);
         mdCount.forEach(m -> count.put(m, mdCount.count(m)));
 
-        this.mdCount.put(world.getName(), count);
+        this.mdCount.put(world.getName().toLowerCase(Locale.ENGLISH), count);
 
     }
 
@@ -247,7 +247,7 @@ public class LevelsData implements DataObject {
      */
     public Map<Material, Integer> getUwCount(World world) {
         initialize();
-        return uwCount.getOrDefault(world.getName(), Collections.emptyMap());
+        return uwCount.getOrDefault(world.getName().toLowerCase(Locale.ENGLISH), Collections.emptyMap());
     }
 
     /**
@@ -256,7 +256,7 @@ public class LevelsData implements DataObject {
      */
     public Map<Material, Integer> getMdCount(World world) {
         initialize();
-        return mdCount.getOrDefault(world.getName(), Collections.emptyMap());
+        return mdCount.getOrDefault(world.getName().toLowerCase(Locale.ENGLISH), Collections.emptyMap());
     }
 
 
