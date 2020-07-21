@@ -101,7 +101,7 @@ public class LevelsData implements DataObject {
      */
     public Long getLevel(World world) {
         initialize();
-        return world == null ? 0L : levels.getOrDefault(world.getName(), 0L);
+        return world == null ? 0L : levels.getOrDefault(world.getName().toLowerCase(Locale.ENGLISH), 0L);
     }
 
     /**
