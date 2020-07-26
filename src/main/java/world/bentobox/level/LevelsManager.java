@@ -85,11 +85,9 @@ public class LevelsManager {
         topTenLists = new HashMap<>();
         // Background
         background = new PanelItemBuilder().icon(Material.BLACK_STAINED_GLASS_PANE).name(" ").build();
-        // Perform upgrade check
-        migrate(addon);
     }
 
-    private void migrate(Level addon2) {
+    public void migrate(Level addon2) {
         Database<LevelsData> oldDb = new Database<>(addon, LevelsData.class);
         oldDb.loadObjects().forEach(ld -> {
             try {
@@ -115,7 +113,7 @@ public class LevelsManager {
                 // Now delete the old database entry
                 oldDb.deleteID(ld.getUniqueId());
             } catch (Exception e) {
-                addon.logError("Could not migrate level data database! ");
+                addon.logError("Could not migrate level data database! " + e.getMessage());
                 e.printStackTrace();
                 return;
             }
@@ -389,9 +387,7 @@ public class LevelsManager {
     public String getPointsToNextString(@NonNull World world, @Nullable UUID targetPlayer) {
         if (targetPlayer == null) return "";
         Island island = addon.getIslands().getIsland(world, targetPlayer);
-        if (island == null) return "";
-        IslandLevels ld = getLevelsData(island);
-        return ld == null ? "" : String.valueOf(ld.getPointsToNextLevel());
+        return island == null ? "" : String.valueOf(getLevelsData(island).getPointsToNextLevel());
     }
 
     /**
@@ -495,7 +491,9 @@ public class LevelsManager {
         Island island = addon.getIslands().getIsland(world, targetPlayer);
         if (island != null) {
             String id = island.getUniqueId();
-            levelsCache.computeIfAbsent(id, IslandLevels::new).setLevel(lv);
+            IslandLevels il = levelsCache.computeIfAbsent(id, IslandLevels::new);
+            // Remove the initial level
+            il.setLevel(lv - il.getInitialLevel());
             handler.saveObjectAsync(levelsCache.get(id));
             // Update TopTen
             addToTopTen(world, targetPlayer, levelsCache.get(id).getLevel());
@@ -514,7 +512,7 @@ public class LevelsManager {
         Island island = addon.getIslands().getIsland(world, owner);
         if (island == null) return;
         IslandLevels ld = levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new);
-        ld.setLevel(r.getLevel());
+        ld.setLevel(r.getLevel() - ld.getInitialLevel());
         ld.setUwCount(Maps.asMap(r.getUwCount().elementSet(), elem -> r.getUwCount().count(elem)));
         ld.setMdCount(Maps.asMap(r.getMdCount().elementSet(), elem -> r.getMdCount().count(elem)));
         ld.setPointsToNextLevel(r.getPointsToNextLevel());
@@ -522,6 +520,15 @@ public class LevelsManager {
         handler.saveObjectAsync(ld);
         // Update TopTen
         addToTopTen(world, owner, ld.getLevel());
+    }
+
+    /**
+     * Removes island from cache when it is deleted
+     * @param uniqueId - id of island
+     */
+    public void deleteIsland(String uniqueId) {
+        levelsCache.remove(uniqueId);
+        handler.deleteID(uniqueId);
     }
 
 }

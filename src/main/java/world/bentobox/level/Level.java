@@ -98,6 +98,9 @@ public class Level extends Addon implements Listener {
 
     @EventHandler
     public void onBentoBoxReady(BentoBoxReadyEvent e) {
+        // Perform upgrade check
+        manager.migrate(this);
+        // Load TopTens
         manager.loadTopTens();
         /*
          * DEBUG code to generate fake islands and then try to level them all.

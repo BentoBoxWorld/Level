@@ -8,6 +8,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandCreatedEvent;
+import world.bentobox.bentobox.api.events.island.IslandEvent.IslandDeleteEvent;
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandPreclearEvent;
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandRegisteredEvent;
 import world.bentobox.bentobox.api.events.island.IslandEvent.IslandResettedEvent;
@@ -65,6 +66,12 @@ public class IslandActivitiesListeners implements Listener {
         remove(world, uuid);
     }
 
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onIslandDeleted(IslandDeleteEvent e) {
+        // Remove island
+        addon.getManager().deleteIsland(e.getIsland().getUniqueId());
+    }
+
     private void remove(World world, UUID uuid) {
         if (uuid != null && world != null) {
             addon.getManager().removeEntry(world, uuid);
@@ -88,14 +95,14 @@ public class IslandActivitiesListeners implements Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onIsland(IslandUnregisteredEvent e) {
 
-        // Remove player from the top ten and level
+        // Remove player from the top ten
         remove(e.getIsland().getWorld(), e.getPlayerUUID());
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onIsland(IslandRegisteredEvent e) {
 
-        // Remove player from the top ten and level
+        // Remove player from the top ten
         remove(e.getIsland().getWorld(), e.getPlayerUUID());
     }
 
