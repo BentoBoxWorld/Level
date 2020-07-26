@@ -47,7 +47,7 @@ public class AdminSetInitialLevelCommand extends CompositeCommand {
     @Override
     public boolean execute(User user, String label, List<String> args) {
         String initialLevel = String.valueOf(addon.getManager().getInitialLevel(island));
-        long lv = Long.valueOf(args.get(1));
+        long lv = Long.parseLong(args.get(1));
         addon.getManager().setInitialIslandLevel(island, lv);
         user.sendMessage("admin.level.sethandicap.changed", TextVariables.NUMBER, initialLevel, "[new_number]", String.valueOf(lv));
         return true;
