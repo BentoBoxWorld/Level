@@ -27,8 +27,6 @@ public class JoinLeaveListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent e) {
-        // Load player into cache
-        addon.getManager().getLevelsData(e.getPlayer().getUniqueId());
         // If level calc on login is enabled, run through all the worlds and calculate the level
         if (addon.getSettings().isCalcOnLogin()) {
             addon.getPlugin().getAddonsManager().getGameModeAddons().stream()

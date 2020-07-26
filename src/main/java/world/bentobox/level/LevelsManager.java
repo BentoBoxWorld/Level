@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -20,6 +21,8 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.google.common.collect.Maps;
 
 import world.bentobox.bentobox.api.events.addon.AddonBaseEvent;
 import world.bentobox.bentobox.api.events.addon.AddonEvent;
@@ -33,6 +36,7 @@ import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.level.calculators.Results;
 import world.bentobox.level.events.IslandLevelCalculatedEvent;
 import world.bentobox.level.events.IslandPreLevelEvent;
+import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.objects.TopTenData;
 import world.bentobox.level.panels.DetailsGUITab;
@@ -55,9 +59,9 @@ public class LevelsManager {
 
 
     // Database handler for level data
-    private final Database<LevelsData> handler;
+    private final Database<IslandLevels> handler;
     // A cache of island levels.
-    private final Map<UUID, LevelsData> levelsCache;
+    private final Map<String, IslandLevels> levelsCache;
 
     private final Database<TopTenData> topTenHandler;
     // Top ten lists
@@ -72,7 +76,7 @@ public class LevelsManager {
         // Get the BentoBox database
         // Set up the database handler to store and retrieve data
         // Note that these are saved by the BentoBox database
-        handler = new Database<>(addon, LevelsData.class);
+        handler = new Database<>(addon, IslandLevels.class);
         // Top Ten handler
         topTenHandler = new Database<>(addon, TopTenData.class);
         // Initialize the cache
@@ -81,6 +85,41 @@ public class LevelsManager {
         topTenLists = new HashMap<>();
         // Background
         background = new PanelItemBuilder().icon(Material.BLACK_STAINED_GLASS_PANE).name(" ").build();
+        // Perform upgrade check
+        migrate(addon);
+    }
+
+    private void migrate(Level addon2) {
+        Database<LevelsData> oldDb = new Database<>(addon, LevelsData.class);
+        oldDb.loadObjects().forEach(ld -> {
+            try {
+                UUID owner = UUID.fromString(ld.getUniqueId());
+                // Step through each world
+                ld.getLevels().keySet().stream()
+                // World
+                .map(Bukkit::getWorld).filter(Objects::nonNull)
+                // Island
+                .map(w -> addon.getIslands().getIsland(w, owner)).filter(Objects::nonNull)
+                .forEach(i -> {
+                    // Make new database entry
+                    World w = i.getWorld();
+                    IslandLevels il = new IslandLevels(i.getUniqueId());
+                    il.setInitialLevel(ld.getInitialLevel(w));
+                    il.setLevel(ld.getLevel(w));
+                    il.setMdCount(ld.getMdCount(w));
+                    il.setPointsToNextLevel(ld.getPointsToNextLevel(w));
+                    il.setUwCount(ld.getUwCount(w));
+                    // Save it
+                    handler.saveObjectAsync(il);
+                });
+                // Now delete the old database entry
+                oldDb.deleteID(ld.getUniqueId());
+            } catch (Exception e) {
+                addon.logError("Could not migrate level data database! ");
+                e.printStackTrace();
+                return;
+            }
+        });
     }
 
     /**
@@ -287,8 +326,8 @@ public class LevelsManager {
      */
     public long getInitialLevel(Island island) {
         @Nullable
-        LevelsData ld = getLevelsData(island.getOwner());
-        return ld == null ? 0 : ld.getInitialLevel(island.getWorld());
+        IslandLevels ld = getLevelsData(island);
+        return ld == null ? 0 : ld.getInitialLevel();
     }
 
     /**
@@ -299,11 +338,9 @@ public class LevelsManager {
      */
     public long getIslandLevel(@NonNull World world, @Nullable UUID targetPlayer) {
         if (targetPlayer == null) return 0L;
-        // Get the island owner
-        UUID owner = addon.getIslands().getOwner(world, targetPlayer);
-        if (owner == null) return 0L;
-        LevelsData ld = getLevelsData(owner);
-        return ld == null ? 0L : ld.getLevel(world);
+        // Get the island
+        Island island = addon.getIslands().getIsland(world, targetPlayer);
+        return island == null ? 0L : getLevelsData(island).getLevel();
     }
 
     /**
@@ -317,23 +354,30 @@ public class LevelsManager {
     }
 
     /**
-     * Load a level data for the island owner from the cache or database. Only island owners are stored.
-     * @param islandOwner - UUID of island owner
-     * @return LevelsData object or null if not found
+     * Load a level data for the island from the cache or database.
+     * @param island - UUID of island
+     * @return IslandLevels object
      */
-    @Nullable
-    public LevelsData getLevelsData(@NonNull UUID islandOwner) {
-        // Get from database if not in cache
-        if (!levelsCache.containsKey(islandOwner) && handler.objectExists(islandOwner.toString())) {
-            LevelsData ld = handler.loadObject(islandOwner.toString());
-            if (ld != null) {
-                levelsCache.put(islandOwner, ld);
-            } else {
-                handler.deleteID(islandOwner.toString());
-            }
+    @NonNull
+    public IslandLevels getLevelsData(@NonNull Island island) {
+        String id = island.getUniqueId();
+        if (levelsCache.containsKey(id)) {
+            return levelsCache.get(id);
         }
-        // Return cached value or null
-        return levelsCache.get(islandOwner);
+        // Get from database if not in cache
+        if (handler.objectExists(id)) {
+            IslandLevels ld = handler.loadObject(id);
+            if (ld != null) {
+                levelsCache.put(id, ld);
+            } else {
+                handler.deleteID(id);
+                levelsCache.put(id, new IslandLevels(id));
+            }
+        } else {
+            levelsCache.put(id, new IslandLevels(id));
+        }
+        // Return cached value
+        return levelsCache.get(id);
     }
 
     /**
@@ -344,10 +388,10 @@ public class LevelsManager {
      */
     public String getPointsToNextString(@NonNull World world, @Nullable UUID targetPlayer) {
         if (targetPlayer == null) return "";
-        UUID owner = addon.getIslands().getOwner(world, targetPlayer);
-        if (owner == null) return "";
-        LevelsData ld = getLevelsData(owner);
-        return ld == null ? "" : String.valueOf(ld.getPointsToNextLevel(world));
+        Island island = addon.getIslands().getIsland(world, targetPlayer);
+        if (island == null) return "";
+        IslandLevels ld = getLevelsData(island);
+        return ld == null ? "" : String.valueOf(ld.getPointsToNextLevel());
     }
 
     /**
@@ -394,9 +438,6 @@ public class LevelsManager {
                 // Update based on user data
                 // Remove any non island owners
                 tt.getTopTen().keySet().removeIf(u -> !addon.getIslands().isOwner(world, u));
-                for (UUID uuid : tt.getTopTen().keySet()) {
-                    tt.getTopTen().compute(uuid, (k,v) -> v = updateLevel(k, world));
-                }
             } else {
                 addon.logError("TopTen world '" + tt.getUniqueId() + "' is not known on server. You might want to delete this table. Skipping...");
             }
@@ -409,14 +450,6 @@ public class LevelsManager {
      * @param uuid - the player's uuid
      */
     public void removeEntry(World world, UUID uuid) {
-        // Load the user if they haven't yet done anything to put them in the cache
-        this.getLevelsData(uuid);
-        // Remove them
-        if (levelsCache.containsKey(uuid)) {
-            levelsCache.get(uuid).remove(world);
-            // Save
-            handler.saveObjectAsync(levelsCache.get(uuid));
-        }
         if (topTenLists.containsKey(world)) {
             topTenLists.get(world).getTopTen().remove(uuid);
             topTenHandler.saveObjectAsync(topTenLists.get(world));
@@ -441,14 +474,14 @@ public class LevelsManager {
     }
 
     /**
-     * Set an initial island level for player
-     * @param island - the island to set. Must have a non-null world and owner
+     * Set an initial island level
+     * @param island - the island to set. Must have a non-null world
      * @param lv - initial island level
      */
     public void setInitialIslandLevel(@NonNull Island island, long lv) {
-        if (island.getOwner() == null || island.getWorld() == null) return;
-        levelsCache.computeIfAbsent(island.getOwner(), LevelsData::new).setInitialLevel(island.getWorld(), lv);
-        handler.saveObjectAsync(levelsCache.get(island.getOwner()));
+        if (island.getWorld() == null) return;
+        levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new).setInitialLevel(lv);
+        handler.saveObjectAsync(levelsCache.get(island.getUniqueId()));
     }
 
     /**
@@ -458,10 +491,16 @@ public class LevelsManager {
      * @param lv - level
      */
     public void setIslandLevel(@NonNull World world, @NonNull UUID targetPlayer, long lv) {
-        levelsCache.computeIfAbsent(targetPlayer, LevelsData::new).setLevel(world, lv);
-        handler.saveObjectAsync(levelsCache.get(targetPlayer));
-        // Update TopTen
-        addToTopTen(world, targetPlayer, levelsCache.get(targetPlayer).getLevel(world));
+        // Get the island
+        Island island = addon.getIslands().getIsland(world, targetPlayer);
+        if (island != null) {
+            String id = island.getUniqueId();
+            levelsCache.computeIfAbsent(id, IslandLevels::new).setLevel(lv);
+            handler.saveObjectAsync(levelsCache.get(id));
+            // Update TopTen
+            addToTopTen(world, targetPlayer, levelsCache.get(id).getLevel());
+        }
+
     }
 
     /**
@@ -471,26 +510,18 @@ public class LevelsManager {
      * @param r - results of the calculation
      */
     private void setIslandResults(World world, @NonNull UUID owner, Results r) {
-        LevelsData ld = levelsCache.computeIfAbsent(owner, LevelsData::new);
-        ld.setLevel(world, r.getLevel());
-        ld.setUwCount(world, r.getUwCount());
-        ld.setMdCount(world, r.getMdCount());
-        ld.setPointsToNextLevel(world, r.getPointsToNextLevel());
-        levelsCache.put(owner, ld);
+        // Get the island
+        Island island = addon.getIslands().getIsland(world, owner);
+        if (island == null) return;
+        IslandLevels ld = levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new);
+        ld.setLevel(r.getLevel());
+        ld.setUwCount(Maps.asMap(r.getUwCount().elementSet(), elem -> r.getUwCount().count(elem)));
+        ld.setMdCount(Maps.asMap(r.getMdCount().elementSet(), elem -> r.getMdCount().count(elem)));
+        ld.setPointsToNextLevel(r.getPointsToNextLevel());
+        levelsCache.put(island.getUniqueId(), ld);
         handler.saveObjectAsync(ld);
         // Update TopTen
-        addToTopTen(world, owner, ld.getLevel(world));
-    }
-
-    private Long updateLevel(UUID uuid, World world) {
-        if (handler.objectExists(uuid.toString())) {
-            @Nullable
-            LevelsData ld = handler.loadObject(uuid.toString());
-            if (ld != null) {
-                return ld.getLevel(world);
-            }
-        }
-        return 0L;
+        addToTopTen(world, owner, ld.getLevel());
     }
 
 }

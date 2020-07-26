@@ -30,7 +30,6 @@ import world.bentobox.level.config.BlockConfig;
 import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
-import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.requests.LevelRequestHandler;
 import world.bentobox.level.requests.TopTenRequestHandler;
 
@@ -119,8 +118,8 @@ public class Level extends Addon implements Listener {
 
             getIslands().getIslands().stream().filter(Island::isOwned).forEach(is -> {
 
-                this.getManager().calculateLevel(is.getOwner(), is).thenAccept(r -> 
-                log("Result for island calc " + r.getLevel() + " at " + is.getCenter())); 
+                this.getManager().calculateLevel(is.getOwner(), is).thenAccept(r ->
+                log("Result for island calc " + r.getLevel() + " at " + is.getCenter()));
 
             });
        }, 60L);*/
@@ -319,12 +318,4 @@ public class Level extends Addon implements Listener {
         if (island != null) getManager().calculateLevel(playerUUID, island);
     }
 
-    /**
-     * Load a player from the cache or database
-     * @param targetPlayer - UUID of target player
-     * @return LevelsData object or null if not found
-     */
-    public LevelsData getLevelsData(UUID targetPlayer) {
-        return getManager().getLevelsData(targetPlayer);
-    }
 }

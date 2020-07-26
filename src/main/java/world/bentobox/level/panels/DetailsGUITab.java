@@ -27,7 +27,7 @@ import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
-import world.bentobox.level.objects.LevelsData;
+import world.bentobox.level.objects.IslandLevels;
 
 /**
  * @author tastybento
@@ -131,20 +131,20 @@ public class DetailsGUITab implements Tab, ClickHandler {
 
     private void generateReport(DetailsType type) {
         items = new ArrayList<>();
-        LevelsData ld = addon.getManager().getLevelsData(island.getOwner());
+        IslandLevels ld = addon.getManager().getLevelsData(island);
         // Get the items from the report
         Map<Material, Integer> sumTotal = new EnumMap<>(Material.class);
-        sumTotal.putAll(ld.getMdCount(world));
-        sumTotal.putAll(ld.getUwCount(world));
+        sumTotal.putAll(ld.getMdCount());
+        sumTotal.putAll(ld.getUwCount());
         switch(type) {
         case ABOVE_SEA_LEVEL_BLOCKS:
-            ld.getMdCount(world).forEach(this::createItem);
+            ld.getMdCount().forEach(this::createItem);
             break;
         case SPAWNERS:
             sumTotal.entrySet().stream().filter(m -> m.getKey().equals(Material.SPAWNER)).forEach(e -> createItem(e.getKey(), e.getValue()));
             break;
         case UNDERWATER_BLOCKS:
-            ld.getUwCount(world).forEach(this::createItem);
+            ld.getUwCount().forEach(this::createItem);
             break;
         default:
             sumTotal.forEach(this::createItem);
