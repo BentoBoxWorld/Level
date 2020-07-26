@@ -22,6 +22,7 @@ import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.level.calculators.Pipeliner;
 import world.bentobox.level.commands.AdminLevelCommand;
 import world.bentobox.level.commands.AdminLevelStatusCommand;
+import world.bentobox.level.commands.AdminSetInitialLevelCommand;
 import world.bentobox.level.commands.AdminTopCommand;
 import world.bentobox.level.commands.IslandLevelCommand;
 import world.bentobox.level.commands.IslandTopCommand;
@@ -189,6 +190,7 @@ public class Level extends Addon implements Listener {
             new AdminLevelCommand(this, adminCommand);
             new AdminTopCommand(this, adminCommand);
             new AdminLevelStatusCommand(this, adminCommand);
+            new AdminSetInitialLevelCommand(this, adminCommand);
         });
         gm.getPlayerCommand().ifPresent(playerCmd -> {
             new IslandLevelCommand(this, playerCmd);

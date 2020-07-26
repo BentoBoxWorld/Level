@@ -38,7 +38,7 @@ public class IslandLevelCommand extends CompositeCommand {
             final UUID playerUUID = getPlugin().getPlayers().getUUID(args.get(0));
             if (playerUUID == null) {
                 user.sendMessage("general.errors.unknown-player", TextVariables.NAME, args.get(0));
-                return true;
+                return false;
             }
             // Ops, console and admin perms can request and calculate other player levels
             if (!user.isPlayer() || user.isOp() || user.hasPermission(this.getPermissionPrefix() + "admin.level")) {
