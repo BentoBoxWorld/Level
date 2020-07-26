@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +59,7 @@ import world.bentobox.bentobox.managers.PlayersManager;
 import world.bentobox.level.calculators.Pipeliner;
 import world.bentobox.level.calculators.Results;
 import world.bentobox.level.config.ConfigSettings;
-import world.bentobox.level.objects.LevelsData;
+import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.objects.TopTenData;
 
 /**
@@ -104,7 +105,7 @@ public class LevelsManagerTest {
     @Mock
     private PluginManager pim;
     @Mock
-    private LevelsData levelsData;
+    private IslandLevels levelsData;
     @Mock
     private IslandsManager im;
 
@@ -125,6 +126,7 @@ public class LevelsManagerTest {
     /**
      * @throws java.lang.Exception
      */
+    @SuppressWarnings("unchecked")
     @Before
     public void setUp() throws Exception {
         when(addon.getPlugin()).thenReturn(plugin);
@@ -154,9 +156,11 @@ public class LevelsManagerTest {
         when(island.getMemberSet()).thenReturn(iset);
         when(island.getOwner()).thenReturn(uuid);
         when(island.getWorld()).thenReturn(world);
+        when(island.getUniqueId()).thenReturn(UUID.randomUUID().toString());
         // Default to uuid's being island owners
         when(im.isOwner(eq(world), any())).thenReturn(true);
         when(im.getOwner(any(), any(UUID.class))).thenAnswer(in -> in.getArgument(1, UUID.class));
+        when(im.getIsland(eq(world), eq(uuid))).thenReturn(island);
 
         // Player
         when(player.getUniqueId()).thenReturn(uuid);
@@ -205,9 +209,10 @@ public class LevelsManagerTest {
         // Include a known UUID
         ttd.getTopTen().put(uuid, 456789L);
         topTen.add(ttd);
-        when(handler.loadObjects()).thenReturn(topTen);
+        // Supply no island levels first, then topTen
+        when(handler.loadObjects()).thenReturn(Collections.emptyList(), topTen);
         when(handler.objectExists(anyString())).thenReturn(true);
-        when(levelsData.getLevel(any())).thenReturn(-5L, -4L, -3L, -2L, -1L, 0L, 1L, 2L, 3L, 4L, 5L, 45678L);
+        when(levelsData.getLevel()).thenReturn(-5L, -4L, -3L, -2L, -1L, 0L, 1L, 2L, 3L, 4L, 5L, 45678L);
         when(levelsData.getUniqueId()).thenReturn(uuid.toString());
         when(handler.loadObject(anyString())).thenReturn(levelsData );
 
@@ -220,6 +225,7 @@ public class LevelsManagerTest {
         when(iwm.getPermissionPrefix(any())).thenReturn("bskyblock.");
 
         lm = new LevelsManager(addon);
+        lm.migrate();
     }
 
     /**
@@ -252,7 +258,7 @@ public class LevelsManagerTest {
         lm.calculateLevel(uuid, island);
         cf.complete(results);
 
-        assertEquals(Long.valueOf(10000), lm.getLevelsData(uuid).getLevel(world));
+        assertEquals(10000L, lm.getLevelsData(island).getLevel());
         //Map<UUID, Long> tt = lm.getTopTen(world, 10);
         //assertEquals(1, tt.size());
         //assertTrue(tt.get(uuid) == 10000);
@@ -280,7 +286,9 @@ public class LevelsManagerTest {
      */
     @Test
     public void testGetPointsToNextString() {
-        assertEquals("0", lm.getPointsToNextString(world, UUID.randomUUID()));
+        // No island player
+        assertEquals("", lm.getPointsToNextString(world, UUID.randomUUID()));
+        // Player has island
         assertEquals("0", lm.getPointsToNextString(world, uuid));
     }
 
@@ -297,7 +305,7 @@ public class LevelsManagerTest {
      */
     @Test
     public void testGetLevelsData() {
-        assertEquals(levelsData, lm.getLevelsData(uuid));
+        assertEquals(levelsData, lm.getLevelsData(island));
 
     }
 

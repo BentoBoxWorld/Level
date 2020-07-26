@@ -22,6 +22,7 @@ import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.level.calculators.Pipeliner;
 import world.bentobox.level.commands.AdminLevelCommand;
 import world.bentobox.level.commands.AdminLevelStatusCommand;
+import world.bentobox.level.commands.AdminSetInitialLevelCommand;
 import world.bentobox.level.commands.AdminTopCommand;
 import world.bentobox.level.commands.IslandLevelCommand;
 import world.bentobox.level.commands.IslandTopCommand;
@@ -30,7 +31,6 @@ import world.bentobox.level.config.BlockConfig;
 import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
-import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.requests.LevelRequestHandler;
 import world.bentobox.level.requests.TopTenRequestHandler;
 
@@ -99,6 +99,9 @@ public class Level extends Addon implements Listener {
 
     @EventHandler
     public void onBentoBoxReady(BentoBoxReadyEvent e) {
+        // Perform upgrade check
+        manager.migrate();
+        // Load TopTens
         manager.loadTopTens();
         /*
          * DEBUG code to generate fake islands and then try to level them all.
@@ -119,8 +122,8 @@ public class Level extends Addon implements Listener {
 
             getIslands().getIslands().stream().filter(Island::isOwned).forEach(is -> {
 
-                this.getManager().calculateLevel(is.getOwner(), is).thenAccept(r -> 
-                log("Result for island calc " + r.getLevel() + " at " + is.getCenter())); 
+                this.getManager().calculateLevel(is.getOwner(), is).thenAccept(r ->
+                log("Result for island calc " + r.getLevel() + " at " + is.getCenter()));
 
             });
        }, 60L);*/
@@ -187,6 +190,7 @@ public class Level extends Addon implements Listener {
             new AdminLevelCommand(this, adminCommand);
             new AdminTopCommand(this, adminCommand);
             new AdminLevelStatusCommand(this, adminCommand);
+            new AdminSetInitialLevelCommand(this, adminCommand);
         });
         gm.getPlayerCommand().ifPresent(playerCmd -> {
             new IslandLevelCommand(this, playerCmd);
@@ -319,12 +323,4 @@ public class Level extends Addon implements Listener {
         if (island != null) getManager().calculateLevel(playerUUID, island);
     }
 
-    /**
-     * Load a player from the cache or database
-     * @param targetPlayer - UUID of target player
-     * @return LevelsData object or null if not found
-     */
-    public LevelsData getLevelsData(UUID targetPlayer) {
-        return getManager().getLevelsData(targetPlayer);
-    }
 }

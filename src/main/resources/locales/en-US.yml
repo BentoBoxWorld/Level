@@ -7,6 +7,11 @@ admin:
   level:
     parameters: "<player>"
     description: "calculate the island level for player"
+    sethandicap:
+      parameters: <player> <handicap>
+      description: "set the island handicap, usually the level of the starter island"
+      changed: "&a Initial island handicap changed from [number] to [new_number]."
+      invalid-level: "&c Invalid handicap. Use an integer."
   levelstatus:
     description: "show how many islands are in the queue for scanning"
     islands-in-queue: "&a Islands in queue: [number]"
@@ -17,6 +22,7 @@ admin:
     remove:
       description: "remove player from Top Ten"
       parameters: "<player>"
+
 
 island:
   level: 
