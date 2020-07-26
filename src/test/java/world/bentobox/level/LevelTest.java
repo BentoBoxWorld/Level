@@ -275,8 +275,8 @@ public class LevelTest {
         addon.onEnable();
         verify(plugin).logWarning("[Level] Level Addon: No such world in blockconfig.yml : acidisland_world");
         verify(plugin).log("[Level] Level hooking into BSkyBlock");
-        verify(cmd, times(3)).getAddon(); // Three commands
-        verify(adminCmd, times(3)).getAddon(); // Three commands
+        verify(cmd, times(3)).getAddon(); // 3 commands
+        verify(adminCmd, times(4)).getAddon(); // Four commands
         // Placeholders
         verify(phm).registerPlaceholder(eq(addon), eq("bskyblock_island_level"), any());
         verify(phm).registerPlaceholder(eq(addon), eq("bskyblock_visited_island_level"), any());
