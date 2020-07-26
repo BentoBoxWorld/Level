@@ -1,6 +1,6 @@
 package world.bentobox.level.objects;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 import org.bukkit.Material;
@@ -60,8 +60,8 @@ public class IslandLevels implements DataObject {
      */
     public IslandLevels(String islandUUID) {
         uniqueId = islandUUID;
-        uwCount = new HashMap<>();
-        mdCount = new HashMap<>();
+        uwCount = new EnumMap<>(Material.class);
+        mdCount = new EnumMap<>(Material.class);
     }
 
     /**
@@ -149,8 +149,6 @@ public class IslandLevels implements DataObject {
     public void setMdCount(Map<Material, Integer> mdCount) {
         this.mdCount = mdCount;
     }
-
-
 
 
 }

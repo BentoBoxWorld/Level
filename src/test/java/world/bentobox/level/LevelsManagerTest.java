@@ -225,7 +225,7 @@ public class LevelsManagerTest {
         when(iwm.getPermissionPrefix(any())).thenReturn("bskyblock.");
 
         lm = new LevelsManager(addon);
-        lm.migrate(addon);
+        lm.migrate();
     }
 
     /**

@@ -87,7 +87,7 @@ public class LevelsManager {
         background = new PanelItemBuilder().icon(Material.BLACK_STAINED_GLASS_PANE).name(" ").build();
     }
 
-    public void migrate(Level addon2) {
+    public void migrate() {
         Database<LevelsData> oldDb = new Database<>(addon, LevelsData.class);
         oldDb.loadObjects().forEach(ld -> {
             try {
@@ -323,9 +323,7 @@ public class LevelsManager {
      * @return initial level of island
      */
     public long getInitialLevel(Island island) {
-        @Nullable
-        IslandLevels ld = getLevelsData(island);
-        return ld == null ? 0 : ld.getInitialLevel();
+        return getLevelsData(island).getInitialLevel();
     }
 
     /**

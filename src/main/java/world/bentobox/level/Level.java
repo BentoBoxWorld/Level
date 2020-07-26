@@ -100,7 +100,7 @@ public class Level extends Addon implements Listener {
     @EventHandler
     public void onBentoBoxReady(BentoBoxReadyEvent e) {
         // Perform upgrade check
-        manager.migrate(this);
+        manager.migrate();
         // Load TopTens
         manager.loadTopTens();
         /*
