@@ -251,8 +251,7 @@ public class LevelsManager {
             // If this is also the asking player
             if (m.getKey().equals(user.getUniqueId())) {
                 inTopTen = true;
-                panel.item(49, h);
-                setClickHandler(h, user, world);
+                addSelf(world, user, panel);
             }
             i++;
         }
@@ -263,11 +262,17 @@ public class LevelsManager {
 
         // Add yourself if you were not already in the top ten
         if (!inTopTen) {
+            addSelf(world, user, panel);
+        }
+        panel.build();
+    }
+    
+    private void addSelf(World world, User user, PanelBuilder panel) {
+        if (addon.getIslands().hasIsland(world, user) || addon.getIslands().inTeam(world, user.getUniqueId())) {
             PanelItem head = getHead(0, this.getIslandLevel(world, user.getUniqueId()), user.getUniqueId(), user, world);
             setClickHandler(head, user, world);
             panel.item(49, head);
         }
-        panel.build();
     }
 
     private void setClickHandler(PanelItem head, User user, World world) {
