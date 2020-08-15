@@ -775,6 +775,11 @@ blocks:
   ZOMBIE_HEAD: 1
   ZOMBIE_WALL_HEAD: 1
 worlds:
+  caveblock-world:
+    STONE: 0
+    GRANITE: 0
+    ANDESITE: 0
+    DIORITE: 0
   acidisland_world:
     SAND: 0
     SANDSTONE: 0

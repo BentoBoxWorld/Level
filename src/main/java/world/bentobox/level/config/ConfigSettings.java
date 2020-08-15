@@ -18,12 +18,29 @@ public class ConfigSettings implements ConfigObject {
     @ConfigComment("Level will NOT hook into these game mode addons.")
     @ConfigEntry(path = "disabled-game-modes")
     private List<String> gameModes = Collections.emptyList();
-    
+
     @ConfigComment("")
     @ConfigComment("Number of concurrent island calculations")
     @ConfigComment("If your CPU can handle it, you can run parallel island calcs if there are more than one in the queue")
     @ConfigEntry(path = "concurrent-island-calcs")
     private int concurrentIslandCalcs = 1;
+
+    @ConfigComment("")
+    @ConfigComment("Island level calculation timeout in minutes.")
+    @ConfigComment("If an island takes longer that this time to calculate, then the calculation will abort.")
+    @ConfigComment("Generally, calculation should only take a few seconds, so if this ever triggers then something is not right.")
+    @ConfigEntry(path = "calculation-timeout")
+    private int calculationTimeout = 5;
+
+
+    @ConfigComment("")
+    @ConfigComment("Zero island levels on new island or island reset")
+    @ConfigComment("If true, Level will calculate the starter island's level and remove it from any future level calculations.")
+    @ConfigComment("If false, the player's starter island and will count towards their level.")
+    @ConfigComment("This will reduce CPU if it isn't used.")
+    @ConfigEntry(path = "zero-new-island-levels")
+    private boolean zeroNewIslandLevels = true;
+
 
     @ConfigComment("")
     @ConfigComment("Calculate island level on login")
@@ -316,8 +333,35 @@ public class ConfigSettings implements ConfigObject {
     }
 
 
+    /**
+     * @return the zeroNewIslandLevels
+     */
+    public boolean isZeroNewIslandLevels() {
+        return zeroNewIslandLevels;
+    }
 
 
+    /**
+     * @param zeroNewIslandLevels the zeroNewIslandLevels to set
+     */
+    public void setZeroNewIslandLevels(boolean zeroNewIslandLevels) {
+        this.zeroNewIslandLevels = zeroNewIslandLevels;
+    }
 
+
+    /**
+     * @return the calculationTimeout
+     */
+    public int getCalculationTimeout() {
+        return calculationTimeout;
+    }
+
+
+    /**
+     * @param calculationTimeout the calculationTimeout to set
+     */
+    public void setCalculationTimeout(int calculationTimeout) {
+        this.calculationTimeout = calculationTimeout;
+    }
 
 }

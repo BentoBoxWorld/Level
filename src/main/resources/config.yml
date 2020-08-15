@@ -9,6 +9,17 @@ disabled-game-modes:
 # Number of concurrent island calculations
 # If your CPU can handle it, you can run parallel island calcs if there are more than one in the queue
 concurrent-island-calcs: 1
+#
+# Island level calculation timeout in minutes.
+# If an island takes longer that this time to calculate, then the calculation will abort.
+# Generally, calculation should only take a few seconds, so if this ever triggers then something is not right.
+calculation-timeout: 5
+#
+# Zero island levels on new island or island reset
+# If true, Level will calculate the starter island's level and remove it from any future level calculations.
+# If this is false, the player's starter island and will count towards their level.
+# This will reduce CPU if it isn't used.
+zero-new-island-levels: true
 # 
 # Calculate island level on login
 # This silently calculates the player's island level when they login

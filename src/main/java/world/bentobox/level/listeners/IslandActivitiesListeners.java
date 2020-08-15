@@ -39,20 +39,22 @@ public class IslandActivitiesListeners implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onNewIsland(IslandCreatedEvent e) {
-
-        zeroIsland(e.getIsland());
+        if (addon.getSettings().isZeroNewIslandLevels()) {
+            zeroIsland(e.getIsland());
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onNewIsland(IslandResettedEvent e) {
-
-        zeroIsland(e.getIsland());
+        if (addon.getSettings().isZeroNewIslandLevels()) {
+            zeroIsland(e.getIsland());
+        }
     }
 
     private void zeroIsland(final Island island) {
         // Clear the island setting
         if (island.getOwner() != null && island.getWorld() != null) {
-            addon.getPipeliner().addIsland(island).thenAccept(results ->
+            addon.getPipeliner().zeroIsland(island).thenAccept(results ->
             addon.getManager().setInitialIslandLevel(island, results.getLevel()));
         }
     }

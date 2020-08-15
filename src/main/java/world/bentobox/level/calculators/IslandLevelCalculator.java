@@ -147,17 +147,20 @@ public class IslandLevelCalculator {
 
     private final Results results;
     private long duration;
+    private final boolean zeroIsland;
 
     /**
      * Constructor to get the level for an island
      * @param addon - Level addon
      * @param island - the island to scan
      * @param r - completable result that will be completed when the calculation is complete
+     * @param zeroIsland - true if the calculation is due to an island zeroing
      */
-    public IslandLevelCalculator(Level addon, Island island, CompletableFuture<Results> r) {
+    public IslandLevelCalculator(Level addon, Island island, CompletableFuture<Results> r, boolean zeroIsland) {
         this.addon = addon;
         this.island = island;
         this.r = r;
+        this.zeroIsland = zeroIsland;
         results = new Results();
         duration = System.currentTimeMillis();
         chunksToCheck = getChunksToScan(island);
@@ -535,5 +538,12 @@ public class IslandLevelCalculator {
         // Set the duration
         addon.getPipeliner().setTime(System.currentTimeMillis() - duration);
         // All done.
+    }
+
+    /**
+     * @return the zeroIsland
+     */
+    boolean isNotZeroIsland() {
+        return !zeroIsland;
     }
 }

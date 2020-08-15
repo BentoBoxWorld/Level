@@ -10,6 +10,20 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
 public class Results {
+    public enum Result {
+        /**
+         * A level calc is already in progress
+         */
+        IN_PROGRESS,
+        /**
+         * Results will be available
+         */
+        AVAILABLE,
+        /**
+         * Result if calculation timed out
+         */
+        TIMEOUT
+    }
     List<String> report;
     final Multiset<Material> mdCount = HashMultiset.create();
     final Multiset<Material> uwCount = HashMultiset.create();
@@ -22,7 +36,15 @@ public class Results {
     AtomicInteger deathHandicap = new AtomicInteger(0);
     AtomicLong pointsToNextLevel = new AtomicLong(0);
     AtomicLong initialLevel = new AtomicLong(0);
+    final Result state;
 
+    public Results(Result state) {
+        this.state = state;
+    }
+
+    public Results() {
+        this.state = Result.AVAILABLE;
+    }
     /**
      * @return the deathHandicap
      */
@@ -100,6 +122,12 @@ public class Results {
      */
     public Multiset<Material> getUwCount() {
         return uwCount;
+    }
+    /**
+     * @return the state
+     */
+    public Result getState() {
+        return state;
     }
 
 }

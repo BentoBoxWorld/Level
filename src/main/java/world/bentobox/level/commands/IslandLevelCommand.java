@@ -10,6 +10,7 @@ import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.level.Level;
 import world.bentobox.level.calculators.Results;
+import world.bentobox.level.calculators.Results.Result;
 
 public class IslandLevelCommand extends CompositeCommand {
 
@@ -88,6 +89,13 @@ public class IslandLevelCommand extends CompositeCommand {
         long oldLevel = addon.getManager().getIslandLevel(getWorld(), playerUUID);
         addon.getManager().calculateLevel(playerUUID, island).thenAccept(results -> {
             if (results == null) return; // island was deleted or become unowned
+            if (results.getState().equals(Result.IN_PROGRESS)) {
+                user.sendMessage("island.level.in-progress");
+                return;
+            } else if (results.getState().equals(Result.TIMEOUT)) {
+                user.sendMessage("island.level.time-out");
+                return;
+            }
             showResult(user, playerUUID, island, oldLevel, results);
         });
         return true;
