@@ -266,7 +266,7 @@ public class LevelsManager {
         }
         panel.build();
     }
-    
+
     private void addSelf(World world, User user, PanelBuilder panel) {
         if (addon.getIslands().hasIsland(world, user) || addon.getIslands().inTeam(world, user.getUniqueId())) {
             PanelItem head = getHead(0, this.getIslandLevel(world, user.getUniqueId()), user.getUniqueId(), user, world);
@@ -496,7 +496,9 @@ public class LevelsManager {
             String id = island.getUniqueId();
             IslandLevels il = levelsCache.computeIfAbsent(id, IslandLevels::new);
             // Remove the initial level
-            il.setLevel(lv - il.getInitialLevel());
+            if (addon.getSettings().isZeroNewIslandLevels()) {
+                il.setLevel(lv - il.getInitialLevel());
+            }
             handler.saveObjectAsync(levelsCache.get(id));
             // Update TopTen
             addToTopTen(world, targetPlayer, levelsCache.get(id).getLevel());
@@ -515,7 +517,10 @@ public class LevelsManager {
         Island island = addon.getIslands().getIsland(world, owner);
         if (island == null) return;
         IslandLevels ld = levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new);
-        ld.setLevel(r.getLevel() - ld.getInitialLevel());
+        // Remove the initial level
+        if (addon.getSettings().isZeroNewIslandLevels()) {
+            ld.setLevel(r.getLevel() - ld.getInitialLevel());
+        }
         ld.setUwCount(Maps.asMap(r.getUwCount().elementSet(), elem -> r.getUwCount().count(elem)));
         ld.setMdCount(Maps.asMap(r.getMdCount().elementSet(), elem -> r.getMdCount().count(elem)));
         ld.setPointsToNextLevel(r.getPointsToNextLevel());

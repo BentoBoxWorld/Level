@@ -190,7 +190,9 @@ public class Level extends Addon implements Listener {
             new AdminLevelCommand(this, adminCommand);
             new AdminTopCommand(this, adminCommand);
             new AdminLevelStatusCommand(this, adminCommand);
-            new AdminSetInitialLevelCommand(this, adminCommand);
+            if (getSettings().isZeroNewIslandLevels()) {
+                new AdminSetInitialLevelCommand(this, adminCommand);
+            }
         });
         gm.getPlayerCommand().ifPresent(playerCmd -> {
             new IslandLevelCommand(this, playerCmd);
