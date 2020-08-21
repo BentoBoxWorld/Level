@@ -338,6 +338,12 @@ public class Level extends Addon implements Listener {
         getPlugin().getAddonsManager().getGameModeAddons().stream()
         .filter(gm -> !settings.getGameModes().contains(gm.getDescription().getName()))
         .forEach(gm -> {
+            if (getSettings().isZeroNewIslandLevels()) {
+                Island island = getIslands().getIsland(gm.getOverWorld(), targetPlayer);
+                if (island != null) {
+                    ld.setInitialLevel(gm.getOverWorld(), this.getInitialIslandLevel(island));
+                }
+            }
             ld.setLevel(gm.getOverWorld(), this.getIslandLevel(gm.getOverWorld(), targetPlayer));
         });
         return ld;
