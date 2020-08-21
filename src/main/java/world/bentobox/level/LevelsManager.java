@@ -158,6 +158,8 @@ public class LevelsManager {
         addon.getPipeliner().addIsland(island).thenAccept(r -> {
             // Results are irrelevant because the island is unowned or deleted, or IslandLevelCalcEvent is cancelled
             if (r == null || fireIslandLevelCalcEvent(targetPlayer, island, r)) {
+                System.out.println("results are null or event canceled");
+
                 result.complete(null);
             }
             // Save result
@@ -498,6 +500,8 @@ public class LevelsManager {
             // Remove the initial level
             if (addon.getSettings().isZeroNewIslandLevels()) {
                 il.setLevel(lv - il.getInitialLevel());
+            } else {
+                il.setLevel(lv);
             }
             handler.saveObjectAsync(levelsCache.get(id));
             // Update TopTen
@@ -520,6 +524,8 @@ public class LevelsManager {
         // Remove the initial level
         if (addon.getSettings().isZeroNewIslandLevels()) {
             ld.setLevel(r.getLevel() - ld.getInitialLevel());
+        } else {
+            ld.setLevel(r.getLevel());
         }
         ld.setUwCount(Maps.asMap(r.getUwCount().elementSet(), elem -> r.getUwCount().count(elem)));
         ld.setMdCount(Maps.asMap(r.getMdCount().elementSet(), elem -> r.getMdCount().count(elem)));

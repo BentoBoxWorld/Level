@@ -31,6 +31,7 @@ import world.bentobox.level.config.BlockConfig;
 import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
+import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.requests.LevelRequestHandler;
 import world.bentobox.level.requests.TopTenRequestHandler;
 
@@ -325,4 +326,20 @@ public class Level extends Addon implements Listener {
         if (island != null) getManager().calculateLevel(playerUUID, island);
     }
 
+    /**
+     * Provide the levels data for the target player
+     * @param targetPlayer - UUID of target player
+     * @return LevelsData object or null if not found. Only island levels are set!
+     * @deprecated Do not use this anymore. Use {@link #getIslandLevel(World, UUID)}
+     */
+    @Deprecated
+    public LevelsData getLevelsData(UUID targetPlayer) {
+        LevelsData ld = new LevelsData(targetPlayer);
+        getPlugin().getAddonsManager().getGameModeAddons().stream()
+        .filter(gm -> !settings.getGameModes().contains(gm.getDescription().getName()))
+        .forEach(gm -> {
+            ld.setLevel(gm.getOverWorld(), this.getIslandLevel(gm.getOverWorld(), targetPlayer));
+        });
+        return ld;
+    }
 }

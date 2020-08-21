@@ -256,6 +256,7 @@ public class LevelsManagerTest {
         results.setLevel(10000);
         results.setInitialLevel(3);
         lm.calculateLevel(uuid, island);
+        // Complete the pipelined completable future
         cf.complete(results);
 
         assertEquals(10000L, lm.getLevelsData(island).getLevel());
