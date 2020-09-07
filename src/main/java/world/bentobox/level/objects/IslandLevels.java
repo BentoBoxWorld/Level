@@ -22,7 +22,9 @@ import world.bentobox.bentobox.database.objects.Table;
 @Table(name = "IslandLevels")
 public class IslandLevels implements DataObject {
 
-    // uniqueId is the island's UUID
+    /**
+     * uniqueId is the island's UUID
+     */
     @Expose
     private String uniqueId = "";
 

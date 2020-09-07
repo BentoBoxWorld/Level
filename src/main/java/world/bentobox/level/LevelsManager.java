@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -65,7 +66,7 @@ public class LevelsManager {
 
     private final Database<TopTenData> topTenHandler;
     // Top ten lists
-    private Map<World,TopTenData> topTenLists;
+    private final Map<World,TopTenData> topTenLists;
     // Background
     private final PanelItem background;
 
@@ -82,7 +83,7 @@ public class LevelsManager {
         // Initialize the cache
         levelsCache = new HashMap<>();
         // Initialize top ten lists
-        topTenLists = new HashMap<>();
+        topTenLists = new ConcurrentHashMap<>();
         // Background
         background = new PanelItemBuilder().icon(Material.BLACK_STAINED_GLASS_PANE).name(" ").build();
     }
@@ -138,6 +139,21 @@ public class LevelsManager {
             // Insert the owner into the top ten
             topTen.put(island.getOwner(), lv);
         }
+    }
+
+    /**
+     * Add an island to a top ten
+     * @param island - island to add
+     * @param lv - level
+     * @return true if successful, false if not added
+     */
+    private boolean addToTopTen(Island island, long lv) {
+        if (island != null && island.getOwner() != null && hasTopTenPerm(island.getWorld(), island.getOwner())) {
+            topTenLists.computeIfAbsent(island.getWorld(), k -> new TopTenData(island.getWorld()))
+            .getTopTen().put(island.getOwner(), lv);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -430,18 +446,19 @@ public class LevelsManager {
      * Loads all the top tens from the database
      */
     void loadTopTens() {
-        topTenLists = new HashMap<>();
-        topTenHandler.loadObjects().forEach(tt -> {
-            World world = Bukkit.getWorld(tt.getUniqueId());
-            if (world != null) {
-                topTenLists.put(world, tt);
-                addon.log("Loaded top ten for " + world.getName());
-                // Update based on user data
-                // Remove any non island owners
-                tt.getTopTen().keySet().removeIf(u -> !addon.getIslands().isOwner(world, u));
-            } else {
-                addon.logError("TopTen world '" + tt.getUniqueId() + "' is not known on server. You might want to delete this table. Skipping...");
-            }
+        topTenLists.clear();
+        Bukkit.getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
+            addon.log("Generating Top Ten Tables");
+            handler.loadObjects().forEach(il -> {
+                if (il.getLevel() > 0) {
+                    addon.getIslands().getIslandById(il.getUniqueId()).ifPresent(i -> this.addToTopTen(i, il.getLevel()));
+                }
+            });
+            topTenLists.keySet().forEach(w -> {
+                addon.log("Loaded top ten for " + w.getName());
+                this.saveTopTen(w);
+            });
+
         });
     }
 
