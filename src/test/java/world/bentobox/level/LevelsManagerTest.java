@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -30,11 +31,13 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -60,7 +63,6 @@ import world.bentobox.level.calculators.Pipeliner;
 import world.bentobox.level.calculators.Results;
 import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.objects.IslandLevels;
-import world.bentobox.level.objects.TopTenData;
 
 /**
  * @author tastybento
@@ -108,6 +110,8 @@ public class LevelsManagerTest {
     private IslandLevels levelsData;
     @Mock
     private IslandsManager im;
+    @Mock
+    private BukkitScheduler scheduler;
 
 
 
@@ -134,10 +138,11 @@ public class LevelsManagerTest {
         Whitebox.setInternalState(BentoBox.class, "instance", plugin);
 
         // Bukkit
-        PowerMockito.mockStatic(Bukkit.class);
+        PowerMockito.mockStatic(Bukkit.class, Mockito.RETURNS_MOCKS);
         when(Bukkit.getWorld(anyString())).thenReturn(world);
         when(Bukkit.getPluginManager()).thenReturn(pim);
         when(Bukkit.getPlayer(any(UUID.class))).thenReturn(player);
+        when(Bukkit.getScheduler()).thenReturn(scheduler);
 
         // The database type has to be created one line before the thenReturn() to work!
         DatabaseType value = DatabaseType.JSON;
@@ -161,6 +166,7 @@ public class LevelsManagerTest {
         when(im.isOwner(eq(world), any())).thenReturn(true);
         when(im.getOwner(any(), any(UUID.class))).thenAnswer(in -> in.getArgument(1, UUID.class));
         when(im.getIsland(eq(world), eq(uuid))).thenReturn(island);
+        when(im.getIslandById(anyString())).thenReturn(Optional.of(island));
 
         // Player
         when(player.getUniqueId()).thenReturn(uuid);
@@ -199,18 +205,18 @@ public class LevelsManagerTest {
 
         // Has perms
         when(player.hasPermission(anyString())).thenReturn(true);
-        // Fill the top ten
-        TopTenData ttd = new TopTenData(world);
-        ttd.setUniqueId("world");
-        List<Object> topTen = new ArrayList<>();
+        // Make island levels
+
+        List<Object> islands = new ArrayList<>();
         for (long i = -5; i < 5; i ++) {
-            ttd.getTopTen().put(UUID.randomUUID(), i);
+            IslandLevels il = new IslandLevels(UUID.randomUUID().toString());
+            il.setInitialLevel(3);
+            il.setLevel(i);
+            il.setPointsToNextLevel(3);
+            islands.add(il);
         }
-        // Include a known UUID
-        ttd.getTopTen().put(uuid, 456789L);
-        topTen.add(ttd);
-        // Supply no island levels first, then topTen
-        when(handler.loadObjects()).thenReturn(Collections.emptyList(), topTen);
+        // Supply no island levels first (for migrate), then islands
+        when(handler.loadObjects()).thenReturn(Collections.emptyList(), islands);
         when(handler.objectExists(anyString())).thenReturn(true);
         when(levelsData.getLevel()).thenReturn(-5L, -4L, -3L, -2L, -1L, 0L, 1L, 2L, 3L, 4L, 5L, 45678L);
         when(levelsData.getUniqueId()).thenReturn(uuid.toString());
@@ -342,7 +348,7 @@ public class LevelsManagerTest {
         testLoadTopTens();
         Map<UUID, Long> tt = lm.getTopTen(world, 10);
         assertFalse(tt.isEmpty());
-        assertEquals(5, tt.size());
+        assertEquals(1, tt.size());
         assertEquals(1, lm.getTopTen(world, 1).size());
     }
 
@@ -370,22 +376,15 @@ public class LevelsManagerTest {
      */
     @Test
     public void testLoadTopTens() {
+        ArgumentCaptor<Runnable> task = ArgumentCaptor.forClass(Runnable.class);
         lm.loadTopTens();
         PowerMockito.verifyStatic(Bukkit.class); // 1
-        Bukkit.getWorld(eq("world"));
+        Bukkit.getScheduler();
+        verify(scheduler).runTaskAsynchronously(eq(plugin), task.capture());
+        task.getValue().run();
+        verify(addon).log(eq("Generating Top Ten Tables"));
         verify(addon).log(eq("Loaded top ten for bskyblock-world"));
-    }
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#loadTopTens()}.
-     */
-    @Test
-    public void testLoadTopTensNullWorlds() {
-        when(Bukkit.getWorld(anyString())).thenReturn(null);
-        lm.loadTopTens();
-        PowerMockito.verifyStatic(Bukkit.class); // 1
-        Bukkit.getWorld(eq("world"));
-        verify(addon).logError(eq("TopTen world 'world' is not known on server. You might want to delete this table. Skipping..."));
     }
 
     /**
