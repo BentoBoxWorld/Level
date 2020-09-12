@@ -531,6 +531,12 @@ public class IslandLevelCalculator {
         }
         this.results.level.set(calculateLevel(blockAndDeathPoints));
 
+        // Adjust for initial level
+        if (addon.getSettings().isZeroNewIslandLevels()) {
+            long oldLevel = this.results.level.get();
+            this.results.level.set(oldLevel - this.results.initialLevel.get());
+        }
+
         // Calculate how many points are required to get to the next level
         long nextLevel = this.results.level.get();
         long blocks = blockAndDeathPoints;

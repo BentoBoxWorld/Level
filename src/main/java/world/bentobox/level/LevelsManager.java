@@ -205,11 +205,7 @@ public class LevelsManager {
         keyValues.put("eventName", "IslandLevelCalculatedEvent");
         keyValues.put("targetPlayer", targetPlayer);
         keyValues.put("islandUUID", island.getUniqueId());
-        if (addon.getSettings().isZeroNewIslandLevels()) {
-            keyValues.put("level", results.getLevel() - results.getInitialLevel());
-        } else {
-            keyValues.put("level", results.getLevel());
-        }
+        keyValues.put("level", results.getLevel());
         keyValues.put("pointsToNextLevel", results.getPointsToNextLevel());
         keyValues.put("deathHandicap", results.getDeathHandicap());
         keyValues.put("initialLevel", results.getInitialLevel());
@@ -542,12 +538,7 @@ public class LevelsManager {
         Island island = addon.getIslands().getIsland(world, owner);
         if (island == null) return;
         IslandLevels ld = levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new);
-        // Remove the initial level
-        if (addon.getSettings().isZeroNewIslandLevels()) {
-            ld.setLevel(r.getLevel() - ld.getInitialLevel());
-        } else {
-            ld.setLevel(r.getLevel());
-        }
+        ld.setLevel(r.getLevel());
         ld.setUwCount(Maps.asMap(r.getUwCount().elementSet(), elem -> r.getUwCount().count(elem)));
         ld.setMdCount(Maps.asMap(r.getMdCount().elementSet(), elem -> r.getMdCount().count(elem)));
         ld.setPointsToNextLevel(r.getPointsToNextLevel());

@@ -45,8 +45,7 @@ public class IslandLevelCalculatedEvent extends IslandBaseEvent {
     }
 
     /**
-     * Get the island's initial level. It may be zero if it was never calculated
-     * or if a player was registered to the island after it was made.
+     * Get the island's initial level. It may be zero if it was never calculated.
      * @return initial level of island as calculated when the island was created.
      */
     public long getInitialLevel() {
