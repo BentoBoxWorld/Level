@@ -165,6 +165,8 @@ public class IslandLevelCalculator {
         duration = System.currentTimeMillis();
         chunksToCheck = getChunksToScan(island);
         this.limitCount = new HashMap<>(addon.getBlockConfig().getBlockLimits());
+        // Get the initial island level
+        results.initialLevel.set(addon.getInitialIslandLevel(island));
     }
 
     /**
@@ -175,7 +177,7 @@ public class IslandLevelCalculator {
     private long calculateLevel(long blockAndDeathPoints) {
         String calcString = addon.getSettings().getLevelCalc();
         String withValues = calcString.replace("blocks", String.valueOf(blockAndDeathPoints)).replace("level_cost", String.valueOf(this.addon.getSettings().getLevelCost()));
-        return (long)eval(withValues) - this.island.getLevelHandicap() - results.initialLevel.get();
+        return (long)eval(withValues) - this.island.getLevelHandicap() - (addon.getSettings().isZeroNewIslandLevels() ? results.initialLevel.get() : 0);
     }
 
     /**
@@ -242,11 +244,7 @@ public class IslandLevelCalculator {
             reportLines.add("Initial island level = " + (0L - addon.getManager().getInitialLevel(island)));
         }
         reportLines.add("Previous level = " + addon.getManager().getIslandLevel(island.getWorld(), island.getOwner()));
-        if (addon.getSettings().isZeroNewIslandLevels()) {
-            reportLines.add("New level = " + (results.getLevel() - addon.getManager().getInitialLevel(island)));
-        } else {
-            reportLines.add("New level = " + results.getLevel());
-        }
+        reportLines.add("New level = " + results.getLevel());
         reportLines.add(LINE_BREAK);
         int total = 0;
         if (!results.uwCount.isEmpty()) {
@@ -530,12 +528,6 @@ public class IslandLevelCalculator {
             blockAndDeathPoints -= this.results.deathHandicap.get() * this.addon.getSettings().getDeathPenalty();
         }
         this.results.level.set(calculateLevel(blockAndDeathPoints));
-
-        // Adjust for initial level
-        if (addon.getSettings().isZeroNewIslandLevels()) {
-            long oldLevel = this.results.level.get();
-            this.results.level.set(oldLevel - this.results.initialLevel.get());
-        }
 
         // Calculate how many points are required to get to the next level
         long nextLevel = this.results.level.get();

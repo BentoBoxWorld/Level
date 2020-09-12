@@ -17,8 +17,8 @@ calculation-timeout: 5
 #
 # Zero island levels on new island or island reset
 # If true, Level will calculate the starter island's level and remove it from any future level calculations.
-# If this is false, the player's starter island and will count towards their level.
-# This will reduce CPU if it isn't used.
+# If this is false, the player's starter island blocks will count towards their level.
+# This will reduce CPU if false.
 zero-new-island-levels: true
 # 
 # Calculate island level on login

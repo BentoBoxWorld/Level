@@ -36,8 +36,8 @@ public class ConfigSettings implements ConfigObject {
     @ConfigComment("")
     @ConfigComment("Zero island levels on new island or island reset")
     @ConfigComment("If true, Level will calculate the starter island's level and remove it from any future level calculations.")
-    @ConfigComment("If false, the player's starter island and will count towards their level.")
-    @ConfigComment("This will reduce CPU if it isn't used.")
+    @ConfigComment("If false, the player's starter island blocks will count towards their level.")
+    @ConfigComment("This will reduce CPU if false.")
     @ConfigEntry(path = "zero-new-island-levels")
     private boolean zeroNewIslandLevels = true;
 
