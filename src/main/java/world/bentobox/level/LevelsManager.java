@@ -205,7 +205,11 @@ public class LevelsManager {
         keyValues.put("eventName", "IslandLevelCalculatedEvent");
         keyValues.put("targetPlayer", targetPlayer);
         keyValues.put("islandUUID", island.getUniqueId());
-        keyValues.put("level", results.getLevel());
+        if (addon.getSettings().isZeroNewIslandLevels()) {
+            keyValues.put("level", results.getLevel() - results.getInitialLevel());
+        } else {
+            keyValues.put("level", results.getLevel());
+        }
         keyValues.put("pointsToNextLevel", results.getPointsToNextLevel());
         keyValues.put("deathHandicap", results.getDeathHandicap());
         keyValues.put("initialLevel", results.getInitialLevel());
