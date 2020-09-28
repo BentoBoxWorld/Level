@@ -377,7 +377,7 @@ public class IslandLevelCalculator {
                     continue;
                 }
                 // Only count to the highest block in the world for some optimization
-                for (int y = 0; y < chunkSnapshot.getHighestBlockYAt(x, z); y++) {
+                for (int y = 0; y < chunk.getWorld().getMaxHeight(); y++) {
                     BlockData blockData = chunkSnapshot.getBlockData(x, y, z);
                     int seaHeight = addon.getPlugin().getIWM().getSeaHeight(island.getWorld());
                     boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
