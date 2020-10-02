@@ -1,0 +1,57 @@
+---
+admin:
+  level:
+    parameters: "<player>"
+    description: calcula o nível da ilha para o jogador
+    sethandicap:
+      parameters: "<player> <handicap>"
+      description: Define o handicap da ilha. É geralmente o nível da ilha inicial.
+      changed: "&a O handicap inicial da ilha foi alterado de [number] para [new_number]."
+      invalid-level: "&c Handicap inválido. Use um número inteiro."
+  levelstatus:
+    description: mostrar quantas ilhas estão na fila para escaneamento.
+    islands-in-queue: "&a Ilhas na fila: [number]"
+  top:
+    description: Mostra a lista dos dez primeiros
+    unknown-world: "&c Mundo desconhecido!"
+    display: "&f[rank]. &a[name] &7- &b[level]"
+    remove:
+      description: Remover jogador do Top 10
+      parameters: "<player>"
+island:
+  level:
+    parameters: "[player]"
+    description: Calcula o nível da sua ilha ou mostra o nível de [player]
+    calculating: "&a Calculando level..."
+    estimated-wait: "&a Espera estimada: [number] segundos."
+    in-queue: "&a Você é o número [number] na fila."
+    island-level-is: "& O nível da ilha é&b [level]"
+    required-points-to-next-level: "&a [pontos] pontos são necessários para chegar
+      o próximo nível"
+    deaths: "&c([number] mortes)"
+    cooldown: "&c Você deve esperar &b [time] &c segundos até que possa fazer isso
+      novamente."
+    in-progress: "&6 Calculando o nível da ilha..."
+    time-out: "&c O cálculo do nível demorou muito. Por favor, tente novamente mais
+      tarde."
+  top:
+    description: Mostra os dez melhores
+    gui-title: "&a Top 10"
+    gui-heading: "&6[name]: &B[rank]"
+    island-level: "&b Level [level]"
+    warp-to: "&a Teletransportando para a ilha de [name]"
+  level-details:
+    above-sea-level-blocks: Blocos acima do nível do mar
+    spawners: Spawners
+    underwater-blocks: Blocos Subaquáticos
+    all-blocks: Todos os blocos
+    no-island: "&c Sem ilha!"
+    names-island: Ilha de [name]
+    syntax: "[name] x [number]"
+    hint: "&c Executa o nível para ver o relatório de blocos."
+  value:
+    description: Mostra o valor de qualquer bloco
+    success: "&7 O valor deste bloco é: &e [value]"
+    success-underwater: "& 7O valor deste bloco abaixo do nível do mar: &e [value]"
+    empty-hand: "&c Não há blocos em sua mão."
+    no-value: "&c Item sem valor."
