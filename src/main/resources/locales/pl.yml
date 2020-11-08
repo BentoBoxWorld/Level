@@ -1,35 +1,52 @@
-# 
-# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
-# the one at http://yaml-online-parser.appspot.com                                        #
+---
 admin:
   level:
-    parameters: <gracz>
+    parameters: "<gracz>"
     description: oblicza poziom wyspy
+    sethandicap:
+      parameters: "<gracz> <uposledzenie>"
+  levelstatus:
+    description: pokazuje ile wysp znajduje się w kolejce do skanowania
+    islands-in-queue: "&a Wyspy w kolejce: [numer]"
   top:
     description: pokazuje Top 10 wysp
-    unknown-world: '&cNieznany świat!'
-    display: '&f[rank]. &a[name] &7- &b[level]'
+    unknown-world: "&cNieznany świat!"
+    display: "&f[ranking]. &a[nazwa-gracza] &7- &b[poziom]"
     remove:
       description: usuwa gracza z Top 10
-      parameters: <gracz>
+      parameters: "<gracz>"
 island:
   level:
-    parameters: '[gracz]'
+    parameters: "[gracz]"
     description: oblicza poziom wyspy lub pokazać poziom [gracza]
-    calculating: '&aObliczanie poziomu wyspy...'
-    island-level-is: '&aPoziom wyspy wynosi &b[level]'
-    required-points-to-next-level: '&a[points] punktów do następnego poziomu'
-    deaths: '&c([number] śmierci)'
-    cooldown: '&cMusisz zaczekać &b[time] &csekund przed następnym obliczeniem poziomu'
+    calculating: "&aObliczanie poziomu wyspy..."
+    estimated-wait: "&a Szacowany czas: [numer] sekund"
+    in-queue: "&a Jestes numerem [numer] w kolejce"
+    island-level-is: "&aPoziom wyspy wynosi &b[level]"
+    required-points-to-next-level: "&a[points] punktów do następnego poziomu"
+    deaths: "&c([number] śmierci)"
+    cooldown: "&cMusisz zaczekać &b[time] &csekund przed następnym obliczeniem poziomu"
+    in-progress: "&6 Trwa obliczanie poziomu twojej wyspy..."
+    time-out: "&c Sprawdzanie poziomu twojej wyspy trwalo zbyt dlugo. Sprobuj ponownie
+      pozniej!"
   top:
     description: pokauje Top 10 wysp
-    gui-title: '&aTop 10'
-    gui-heading: '&6[name]: &B[rank]'
-    island-level: '&BPoziom [level]'
-    warp-to: '&ATeleportowanie do wyspy [name]'
+    gui-title: "&aTop 10"
+    gui-heading: "&6[name]: &B[rank]"
+    island-level: "&BPoziom [level]"
+    warp-to: "&ATeleportowanie do wyspy [name]"
+  level-details:
+    above-sea-level-blocks: Bloki nad poziomem morza
+    spawners: Spawnery
+    underwater-blocks: Podwodne bloki
+    all-blocks: Wszystkie bloki
+    no-island: "&c Brak wyspy!"
+    names-island: Wyspa gracza [nazwa]
+    syntax: "[nazwa] x [numer]"
+    hint: "&c Uruchom poziom, aby wyświetlić raport o blokach"
   value:
     description: pokazuje wartość dowolnego przedmiotu
-    success: '&7Wartość punktowa tego bloku wynosi: &e[value]'
-    success-underwater: '&7Wartość tego bloku poniżej poziomu morza: &e[value]'
-    empty-hand: '&cNie trzymasz żadnego bloku.'
-    no-value: '&cTen przedmiot nie ma wartości :('
+    success: "&7Wartość punktowa tego bloku wynosi: &e[value]"
+    success-underwater: "&7Wartość tego bloku poniżej poziomu morza: &e[value]"
+    empty-hand: "&cNie trzymasz żadnego bloku."
+    no-value: "&cTen przedmiot nie ma wartości :("
