@@ -1,27 +1,27 @@
 ---
 admin:
   level:
-    parameters: "<gracz>"
+    parameters: "<player>"
     description: oblicza poziom wyspy
     sethandicap:
       parameters: "<gracz> <uposledzenie>"
   levelstatus:
     description: pokazuje ile wysp znajduje się w kolejce do skanowania
-    islands-in-queue: "&a Wyspy w kolejce: [numer]"
+    islands-in-queue: "&a Wyspy w kolejce: [number]"
   top:
     description: pokazuje Top 10 wysp
     unknown-world: "&cNieznany świat!"
-    display: "&f[ranking]. &a[nazwa-gracza] &7- &b[poziom]"
+    display: "&f[rank]. &a[name] &7- &b[level]"
     remove:
       description: usuwa gracza z Top 10
       parameters: "<gracz>"
 island:
   level:
-    parameters: "[gracz]"
-    description: oblicza poziom wyspy lub pokazać poziom [gracza]
+    parameters: "[player]"
+    description: oblicza poziom wyspy lub pokazać poziom [player]
     calculating: "&aObliczanie poziomu wyspy..."
-    estimated-wait: "&a Szacowany czas: [numer] sekund"
-    in-queue: "&a Jestes numerem [numer] w kolejce"
+    estimated-wait: "&a Szacowany czas: [number] sekund"
+    in-queue: "&a Jestes numerem [number] w kolejce"
     island-level-is: "&aPoziom wyspy wynosi &b[level]"
     required-points-to-next-level: "&a[points] punktów do następnego poziomu"
     deaths: "&c([number] śmierci)"
@@ -41,8 +41,8 @@ island:
     underwater-blocks: Podwodne bloki
     all-blocks: Wszystkie bloki
     no-island: "&c Brak wyspy!"
-    names-island: Wyspa gracza [nazwa]
-    syntax: "[nazwa] x [numer]"
+    names-island: Wyspa gracza [name]
+    syntax: "[name] x [number]"
     hint: "&c Uruchom poziom, aby wyświetlić raport o blokach"
   value:
     description: pokazuje wartość dowolnego przedmiotu
