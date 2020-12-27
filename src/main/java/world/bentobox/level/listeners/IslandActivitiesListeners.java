@@ -7,16 +7,16 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-import world.bentobox.bentobox.api.events.island.IslandEvent.IslandCreatedEvent;
-import world.bentobox.bentobox.api.events.island.IslandEvent.IslandDeleteEvent;
-import world.bentobox.bentobox.api.events.island.IslandEvent.IslandPreclearEvent;
-import world.bentobox.bentobox.api.events.island.IslandEvent.IslandRegisteredEvent;
-import world.bentobox.bentobox.api.events.island.IslandEvent.IslandResettedEvent;
-import world.bentobox.bentobox.api.events.island.IslandEvent.IslandUnregisteredEvent;
-import world.bentobox.bentobox.api.events.team.TeamEvent.TeamJoinedEvent;
-import world.bentobox.bentobox.api.events.team.TeamEvent.TeamKickEvent;
-import world.bentobox.bentobox.api.events.team.TeamEvent.TeamLeaveEvent;
-import world.bentobox.bentobox.api.events.team.TeamEvent.TeamSetownerEvent;
+import world.bentobox.bentobox.api.events.island.IslandCreatedEvent;
+import world.bentobox.bentobox.api.events.island.IslandDeleteEvent;
+import world.bentobox.bentobox.api.events.island.IslandPreclearEvent;
+import world.bentobox.bentobox.api.events.island.IslandRegisteredEvent;
+import world.bentobox.bentobox.api.events.island.IslandResettedEvent;
+import world.bentobox.bentobox.api.events.island.IslandUnregisteredEvent;
+import world.bentobox.bentobox.api.events.team.TeamJoinedEvent;
+import world.bentobox.bentobox.api.events.team.TeamKickEvent;
+import world.bentobox.bentobox.api.events.team.TeamLeaveEvent;
+import world.bentobox.bentobox.api.events.team.TeamSetownerEvent;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.level.Level;
 

@@ -58,8 +58,6 @@ public class LevelsData implements DataObject {
     /**
      * Create a level entry for target player
      * @param targetPlayer - target player
-     * @param level - level
-     * @param world - world
      */
     public LevelsData(UUID targetPlayer) {
         uniqueId = targetPlayer.toString();
