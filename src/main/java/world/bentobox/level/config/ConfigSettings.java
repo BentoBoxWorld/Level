@@ -20,6 +20,11 @@ public class ConfigSettings implements ConfigObject {
     private List<String> gameModes = Collections.emptyList();
 
     @ConfigComment("")
+    @ConfigComment("When executing level command from console, should a report be shown?")
+    @ConfigEntry(path = "log-report-to-console")
+    private boolean logReportToConsole = true;
+    
+    @ConfigComment("")
     @ConfigComment("Number of concurrent island calculations")
     @ConfigComment("If your CPU can handle it, you can run parallel island calcs if there are more than one in the queue")
     @ConfigEntry(path = "concurrent-island-calcs")
@@ -362,6 +367,14 @@ public class ConfigSettings implements ConfigObject {
      */
     public void setCalculationTimeout(int calculationTimeout) {
         this.calculationTimeout = calculationTimeout;
+    }
+    
+    
+    /**
+     * @return logReportToConsole
+     */
+    public boolean isLogReportToConsole() {
+        return isLogReportToConsole;
     }
 
 }
