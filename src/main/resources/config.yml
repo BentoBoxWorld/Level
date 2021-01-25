@@ -6,6 +6,9 @@
 disabled-game-modes:
 - AOneBlock
 #
+# When executing level command from console, should a report be shown?
+log-report-to-console: true
+#
 # Number of concurrent island calculations
 # If your CPU can handle it, you can run parallel island calcs if there are more than one in the queue
 concurrent-island-calcs: 1
