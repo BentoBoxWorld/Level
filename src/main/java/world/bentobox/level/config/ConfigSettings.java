@@ -374,7 +374,7 @@ public class ConfigSettings implements ConfigObject {
      * @return logReportToConsole
      */
     public boolean isLogReportToConsole() {
-        return isLogReportToConsole;
+        return logReportToConsole;
     }
 
 }
