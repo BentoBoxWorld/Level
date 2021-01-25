@@ -119,7 +119,7 @@ public class IslandLevelCommand extends CompositeCommand {
                 .filter(u -> !u.equals(user.getUniqueId()))
                 .forEach(m -> User.getInstance(m).sendMessage(ISLAND_LEVEL_IS, LEVEL, addon.getManager().getIslandLevelString(getWorld(), playerUUID)));
             }
-        } else {
+        } else if (this.addon.getSettings().isLogReportToConsole()) {
             results.getReport().forEach(BentoBox.getInstance()::log);
         }
 
