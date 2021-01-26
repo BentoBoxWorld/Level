@@ -376,5 +376,13 @@ public class ConfigSettings implements ConfigObject {
     public boolean isLogReportToConsole() {
         return logReportToConsole;
     }
+    
+    
+    /**
+     * @param logReportToConsole if logReportToConsole should be shown on console
+     */
+    public void setLogReportToConsole(boolean logReportToConsole) {
+        this.logReportToConsole = logReportToConsole;
+    }
 
 }
