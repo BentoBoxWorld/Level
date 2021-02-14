@@ -3,8 +3,7 @@
 # 
 # Disabled Game Mode Addons
 # Level will NOT hook into these game mode addons.
-disabled-game-modes:
-- AOneBlock
+disabled-game-modes: []
 #
 # Number of concurrent island calculations
 # If your CPU can handle it, you can run parallel island calcs if there are more than one in the queue
