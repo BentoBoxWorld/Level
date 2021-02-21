@@ -95,7 +95,9 @@ public class Level extends Addon implements Listener {
         // I only added support for counting blocks into the island level
         // Someone else can PR if they want spawners added to the Leveling system :)
         stackersEnabled = Bukkit.getPluginManager().getPlugin("WildStacker") != null;
-
+        if (stackersEnabled) {
+            log("Hooked into WildStackers.");
+        }
     }
 
     @EventHandler

@@ -100,6 +100,9 @@ public class Pipeliner {
             } else {
                 // Done
                 inProcessQueue.remove(iD);
+                // Chunk finished
+                // This was the last chunk
+                iD.tidyUp();
                 iD.getR().complete(iD.getResults());
             }
         });

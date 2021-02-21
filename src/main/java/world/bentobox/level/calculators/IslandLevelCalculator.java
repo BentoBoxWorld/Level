@@ -24,6 +24,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -366,6 +367,8 @@ public class IslandLevelCalculator {
      * @param chunkSnapshot - the chunk to scan
      */
     private void scanAsync(CompletableFuture<Boolean> result, ChunkSnapshot chunkSnapshot, Chunk chunk) {
+        int seaHeight = addon.getPlugin().getIWM().getSeaHeight(island.getWorld());
+        List<Vector> stackedBlocks = new ArrayList<>();
         for (int x = 0; x< 16; x++) {
             // Check if the block coordinate is inside the protection zone and if not, don't count it
             if (chunkSnapshot.getX() * 16 + x < island.getMinProtectedX() || chunkSnapshot.getX() * 16 + x >= island.getMinProtectedX() + island.getProtectionRange() * 2) {
@@ -379,7 +382,6 @@ public class IslandLevelCalculator {
                 // Only count to the highest block in the world for some optimization
                 for (int y = 0; y < chunk.getWorld().getMaxHeight(); y++) {
                     BlockData blockData = chunkSnapshot.getBlockData(x, y, z);
-                    int seaHeight = addon.getPlugin().getIWM().getSeaHeight(island.getWorld());
                     boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
                     // Slabs can be doubled, so check them twice
                     if (Tag.SLABS.isTagged(blockData.getMaterial())) {
@@ -390,14 +392,7 @@ public class IslandLevelCalculator {
                     }
                     // Hook for Wild Stackers (Blocks Only) - this has to use the real chunk
                     if (addon.isStackersEnabled() && blockData.getMaterial() == Material.CAULDRON) {
-                        Block cauldronBlock = chunk.getBlock(x, y, z);
-                        if (WildStackerAPI.getWildStacker().getSystemManager().isStackedBarrel(cauldronBlock)) {
-                            StackedBarrel barrel = WildStackerAPI.getStackedBarrel(cauldronBlock);
-                            int barrelAmt = WildStackerAPI.getBarrelAmount(cauldronBlock);
-                            for (int _x = 0; _x < barrelAmt; _x++) {
-                                checkBlock(barrel.getType(), belowSeaLevel);
-                            }
-                        }
+                        stackedBlocks.add(new Vector(x,y,z));
                     }
                     // Add the value of the block's material
                     checkBlock(blockData.getMaterial(), belowSeaLevel);
@@ -410,7 +405,21 @@ public class IslandLevelCalculator {
             tidyUp();
         }
         // Complete the future - this must go back onto the primary thread to exit async otherwise subsequent actions will be async
-        Bukkit.getScheduler().runTask(addon.getPlugin(),() -> result.complete(true));
+        Bukkit.getScheduler().runTask(addon.getPlugin(),() -> {
+            // Deal with any stacked blocks
+            stackedBlocks.forEach(v -> {
+                Block cauldronBlock = chunk.getBlock(v.getBlockX(), v.getBlockY(), v.getBlockZ());
+                boolean belowSeaLevel = seaHeight > 0 && v.getBlockY() <= seaHeight;
+                if (WildStackerAPI.getWildStacker().getSystemManager().isStackedBarrel(cauldronBlock)) {
+                    StackedBarrel barrel = WildStackerAPI.getStackedBarrel(cauldronBlock);
+                    int barrelAmt = WildStackerAPI.getBarrelAmount(cauldronBlock);
+                    for (int _x = 0; _x < barrelAmt; _x++) {
+                        checkBlock(barrel.getType(), belowSeaLevel);
+                    }
+                }
+            });
+            result.complete(true);
+        });
     }
 
     /**
@@ -501,7 +510,10 @@ public class IslandLevelCalculator {
     }
 
 
-    private void tidyUp() {
+    /**
+     * Finalizes the calculations and makes the report
+     */
+    public void tidyUp() {
         // Finalize calculations
         results.rawBlockCount.addAndGet((long)(results.underWaterBlockCount.get() * addon.getSettings().getUnderWaterMultiplier()));
 
