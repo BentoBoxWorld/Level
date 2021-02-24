@@ -34,6 +34,9 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
 
+import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsAPI;
+import us.lynuxcraft.deadsilenceiv.advancedchests.chest.AdvancedChest;
+import us.lynuxcraft.deadsilenceiv.advancedchests.chest.ChestPage;
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.util.Pair;
@@ -430,13 +433,21 @@ public class IslandLevelCalculator {
         // Count blocks in chests
         for (BlockState bs : chunk.getTileEntities()) {
             if (bs instanceof Container) {
-                Inventory inv = ((Container)bs).getSnapshotInventory();
-                for (ItemStack i : inv) {
-                    if (i != null && i.getType().isBlock()) {
-                        for (int c = 0; c < i.getAmount(); c++) {
-                            checkBlock(i.getType(), false);
-                        }
-                    }
+                if (addon.isAdvChestEnabled()) {
+                    AdvancedChest aChest = AdvancedChestsAPI.getChestManager().getAdvancedChest(bs.getLocation());
+                    aChest.getPages().stream().map(ChestPage::getInventory).forEach(this::countChestItems);
+                } else {
+                    countChestItems(((Container)bs).getSnapshotInventory());
+                }
+            }
+        }
+    }
+
+    private void countChestItems(Inventory inv) {
+        for (ItemStack i : inv) {
+            if (i != null && i.getType().isBlock()) {
+                for (int c = 0; c < i.getAmount(); c++) {
+                    checkBlock(i.getType(), false);
                 }
             }
         }

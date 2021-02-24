@@ -48,6 +48,7 @@ public class Level extends Addon implements Listener {
     private Pipeliner pipeliner;
     private LevelsManager manager;
     private boolean stackersEnabled;
+    private boolean advChestEnabled;
 
     @Override
     public void onLoad() {
@@ -97,6 +98,11 @@ public class Level extends Addon implements Listener {
         stackersEnabled = Bukkit.getPluginManager().getPlugin("WildStacker") != null;
         if (stackersEnabled) {
             log("Hooked into WildStackers.");
+        }
+        // Check if AdvancedChests is enabled on the server
+        advChestEnabled = Bukkit.getPluginManager().getPlugin("AdvancedChests") != null;
+        if (advChestEnabled) {
+            log("Hooked into AdvancedChests.");
         }
     }
 
@@ -276,6 +282,13 @@ public class Level extends Addon implements Listener {
      */
     public boolean isStackersEnabled() {
         return stackersEnabled;
+    }
+
+    /**
+     * @return the advChestEnabled
+     */
+    public boolean isAdvChestEnabled() {
+        return advChestEnabled;
     }
 
     /**
