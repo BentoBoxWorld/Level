@@ -65,7 +65,7 @@
         <!-- Do not change unless you want different name for local builds. -->
         <build.number>-LOCAL</build.number>
         <!-- This allows to change between versions. -->
-        <build.version>2.5.3</build.version>
+        <build.version>2.6.0</build.version>
     </properties>
 
     <!-- Profiles will allow to automatically change build version. -->
@@ -201,6 +201,11 @@
             <groupId>org.eclipse.jdt</groupId>
             <artifactId>org.eclipse.jdt.annotation</artifactId>
             <version>2.2.200</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.DeadSilenceIV</groupId>
+            <artifactId>AdvancedChestsAPI</artifactId>
+            <version>1.4</version>
         </dependency>
     </dependencies>
 
