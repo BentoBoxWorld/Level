@@ -22,7 +22,6 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Container;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Slab;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import org.eclipse.jdt.annotation.NonNull;
@@ -435,20 +434,21 @@ public class IslandLevelCalculator {
             if (bs instanceof Container) {
                 if (addon.isAdvChestEnabled()) {
                     AdvancedChest aChest = AdvancedChestsAPI.getChestManager().getAdvancedChest(bs.getLocation());
-                    aChest.getPages().stream().map(ChestPage::getInventory).forEach(this::countChestItems);
-                } else {
-                    countChestItems(((Container)bs).getSnapshotInventory());
+                    if (aChest != null) {
+                        aChest.getPages().stream().map(ChestPage::getItems).forEach(c -> c.forEach(this::countItemStack));
+                        continue;
+                    }
                 }
+                // Regular chest
+                ((Container)bs).getSnapshotInventory().forEach(this::countItemStack);
             }
         }
     }
 
-    private void countChestItems(Inventory inv) {
-        for (ItemStack i : inv) {
-            if (i != null && i.getType().isBlock()) {
-                for (int c = 0; c < i.getAmount(); c++) {
-                    checkBlock(i.getType(), false);
-                }
+    private void countItemStack(ItemStack i) {
+        if (i != null && i.getType().isBlock()) {
+            for (int c = 0; c < i.getAmount(); c++) {
+                checkBlock(i.getType(), false);
             }
         }
     }

@@ -10,6 +10,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -100,10 +101,42 @@ public class Level extends Addon implements Listener {
             log("Hooked into WildStackers.");
         }
         // Check if AdvancedChests is enabled on the server
-        advChestEnabled = Bukkit.getPluginManager().getPlugin("AdvancedChests") != null;
+        Plugin advChest = Bukkit.getPluginManager().getPlugin("AdvancedChests");
+        advChestEnabled = advChest != null;
         if (advChestEnabled) {
-            log("Hooked into AdvancedChests.");
+            // Check version
+            if (compareVersions(advChest.getDescription().getVersion(), "14.2") > 0) {
+                log("Hooked into AdvancedChests.");
+            } else {
+                logError("Could not hook into AdvancedChests " + advChest.getDescription().getVersion() + " - requires version 14.3 or later");
+                advChestEnabled = false;
+            }
         }
+    }
+
+    /**
+     * Compares versions
+     * @param version1
+     * @param version2
+     * @return <0 if version 1 is older than version 2, =0 if the same, >0 if version 1 is newer than version 2
+     */
+    public static int compareVersions(String version1, String version2) {
+        int comparisonResult = 0;
+
+        String[] version1Splits = version1.split("\\.");
+        String[] version2Splits = version2.split("\\.");
+        int maxLengthOfVersionSplits = Math.max(version1Splits.length, version2Splits.length);
+
+        for (int i = 0; i < maxLengthOfVersionSplits; i++){
+            Integer v1 = i < version1Splits.length ? Integer.parseInt(version1Splits[i]) : 0;
+            Integer v2 = i < version2Splits.length ? Integer.parseInt(version2Splits[i]) : 0;
+            int compare = v1.compareTo(v2);
+            if (compare != 0) {
+                comparisonResult = compare;
+                break;
+            }
+        }
+        return comparisonResult;
     }
 
     @EventHandler
