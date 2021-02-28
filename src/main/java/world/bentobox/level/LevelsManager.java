@@ -14,7 +14,10 @@ import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -274,7 +277,7 @@ public class LevelsManager {
 
     private void addSelf(World world, User user, PanelBuilder panel) {
         if (addon.getIslands().hasIsland(world, user) || addon.getIslands().inTeam(world, user.getUniqueId())) {
-            PanelItem head = getHead(0, this.getIslandLevel(world, user.getUniqueId()), user.getUniqueId(), user, world);
+            PanelItem head = getHead(this.getRank(world, user.getUniqueId()), this.getIslandLevel(world, user.getUniqueId()), user.getUniqueId(), user, world);
             setClickHandler(head, user, world);
             panel.item(49, head);
         }
@@ -406,9 +409,7 @@ public class LevelsManager {
      */
     @NonNull
     public Map<UUID, Long> getTopTen(@NonNull World world, int size) {
-        topTenLists.computeIfAbsent(world, TopTenData::new);
-        // Remove player from top ten if they are online and do not have the perm
-        topTenLists.get(world).getTopTen().keySet().removeIf(u -> !hasTopTenPerm(world, u));
+        createAndCleanRankings(world);
         // Return the sorted map
         return Collections.unmodifiableMap(topTenLists.get(world).getTopTen().entrySet().stream()
                 .filter(e -> addon.getIslands().isOwner(world, e.getKey()))
@@ -417,7 +418,46 @@ public class LevelsManager {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new)));
     }
+    
+    void createAndCleanRankings(@NonNull World world) {
+        topTenLists.computeIfAbsent(world, TopTenData::new);
+        // Remove player from top ten if they are online and do not have the perm
+        topTenLists.get(world).getTopTen().keySet().removeIf(u -> !hasTopTenPerm(world, u)); 
+    }
 
+    /**
+     * @return the topTenLists
+     */
+    protected Map<World, TopTenData> getTopTenLists() {
+        return topTenLists;
+    }
+
+    /**
+     * Get the rank of the player in the rankings
+     * @param world - world
+     * @param uuid - player UUID
+     * @return rank placing - note - placing of 1 means top ranked
+     */
+    public int getRank(@NonNull World world, UUID uuid) {
+        createAndCleanRankings(world);
+        Stream<Entry<UUID, Long>> stream = topTenLists.get(world).getTopTen().entrySet().stream()
+        .filter(e -> addon.getIslands().isOwner(world, e.getKey()))
+        .filter(l -> l.getValue() > 0)
+        .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
+        return takeWhile(stream, x -> !x.getKey().equals(uuid)).map(Map.Entry::getKey).collect(Collectors.toList()).size() + 1;
+    }
+    
+    /**
+     * Java 8's version of Java 9's takeWhile
+     * @param stream
+     * @param predicate
+     * @return stream
+     */
+    public static <T> Stream<T> takeWhile(Stream<T> stream, Predicate<T> predicate) {
+        CustomSpliterator<T> customSpliterator = new CustomSpliterator<>(stream.spliterator(), predicate);
+        return StreamSupport.stream(customSpliterator, false);
+    }
+    
     /**
      * Checks if player has the correct top ten perm to have their level saved
      * @param world

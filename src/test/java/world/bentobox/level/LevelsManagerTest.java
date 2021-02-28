@@ -63,6 +63,7 @@ import world.bentobox.level.calculators.Pipeliner;
 import world.bentobox.level.calculators.Results;
 import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.objects.IslandLevels;
+import world.bentobox.level.objects.TopTenData;
 
 /**
  * @author tastybento
@@ -441,6 +442,27 @@ public class LevelsManagerTest {
             verify(inv).setItem(eq(i), any());
         }
          */
+    }
+    
+    /**
+     * Test method for {@link world.bentobox.level.LevelsManager#getRank(World, UUID)}
+     */
+    @Test
+    public void testGetRank() {
+        lm.createAndCleanRankings(world);
+        Map<World, TopTenData> ttl = lm.getTopTenLists();
+        Map<UUID, Long> tt = ttl.get(world).getTopTen();
+        for (long i = 100; i < 150; i++) {
+           tt.put(UUID.randomUUID(), i);
+        }
+        // Put player as lowest rank
+        tt.put(uuid, 10L);
+        assertEquals(51, lm.getRank(world, uuid));
+        // Put player as highest rank
+        tt.put(uuid, 1000L);
+        assertEquals(1, lm.getRank(world, uuid));
+        // Unknown UUID - lowest rank + 1
+        assertEquals(52, lm.getRank(world, UUID.randomUUID()));
     }
 
 }
