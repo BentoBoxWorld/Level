@@ -401,11 +401,6 @@ public class IslandLevelCalculator {
                 }
             }
         }
-        // Chunk finished
-        if (chunk.getWorld().getEnvironment().equals(Environment.NORMAL) && chunksToCheck.isEmpty()) {
-            // This was the last chunk
-            tidyUp();
-        }
         // Complete the future - this must go back onto the primary thread to exit async otherwise subsequent actions will be async
         Bukkit.getScheduler().runTask(addon.getPlugin(),() -> {
             // Deal with any stacked blocks
