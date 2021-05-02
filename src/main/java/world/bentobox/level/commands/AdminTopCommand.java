@@ -30,7 +30,7 @@ public class AdminTopCommand extends CompositeCommand {
     public boolean execute(User user, String label, List<String> args) {
         user.sendMessage("island.top.gui-title");
         int rank = 0;
-        for (Map.Entry<UUID, Long> topTen : levelPlugin.getManager().getTopTen(getWorld(), 10).entrySet()) {
+        for (Map.Entry<UUID, Long> topTen : levelPlugin.getManager().getTopTen(getWorld(), Level.TEN).entrySet()) {
             Island island = getPlugin().getIslands().getIsland(getWorld(), topTen.getKey());
             if (island != null) {
                 rank++;

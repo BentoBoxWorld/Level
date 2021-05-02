@@ -42,6 +42,9 @@ import world.bentobox.level.requests.TopTenRequestHandler;
  */
 public class Level extends Addon implements Listener {
 
+    // The 10 in top ten
+    public static final int TEN = 10;
+
     // Settings
     private ConfigSettings settings;
     private Config<ConfigSettings> configObject = new Config<>(this, ConfigSettings.class);
@@ -201,16 +204,16 @@ public class Level extends Addon implements Listener {
 
     String getRankName(World world, int rank) {
         if (rank < 1) rank = 1;
-        if (rank > 10) rank = 10;
-        return getPlayers().getName(getManager().getTopTen(world, 10).keySet().stream().skip(rank - 1L).limit(1L).findFirst().orElse(null));
+        if (rank > TEN) rank = TEN;
+        return getPlayers().getName(getManager().getTopTen(world, TEN).keySet().stream().skip(rank - 1L).limit(1L).findFirst().orElse(null));
     }
 
     String getRankLevel(World world, int rank) {
         if (rank < 1) rank = 1;
-        if (rank > 10) rank = 10;
+        if (rank > TEN) rank = TEN;
         return getManager()
                 .formatLevel(getManager()
-                        .getTopTen(world, 10)
+                        .getTopTen(world, TEN)
                         .values()
                         .stream()
                         .skip(rank - 1L)

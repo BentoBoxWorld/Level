@@ -337,7 +337,7 @@ public class LevelsManagerTest {
      */
     @Test
     public void testGetTopTenEmpty() {
-        Map<UUID, Long> tt = lm.getTopTen(world, 10);
+        Map<UUID, Long> tt = lm.getTopTen(world, Level.TEN);
         assertTrue(tt.isEmpty());
     }
 
@@ -347,7 +347,7 @@ public class LevelsManagerTest {
     @Test
     public void testGetTopTen() {
         testLoadTopTens();
-        Map<UUID, Long> tt = lm.getTopTen(world, 10);
+        Map<UUID, Long> tt = lm.getTopTen(world, Level.TEN);
         assertFalse(tt.isEmpty());
         assertEquals(1, tt.size());
         assertEquals(1, lm.getTopTen(world, 1).size());
@@ -360,7 +360,7 @@ public class LevelsManagerTest {
     public void testGetTopTenNoOwners() {
         when(im.isOwner(eq(world), any())).thenReturn(false);
         testLoadTopTens();
-        Map<UUID, Long> tt = lm.getTopTen(world, 10);
+        Map<UUID, Long> tt = lm.getTopTen(world, Level.TEN);
         assertTrue(tt.isEmpty());
     }
 
@@ -394,10 +394,10 @@ public class LevelsManagerTest {
     @Test
     public void testRemoveEntry() {
         testLoadTopTens();
-        Map<UUID, Long> tt = lm.getTopTen(world, 10);
+        Map<UUID, Long> tt = lm.getTopTen(world, Level.TEN);
         assertTrue(tt.containsKey(uuid));
         lm.removeEntry(world, uuid);
-        tt = lm.getTopTen(world, 10);
+        tt = lm.getTopTen(world, Level.TEN);
         assertFalse(tt.containsKey(uuid));
     }
 
@@ -414,8 +414,8 @@ public class LevelsManagerTest {
      */
     @Test
     public void testSetInitialIslandLevel() {
-        lm.setInitialIslandLevel(island, 10);
-        assertEquals(10, lm.getInitialLevel(island));
+        lm.setInitialIslandLevel(island, Level.TEN);
+        assertEquals(Level.TEN, lm.getInitialLevel(island));
     }
 
     /**
@@ -443,7 +443,7 @@ public class LevelsManagerTest {
         }
          */
     }
-    
+
     /**
      * Test method for {@link world.bentobox.level.LevelsManager#getRank(World, UUID)}
      */
@@ -453,7 +453,7 @@ public class LevelsManagerTest {
         Map<World, TopTenData> ttl = lm.getTopTenLists();
         Map<UUID, Long> tt = ttl.get(world).getTopTen();
         for (long i = 100; i < 150; i++) {
-           tt.put(UUID.randomUUID(), i);
+            tt.put(UUID.randomUUID(), i);
         }
         // Put player as lowest rank
         tt.put(uuid, 10L);

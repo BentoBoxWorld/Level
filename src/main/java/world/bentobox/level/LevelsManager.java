@@ -241,7 +241,7 @@ public class LevelsManager {
      */
     public void getGUI(World world, final User user) {
         // Check world
-        Map<UUID, Long> topTen = getTopTen(world, 10);
+        Map<UUID, Long> topTen = getTopTen(world, Level.TEN);
 
         PanelBuilder panel = new PanelBuilder()
                 .name(user.getTranslation("island.top.gui-title"))
@@ -418,11 +418,11 @@ public class LevelsManager {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new)));
     }
-    
+
     void createAndCleanRankings(@NonNull World world) {
         topTenLists.computeIfAbsent(world, TopTenData::new);
         // Remove player from top ten if they are online and do not have the perm
-        topTenLists.get(world).getTopTen().keySet().removeIf(u -> !hasTopTenPerm(world, u)); 
+        topTenLists.get(world).getTopTen().keySet().removeIf(u -> !hasTopTenPerm(world, u));
     }
 
     /**
@@ -441,12 +441,12 @@ public class LevelsManager {
     public int getRank(@NonNull World world, UUID uuid) {
         createAndCleanRankings(world);
         Stream<Entry<UUID, Long>> stream = topTenLists.get(world).getTopTen().entrySet().stream()
-        .filter(e -> addon.getIslands().isOwner(world, e.getKey()))
-        .filter(l -> l.getValue() > 0)
-        .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
+                .filter(e -> addon.getIslands().isOwner(world, e.getKey()))
+                .filter(l -> l.getValue() > 0)
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
         return takeWhile(stream, x -> !x.getKey().equals(uuid)).map(Map.Entry::getKey).collect(Collectors.toList()).size() + 1;
     }
-    
+
     /**
      * Java 8's version of Java 9's takeWhile
      * @param stream
@@ -457,7 +457,7 @@ public class LevelsManager {
         CustomSpliterator<T> customSpliterator = new CustomSpliterator<>(stream.spliterator(), predicate);
         return StreamSupport.stream(customSpliterator, false);
     }
-    
+
     /**
      * Checks if player has the correct top ten perm to have their level saved
      * @param world
