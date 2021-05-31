@@ -4,4 +4,6 @@ version: ${version}
 api-version: "1.16"
 description: Level Addon
 author: tastybento
-depend: [BentoBox]
+depend:
+  - BentoBox
+
