@@ -56,7 +56,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>16</java.version>
         <!-- Non-minecraft related dependencies -->
-        <powermock.version>2.0.2</powermock.version>
+        <powermock.version>2.0.9</powermock.version>
         <!-- More visible way how to change dependency versions -->
         <spigot.version>1.17-R0.1-SNAPSHOT</spigot.version>
         <bentobox.version>1.17.0-SNAPSHOT</bentobox.version>
@@ -169,7 +169,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.0.0</version>
+            <version>3.11.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -203,12 +203,12 @@
         <dependency>
             <groupId>org.eclipse.jdt</groupId>
             <artifactId>org.eclipse.jdt.annotation</artifactId>
-            <version>2.2.200</version>
+            <version>2.2.600</version>
         </dependency>
         <dependency>
             <groupId>com.github.DeadSilenceIV</groupId>
             <artifactId>AdvancedChestsAPI</artifactId>
-            <version>1.6</version>
+            <version>1.8</version>
         </dependency>
     </dependencies>
 
