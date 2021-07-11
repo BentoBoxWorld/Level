@@ -131,6 +131,11 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+        <!-- RoseStacker repo -->
+        <repository>
+            <id>rosewood-repo</id>
+            <url>https://repo.rosewooddev.io/repository/public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -171,6 +176,7 @@
             <groupId>com.github.OmerBenGera</groupId>
             <artifactId>WildStackerAPI</artifactId>
             <version>b18</version>
+            <scope>provided</scope>
         </dependency>
         <!-- Static analysis -->
         <!-- We are using Eclipse's annotations. If you're using IDEA, update 
@@ -185,6 +191,13 @@
             <groupId>com.github.DeadSilenceIV</groupId>
             <artifactId>AdvancedChestsAPI</artifactId>
             <version>1.8</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>dev.rosewood</groupId>
+            <artifactId>rosestacker</artifactId>
+            <version>1.2.8</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

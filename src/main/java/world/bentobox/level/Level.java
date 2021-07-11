@@ -56,6 +56,7 @@ public class Level extends Addon implements Listener {
     private LevelsManager manager;
     private boolean stackersEnabled;
     private boolean advChestEnabled;
+    private boolean roseStackersEnabled;
     private final List<GameModeAddon> registeredGameModes = new ArrayList<>();
 
     @Override
@@ -105,7 +106,7 @@ public class Level extends Addon implements Listener {
         // Check if WildStackers is enabled on the server
         // I only added support for counting blocks into the island level
         // Someone else can PR if they want spawners added to the Leveling system :)
-        stackersEnabled = Bukkit.getPluginManager().getPlugin("WildStacker") != null;
+        stackersEnabled = Bukkit.getPluginManager().isPluginEnabled("WildStacker");
         if (stackersEnabled) {
             log("Hooked into WildStackers.");
         }
@@ -120,6 +121,11 @@ public class Level extends Addon implements Listener {
                 logError("Could not hook into AdvancedChests " + advChest.getDescription().getVersion() + " - requires version 14.3 or later");
                 advChestEnabled = false;
             }
+        }
+        // Check if RoseStackers is enabled
+        stackersEnabled = Bukkit.getPluginManager().isPluginEnabled("RoseStacker");
+        if (roseStackersEnabled) {
+            log("Hooked into RoseStackers.");
         }
     }
 
@@ -429,6 +435,13 @@ public class Level extends Addon implements Listener {
      */
     public boolean isRegisteredGameModeWorld(World world) {
         return registeredGameModes.stream().map(GameModeAddon::getOverWorld).anyMatch(w -> Util.sameWorld(world, w));
+    }
+
+    /**
+     * @return the roseStackersEnabled
+     */
+    public boolean isRoseStackersEnabled() {
+        return roseStackersEnabled;
     }
 
 }
