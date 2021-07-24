@@ -36,6 +36,7 @@ import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
 import world.bentobox.level.objects.LevelsData;
+import world.bentobox.level.objects.TopTenData;
 import world.bentobox.level.requests.LevelRequestHandler;
 import world.bentobox.level.requests.TopTenRequestHandler;
 
@@ -206,6 +207,9 @@ public class Level extends Addon implements Listener {
                     gm.getDescription().getName().toLowerCase() + "_top_value_" + i, u -> getRankLevel(gm.getOverWorld(), rank));
         }
 
+        // Personal rank
+        getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                gm.getDescription().getName().toLowerCase() + "_rank_value", u -> getRankValue(gm.getOverWorld(), u));
     }
 
     String getRankName(World world, int rank) {
@@ -228,8 +232,23 @@ public class Level extends Addon implements Listener {
                         .orElse(null));
     }
 
+    /**
+     * Return the rank of the player in a world
+     * @param world world
+     * @param user player
+     * @return rank where 1 is the top rank.
+     */
+    String getRankValue(World world, User user) {
+        if (user == null) {
+            return "";
+        }
+        // Get the island level for this user
+        long level = getManager().getIslandLevel(world, user.getUniqueId());
+        return String.valueOf(getManager().getTopTenLists().getOrDefault(world, new TopTenData(world)).getTopTen().values().stream().filter(l -> l > level).count() + 1);
+    }
+
     String getVisitedIslandLevel(GameModeAddon gm, User user) {
-        if (!gm.inWorld(user.getLocation())) return "";
+        if (user == null || !gm.inWorld(user.getLocation())) return "";
         return getIslands().getIslandAt(user.getLocation())
                 .map(island -> getManager().getIslandLevelString(gm.getOverWorld(), island.getOwner()))
                 .orElse("0");
