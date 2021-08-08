@@ -383,8 +383,8 @@ public class LevelsManagerTest {
         Bukkit.getScheduler();
         verify(scheduler).runTaskAsynchronously(eq(plugin), task.capture());
         task.getValue().run();
-        verify(addon).log(eq("Generating Top Ten Tables"));
-        verify(addon).log(eq("Loaded top ten for bskyblock-world"));
+        verify(addon).log(eq("Generating rankings"));
+        verify(addon).log(eq("Generated rankings for bskyblock-world"));
 
     }
 
@@ -399,14 +399,6 @@ public class LevelsManagerTest {
         lm.removeEntry(world, uuid);
         tt = lm.getTopTen(world, Level.TEN);
         assertFalse(tt.containsKey(uuid));
-    }
-
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#save()}.
-     */
-    @Test
-    public void testSave() {
-        lm.save();
     }
 
     /**

@@ -62,8 +62,6 @@ public class LevelsManager {
     private final Database<IslandLevels> handler;
     // A cache of island levels.
     private final Map<String, IslandLevels> levelsCache;
-
-    private final Database<TopTenData> topTenHandler;
     // Top ten lists
     private final Map<World,TopTenData> topTenLists;
     // Background
@@ -77,8 +75,6 @@ public class LevelsManager {
         // Set up the database handler to store and retrieve data
         // Note that these are saved by the BentoBox database
         handler = new Database<>(addon, IslandLevels.class);
-        // Top Ten handler
-        topTenHandler = new Database<>(addon, TopTenData.class);
         // Initialize the cache
         levelsCache = new HashMap<>();
         // Initialize top ten lists
@@ -179,8 +175,6 @@ public class LevelsManager {
             }
             // Save result
             setIslandResults(island.getWorld(), island.getOwner(), r);
-            // Save top ten
-            addon.getManager().saveTopTen(island.getWorld());
             // Save the island scan details
             result.complete(r);
         });
@@ -462,15 +456,14 @@ public class LevelsManager {
     void loadTopTens() {
         topTenLists.clear();
         Bukkit.getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
-            addon.log("Generating Top Ten Tables");
+            addon.log("Generating rankings");
             handler.loadObjects().forEach(il -> {
                 if (il.getLevel() > 0) {
                     addon.getIslands().getIslandById(il.getUniqueId()).ifPresent(i -> this.addToTopTen(i, il.getLevel()));
                 }
             });
             topTenLists.keySet().forEach(w -> {
-                addon.log("Loaded top ten for " + w.getName());
-                this.saveTopTen(w);
+                addon.log("Generated rankings for " + w.getName());
             });
 
         });
@@ -484,25 +477,8 @@ public class LevelsManager {
     public void removeEntry(World world, UUID uuid) {
         if (topTenLists.containsKey(world)) {
             topTenLists.get(world).getTopTen().remove(uuid);
-            topTenHandler.saveObjectAsync(topTenLists.get(world));
         }
 
-    }
-
-    /**
-     * Saves all player data and the top ten
-     */
-    public void save() {
-        levelsCache.values().forEach(handler::saveObjectAsync);
-        topTenLists.values().forEach(topTenHandler::saveObjectAsync);
-    }
-
-    /**
-     * Save the top ten for world
-     * @param world - world
-     */
-    public void saveTopTen(World world) {
-        topTenHandler.saveObjectAsync(topTenLists.get(world));
     }
 
     /**

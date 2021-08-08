@@ -275,11 +275,6 @@ public class Level extends Addon implements Listener {
     public void onDisable() {
         // Stop the pipeline
         this.getPipeliner().stop();
-        // Save player data and the top tens
-        if (manager != null) {
-            manager.save();
-        }
-
     }
 
     private void loadBlockSettings() {
