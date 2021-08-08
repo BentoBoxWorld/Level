@@ -383,8 +383,8 @@ public class LevelsManagerTest {
         Bukkit.getScheduler();
         verify(scheduler).runTaskAsynchronously(eq(plugin), task.capture());
         task.getValue().run();
-        verify(addon).log(eq("Generating Top Ten Tables"));
-        verify(addon).log(eq("Loaded top ten for bskyblock-world"));
+        verify(addon).log(eq("Generating rankings"));
+        verify(addon).log(eq("Generated rankings for bskyblock-world"));
 
     }
 
