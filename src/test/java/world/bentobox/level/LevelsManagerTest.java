@@ -402,14 +402,6 @@ public class LevelsManagerTest {
     }
 
     /**
-     * Test method for {@link world.bentobox.level.LevelsManager#save()}.
-     */
-    @Test
-    public void testSave() {
-        lm.save();
-    }
-
-    /**
      * Test method for {@link world.bentobox.level.LevelsManager#setInitialIslandLevel(world.bentobox.bentobox.database.objects.Island, long)}.
      */
     @Test
@@ -443,7 +435,7 @@ public class LevelsManagerTest {
         }
          */
     }
-    
+
     /**
      * Test method for {@link world.bentobox.level.LevelsManager#getRank(World, UUID)}
      */
@@ -453,7 +445,7 @@ public class LevelsManagerTest {
         Map<World, TopTenData> ttl = lm.getTopTenLists();
         Map<UUID, Long> tt = ttl.get(world).getTopTen();
         for (long i = 100; i < 150; i++) {
-           tt.put(UUID.randomUUID(), i);
+            tt.put(UUID.randomUUID(), i);
         }
         // Put player as lowest rank
         tt.put(uuid, 10L);

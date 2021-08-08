@@ -64,8 +64,6 @@ public class LevelsManager {
     private final Database<IslandLevels> handler;
     // A cache of island levels.
     private final Map<String, IslandLevels> levelsCache;
-
-    private final Database<TopTenData> topTenHandler;
     // Top ten lists
     private final Map<World,TopTenData> topTenLists;
     // Background
@@ -79,8 +77,6 @@ public class LevelsManager {
         // Set up the database handler to store and retrieve data
         // Note that these are saved by the BentoBox database
         handler = new Database<>(addon, IslandLevels.class);
-        // Top Ten handler
-        topTenHandler = new Database<>(addon, TopTenData.class);
         // Initialize the cache
         levelsCache = new HashMap<>();
         // Initialize top ten lists
@@ -181,8 +177,6 @@ public class LevelsManager {
             }
             // Save result
             setIslandResults(island.getWorld(), island.getOwner(), r);
-            // Save top ten
-            addon.getManager().saveTopTen(island.getWorld());
             // Save the island scan details
             result.complete(r);
         });
@@ -418,11 +412,11 @@ public class LevelsManager {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new)));
     }
-    
+
     void createAndCleanRankings(@NonNull World world) {
         topTenLists.computeIfAbsent(world, TopTenData::new);
         // Remove player from top ten if they are online and do not have the perm
-        topTenLists.get(world).getTopTen().keySet().removeIf(u -> !hasTopTenPerm(world, u)); 
+        topTenLists.get(world).getTopTen().keySet().removeIf(u -> !hasTopTenPerm(world, u));
     }
 
     /**
@@ -441,12 +435,12 @@ public class LevelsManager {
     public int getRank(@NonNull World world, UUID uuid) {
         createAndCleanRankings(world);
         Stream<Entry<UUID, Long>> stream = topTenLists.get(world).getTopTen().entrySet().stream()
-        .filter(e -> addon.getIslands().isOwner(world, e.getKey()))
-        .filter(l -> l.getValue() > 0)
-        .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
+                .filter(e -> addon.getIslands().isOwner(world, e.getKey()))
+                .filter(l -> l.getValue() > 0)
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
         return takeWhile(stream, x -> !x.getKey().equals(uuid)).map(Map.Entry::getKey).collect(Collectors.toList()).size() + 1;
     }
-    
+
     /**
      * Java 8's version of Java 9's takeWhile
      * @param stream
@@ -457,7 +451,7 @@ public class LevelsManager {
         CustomSpliterator<T> customSpliterator = new CustomSpliterator<>(stream.spliterator(), predicate);
         return StreamSupport.stream(customSpliterator, false);
     }
-    
+
     /**
      * Checks if player has the correct top ten perm to have their level saved
      * @param world
@@ -475,15 +469,14 @@ public class LevelsManager {
     void loadTopTens() {
         topTenLists.clear();
         Bukkit.getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
-            addon.log("Generating Top Ten Tables");
+            addon.log("Generating rankings");
             handler.loadObjects().forEach(il -> {
                 if (il.getLevel() > 0) {
                     addon.getIslands().getIslandById(il.getUniqueId()).ifPresent(i -> this.addToTopTen(i, il.getLevel()));
                 }
             });
             topTenLists.keySet().forEach(w -> {
-                addon.log("Loaded top ten for " + w.getName());
-                this.saveTopTen(w);
+                addon.log("Generated rankings for " + w.getName());
             });
 
         });
@@ -497,25 +490,8 @@ public class LevelsManager {
     public void removeEntry(World world, UUID uuid) {
         if (topTenLists.containsKey(world)) {
             topTenLists.get(world).getTopTen().remove(uuid);
-            topTenHandler.saveObjectAsync(topTenLists.get(world));
         }
 
-    }
-
-    /**
-     * Saves all player data and the top ten
-     */
-    public void save() {
-        levelsCache.values().forEach(handler::saveObjectAsync);
-        topTenLists.values().forEach(topTenHandler::saveObjectAsync);
-    }
-
-    /**
-     * Save the top ten for world
-     * @param world - world
-     */
-    public void saveTopTen(World world) {
-        topTenHandler.saveObjectAsync(topTenLists.get(world));
     }
 
     /**
