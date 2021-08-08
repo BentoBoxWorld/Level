@@ -14,10 +14,8 @@ import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -235,7 +233,7 @@ public class LevelsManager {
      */
     public void getGUI(World world, final User user) {
         // Check world
-        Map<UUID, Long> topTen = getTopTen(world, 10);
+        Map<UUID, Long> topTen = getTopTen(world, Level.TEN);
 
         PanelBuilder panel = new PanelBuilder()
                 .name(user.getTranslation("island.top.gui-title"))
@@ -438,18 +436,7 @@ public class LevelsManager {
                 .filter(e -> addon.getIslands().isOwner(world, e.getKey()))
                 .filter(l -> l.getValue() > 0)
                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
-        return takeWhile(stream, x -> !x.getKey().equals(uuid)).map(Map.Entry::getKey).collect(Collectors.toList()).size() + 1;
-    }
-
-    /**
-     * Java 8's version of Java 9's takeWhile
-     * @param stream
-     * @param predicate
-     * @return stream
-     */
-    public static <T> Stream<T> takeWhile(Stream<T> stream, Predicate<T> predicate) {
-        CustomSpliterator<T> customSpliterator = new CustomSpliterator<>(stream.spliterator(), predicate);
-        return StreamSupport.stream(customSpliterator, false);
+        return stream.takeWhile(x -> !x.getKey().equals(uuid)).map(Map.Entry::getKey).collect(Collectors.toList()).size() + 1;
     }
 
     /**

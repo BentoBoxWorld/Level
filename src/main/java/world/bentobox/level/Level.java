@@ -2,6 +2,8 @@ package world.bentobox.level;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -20,6 +22,7 @@ import world.bentobox.bentobox.api.configuration.Config;
 import world.bentobox.bentobox.api.events.BentoBoxReadyEvent;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.calculators.Pipeliner;
 import world.bentobox.level.commands.AdminLevelCommand;
 import world.bentobox.level.commands.AdminLevelStatusCommand;
@@ -33,6 +36,7 @@ import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
 import world.bentobox.level.objects.LevelsData;
+import world.bentobox.level.objects.TopTenData;
 import world.bentobox.level.requests.LevelRequestHandler;
 import world.bentobox.level.requests.TopTenRequestHandler;
 
@@ -42,6 +46,9 @@ import world.bentobox.level.requests.TopTenRequestHandler;
  */
 public class Level extends Addon implements Listener {
 
+    // The 10 in top ten
+    public static final int TEN = 10;
+
     // Settings
     private ConfigSettings settings;
     private Config<ConfigSettings> configObject = new Config<>(this, ConfigSettings.class);
@@ -50,6 +57,7 @@ public class Level extends Addon implements Listener {
     private LevelsManager manager;
     private boolean stackersEnabled;
     private boolean advChestEnabled;
+    private final List<GameModeAddon> registeredGameModes = new ArrayList<>();
 
     @Override
     public void onLoad() {
@@ -82,12 +90,14 @@ public class Level extends Addon implements Listener {
         this.registerListener(new JoinLeaveListener(this));
         this.registerListener(this);
         // Register commands for GameModes
+        registeredGameModes.clear();
         getPlugin().getAddonsManager().getGameModeAddons().stream()
         .filter(gm -> !settings.getGameModes().contains(gm.getDescription().getName()))
         .forEach(gm -> {
             log("Level hooking into " + gm.getDescription().getName());
             registerCommands(gm);
             registerPlaceholders(gm);
+            registeredGameModes.add(gm);
         });
         // Register request handlers
         registerRequestHandler(new LevelRequestHandler(this));
@@ -197,20 +207,23 @@ public class Level extends Addon implements Listener {
                     gm.getDescription().getName().toLowerCase() + "_top_value_" + i, u -> getRankLevel(gm.getOverWorld(), rank));
         }
 
+        // Personal rank
+        getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                gm.getDescription().getName().toLowerCase() + "_rank_value", u -> getRankValue(gm.getOverWorld(), u));
     }
 
     String getRankName(World world, int rank) {
         if (rank < 1) rank = 1;
-        if (rank > 10) rank = 10;
-        return getPlayers().getName(getManager().getTopTen(world, 10).keySet().stream().skip(rank - 1L).limit(1L).findFirst().orElse(null));
+        if (rank > TEN) rank = TEN;
+        return getPlayers().getName(getManager().getTopTen(world, TEN).keySet().stream().skip(rank - 1L).limit(1L).findFirst().orElse(null));
     }
 
     String getRankLevel(World world, int rank) {
         if (rank < 1) rank = 1;
-        if (rank > 10) rank = 10;
+        if (rank > TEN) rank = TEN;
         return getManager()
                 .formatLevel(getManager()
-                        .getTopTen(world, 10)
+                        .getTopTen(world, TEN)
                         .values()
                         .stream()
                         .skip(rank - 1L)
@@ -219,8 +232,23 @@ public class Level extends Addon implements Listener {
                         .orElse(null));
     }
 
+    /**
+     * Return the rank of the player in a world
+     * @param world world
+     * @param user player
+     * @return rank where 1 is the top rank.
+     */
+    String getRankValue(World world, User user) {
+        if (user == null) {
+            return "";
+        }
+        // Get the island level for this user
+        long level = getManager().getIslandLevel(world, user.getUniqueId());
+        return String.valueOf(getManager().getTopTenLists().getOrDefault(world, new TopTenData(world)).getTopTen().values().stream().filter(l -> l > level).count() + 1);
+    }
+
     String getVisitedIslandLevel(GameModeAddon gm, User user) {
-        if (!gm.inWorld(user.getLocation())) return "";
+        if (user == null || !gm.inWorld(user.getLocation())) return "";
         return getIslands().getIslandAt(user.getLocation())
                 .map(island -> getManager().getIslandLevelString(gm.getOverWorld(), island.getOwner()))
                 .orElse("0");
@@ -391,4 +419,30 @@ public class Level extends Addon implements Listener {
         });
         return ld;
     }
+
+    /**
+     * @return the registeredGameModes
+     */
+    public List<GameModeAddon> getRegisteredGameModes() {
+        return registeredGameModes;
+    }
+
+    /**
+     * Check if Level addon is active in game mode
+     * @param gm Game Mode Addon
+     * @return true if active, false if not
+     */
+    public boolean isRegisteredGameMode(GameModeAddon gm) {
+        return registeredGameModes.contains(gm);
+    }
+
+    /**
+     * Checks if Level addon is active in world
+     * @param world world
+     * @return true if active, false if not
+     */
+    public boolean isRegisteredGameModeWorld(World world) {
+        return registeredGameModes.stream().map(GameModeAddon::getOverWorld).anyMatch(w -> Util.sameWorld(world, w));
+    }
+
 }
