@@ -2,6 +2,7 @@ package world.bentobox.level.calculators;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,7 +36,6 @@ import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
 
 import dev.rosewood.rosestacker.api.RoseStackerAPI;
-import dev.rosewood.rosestacker.stack.StackingThread;
 import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsAPI;
 import us.lynuxcraft.deadsilenceiv.advancedchests.chest.AdvancedChest;
 import us.lynuxcraft.deadsilenceiv.advancedchests.chest.gui.page.ChestPage;
@@ -154,7 +154,6 @@ public class IslandLevelCalculator {
     private final Results results;
     private long duration;
     private final boolean zeroIsland;
-    private final Map<Environment, Object> stackingThreads = new EnumMap<>(Environment.class);
     private final Map<Environment, World> worlds = new EnumMap<>(Environment.class);
     private final int seaHeight;
 
@@ -179,18 +178,18 @@ public class IslandLevelCalculator {
         // Set up the worlds
         worlds.put(Environment.NORMAL, Util.getWorld(island.getWorld()));
         // Nether
-        World nether = addon.getPlugin().getIWM().getNetherWorld(island.getWorld());
-        if (nether != null) {
-            worlds.put(Environment.NETHER, nether);
+        if (addon.getSettings().isNether()) {
+            World nether = addon.getPlugin().getIWM().getNetherWorld(island.getWorld());
+            if (nether != null) {
+                worlds.put(Environment.NETHER, nether);
+            }
         }
         // End
-        World end = addon.getPlugin().getIWM().getEndWorld(island.getWorld());
-        if (end != null) {
-            worlds.put(Environment.THE_END, end);
-        }
-        // RoseStacker - get threads for worlds
-        if (addon.isRoseStackersEnabled()) {
-            worlds.forEach((k,v) -> stackingThreads.put(k, RoseStackerAPI.getInstance().getStackingThread(v)));
+        if (addon.getSettings().isEnd()) {
+            World end = addon.getPlugin().getIWM().getEndWorld(island.getWorld());
+            if (end != null) {
+                worlds.put(Environment.THE_END, end);
+            }
         }
         // Sea Height
         seaHeight = addon.getPlugin().getIWM().getSeaHeight(island.getWorld());
@@ -343,24 +342,21 @@ public class IslandLevelCalculator {
     private CompletableFuture<Chunk> getWorldChunk(Environment env, int x, int z) {
         if (worlds.containsKey(env)) {
             CompletableFuture<Chunk> r2 = new CompletableFuture<>();
-            Util.getChunkAtAsync(worlds.get(env), x, z, true).thenAccept(chunk -> roseStackerCheck(r2, chunk, env, x, z));
+            // Get the chunk, and then coincidentally check the RoseStacker
+            Util.getChunkAtAsync(worlds.get(env), x, z, true).thenAccept(chunk -> roseStackerCheck(r2, chunk));
             return r2;
         }
         return CompletableFuture.completedFuture(null);
     }
 
-    private void roseStackerCheck(CompletableFuture<Chunk> r2, Chunk chunk, Environment env, int x, int z) {
-        // If the EnumMap has the stacking thread for this environment, then process it
-        if (stackingThreads.containsKey(env)) {
-            // Filter out this chunk from the StackingThread - now the chunk is loaded, it should be in there?
-            ((StackingThread) stackingThreads.get(env)).getStackedBlocks().entrySet().stream()
-            .filter(e -> e.getKey().getX() >> 4 == x && e.getKey().getZ() >> 4 == z)
-            .forEach(e -> {
+    private void roseStackerCheck(CompletableFuture<Chunk> r2, Chunk chunk) {
+        if (addon.isRoseStackersEnabled()) {
+            RoseStackerAPI.getInstance().getStackedBlocks(Collections.singletonList(chunk)).forEach(e -> {
                 // Blocks below sea level can be scored differently
-                boolean belowSeaLevel = seaHeight > 0 && e.getKey().getY() <= seaHeight;
+                boolean belowSeaLevel = seaHeight > 0 && e.getLocation().getY() <= seaHeight;
                 // Check block once because the base block will be counted in the chunk snapshot
-                for (int _x = 0; _x < e.getValue().getStackSize() - 1; _x++) {
-                    checkBlock(e.getKey().getType(), belowSeaLevel);
+                for (int _x = 0; _x < e.getStackSize() - 1; _x++) {
+                    checkBlock(e.getBlock().getType(), belowSeaLevel);
                 }
             });
         }

@@ -123,7 +123,7 @@ public class Level extends Addon implements Listener {
             }
         }
         // Check if RoseStackers is enabled
-        stackersEnabled = Bukkit.getPluginManager().isPluginEnabled("RoseStacker");
+        roseStackersEnabled = Bukkit.getPluginManager().isPluginEnabled("RoseStacker");
         if (roseStackersEnabled) {
             log("Hooked into RoseStackers.");
         }
