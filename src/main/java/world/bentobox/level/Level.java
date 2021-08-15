@@ -36,6 +36,7 @@ import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
 import world.bentobox.level.objects.LevelsData;
+import world.bentobox.level.objects.TopTenData;
 import world.bentobox.level.requests.LevelRequestHandler;
 import world.bentobox.level.requests.TopTenRequestHandler;
 
@@ -56,6 +57,7 @@ public class Level extends Addon implements Listener {
     private LevelsManager manager;
     private boolean stackersEnabled;
     private boolean advChestEnabled;
+    private boolean roseStackersEnabled;
     private final List<GameModeAddon> registeredGameModes = new ArrayList<>();
 
     @Override
@@ -105,7 +107,7 @@ public class Level extends Addon implements Listener {
         // Check if WildStackers is enabled on the server
         // I only added support for counting blocks into the island level
         // Someone else can PR if they want spawners added to the Leveling system :)
-        stackersEnabled = Bukkit.getPluginManager().getPlugin("WildStacker") != null;
+        stackersEnabled = Bukkit.getPluginManager().isPluginEnabled("WildStacker");
         if (stackersEnabled) {
             log("Hooked into WildStackers.");
         }
@@ -120,6 +122,11 @@ public class Level extends Addon implements Listener {
                 logError("Could not hook into AdvancedChests " + advChest.getDescription().getVersion() + " - requires version 14.3 or later");
                 advChestEnabled = false;
             }
+        }
+        // Check if RoseStackers is enabled
+        roseStackersEnabled = Bukkit.getPluginManager().isPluginEnabled("RoseStacker");
+        if (roseStackersEnabled) {
+            log("Hooked into RoseStackers.");
         }
     }
 
@@ -206,6 +213,9 @@ public class Level extends Addon implements Listener {
                     gm.getDescription().getName().toLowerCase() + "_top_value_" + i, u -> getRankLevel(gm.getOverWorld(), rank));
         }
 
+        // Personal rank
+        getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                gm.getDescription().getName().toLowerCase() + "_rank_value", u -> getRankValue(gm.getOverWorld(), u));
     }
 
     String getRankName(World world, int rank) {
@@ -228,8 +238,23 @@ public class Level extends Addon implements Listener {
                         .orElse(null));
     }
 
+    /**
+     * Return the rank of the player in a world
+     * @param world world
+     * @param user player
+     * @return rank where 1 is the top rank.
+     */
+    String getRankValue(World world, User user) {
+        if (user == null) {
+            return "";
+        }
+        // Get the island level for this user
+        long level = getManager().getIslandLevel(world, user.getUniqueId());
+        return String.valueOf(getManager().getTopTenLists().getOrDefault(world, new TopTenData(world)).getTopTen().values().stream().filter(l -> l > level).count() + 1);
+    }
+
     String getVisitedIslandLevel(GameModeAddon gm, User user) {
-        if (!gm.inWorld(user.getLocation())) return "";
+        if (user == null || !gm.inWorld(user.getLocation())) return "";
         return getIslands().getIslandAt(user.getLocation())
                 .map(island -> getManager().getIslandLevelString(gm.getOverWorld(), island.getOwner()))
                 .orElse("0");
@@ -256,11 +281,6 @@ public class Level extends Addon implements Listener {
     public void onDisable() {
         // Stop the pipeline
         this.getPipeliner().stop();
-        // Save player data and the top tens
-        if (manager != null) {
-            manager.save();
-        }
-
     }
 
     private void loadBlockSettings() {
@@ -429,6 +449,13 @@ public class Level extends Addon implements Listener {
      */
     public boolean isRegisteredGameModeWorld(World world) {
         return registeredGameModes.stream().map(GameModeAddon::getOverWorld).anyMatch(w -> Util.sameWorld(world, w));
+    }
+
+    /**
+     * @return the roseStackersEnabled
+     */
+    public boolean isRoseStackersEnabled() {
+        return roseStackersEnabled;
     }
 
 }
