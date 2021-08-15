@@ -2,9 +2,12 @@ package world.bentobox.level.calculators;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -24,7 +27,6 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.bgsoftware.wildstacker.api.WildStackerAPI;
@@ -33,6 +35,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
 
+import dev.rosewood.rosestacker.api.RoseStackerAPI;
 import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsAPI;
 import us.lynuxcraft.deadsilenceiv.advancedchests.chest.AdvancedChest;
 import us.lynuxcraft.deadsilenceiv.advancedchests.chest.gui.page.ChestPage;
@@ -45,6 +48,7 @@ import world.bentobox.level.Level;
 public class IslandLevelCalculator {
     private static final String LINE_BREAK = "==================================";
     public static final long MAX_AMOUNT = 10000;
+    private final Map<Environment, World> worlds = new EnumMap<>(Environment.class);
 
     /**
      * Method to evaluate a mathematical equation
@@ -151,6 +155,7 @@ public class IslandLevelCalculator {
     private final Results results;
     private long duration;
     private final boolean zeroIsland;
+    private int seaHeight;
 
     /**
      * Constructor to get the level for an island
@@ -170,6 +175,24 @@ public class IslandLevelCalculator {
         this.limitCount = new HashMap<>(addon.getBlockConfig().getBlockLimits());
         // Get the initial island level
         results.initialLevel.set(addon.getInitialIslandLevel(island));
+        // Set up the worlds
+        worlds.put(Environment.NORMAL, Util.getWorld(island.getWorld()));
+        // Nether
+        if (addon.getSettings().isNether()) {
+            World nether = addon.getPlugin().getIWM().getNetherWorld(island.getWorld());
+            if (nether != null) {
+                worlds.put(Environment.NETHER, nether);
+            }
+        }
+        // End
+        if (addon.getSettings().isEnd()) {
+            World end = addon.getPlugin().getIWM().getEndWorld(island.getWorld());
+            if (end != null) {
+                worlds.put(Environment.THE_END, end);
+            }
+        }
+        // Sea Height
+        seaHeight = addon.getPlugin().getIWM().getSeaHeight(island.getWorld());
     }
 
     /**
@@ -317,30 +340,28 @@ public class IslandLevelCalculator {
      * @param z - chunk z coordinate
      * @return a future chunk or future null if there is no chunk to load, e.g., there is no island nether
      */
-    private CompletableFuture<Chunk> getWorldChunk(@NonNull World world, Environment env, int x, int z) {
-        switch (env) {
-        case NETHER:
-            if (addon.getSettings().isNether()) {
-                World nether = addon.getPlugin().getIWM().getNetherWorld(island.getWorld());
-                if (nether != null) {
-                    return Util.getChunkAtAsync(nether, x, z, true);
-                }
-            }
-            // There is no chunk to scan, so return a null chunk
-            return CompletableFuture.completedFuture(null);
-        case THE_END:
-            if (addon.getSettings().isEnd()) {
-                World end = addon.getPlugin().getIWM().getEndWorld(island.getWorld());
-                if (end != null) {
-                    return Util.getChunkAtAsync(end, x, z, true);
-                }
-            }
-            // There is no chunk to scan, so return a null chunk
-            return CompletableFuture.completedFuture(null);
-        default:
-            return Util.getChunkAtAsync(world, x, z, true);
-
+    private CompletableFuture<Chunk> getWorldChunk(Environment env, int x, int z) {
+        if (worlds.containsKey(env)) {
+            CompletableFuture<Chunk> r2 = new CompletableFuture<>();
+            // Get the chunk, and then coincidentally check the RoseStacker
+            Util.getChunkAtAsync(worlds.get(env), x, z, true).thenAccept(chunk -> roseStackerCheck(r2, chunk));
+            return r2;
         }
+        return CompletableFuture.completedFuture(null);
+    }
+
+    private void roseStackerCheck(CompletableFuture<Chunk> r2, Chunk chunk) {
+        if (addon.isRoseStackersEnabled()) {
+            RoseStackerAPI.getInstance().getStackedBlocks(Collections.singletonList(chunk)).forEach(e -> {
+                // Blocks below sea level can be scored differently
+                boolean belowSeaLevel = seaHeight > 0 && e.getLocation().getY() <= seaHeight;
+                // Check block once because the base block will be counted in the chunk snapshot
+                for (int _x = 0; _x < e.getStackSize() - 1; _x++) {
+                    checkBlock(e.getBlock().getType(), belowSeaLevel);
+                }
+            });
+        }
+        r2.complete(chunk);
     }
 
     /**
@@ -486,18 +507,17 @@ public class IslandLevelCalculator {
         // Set up the result
         CompletableFuture<Boolean> result = new CompletableFuture<>();
         // Get chunks and scan
-        getWorldChunk(island.getWorld(), Environment.THE_END, p.x, p.z).thenAccept(endChunk ->
+        getWorldChunk(Environment.THE_END, p.x, p.z).thenAccept(endChunk ->
         scanChunk(endChunk).thenAccept(b ->
-        getWorldChunk(island.getWorld(), Environment.NETHER, p.x, p.z).thenAccept(netherChunk ->
+        getWorldChunk(Environment.NETHER, p.x, p.z).thenAccept(netherChunk ->
         scanChunk(netherChunk).thenAccept(b2 ->
-        getWorldChunk(island.getWorld(), Environment.NORMAL, p.x, p.z).thenAccept(normalChunk ->
+        getWorldChunk(Environment.NORMAL, p.x, p.z).thenAccept(normalChunk ->
         scanChunk(normalChunk).thenAccept(b3 ->
         // Complete the result now that all chunks have been scanned
         result.complete(!chunksToCheck.isEmpty()))))
                 )
                 )
                 );
-
         return result;
     }
 

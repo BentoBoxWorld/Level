@@ -50,6 +50,7 @@ public class Level extends Addon implements Listener {
     private LevelsManager manager;
     private boolean stackersEnabled;
     private boolean advChestEnabled;
+    private boolean roseStackersEnabled;
 
     @Override
     public void onLoad() {
@@ -111,6 +112,12 @@ public class Level extends Addon implements Listener {
                 logError("Could not hook into AdvancedChests " + advChest.getDescription().getVersion() + " - requires version 14.3 or later");
                 advChestEnabled = false;
             }
+        }
+
+        // Check if RoseStackers is enabled
+        roseStackersEnabled = Bukkit.getPluginManager().isPluginEnabled("RoseStacker");
+        if (roseStackersEnabled) {
+            log("Hooked into RoseStackers.");
         }
     }
 
@@ -390,5 +397,12 @@ public class Level extends Addon implements Listener {
             ld.setLevel(gm.getOverWorld(), this.getIslandLevel(gm.getOverWorld(), targetPlayer));
         });
         return ld;
+    }
+
+    /**
+     * @return the roseStackersEnabled
+     */
+    public boolean isRoseStackersEnabled() {
+        return roseStackersEnabled;
     }
 }
