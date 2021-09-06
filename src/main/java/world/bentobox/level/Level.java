@@ -3,8 +3,11 @@ package world.bentobox.level;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -208,6 +211,12 @@ public class Level extends Addon implements Listener {
             // Name
             getPlugin().getPlaceholdersManager().registerPlaceholder(this,
                     gm.getDescription().getName().toLowerCase() + "_top_name_" + i, u -> getRankName(gm.getOverWorld(), rank));
+            // Island Name
+            getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                    gm.getDescription().getName().toLowerCase() + "_top_island_name_" + i, u -> getRankIslandName(gm.getOverWorld(), rank));
+            // Members
+            getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                    gm.getDescription().getName().toLowerCase() + "_top_members_" + i, u -> getRankMembers(gm.getOverWorld(), rank));
             // Level
             getPlugin().getPlaceholdersManager().registerPlaceholder(this,
                     gm.getDescription().getName().toLowerCase() + "_top_value_" + i, u -> getRankLevel(gm.getOverWorld(), rank));
@@ -222,6 +231,37 @@ public class Level extends Addon implements Listener {
         if (rank < 1) rank = 1;
         if (rank > TEN) rank = TEN;
         return getPlayers().getName(getManager().getTopTen(world, TEN).keySet().stream().skip(rank - 1L).limit(1L).findFirst().orElse(null));
+    }
+
+    String getRankIslandName(World world, int rank) {
+        if (rank < 1) rank = 1;
+        if (rank > TEN) rank = TEN;
+        UUID owner = getManager().getTopTen(world, TEN).keySet().stream().skip(rank - 1L).limit(1L).findFirst().orElse(null);
+        if (owner != null) {
+            Island island = getIslands().getIsland(world, owner);
+            if (island != null) {
+                return island.getName() == null ? "" : island.getName();
+            }
+        }
+        return "";
+    }
+
+    String getRankMembers(World world, int rank) {
+        if (rank < 1) rank = 1;
+        if (rank > TEN) rank = TEN;
+        UUID owner = getManager().getTopTen(world, TEN).keySet().stream().skip(rank - 1L).limit(1L).findFirst().orElse(null);
+        if (owner != null) {
+            Island island = getIslands().getIsland(world, owner);
+            if (island != null) {
+                // Sort members by rank
+                return island.getMembers().entrySet().stream()
+                        .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                        .map(Map.Entry::getKey)
+                        .map(getPlayers()::getName)
+                        .collect(Collectors.joining(","));
+            }
+        }
+        return "";
     }
 
     String getRankLevel(World world, int rank) {
