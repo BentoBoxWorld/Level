@@ -203,7 +203,7 @@ public class IslandLevelCalculator {
     private long calculateLevel(long blockAndDeathPoints) {
         String calcString = addon.getSettings().getLevelCalc();
         String withValues = calcString.replace("blocks", String.valueOf(blockAndDeathPoints)).replace("level_cost", String.valueOf(this.addon.getSettings().getLevelCost()));
-        return (long)eval(withValues) - this.island.getLevelHandicap() - (addon.getSettings().isZeroNewIslandLevels() ? results.initialLevel.get() : 0);
+        return (long)eval(withValues) - (addon.getSettings().isZeroNewIslandLevels() ? results.initialLevel.get() : 0);
     }
 
     /**
