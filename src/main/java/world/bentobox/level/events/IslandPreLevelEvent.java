@@ -2,6 +2,9 @@ package world.bentobox.level.events;
 
 import java.util.UUID;
 
+import org.bukkit.event.HandlerList;
+import org.eclipse.jdt.annotation.NonNull;
+
 import world.bentobox.bentobox.api.events.IslandBaseEvent;
 import world.bentobox.bentobox.database.objects.Island;
 
@@ -13,6 +16,16 @@ import world.bentobox.bentobox.database.objects.Island;
 public class IslandPreLevelEvent extends IslandBaseEvent {
 
     private final UUID targetPlayer;
+    private static final HandlerList handlers = new HandlerList();
+
+    @Override
+    public @NonNull HandlerList getHandlers() {
+        return getHandlerList();
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
 
 
     /**
