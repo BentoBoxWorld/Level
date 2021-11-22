@@ -1,14 +1,17 @@
 package world.bentobox.level.calculators;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -16,6 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.World;
@@ -26,8 +30,7 @@ import org.bukkit.block.Container;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
-import org.eclipse.jdt.annotation.Nullable;
+import org.bukkit.scheduler.BukkitTask;
 
 import com.bgsoftware.wildstacker.api.WildStackerAPI;
 import com.bgsoftware.wildstacker.api.objects.StackedBarrel;
@@ -44,10 +47,19 @@ import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.util.Pair;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
+import world.bentobox.level.calculators.Results.Result;
 
 public class IslandLevelCalculator {
     private static final String LINE_BREAK = "==================================";
     public static final long MAX_AMOUNT = 10000;
+    private static final List<Material> CHESTS = Arrays.asList(Material.CHEST, Material.CHEST_MINECART, Material.TRAPPED_CHEST,
+            Material.SHULKER_BOX, Material.BLACK_SHULKER_BOX, Material.BLUE_SHULKER_BOX, Material.BROWN_SHULKER_BOX,
+            Material.CYAN_SHULKER_BOX, Material.GRAY_SHULKER_BOX, Material.GREEN_SHULKER_BOX, Material.LIGHT_BLUE_SHULKER_BOX,
+            Material.LIGHT_GRAY_SHULKER_BOX, Material.LIME_SHULKER_BOX, Material.MAGENTA_SHULKER_BOX, Material.ORANGE_SHULKER_BOX,
+            Material.PINK_SHULKER_BOX, Material.PURPLE_SHULKER_BOX, Material.RED_SHULKER_BOX, Material.RED_SHULKER_BOX,
+            Material.WHITE_SHULKER_BOX, Material.YELLOW_SHULKER_BOX, Material.COMPOSTER, Material.BARREL, Material.DISPENSER,
+            Material.DROPPER, Material.SMOKER, Material.BLAST_FURNACE);
+    private static final int CHUNKS_TO_SCAN = 100;
 
     /**
      * Method to evaluate a mathematical equation
@@ -156,6 +168,10 @@ public class IslandLevelCalculator {
     private final boolean zeroIsland;
     private final Map<Environment, World> worlds = new EnumMap<>(Environment.class);
     private final int seaHeight;
+    private final List<Location> stackedBlocks = new ArrayList<>();
+    private final Set<Chunk> chestBlocks = new HashSet<>();
+    private BukkitTask finishTask;
+
 
     /**
      * Constructor to get the level for an island
@@ -339,17 +355,35 @@ public class IslandLevelCalculator {
      * @param z - chunk z coordinate
      * @return a future chunk or future null if there is no chunk to load, e.g., there is no island nether
      */
-    private CompletableFuture<Chunk> getWorldChunk(Environment env, int x, int z) {
+    private CompletableFuture<List<Chunk>> getWorldChunk(Environment env, Queue<Pair<Integer, Integer>> pairList) {
         if (worlds.containsKey(env)) {
-            CompletableFuture<Chunk> r2 = new CompletableFuture<>();
+            CompletableFuture<List<Chunk>> r2 = new CompletableFuture<>();
+            List<Chunk> chunkList = new ArrayList<>();
+            World world = worlds.get(env);
             // Get the chunk, and then coincidentally check the RoseStacker
-            Util.getChunkAtAsync(worlds.get(env), x, z, true).thenAccept(chunk -> roseStackerCheck(r2, chunk));
+            loadChunks(r2, world, pairList, chunkList);
             return r2;
         }
-        return CompletableFuture.completedFuture(null);
+        return CompletableFuture.completedFuture(Collections.emptyList());
     }
 
-    private void roseStackerCheck(CompletableFuture<Chunk> r2, Chunk chunk) {
+    private void loadChunks(CompletableFuture<List<Chunk>> r2, World world, Queue<Pair<Integer, Integer>> pairList,
+            List<Chunk> chunkList) {
+        if (pairList.isEmpty()) {
+            r2.complete(chunkList);
+            return;
+        }
+        Pair<Integer, Integer> p = pairList.poll();
+        Util.getChunkAtAsync(world, p.x, p.z, world.getEnvironment().equals(Environment.NETHER)).thenAccept(chunk -> {
+            if (chunk != null) {
+                chunkList.add(chunk);
+                roseStackerCheck(chunk);
+            }
+            loadChunks(r2, world, pairList, chunkList); // Iteration
+        });
+    }
+
+    private void roseStackerCheck(Chunk chunk) {
         if (addon.isRoseStackersEnabled()) {
             RoseStackerAPI.getInstance().getStackedBlocks(Collections.singletonList(chunk)).forEach(e -> {
                 // Blocks below sea level can be scored differently
@@ -360,7 +394,6 @@ public class IslandLevelCalculator {
                 }
             });
         }
-        r2.complete(chunk);
     }
 
     /**
@@ -385,11 +418,10 @@ public class IslandLevelCalculator {
 
     /**
      * Count the blocks on the island
-     * @param result - the CompletableFuture that should be completed when this scan is done
-     * @param chunkSnapshot - the chunk to scan
+     * @param chunk chunk to scan
      */
-    private void scanAsync(CompletableFuture<Boolean> result, ChunkSnapshot chunkSnapshot, Chunk chunk) {
-        List<Vector> stackedBlocks = new ArrayList<>();
+    private void scanAsync(Chunk chunk) {
+        ChunkSnapshot chunkSnapshot = chunk.getChunkSnapshot();
         for (int x = 0; x< 16; x++) {
             // Check if the block coordinate is inside the protection zone and if not, don't count it
             if (chunkSnapshot.getX() * 16 + x < island.getMinProtectedX() || chunkSnapshot.getX() * 16 + x >= island.getMinProtectedX() + island.getProtectionRange() * 2) {
@@ -413,29 +445,17 @@ public class IslandLevelCalculator {
                     }
                     // Hook for Wild Stackers (Blocks Only) - this has to use the real chunk
                     if (addon.isStackersEnabled() && blockData.getMaterial() == Material.CAULDRON) {
-                        stackedBlocks.add(new Vector(x,y,z));
+                        stackedBlocks.add(new Location(chunk.getWorld(), x + chunkSnapshot.getX() * 16,y,z + chunkSnapshot.getZ() * 16));
+                    }
+                    // Scan chests
+                    if (addon.getSettings().isIncludeChests() && CHESTS.contains(blockData.getMaterial())) {
+                        chestBlocks.add(chunk);
                     }
                     // Add the value of the block's material
                     checkBlock(blockData.getMaterial(), belowSeaLevel);
                 }
             }
         }
-        // Complete the future - this must go back onto the primary thread to exit async otherwise subsequent actions will be async
-        Bukkit.getScheduler().runTask(addon.getPlugin(),() -> {
-            // Deal with any stacked blocks
-            stackedBlocks.forEach(v -> {
-                Block cauldronBlock = chunk.getBlock(v.getBlockX(), v.getBlockY(), v.getBlockZ());
-                boolean belowSeaLevel = seaHeight > 0 && v.getBlockY() <= seaHeight;
-                if (WildStackerAPI.getWildStacker().getSystemManager().isStackedBarrel(cauldronBlock)) {
-                    StackedBarrel barrel = WildStackerAPI.getStackedBarrel(cauldronBlock);
-                    int barrelAmt = WildStackerAPI.getBarrelAmount(cauldronBlock);
-                    for (int _x = 0; _x < barrelAmt; _x++) {
-                        checkBlock(barrel.getType(), belowSeaLevel);
-                    }
-                }
-            });
-            result.complete(true);
-        });
     }
 
     /**
@@ -473,20 +493,21 @@ public class IslandLevelCalculator {
 
     /**
      * Scan the chunk chests and count the blocks
-     * @param chunk - the chunk to scan
+     * @param chunks - the chunk to scan
      * @return future that completes when the scan is done and supplies a boolean that will be true if the scan was successful, false if not
      */
-    private CompletableFuture<Boolean> scanChunk(@Nullable Chunk chunk) {
+    private CompletableFuture<Boolean> scanChunk(List<Chunk> chunks) {
         // If the chunk hasn't been generated, return
-        if (chunk == null) return CompletableFuture.completedFuture(false);
-        // Scan chests
-        if (addon.getSettings().isIncludeChests()) {
-            scanChests(chunk);
+        if (chunks == null || chunks.isEmpty()) {
+            return CompletableFuture.completedFuture(false);
         }
         // Count blocks in chunk
         CompletableFuture<Boolean> result = new CompletableFuture<>();
-        ChunkSnapshot snapshot = chunk.getChunkSnapshot();
-        Bukkit.getScheduler().runTaskAsynchronously(BentoBox.getInstance(), () -> scanAsync(result, snapshot, chunk));
+
+        Bukkit.getScheduler().runTaskAsynchronously(BentoBox.getInstance(), () -> {
+            chunks.forEach(chunk -> scanAsync(chunk));
+            Bukkit.getScheduler().runTask(addon.getPlugin(),() -> result.complete(true));
+        });
         return result;
     }
 
@@ -501,16 +522,23 @@ public class IslandLevelCalculator {
             return CompletableFuture.completedFuture(false);
         }
         // Retrieve and remove from the queue
-        Pair<Integer, Integer> p = chunksToCheck.poll();
+        Queue<Pair<Integer, Integer>> pairList = new ConcurrentLinkedQueue<>();
+        int i = 0;
+        while (!chunksToCheck.isEmpty() && i++ < CHUNKS_TO_SCAN) {
+            pairList.add(chunksToCheck.poll());
+        }
+        Queue<Pair<Integer, Integer>> endPairList = new ConcurrentLinkedQueue<>(pairList);
+        Queue<Pair<Integer, Integer>> netherPairList = new ConcurrentLinkedQueue<>(pairList);
         // Set up the result
         CompletableFuture<Boolean> result = new CompletableFuture<>();
         // Get chunks and scan
-        getWorldChunk(Environment.THE_END, p.x, p.z).thenAccept(endChunk ->
-        scanChunk(endChunk).thenAccept(b ->
-        getWorldChunk(Environment.NETHER, p.x, p.z).thenAccept(netherChunk ->
-        scanChunk(netherChunk).thenAccept(b2 ->
-        getWorldChunk(Environment.NORMAL, p.x, p.z).thenAccept(normalChunk ->
-        scanChunk(normalChunk).thenAccept(b3 ->
+        // Get chunks and scan
+        getWorldChunk(Environment.THE_END, endPairList).thenAccept(endChunks ->
+        scanChunk(endChunks).thenAccept(b ->
+        getWorldChunk(Environment.NETHER, netherPairList).thenAccept(netherChunks ->
+        scanChunk(netherChunks).thenAccept(b2 ->
+        getWorldChunk(Environment.NORMAL, pairList).thenAccept(normalChunks ->
+        scanChunk(normalChunks).thenAccept(b3 ->
         // Complete the result now that all chunks have been scanned
         result.complete(!chunksToCheck.isEmpty()))))
                 )
@@ -590,5 +618,77 @@ public class IslandLevelCalculator {
      */
     boolean isNotZeroIsland() {
         return !zeroIsland;
+    }
+
+    public void scanIsland(Pipeliner pipeliner) {
+        // Scan the next chunk
+        scanNextChunk().thenAccept(r -> {
+            if (!Bukkit.isPrimaryThread()) {
+                addon.getPlugin().logError("scanChunk not on Primary Thread!");
+            }
+            // Timeout check
+            if (System.currentTimeMillis() - pipeliner.getInProcessQueue().get(this) > addon.getSettings().getCalculationTimeout() * 60000) {
+                // Done
+                pipeliner.getInProcessQueue().remove(this);
+                getR().complete(new Results(Result.TIMEOUT));
+                addon.logError("Level calculation timed out after " + addon.getSettings().getCalculationTimeout() + "m for island: " + getIsland());
+                if (!isNotZeroIsland()) {
+                    addon.logError("Island level was being zeroed.");
+                }
+                return;
+            }
+            if (Boolean.TRUE.equals(r) && !pipeliner.getTask().isCancelled()) {
+                // scanNextChunk returns true if there are more chunks to scan
+                scanIsland(pipeliner);
+            } else {
+                // Done
+                pipeliner.getInProcessQueue().remove(this);
+                // Chunk finished
+                // This was the last chunk
+                handleStackedBlocks();
+                handleChests();
+                long checkTime = System.currentTimeMillis();
+                finishTask = Bukkit.getScheduler().runTaskTimer(addon.getPlugin(), () -> {
+                    // Check every half second if all the chests and stacks have been cleared
+                    if ((chestBlocks.isEmpty() && stackedBlocks.isEmpty()) || System.currentTimeMillis() - checkTime > MAX_AMOUNT) {
+                        this.tidyUp();
+                        this.getR().complete(getResults());
+                        finishTask.cancel();
+                    }
+                }, 0, 10L);
+
+            }
+        });
+    }
+
+    private void handleChests() {
+        Iterator<Chunk> it = chestBlocks.iterator();
+        while(it.hasNext()) {
+            Chunk v = it.next();
+            Util.getChunkAtAsync(v.getWorld(), v.getX(), v.getZ()).thenAccept(c -> {
+                scanChests(c);
+                it.remove();
+            });
+        }
+    }
+
+    private void handleStackedBlocks() {
+        // Deal with any stacked blocks
+        Iterator<Location> it = stackedBlocks.iterator();
+        while (it.hasNext()) {
+            Location v = it.next();
+            Util.getChunkAtAsync(v).thenAccept(c -> {
+                Block cauldronBlock = v.getBlock();
+                boolean belowSeaLevel = seaHeight > 0 && v.getBlockY() <= seaHeight;
+                if (WildStackerAPI.getWildStacker().getSystemManager().isStackedBarrel(cauldronBlock)) {
+                    StackedBarrel barrel = WildStackerAPI.getStackedBarrel(cauldronBlock);
+                    int barrelAmt = WildStackerAPI.getBarrelAmount(cauldronBlock);
+                    for (int _x = 0; _x < barrelAmt; _x++) {
+                        checkBlock(barrel.getType(), belowSeaLevel);
+                    }
+                }
+                it.remove();
+            });
+        }
     }
 }
