@@ -50,7 +50,7 @@ public class Pipeliner {
                 if (!iD.getIsland().isDeleted() && !iD.getIsland().isUnowned()) {
                     inProcessQueue.put(iD, System.currentTimeMillis());
                     // Start the scanning of a island with the first chunk
-                    scanChunk(iD);
+                    scanIsland(iD);
                 }
             }
         }, 1L, 10L);
@@ -71,42 +71,14 @@ public class Pipeliner {
      * Scans one chunk of an island and adds the results to a results object
      * @param iD
      */
-    private void scanChunk(IslandLevelCalculator iD) {
+    private void scanIsland(IslandLevelCalculator iD) {
         if (iD.getIsland().isDeleted() || iD.getIsland().isUnowned() || task.isCancelled()) {
             // Island is deleted, so finish early with nothing
             inProcessQueue.remove(iD);
             iD.getR().complete(null);
             return;
         }
-        // Scan the next chunk
-        iD.scanNextChunk().thenAccept(r -> {
-            if (!Bukkit.isPrimaryThread()) {
-                addon.getPlugin().logError("scanChunk not on Primary Thread!");
-            }
-            // Timeout check
-            if (System.currentTimeMillis() - inProcessQueue.get(iD) > addon.getSettings().getCalculationTimeout() * 60000) {
-                // Done
-                inProcessQueue.remove(iD);
-                iD.getR().complete(new Results(Result.TIMEOUT));
-                addon.logError("Level calculation timed out after " + addon.getSettings().getCalculationTimeout() + "m for island: " + iD.getIsland());
-                if (!iD.isNotZeroIsland()) {
-                    addon.logError("Island level was being zeroed.");
-                }
-                return;
-            }
-            if (Boolean.TRUE.equals(r) || task.isCancelled()) {
-                // scanNextChunk returns true if there are more chunks to scan
-                scanChunk(iD);
-            } else {
-                // Done
-                inProcessQueue.remove(iD);
-                // Chunk finished
-                // This was the last chunk
-                iD.tidyUp();
-                iD.getR().complete(iD.getResults());
-            }
-        });
-
+        iD.scanIsland(this);
     }
 
 
@@ -167,6 +139,20 @@ public class Pipeliner {
         task.cancel();
         this.inProcessQueue.clear();
         this.toProcessQueue.clear();
+    }
+
+    /**
+     * @return the inProcessQueue
+     */
+    protected Map<IslandLevelCalculator, Long> getInProcessQueue() {
+        return inProcessQueue;
+    }
+
+    /**
+     * @return the task
+     */
+    protected BukkitTask getTask() {
+        return task;
     }
 
 

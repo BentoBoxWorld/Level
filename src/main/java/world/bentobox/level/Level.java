@@ -198,6 +198,9 @@ public class Level extends Addon implements Listener {
                 gm.getDescription().getName().toLowerCase() + "_island_level",
                 user -> getManager().getIslandLevelString(gm.getOverWorld(), user.getUniqueId()));
         getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                gm.getDescription().getName().toLowerCase() + "_island_level_raw",
+                user -> String.valueOf(getManager().getIslandLevel(gm.getOverWorld(), user.getUniqueId())));
+        getPlugin().getPlaceholdersManager().registerPlaceholder(this,
                 gm.getDescription().getName().toLowerCase() + "_points_to_next_level",
                 user -> getManager().getPointsToNextString(gm.getOverWorld(), user.getUniqueId()));
 

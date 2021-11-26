@@ -1,0 +1,56 @@
+# 
+# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
+# the one at http://yaml-online-parser.appspot.com                                        #
+admin:
+  level:
+    parameters: <người chơi>
+    description: tính toán cấp độ đảo của người chơi
+    sethandicap:
+      parameters: <người chơi> <cấp>
+      description: chỉnh cấp của các đảo bắt đầu
+      changed: '&a Cấp đảo bắt đầu đã chỉnh từ [number] thành [new_number].'
+      invalid-level: '&c Cấp không xác định. Hãy dùng số nguyên.'
+  levelstatus:
+    description: xem bao nhiêu đảo đang trong hàng chờ được quét
+    islands-in-queue: '&a Đảo đang chờ: [number]'
+  top:
+    description: xem bảng xếp hạng TOP 10
+    unknown-world: '&c Thế giới không xác định!'
+    display: '&f[rank]. &a[name] &7- &b[level]'
+    remove:
+      description: xoá người khỏi TOP 10
+      parameters: <người chơi>
+island:
+  level:
+    parameters: '[người chơi]'
+    description: tính toán cấp đảo của bạn hoặc xem cấp đảo của [người chơi]
+    calculating: '&a Đang tính toán cấp đảo...'
+    estimated-wait: '&a Thời gian còn lại: [number] giây'
+    in-queue: '&a Bạn đang ở vị trí [number] trong hàng chờ'
+    island-level-is: '&a Cấp đảo là &b[level]'
+    required-points-to-next-level: '&a Cần [points] điểm để qua cấp tiếp theo'
+    deaths: '&c([number] lần chết)'
+    cooldown: '&c Bạn phải chờ &b[time] &c giây trước khi có thể làm điều đó'
+    in-progress: '&6 Quá trình tính toán cấp đảo đang thực hiện...'
+    time-out: '&c Tính toán cấp đảo quá lâu. Vui lòng thử lại sau.'
+  top:
+    description: xem TOP 10
+    gui-title: '&a TOP 10'
+    gui-heading: '&6[name]: &B[rank]'
+    island-level: '&b Cấp [level]'
+    warp-to: '&A Đang dịch chuyển đến đảo của [name]'
+  level-details:
+    above-sea-level-blocks: Khối Trên Mực Nước Biển
+    spawners: Lồng Sinh Quái
+    underwater-blocks: Khối Dưới Nước
+    all-blocks: Toàn Bộ Khối
+    no-island: '&c Không có đảo!'
+    names-island: 'đảo của [name]'
+    syntax: '[name] x [number]'
+    hint: '&c Chạy lệnh cấp để xem báo cáo khối'
+  value:
+    description: xem giá trị của bất kì khối
+    success: '&7 Giá trị của khối này là: &e[value]'
+    success-underwater: '&7 Giá trị của khối này dưới mực nước biển: &e[value]'
+    empty-hand: '&c Không có khối nào trên tay bạn'
+    no-value: '&c Vật phẩm này vô giá trị.'
