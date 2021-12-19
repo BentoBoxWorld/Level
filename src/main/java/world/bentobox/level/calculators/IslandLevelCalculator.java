@@ -433,7 +433,7 @@ public class IslandLevelCalculator {
                     continue;
                 }
                 // Only count to the highest block in the world for some optimization
-                for (int y = 0; y < chunk.getWorld().getMaxHeight(); y++) {
+                for (int y = chunk.getWorld().getMinHeight(); y < chunk.getWorld().getMaxHeight(); y++) {
                     BlockData blockData = chunkSnapshot.getBlockData(x, y, z);
                     boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
                     // Slabs can be doubled, so check them twice
