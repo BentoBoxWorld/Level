@@ -1,39 +1,53 @@
-###########################################################################################
-# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
-# the one at http://yaml-online-parser.appspot.com                                        #
-###########################################################################################
-
+---
 admin:
   level:
     parameters: "<player>"
-    description: "计算某玩家的岛屿等级"
+    description: 计算某玩家的岛屿等级
+    sethandicap:
+      parameters: "<玩家> <让分>"
+      description: 设置孤岛障碍，通常是首发岛的水平
+      changed: "＆a初始离岛差由[number]更改为[new_number]。"
+      invalid-level: "＆c差点。使用整数。"
+  levelstatus:
+    description: 显示要扫描的队列中有多少岛
+    islands-in-queue: "＆a列队中的列队：[人数]"
   top:
-    description: "显示前十名"
+    description: 显示前十名
     unknown-world: "&c未知世界!"
     display: "&f[rank]. &a[name] &7- &b[level]"
     remove:
-      description: "将玩家移出前十"
+      description: 将玩家移出前十
       parameters: "<player>"
-
 island:
-  level: 
+  level:
     parameters: "[player]"
-    description: "计算你或玩家 [player] 的岛屿等级"
-    calculating: "&a计算等级中..." 
+    description: 计算你或玩家 [player] 的岛屿等级
+    calculating: "&a计算等级中..."
+    estimated-wait: "&a 预计等待时间: [number] 秒"
+    in-queue: "＆a您是队列中的数字[number]"
     island-level-is: "&a岛屿等级为 &b[level]"
     required-points-to-next-level: "&a还需 [points] 才能升到下一级"
     deaths: "&c([number] 次死亡)"
     cooldown: "&c再等 &b[time] &c秒才能再次使用"
-    
+    in-progress: "＆6岛级计算正在进行中..."
+    time-out: "＆c等级计算花了太长时间。请稍后再试。"
   top:
-    description: "显示前十名"
+    description: 显示前十名
     gui-title: "&a前十"
     gui-heading: "&6[name]: &B[rank]"
     island-level: "&B等级 [level]"
     warp-to: "&A正传送到 [name] 的岛屿"
-
+  level-details:
+    above-sea-level-blocks: 海拔以上的街区
+    spawners: 产卵者
+    underwater-blocks: 水下积木
+    all-blocks: 所有块
+    no-island: "＆c没有岛！"
+    names-island: "[名字]的小岛"
+    syntax: "[名称] x [数字]"
+    hint: "＆c运行级别以查看阻止报告"
   value:
-    description: "查看某方块的价值"
+    description: 查看某方块的价值
     success: "&7本方块的价值: &e[value]"
     success-underwater: "&7本方块的水下价值: &e[value]"
     empty-hand: "&c你手里没有方块"
