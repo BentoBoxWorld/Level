@@ -3,7 +3,6 @@ admin:
   level:
     parameters: "<Spieler>"
     description: Berechne das Insel Level für den Spieler
-    sethandicap: {}
   levelstatus:
     islands-in-queue: "& a Inseln in der Warteschlange: [number]"
   top:
