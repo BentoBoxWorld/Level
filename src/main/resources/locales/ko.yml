@@ -3,18 +3,28 @@ admin:
   level:
     parameters: "<player>"
     description: 플레이어의 섬레벨을 계산합니다
-    sethandicap: {}
-  levelstatus: {}
+    sethandicap:
+      parameters: "<플레이어> <핸디캡>"
+      description: 섬 핸디캡을 설정하십시오. 일반적으로 시작 섬의 레벨
+      changed: "& a 초기 아일랜드 핸디캡이 [번호]에서 [new_number] (으)로 변경되었습니다."
+      invalid-level: "& c 잘못된 핸디캡. 정수를 사용하십시오."
+  levelstatus:
+    description: 스캔 대기열에 몇 개의 섬이 있는지 표시
+    islands-in-queue: "& a 대기열에있는 섬 : [번호]"
   top:
     unknown-world: "& c 알수없는 월드 입니다"
     display: "&f[rank]. &a[name] &7-&b[level]"
     remove:
       description: 탑 10에서 플레이어를 제거합니다
+      parameters: "<플레이어>"
 island:
   level:
+    parameters: "[플레이어]"
     description: 섬 레벨을 계산하거나 [플레이어]의 섬레벨을 보여줍니다
     calculating: "&a 계산중....\n"
     estimated-wait: "&a예상 대기 시간 : [번호] 초"
+    in-queue: "& a 당신은 대기열에있는 숫자 [번호]입니다"
+    island-level-is: "& a 섬 레벨은 & b [level]"
     required-points-to-next-level: "&a [point] 다음 레벨까지 요구되는 경험치"
     deaths: "&c ([number] 사망)"
     cooldown: "&c그것을 다시하려면 &b[time]초&c를 기다려야합니다."
@@ -27,11 +37,15 @@ island:
   level-details:
     above-sea-level-blocks: 해발 블록
     spawners: 스포너
+    underwater-blocks: 수중 블록
+    all-blocks: 모든 블록
     no-island: "&c 섬이 없습니다."
     names-island: "[name]의 섬"
     syntax: "[name] x [number]"
     hint: "&c 블록 리포트를 보려면 레벨을 해야합니다."
   value:
+    description: 모든 블록의 값을 보여줍니다
     success: "&7이 블록의 값은 &e [value]입니다."
     success-underwater: "&7 해수면 아래의 블록 값 : &e [value]"
+    empty-hand: "& c 손에 블록이 없습니다"
     no-value: "&c 해당 항목에는 가치가 없습니다."
