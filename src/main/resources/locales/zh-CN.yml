@@ -23,6 +23,7 @@ island:
     parameters: "[player]"
     description: 计算你或玩家 [player] 的岛屿等级
     calculating: "&a计算等级中..."
+    estimated-wait: "&a 预计等待时间: [number] 秒"
     in-queue: "＆a您是队列中的数字[number]"
     island-level-is: "&a岛屿等级为 &b[level]"
     required-points-to-next-level: "&a还需 [points] 才能升到下一级"
