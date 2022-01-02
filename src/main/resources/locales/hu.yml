@@ -1,39 +1,54 @@
-###########################################################################################
-# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
-# the one at http://yaml-online-parser.appspot.com                                        #
-###########################################################################################
-
+---
 admin:
   level:
     parameters: "<player>"
-    description: "Egy játékos sziget szintjének kiszámítása"
+    description: Egy játékos sziget szintjének kiszámítása
+    sethandicap:
+      parameters: "<játékos> <hátrány>"
+      description: állítsa be a sziget hátrányát, általában a kezdő sziget szintjét
+      changed: "&a A kezdeti sziget hátrány változott erről [number] erre [new_number]."
+      invalid-level: "&c Érvénytelen hátrány. Használj egész számot."
+  levelstatus:
+    description: megmutatja, hogy hány sziget van a szkennelési sorban
+    islands-in-queue: "&a Szigetek a sorban: [number]"
   top:
-    description: "Top Tíz lista megtekintése"
+    description: Top Tíz lista megtekintése
     unknown-world: "&cIsmeretlen világ!"
     display: "&f[rank]. &a[name] &7- &b[level]"
-
+    remove:
+      description: játékos törlése a Top Tízből
+      parameters: "<játékos>"
 island:
-  level: 
+  level:
     parameters: "[player]"
-    description: "A saját vagy más játékos sziget szintjének kiszámítása"
-    calculating: "&aSziget szint kiszámítása..." 
+    description: A saját vagy más játékos sziget szintjének kiszámítása
+    calculating: "&aSziget szint kiszámítása..."
+    estimated-wait: "&a Becsült várakozás: [number] másodperc"
+    in-queue: "&a Te vagy a(z) [number] a sorban"
     island-level-is: "&aA sziget szint: &b[level]"
     required-points-to-next-level: "&a[points] pont szükséges a következő szinthez."
     deaths: "&c([number] halál)"
     cooldown: "&cVárnod kell &b[time] &cmásodpercet, hogy újra használhasd."
-    
   top:
-    description: "Top Tíz lista megtekintése"
+    description: Top Tíz lista megtekintése
     gui-title: "&aTop Tíz"
     gui-heading: "&6[name]: &B[rank]"
     island-level: "&BLevel [level]"
     warp-to: "&ATeleportálás [name] szigetére."
     remove:
-      description: "játékos törlése a Top Tízből"
+      description: játékos törlése a Top Tízből
       parameters: "<player>"
-
+  level-details:
+    above-sea-level-blocks: Tengerszint Feletti Blokkok
+    spawners: Spawner-ek
+    underwater-blocks: Víz Alatti Blokkok
+    all-blocks: Minden Blokk
+    no-island: "&c Nincs sziget!"
+    names-island: "[name] szigete"
+    syntax: "[name] x [number]"
+    hint: "&c Futtassa a szintet a blokk jelentés megjelenítéséhez"
   value:
-    description: "Bármely blokk értékét mutatja"
+    description: Bármely blokk értékét mutatja
     success: "&7Ennek a blokknak az értéke: &e[value]"
     success-underwater: "&7Ennek a blokknak a tengerszint alatti értéke: &e[value]"
     empty-hand: "&cNincsenek blokkok a kezedben"
