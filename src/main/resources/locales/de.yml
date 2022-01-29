@@ -3,32 +3,42 @@ admin:
   level:
     parameters: "<Spieler>"
     description: Berechne das Insel Level für den Spieler
+  levelstatus:
+    islands-in-queue: "& a Inseln in der Warteschlange: [number]"
   top:
-    remove:
-      description: entferne Spieler von Top-10
-      parameters: "<Spieler>"
     description: Zeige die Top-10 Liste
     unknown-world: "&cUnbekannte Welt!"
     display: "&f[rank]. &a[name] &7- &b[level]"
+    remove:
+      description: entferne Spieler von Top-10
+      parameters: "<Spieler>"
 island:
   level:
     parameters: "[Spieler]"
     description: Berechne dein Insel Level oder zeige das Level von [Spieler]
+    calculating: "&aBerechne Level..."
+    estimated-wait: "& a Geschätzte Wartezeit: [number] Sekunden"
+    in-queue: "& a Sie sind Nummer [number] in der Warteschlange"
+    island-level-is: "&aInsel Level:  &b[level]"
     required-points-to-next-level: "&a[points] Punkte werden für das nächste Level
       benötigt"
-    calculating: "&aBerechne Level..."
-    island-level-is: "&aInsel Level:  &b[level]"
     deaths: "&c([number] Tode)"
     cooldown: "&cDu musst &b[time] &csekunden  warten bevor du das erneut machen kannst."
-  value:
-    description: Zeige den Wert jedes Blockes
-    success-underwater: "&7Wert des Blockes Unterwasser: &e[value]"
-    success: "&7Wert: &e[value]"
-    empty-hand: "&cDu hast keinen Block in der Hand"
-    no-value: "&cDas Item hat kein wert!"
   top:
     description: Zeige die Top-10
     gui-title: "&aTop Zehn"
     gui-heading: "&6[name]: &B[rank]"
     island-level: "&BLevel [level]"
     warp-to: "&ATeleportiere zu  [name]'s Insel"
+  level-details:
+    above-sea-level-blocks: Blöcke über dem Meeresspiegel
+    spawners: Spawner
+    underwater-blocks: Unterwasserblöcke
+    all-blocks: Alle Blöcke
+    no-island: "&c Keine Insel!"
+  value:
+    description: Zeige den Wert jedes Blockes
+    success: "&7Wert: &e[value]"
+    success-underwater: "&7Wert des Blockes Unterwasser: &e[value]"
+    empty-hand: "&cDu hast keinen Block in der Hand"
+    no-value: "&cDas Item hat kein wert!"
