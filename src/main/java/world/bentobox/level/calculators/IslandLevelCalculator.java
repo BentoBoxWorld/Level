@@ -27,6 +27,7 @@ import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Container;
+import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.inventory.ItemStack;
@@ -443,8 +444,8 @@ public class IslandLevelCalculator {
                             checkBlock(blockData.getMaterial(), belowSeaLevel);
                         }
                     }
-                    // Hook for Wild Stackers (Blocks Only) - this has to use the real chunk
-                    if (addon.isStackersEnabled() && blockData.getMaterial() == Material.CAULDRON) {
+                    // Hook for Wild Stackers (Blocks and Spawners Only) - this has to use the real chunk
+                    if (addon.isStackersEnabled() && (blockData.getMaterial().equals(Material.CAULDRON) || blockData.getMaterial().equals(Material.SPAWNER))) {
                         stackedBlocks.add(new Location(chunk.getWorld(), x + chunkSnapshot.getX() * 16,y,z + chunkSnapshot.getZ() * 16));
                     }
                     // Scan chests
@@ -678,13 +679,18 @@ public class IslandLevelCalculator {
         while (it.hasNext()) {
             Location v = it.next();
             Util.getChunkAtAsync(v).thenAccept(c -> {
-                Block cauldronBlock = v.getBlock();
+                Block stackedBlock = v.getBlock();
                 boolean belowSeaLevel = seaHeight > 0 && v.getBlockY() <= seaHeight;
-                if (WildStackerAPI.getWildStacker().getSystemManager().isStackedBarrel(cauldronBlock)) {
-                    StackedBarrel barrel = WildStackerAPI.getStackedBarrel(cauldronBlock);
-                    int barrelAmt = WildStackerAPI.getBarrelAmount(cauldronBlock);
+                if (WildStackerAPI.getWildStacker().getSystemManager().isStackedBarrel(stackedBlock)) {
+                    StackedBarrel barrel = WildStackerAPI.getStackedBarrel(stackedBlock);
+                    int barrelAmt = WildStackerAPI.getBarrelAmount(stackedBlock);
                     for (int _x = 0; _x < barrelAmt; _x++) {
                         checkBlock(barrel.getType(), belowSeaLevel);
+                    }
+                } else if (WildStackerAPI.getWildStacker().getSystemManager().isStackedSpawner(stackedBlock)) {
+                    int spawnerAmt = WildStackerAPI.getSpawnersAmount((CreatureSpawner) stackedBlock.getState());
+                    for (int _x = 0; _x < spawnerAmt; _x++) {
+                        checkBlock(stackedBlock.getType(), belowSeaLevel);
                     }
                 }
                 it.remove();
