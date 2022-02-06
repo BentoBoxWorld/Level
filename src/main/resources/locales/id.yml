@@ -53,4 +53,3 @@ island:
     success-underwater: "&7 Nilai blok ini di bawah permukaan laut adalah: &e[value]"
     empty-hand: "&c Tidak ada balok di tangan Anda"
     no-value: "&c Benda itu tidak bernilai."
-'': false
