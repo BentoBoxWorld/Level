@@ -418,48 +418,6 @@ public class IslandLevelCalculator {
 
 
     /**
-     * Count the blocks on the island
-     * @param chunk chunk to scan
-     */
-    private void scanAsync(Chunk chunk) {
-        ChunkSnapshot chunkSnapshot = chunk.getChunkSnapshot();
-        for (int x = 0; x< 16; x++) {
-            // Check if the block coordinate is inside the protection zone and if not, don't count it
-            if (chunkSnapshot.getX() * 16 + x < island.getMinProtectedX() || chunkSnapshot.getX() * 16 + x >= island.getMinProtectedX() + island.getProtectionRange() * 2) {
-                continue;
-            }
-            for (int z = 0; z < 16; z++) {
-                // Check if the block coordinate is inside the protection zone and if not, don't count it
-                if (chunkSnapshot.getZ() * 16 + z < island.getMinProtectedZ() || chunkSnapshot.getZ() * 16 + z >= island.getMinProtectedZ() + island.getProtectionRange() * 2) {
-                    continue;
-                }
-                // Only count to the highest block in the world for some optimization
-                for (int y = chunk.getWorld().getMinHeight(); y < chunk.getWorld().getMaxHeight(); y++) {
-                    BlockData blockData = chunkSnapshot.getBlockData(x, y, z);
-                    boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
-                    // Slabs can be doubled, so check them twice
-                    if (Tag.SLABS.isTagged(blockData.getMaterial())) {
-                        Slab slab = (Slab)blockData;
-                        if (slab.getType().equals(Slab.Type.DOUBLE)) {
-                            checkBlock(blockData.getMaterial(), belowSeaLevel);
-                        }
-                    }
-                    // Hook for Wild Stackers (Blocks and Spawners Only) - this has to use the real chunk
-                    if (addon.isStackersEnabled() && (blockData.getMaterial().equals(Material.CAULDRON) || blockData.getMaterial().equals(Material.SPAWNER))) {
-                        stackedBlocks.add(new Location(chunk.getWorld(), x + chunkSnapshot.getX() * 16,y,z + chunkSnapshot.getZ() * 16));
-                    }
-                    // Scan chests
-                    if (addon.getSettings().isIncludeChests() && CHESTS.contains(blockData.getMaterial())) {
-                        chestBlocks.add(chunk);
-                    }
-                    // Add the value of the block's material
-                    checkBlock(blockData.getMaterial(), belowSeaLevel);
-                }
-            }
-        }
-    }
-
-    /**
      * Scan all containers in a chunk and count their blocks
      * @param chunk - the chunk to scan
      */
@@ -493,8 +451,9 @@ public class IslandLevelCalculator {
     }
 
     /**
-     * Scan the chunk chests and count the blocks
-     * @param chunks - the chunk to scan
+     * Scan the chunk chests and count the blocks. Note that the chunks are a list of all the island chunks
+     * in a particular world, so the memory usage is high, but I think most servers can handle it.
+     * @param chunks - a list of chunks to scan
      * @return future that completes when the scan is done and supplies a boolean that will be true if the scan was successful, false if not
      */
     private CompletableFuture<Boolean> scanChunk(List<Chunk> chunks) {
@@ -504,12 +463,61 @@ public class IslandLevelCalculator {
         }
         // Count blocks in chunk
         CompletableFuture<Boolean> result = new CompletableFuture<>();
-
+        /*
+         * At this point, we need to grab a snapshot of each chunk and then scan it async.
+         * At the end, we make the CompletableFuture true to show it is done.
+         * I'm not sure how much lag this will cause, but as all the chunks are loaded, maybe not that much.
+         */
+        List<ChunkPair> preLoad = chunks.stream().map(c -> new ChunkPair(c.getWorld(), c, c.getChunkSnapshot())).toList();
         Bukkit.getScheduler().runTaskAsynchronously(BentoBox.getInstance(), () -> {
-            chunks.forEach(chunk -> scanAsync(chunk));
+            preLoad.forEach(this::scanAsync);
+            // Once they are all done, return to the main thread.
             Bukkit.getScheduler().runTask(addon.getPlugin(),() -> result.complete(true));
         });
         return result;
+    }
+
+    record ChunkPair(World world, Chunk chunk, ChunkSnapshot chunkSnapshot) {}
+
+    /**
+     * Count the blocks on the island
+     * @param chunk chunk to scan
+     */
+    private void scanAsync(ChunkPair cp) {
+        for (int x = 0; x< 16; x++) {
+            // Check if the block coordinate is inside the protection zone and if not, don't count it
+            if (cp.chunkSnapshot.getX() * 16 + x < island.getMinProtectedX() || cp.chunkSnapshot.getX() * 16 + x >= island.getMinProtectedX() + island.getProtectionRange() * 2) {
+                continue;
+            }
+            for (int z = 0; z < 16; z++) {
+                // Check if the block coordinate is inside the protection zone and if not, don't count it
+                if (cp.chunkSnapshot.getZ() * 16 + z < island.getMinProtectedZ() || cp.chunkSnapshot.getZ() * 16 + z >= island.getMinProtectedZ() + island.getProtectionRange() * 2) {
+                    continue;
+                }
+                // Only count to the highest block in the world for some optimization
+                for (int y = cp.world.getMinHeight(); y < cp.world.getMaxHeight(); y++) {
+                    BlockData blockData = cp.chunkSnapshot.getBlockData(x, y, z);
+                    boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
+                    // Slabs can be doubled, so check them twice
+                    if (Tag.SLABS.isTagged(blockData.getMaterial())) {
+                        Slab slab = (Slab)blockData;
+                        if (slab.getType().equals(Slab.Type.DOUBLE)) {
+                            checkBlock(blockData.getMaterial(), belowSeaLevel);
+                        }
+                    }
+                    // Hook for Wild Stackers (Blocks and Spawners Only) - this has to use the real chunk
+                    if (addon.isStackersEnabled() && (blockData.getMaterial().equals(Material.CAULDRON) || blockData.getMaterial().equals(Material.SPAWNER))) {
+                        stackedBlocks.add(new Location(cp.world, x + cp.chunkSnapshot.getX() * 16,y,z + cp.chunkSnapshot.getZ() * 16));
+                    }
+                    // Scan chests
+                    if (addon.getSettings().isIncludeChests() && CHESTS.contains(blockData.getMaterial())) {
+                        chestBlocks.add(cp.chunk);
+                    }
+                    // Add the value of the block's material
+                    checkBlock(blockData.getMaterial(), belowSeaLevel);
+                }
+            }
+        }
     }
 
     /**
