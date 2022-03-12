@@ -61,3 +61,33 @@ island:
     success-underwater: "&7 The value of this block below sea-level: &e[value]"
     empty-hand: "&c There are no blocks in your hand"
     no-value: "&c That item has no value."
+
+level:
+  gui:
+    titles:
+      top: "&0&l Top Islands"
+    buttons:
+      island:
+        empty: '&f&l [name]. place'
+        name: '&f&l [name]'
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        # Text that is replacing [name] if island do not have a name
+        owners-island: "[player]'s Island"
+        # Text for [owner] in description.
+        owner: "&7&l Owner: &r&b [player]"
+        # Title before listing members for [members] in description
+        members-title: "&7&l Members:"
+        # List each member under the title for [members] in description
+        member: "&b - [player]"
+        # Name of unknown player.
+        unknown: "unknown"
+        # Section for parsing [place]
+        place: "&7&o [number]. &r&7 place"
+        # Section for parsing [level]
+        level: "&7 Level: &o [number]"
+    tips:
+      click-to-view: "&e Click &7 to view."
