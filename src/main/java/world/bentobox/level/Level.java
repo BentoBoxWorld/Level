@@ -74,14 +74,15 @@ public class Level extends Addon implements Listener {
         } else {
             configObject.saveConfigObject(settings);
         }
+
+        // Save existing panels.
+        this.saveResource("panels/top_panel.yml", false);
+        this.saveResource("panels/detail_panel.yml", false);
     }
 
     private boolean loadSettings() {
         // Load settings again to get worlds
         settings = configObject.loadConfigObject();
-
-        // Save existing panels.
-        this.saveResource("panels/top_panel.yml", false);
 
         return settings == null;
     }

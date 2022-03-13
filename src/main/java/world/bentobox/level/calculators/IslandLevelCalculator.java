@@ -352,8 +352,7 @@ public class IslandLevelCalculator {
     /**
      * Get a chunk async
      * @param env - the environment
-     * @param x - chunk x coordinate
-     * @param z - chunk z coordinate
+     * @param pairList - chunk coordinate
      * @return a future chunk or future null if there is no chunk to load, e.g., there is no island nether
      */
     private CompletableFuture<List<Chunk>> getWorldChunk(Environment env, Queue<Pair<Integer, Integer>> pairList) {
@@ -481,7 +480,7 @@ public class IslandLevelCalculator {
 
     /**
      * Count the blocks on the island
-     * @param chunk chunk to scan
+     * @param cp chunk to scan
      */
     private void scanAsync(ChunkPair cp) {
         for (int x = 0; x< 16; x++) {

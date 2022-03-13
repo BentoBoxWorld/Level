@@ -2,11 +2,9 @@ package world.bentobox.level;
 
 import java.math.BigInteger;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -18,19 +16,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.collect.Maps;
 
-import world.bentobox.bentobox.api.panels.PanelItem;
-import world.bentobox.bentobox.api.panels.builders.PanelBuilder;
-import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;
-import world.bentobox.bentobox.api.panels.builders.TabbedPanelBuilder;
-import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.Database;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.level.calculators.Results;
@@ -39,8 +30,7 @@ import world.bentobox.level.events.IslandPreLevelEvent;
 import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.objects.TopTenData;
-import world.bentobox.level.panels.DetailsGUITab;
-import world.bentobox.level.panels.DetailsGUITab.DetailsType;
+
 
 public class LevelsManager {
     private static final String INTOPTEN = "intopten";
@@ -57,16 +47,12 @@ public class LevelsManager {
     }
     private Level addon;
 
-
     // Database handler for level data
     private final Database<IslandLevels> handler;
     // A cache of island levels.
     private final Map<String, IslandLevels> levelsCache;
     // Top ten lists
     private final Map<World,TopTenData> topTenLists;
-    // Background
-    private final PanelItem background;
-
 
 
     public LevelsManager(Level addon) {
@@ -79,8 +65,6 @@ public class LevelsManager {
         levelsCache = new HashMap<>();
         // Initialize top ten lists
         topTenLists = new ConcurrentHashMap<>();
-        // Background
-        background = new PanelItemBuilder().icon(Material.BLACK_STAINED_GLASS_PANE).name(" ").build();
     }
 
     public void migrate() {
@@ -224,102 +208,6 @@ public class LevelsManager {
             }
         }
         return level;
-    }
-
-    /**
-     * Displays the Top Ten list
-     * @param world - world
-     * @param user - the requesting player
-     */
-    public void getGUI(World world, final User user) {
-        // Check world
-        Map<UUID, Long> topTen = getTopTen(world, Level.TEN);
-
-        PanelBuilder panel = new PanelBuilder()
-                .name(user.getTranslation("island.top.gui-title"))
-                .size(54)
-                .user(user);
-        // Background
-        for (int j = 0; j < 54; panel.item(j++, background));
-
-        // Top Ten
-        int i = 0;
-        boolean inTopTen = false;
-        for (Entry<UUID, Long> m : topTen.entrySet()) {
-            PanelItem h = getHead((i+1), m.getValue(), m.getKey(), user, world);
-            panel.item(SLOTS[i], h);
-            // If this is also the asking player
-            if (m.getKey().equals(user.getUniqueId())) {
-                inTopTen = true;
-                addSelf(world, user, panel);
-            }
-            i++;
-        }
-        // Show remaining slots
-        for (; i < SLOTS.length; i++) {
-            panel.item(SLOTS[i], new PanelItemBuilder().icon(Material.GREEN_STAINED_GLASS_PANE).name(String.valueOf(i + 1)).build());
-        }
-
-        // Add yourself if you were not already in the top ten
-        if (!inTopTen) {
-            addSelf(world, user, panel);
-        }
-        panel.build();
-    }
-
-    private void addSelf(World world, User user, PanelBuilder panel) {
-        if (addon.getIslands().hasIsland(world, user) || addon.getIslands().inTeam(world, user.getUniqueId())) {
-            PanelItem head = getHead(this.getRank(world, user.getUniqueId()), this.getIslandLevel(world, user.getUniqueId()), user.getUniqueId(), user, world);
-            setClickHandler(head, user, world);
-            panel.item(49, head);
-        }
-    }
-
-    private void setClickHandler(PanelItem head, User user, World world) {
-        head.setClickHandler((p, u, ch, s) -> {
-            new TabbedPanelBuilder()
-            .user(user)
-            .world(world)
-            .tab(1, new DetailsGUITab(addon, world, user, DetailsType.ALL_BLOCKS))
-            .tab(2, new DetailsGUITab(addon, world, user, DetailsType.ABOVE_SEA_LEVEL_BLOCKS))
-            .tab(3, new DetailsGUITab(addon, world, user, DetailsType.UNDERWATER_BLOCKS))
-            .tab(4, new DetailsGUITab(addon, world, user, DetailsType.SPAWNERS))
-            .startingSlot(1)
-            .size(54)
-            .build().openPanel();
-            return true;
-        });
-
-    }
-
-    /**
-     * Get the head panel item
-     * @param rank - the top ten rank of this player/team. Can be used in the name of the island for vanity.
-     * @param level - the level of the island
-     * @param playerUUID - the UUID of the top ten player
-     * @param asker - the asker of the top ten
-     * @return PanelItem
-     */
-    private PanelItem getHead(int rank, long level, UUID playerUUID, User asker, World world) {
-        final String name = addon.getPlayers().getName(playerUUID);
-        List<String> description = new ArrayList<>();
-        if (rank > 0) {
-            description.add(asker.getTranslation("island.top.gui-heading", "[name]", name, "[rank]", String.valueOf(rank)));
-        }
-        description.add(asker.getTranslation("island.top.island-level","[level]", formatLevel(level)));
-        if (addon.getIslands().inTeam(world, playerUUID)) {
-            List<String> memberList = new ArrayList<>();
-            for (UUID members : addon.getIslands().getMembers(world, playerUUID)) {
-                memberList.add(ChatColor.AQUA + addon.getPlayers().getName(members));
-            }
-            description.addAll(memberList);
-        }
-
-        PanelItemBuilder builder = new PanelItemBuilder()
-                .icon(name)
-                .name(name)
-                .description(description);
-        return builder.build();
     }
 
     /**

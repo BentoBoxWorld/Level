@@ -120,5 +120,6 @@ top_panel:
         data:
           type: VIEW
         actions:
-          left:
+          view:
+            click-type: unknown
             tooltip: level.gui.tips.click-to-view

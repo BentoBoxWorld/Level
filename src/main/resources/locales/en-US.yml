@@ -66,6 +66,7 @@ level:
   gui:
     titles:
       top: "&0&l Top Islands"
+      detail-panel: "&0&l [name]'s island"
     buttons:
       island:
         empty: '&f&l [name]. place'
@@ -89,5 +90,54 @@ level:
         place: "&7&o [number]. &r&7 place"
         # Section for parsing [level]
         level: "&7 Level: &o [number]"
+      material:
+        name: "&f&l [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [limit]
+          [id]
+        id: "&7 Block id: &e [id]"
+        value: "&7 Block value: &e [number]"
+        limit: "&7 Block limit: &e [number]"
+        count: "&7 Number of blocks: &e [number]"
+      all_blocks:
+        name: "&f&l All Blocks"
+        description: |-
+          &7 Display all blocks
+          &7 on island.
+      above_sea_level:
+        name: "&f&l Blocks Above Sea Level"
+        description: |-
+          &7 Display only blocks
+          &7 that are above sea
+          &7 level.
+      underwater:
+        name: "&f&l Blocks Under Sea level"
+        description: |-
+          &7 Display only blocks
+          &7 that are bellow sea
+          &7 level.
+      spawner:
+        name: "&f&l Spawners"
+        description: |-
+          &7 Display only spawners.
+      # Button that is used in multi-page GUIs which allows to return to previous page.
+      previous:
+        name: "&f&l Previous Page"
+        description: |-
+          &7 Switch to [number] page
+      # Button that is used in multi-page GUIs which allows to go to next page.
+      next:
+        name: "&f&l Next Page"
+        description: |-
+          &7 Switch to [number] page
     tips:
       click-to-view: "&e Click &7 to view."
+      click-to-previous: "&e Click &7 to view previous page."
+      click-to-next: "&e Click &7 to view next page."
+  conversations:
+    # Prefix for messages that are send from server.
+    prefix: "&l&6 [BentoBox]: &r"
+    no-data: "&c Run level to see the block report."
