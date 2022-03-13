@@ -8,10 +8,9 @@ package world.bentobox.level.panels;
 
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.permissions.PermissionAttachmentInfo;
+import org.bukkit.event.inventory.ClickType;
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import world.bentobox.bentobox.api.panels.PanelItem;
@@ -23,6 +22,7 @@ import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.managers.RanksManager;
 import world.bentobox.level.Level;
+import world.bentobox.level.util.Utils;
 
 
 /**
@@ -194,10 +194,13 @@ public class TopLevelPanel
         {
             for (ItemTemplateRecord.ActionRecords action : activeActions)
             {
-                if (clickType == action.clickType() && "VIEW".equalsIgnoreCase(action.actionType()))
+                if ((clickType == action.clickType() || action.clickType() == ClickType.UNKNOWN) &&
+                    "VIEW".equalsIgnoreCase(action.actionType()))
                 {
                     this.user.closeInventory();
                     // Open Detailed GUI.
+
+                    DetailsPanel.openPanel(this.addon, this.world, this.user);
                 }
             }
 
@@ -279,7 +282,8 @@ public class TopLevelPanel
         User owner = island.getOwner() == null ? null : User.getInstance(island.getOwner());
         
         // Get permission or island icon
-        String permissionIcon = TopLevelPanel.getPermissionValue(owner, this.iconPermission);
+        String permissionIcon = owner == null ? null :
+            Utils.getPermissionValue(owner, this.iconPermission, null);
 
         Material material;
 
@@ -375,7 +379,7 @@ public class TopLevelPanel
             "[number]", String.valueOf(index));
 
         String levelText = this.user.getTranslation(reference + "level",
-            "[number]", String.valueOf(islandTopRecord.level()));
+            "[number]", this.addon.getManager().formatLevel(islandTopRecord.level()));
 
         // Template specific description is always more important than custom one.
         if (template.description() != null && !template.description().isBlank())
@@ -442,51 +446,6 @@ public class TopLevelPanel
     public static void openPanel(Level addon, User user, World world, String permissionPrefix)
     {
         new TopLevelPanel(addon, user, world, permissionPrefix).build();
-    }
-
-
-    /**
-     * This method gets string value of given permission prefix. If user does not have given permission or it have all
-     * (*), then return default value.
-     *
-     * @param user User who's permission should be checked.
-     * @param permissionPrefix Prefix that need to be found.
-     * @return String value that follows permissionPrefix.
-     */
-    private static String getPermissionValue(User user, String permissionPrefix)
-    {
-        if (user != null && user.isPlayer())
-        {
-            if (permissionPrefix.endsWith("."))
-            {
-                permissionPrefix = permissionPrefix.substring(0, permissionPrefix.length() - 1);
-            }
-
-            String permPrefix = permissionPrefix + ".";
-
-            List<String> permissions = user.getEffectivePermissions().stream().
-                map(PermissionAttachmentInfo::getPermission).
-                filter(permission -> permission.startsWith(permPrefix)).
-                collect(Collectors.toList());
-
-            for (String permission : permissions)
-            {
-                if (permission.contains(permPrefix + "*"))
-                {
-                    // * means all. So continue to search more specific.
-                    continue;
-                }
-
-                String[] parts = permission.split(permPrefix);
-
-                if (parts.length > 1)
-                {
-                    return parts[1];
-                }
-            }
-        }
-
-        return null;
     }
 
 
