@@ -420,21 +420,6 @@ public class LevelsManagerTest {
 
     }
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#getGUI(org.bukkit.World, world.bentobox.bentobox.api.user.User)}.
-     */
-    @Test
-    public void testGetGUI() {
-        lm.getGUI(world, user);
-        verify(user).getTranslation(eq("island.top.gui-title"));
-        verify(player).openInventory(inv);
-        /*
-        int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
-        for (int i : SLOTS) {
-            verify(inv).setItem(eq(i), any());
-        }
-         */
-    }
 
     /**
      * Test method for {@link world.bentobox.level.LevelsManager#getRank(World, UUID)}
