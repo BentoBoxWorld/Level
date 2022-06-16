@@ -180,8 +180,16 @@ public class DetailsPanel
             {
                 sorter = (o1, o2) ->
                 {
-                    int o1Value = this.addon.getBlockConfig().getBlockValues().getOrDefault(o1.getKey(), 0);
-                    int o2Value = this.addon.getBlockConfig().getBlockValues().getOrDefault(o2.getKey(), 0);
+                    int blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(o1.getKey(), 0);
+                    int o1Count = blockLimit > 0 ? Math.min(o1.getValue(), blockLimit) : o1.getValue();
+
+                    blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(o2.getKey(), 0);
+                    int o2Count = blockLimit > 0 ? Math.min(o2.getValue(), blockLimit) : o2.getValue();
+
+                    long o1Value = (long) o1Count *
+                        this.addon.getBlockConfig().getBlockValues().getOrDefault(o1.getKey(), 0);
+                    long o2Value = (long) o2Count *
+                        this.addon.getBlockConfig().getBlockValues().getOrDefault(o2.getKey(), 0);
 
                     if (o1Value == o2Value)
                     {
@@ -192,7 +200,7 @@ public class DetailsPanel
                     }
                     else
                     {
-                        return Integer.compare(o2Value, o1Value);
+                        return Long.compare(o2Value, o1Value);
                     }
                 };
             }
@@ -659,12 +667,17 @@ public class DetailsPanel
         String count = this.user.getTranslationOrNothing(reference + "count",
             "[number]", String.valueOf(materialCount.getValue()));
 
+        long calculatedValue = (long) Math.min(blockLimit > 0 ? blockLimit : Integer.MAX_VALUE, materialCount.getValue()) * blockValue;
+        String valueText = calculatedValue > 0 ? this.user.getTranslationOrNothing(reference + "calculated",
+            "[number]", String.valueOf(calculatedValue)) : "";
+
         if (template.description() != null)
         {
             builder.description(this.user.getTranslation(this.world, template.description(),
                     "[description]", description,
                     "[id]", blockId,
                     "[value]", value,
+                    "[calculated]", valueText,
                     "[limit]", limit,
                     "[count]", count).
                 replaceAll("(?m)^[ \\t]*\\r?\\n", "").
