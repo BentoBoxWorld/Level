@@ -11,7 +11,7 @@ top_panel:
   content:
     2:
       5:
-        icon: PLAYER_HEAD
+        #icon: PLAYER_HEAD
         title: level.gui.buttons.island.name
         description: level.gui.buttons.island.description
         data:
@@ -22,7 +22,7 @@ top_panel:
           title: level.gui.buttons.island.empty
     3:
       4:
-        icon: PLAYER_HEAD
+        #icon: PLAYER_HEAD
         title: level.gui.buttons.island.name
         description: level.gui.buttons.island.description
         data:
@@ -32,7 +32,7 @@ top_panel:
           icon: LIME_STAINED_GLASS_PANE
           title: level.gui.buttons.island.empty
       6:
-        icon: PLAYER_HEAD
+        #icon: PLAYER_HEAD
         title: level.gui.buttons.island.name
         description: level.gui.buttons.island.description
         data:
@@ -43,7 +43,7 @@ top_panel:
           title: level.gui.buttons.island.empty
     4:
       2:
-        icon: PLAYER_HEAD
+        #icon: PLAYER_HEAD
         title: level.gui.buttons.island.name
         description: level.gui.buttons.island.description
         data:
@@ -53,7 +53,7 @@ top_panel:
           icon: LIME_STAINED_GLASS_PANE
           title: level.gui.buttons.island.empty
       3:
-        icon: PLAYER_HEAD
+        #icon: PLAYER_HEAD
         title: level.gui.buttons.island.name
         description: level.gui.buttons.island.description
         data:
@@ -63,7 +63,7 @@ top_panel:
           icon: LIME_STAINED_GLASS_PANE
           title: level.gui.buttons.island.empty
       4:
-        icon: PLAYER_HEAD
+        #icon: PLAYER_HEAD
         title: level.gui.buttons.island.name
         description: level.gui.buttons.island.description
         data:
@@ -73,7 +73,7 @@ top_panel:
           icon: LIME_STAINED_GLASS_PANE
           title: level.gui.buttons.island.empty
       5:
-        icon: PLAYER_HEAD
+        #icon: PLAYER_HEAD
         title: level.gui.buttons.island.name
         description: level.gui.buttons.island.description
         data:
@@ -83,7 +83,7 @@ top_panel:
           icon: LIME_STAINED_GLASS_PANE
           title: level.gui.buttons.island.empty
       6:
-        icon: PLAYER_HEAD
+        #icon: PLAYER_HEAD
         title: level.gui.buttons.island.name
         description: level.gui.buttons.island.description
         data:
@@ -93,7 +93,7 @@ top_panel:
           icon: LIME_STAINED_GLASS_PANE
           title: level.gui.buttons.island.empty
       7:
-        icon: PLAYER_HEAD
+        #icon: PLAYER_HEAD
         title: level.gui.buttons.island.name
         description: level.gui.buttons.island.description
         data:
@@ -103,7 +103,7 @@ top_panel:
           icon: LIME_STAINED_GLASS_PANE
           title: level.gui.buttons.island.empty
       8:
-        icon: PLAYER_HEAD
+        #icon: PLAYER_HEAD
         title: level.gui.buttons.island.name
         description: level.gui.buttons.island.description
         data:
@@ -114,7 +114,7 @@ top_panel:
           title: level.gui.buttons.island.empty
     6:
       5:
-        icon: PLAYER_HEAD
+        #icon: PLAYER_HEAD
         title: level.gui.buttons.island.name
         description: level.gui.buttons.island.description
         data:
