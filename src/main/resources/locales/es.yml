@@ -6,32 +6,156 @@
 admin:
   level:
     parameters: "<player>"
-    description: "calcula el nivel de la isla para el jugador"
+    description: "Calcula el nivel de la isla del jugador"
+    sethandicap:
+      parameters: <player> <handicap>
+      description: "Define la desventaja de la isla, usualmente el nivel inicial para nuevas islas"
+      changed: "&aDesventaja inicial de la isla cambiado de [number] a [new_number]."
+      invalid-level: "&cNúmero no válido. Usa un número entero."
+  levelstatus:
+    description: "Muestra cuantas islas hay en la cola para escanear"
+    islands-in-queue: "&aIslas en cola: [number]"
   top:
-    description: "mostrar la lista de los diez primeros"
-    unknown-world: "&cMundo Desconocido!"
+    description: "Muestra la lista de las diez primeras islas"
+    unknown-world: "&c¡Mundo desconocido!"
     display: "&f[rank]. &a[name] &7- &b[level]"
+    remove:
+      description: "Elimina a un jugador de los diez primeros"
+      parameters: "<player>"
+
 
 island:
   level: 
     parameters: "[player]"
-    description: "calcula tu nivel de isla o muestra el nivel de [player]"
-    calculating: "&aCalculando nivel..." 
+    description: "Calcula tu nivel de isla o muestra el nivel de [player]"
+    calculating: "&aCalculando nivel..."
+    estimated-wait: "&aEspera estimada: [number] segundos"
+    in-queue: "&aEstás en el puesto [number] de la cola"
     island-level-is: "&aNivel de isla es de &b[level]"
     required-points-to-next-level: "&a[points] Puntos requeridos hasta el siguiente nivel."
     deaths: "&c([number] Muertes)"
-    cooldown: "&cDebes esperar &b[time] &csegundos para poder volver a hacer eso"
+    cooldown: "&cDebes esperar &b[time] &csegundos para poder volver a hacer esto."
+    in-progress: "&6El Calculo del nivel de la islas está en progreso..."
+    time-out: "&cEl calculo del nivel de la isla está tardando. Intente más tarde."
     
   top:
-    description: "mostrar los diez primeros"
-    gui-title: "&aDiez primeros"
-    gui-heading: "&6[name]: &B[rank]"
-    island-level: "&BNivel [level]"
-    warp-to: "&ATeletransportandote a la isla de [name]"
+    description: "Muestra el top de islas"
+    gui-title: "&aTop diez"
+    gui-heading: "&6[name]: &b[rank]"
+    island-level: "&bNivel [level]"
+    warp-to: "&aLlevándote a la isla de [name]"
+  
+  level-details:
+    above-sea-level-blocks: "Bloques sobre el nivel del mar"
+    spawners: "Spawners"
+    underwater-blocks: "Bloques debajo del nivel del mar"
+    all-blocks: "Todos los bloques"
+    no-island: "&c¡Sin isla!"
+    names-island: "Isla de [name]"
+    syntax: "[name] x [number]"
+    hint: "&cEscriba /level para ver el recuento de bloques"
 
   value:
-    description: "muestra el valor de cualquier bloque"
-    success: "&7El valor de este bloque es: &e[value]"
-    success-underwater: "&7El valor de este bloque bajo el nivel del mar: &e[value]"
-    empty-hand: "&cNo hay bloques en tu mano"
-    no-value: "&cEse item no tiene valor"
+    description: "Muestra el valor de un bloque en la mano"
+    success: "&7El valor del este bloque es: &e[value]"
+    success-underwater: "&7El valor de este bloque debajo del nivel del mar es: &e[value]"
+    empty-hand: "&cNo hay bloques en tu mano."
+    no-value: "&cEste objeto no tiene valor."
+
+level:
+  gui:
+    titles:
+      top: "&0&lTop de islas"
+      detail-panel: "&0&lIsla de [name]"
+    buttons:
+      island:
+        empty: '&f&l[name]. lugar'
+        name: '&f&l[name]'
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        # Text that is replacing [name] if island do not have a name
+        owners-island: "Isla de [player]"
+        # Text for [owner] in description.
+        owner: "&7&l Dueño: &r&b[player]"
+        # Title before listing members for [members] in description
+        members-title: "&7&l Miembros:"
+        # List each member under the title for [members] in description
+        member: "&b - [player]"
+        # Name of unknown player.
+        unknown: " desconocido"
+        # Section for parsing [place]
+        place: "&7&o [number]. &r&7lugar"
+        # Section for parsing [level]
+        level: "&7 Nivel: &o[number]"
+      material:
+        name: "&f&l[number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "&7 ID del bloque: &e[id]"
+        value: "&7 Valor del bloque: &e[number]"
+        limit: "&7 Limite de bloques: &e[number]"
+        count: "&7 Número de bloques: &e[number]"
+        calculated: "&7 Valor calculado: &e[number]"
+      all_blocks:
+        name: "&f&lTodos los bloques"
+        description: |-
+          &7 Muestra todos los
+          &7 bloques en la isla.
+      above_sea_level:
+        name: "&f&lBloques sobre el nivel del mar"
+        description: |-
+          &7 Muestra solo bloques
+          &7 que estén sobre el
+          &7 nivel del mar.
+      underwater:
+        name: "&f&lBloques debajo del nivel del mar"
+        description: |-
+          &7 Muestra solo bloques
+          &7 que estén debajo del
+          &7 nivel del mar.
+      spawner:
+        name: "&f&lSpawners"
+        description: |-
+          &7Mostrar solo spawners.
+      filters:
+        name:
+          name: "&f&lOrdenar por nombre"
+          description: |-
+            &7Ordenar todos los bloques por nombre.
+        value:
+          name: "&f&lOrdenar por valor"
+          description: |-
+            &7Ordenar todos los bloques por valor.
+        count:
+          name: "&f&lOrdenar por cantidad"
+          description: |-
+            &7Ordenar todos los bloques por cantidad.
+      # Button that is used in multi-page GUIs which allows to return to previous page.
+      previous:
+        name: "&f&lPágina anterior"
+        description: |-
+          &7Cambiar a la página [number]
+      # Button that is used in multi-page GUIs which allows to go to next page.
+      next:
+        name: "&f&lSiguiente página"
+        description: |-
+          &7Cambiar a la página [number]
+    tips:
+      click-to-view: "&eClic &7para ver."
+      click-to-previous: "&eClic &7 para ir a la página anterior."
+      click-to-next: "&eClic &7 para ir a la siguiente página."
+      click-to-select: "&eClic &7 para seleccionar."
+      left-click-to-cycle-up: "&eClic izquierdo &7para ir hacia arriba."
+      right-click-to-cycle-down: "&eClic derecho &7para ir hacia abajo."
+  conversations:
+    # Prefix for messages that are send from server.
+    prefix: "&l&6[BentoBox]: &r"
+    no-data: "&cEscriba /level para ver el recuento de bloques."
