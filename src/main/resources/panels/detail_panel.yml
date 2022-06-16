@@ -19,7 +19,7 @@ detail_panel:
           tab: ALL_BLOCKS
         actions:
           view:
-            click-type: unknwon
+            click-type: unknown
             tooltip: level.gui.tips.click-to-view
       3:
         icon: GRASS_BLOCK
@@ -30,7 +30,7 @@ detail_panel:
           tab: ABOVE_SEA_LEVEL
         actions:
           view:
-            click-type: unknwon
+            click-type: unknown
             tooltip: level.gui.tips.click-to-view
       4:
         icon: WATER_BUCKET
@@ -41,7 +41,7 @@ detail_panel:
           tab: UNDERWATER
         actions:
           view:
-            click-type: unknwon
+            click-type: unknown
             tooltip: level.gui.tips.click-to-view
       5:
         icon: SPAWNER
@@ -52,8 +52,29 @@ detail_panel:
           tab: SPAWNER
         actions:
           view:
-            click-type: unknwon
+            click-type: unknown
             tooltip: level.gui.tips.click-to-view
+      9:
+        # You can create multiple buttons. By default it is one.
+        icon: IRON_TRAPDOOR
+        # [filter] is placeholder for different filter types. It will be replaced with name, value, count.
+        title: level.gui.buttons.filters.[filter].name
+        description: level.gui.buttons.filters.[filter].description
+        data:
+          type: FILTER
+          # the value of filter button. Suggestion is to leave fist value to name if you use single button.
+          filter: NAME
+        actions:
+          up:
+            click-type: left
+            tooltip: level.gui.tips.left-click-to-cycle-up
+          down:
+            click-type: right
+            tooltip: level.gui.tips.right-click-to-cycle-down
+          # There is also select action. With it you can create multiple filter buttons.
+          # select:
+          #   click-type: unknown
+          #   tooltip: level.gui.tips.click-to-select
     2:
       2: material_button
       3: material_button

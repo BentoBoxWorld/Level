@@ -73,4 +73,62 @@ public class Utils
 
         return defaultValue;
     }
+
+
+    /**
+     * This method allows to get next value from array list after given value.
+     *
+     * @param values Array that should be searched for given value.
+     * @param currentValue Value which next element should be found.
+     * @param <T> Instance of given object.
+     * @return Next value after currentValue in values array.
+     */
+    public static <T> T getNextValue(T[] values, T currentValue)
+    {
+        for (int i = 0; i < values.length; i++)
+        {
+            if (values[i].equals(currentValue))
+            {
+                if (i + 1 == values.length)
+                {
+                    return values[0];
+                }
+                else
+                {
+                    return values[i + 1];
+                }
+            }
+        }
+
+        return currentValue;
+    }
+
+
+    /**
+     * This method allows to get previous value from array list after given value.
+     *
+     * @param values Array that should be searched for given value.
+     * @param currentValue Value which previous element should be found.
+     * @param <T> Instance of given object.
+     * @return Previous value before currentValue in values array.
+     */
+    public static <T> T getPreviousValue(T[] values, T currentValue)
+    {
+        for (int i = 0; i < values.length; i++)
+        {
+            if (values[i].equals(currentValue))
+            {
+                if (i > 0)
+                {
+                    return values[i - 1];
+                }
+                else
+                {
+                    return values[values.length - 1];
+                }
+            }
+        }
+
+        return currentValue;
+    }
 }

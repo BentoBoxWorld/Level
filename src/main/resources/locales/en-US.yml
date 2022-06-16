@@ -123,6 +123,19 @@ level:
         name: "&f&l Spawners"
         description: |-
           &7 Display only spawners.
+      filters:
+        name:
+          name: "&f&l Sort by Name"
+          description: |-
+            &7 Sort all blocks by name.
+        value:
+          name: "&f&l Sort by Value"
+          description: |-
+            &7 Sort all blocks by their value.
+        count:
+          name: "&f&l Sort by Count"
+          description: |-
+            &7 Sort all blocks by their amount.
       # Button that is used in multi-page GUIs which allows to return to previous page.
       previous:
         name: "&f&l Previous Page"
@@ -137,6 +150,9 @@ level:
       click-to-view: "&e Click &7 to view."
       click-to-previous: "&e Click &7 to view previous page."
       click-to-next: "&e Click &7 to view next page."
+      click-to-select: "&e Click &7 to select."
+      left-click-to-cycle-up: "&e Left Click &7 to cycle up."
+      right-click-to-cycle-down: "&e Right Click &7 to cycle down."
   conversations:
     # Prefix for messages that are send from server.
     prefix: "&l&6 [BentoBox]: &r"

@@ -63,6 +63,7 @@ public class DetailsPanel
 
         // By default no-filters are active.
         this.activeTab = Tab.ALL_BLOCKS;
+        this.activeFilter = Filter.NAME;
         this.materialCountList = new ArrayList<>(Material.values().length);
 
         this.updateFilters();
@@ -100,6 +101,8 @@ public class DetailsPanel
         panelBuilder.registerTypeBuilder("NEXT", this::createNextButton);
         panelBuilder.registerTypeBuilder("PREVIOUS", this::createPreviousButton);
         panelBuilder.registerTypeBuilder("BLOCK", this::createMaterialButton);
+
+        panelBuilder.registerTypeBuilder("FILTER", this::createFilterButton);
 
         // Register tabs
         panelBuilder.registerTypeBuilder("TAB", this::createTabButton);
@@ -151,6 +154,61 @@ public class DetailsPanel
                 this.materialCountList.add(new Pair<>(Material.SPAWNER, underWater + aboveWater));
             }
         }
+
+        Comparator<Pair<Material, Integer>> sorter;
+
+        switch (this.activeFilter)
+        {
+            case COUNT ->
+            {
+                sorter = (o1, o2) ->
+                {
+                    if (o1.getValue().equals(o2.getValue()))
+                    {
+                        String o1Name = DetailsPanel.prettifyObject(o1.getKey(), this.user);
+                        String o2Name = DetailsPanel.prettifyObject(o2.getKey(), this.user);
+
+                        return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
+                    }
+                    else
+                    {
+                        return Integer.compare(o2.getValue(), o1.getValue());
+                    }
+                };
+            }
+            case VALUE ->
+            {
+                sorter = (o1, o2) ->
+                {
+                    int o1Value = this.addon.getBlockConfig().getBlockValues().getOrDefault(o1.getKey(), 0);
+                    int o2Value = this.addon.getBlockConfig().getBlockValues().getOrDefault(o2.getKey(), 0);
+
+                    if (o1Value == o2Value)
+                    {
+                        String o1Name = DetailsPanel.prettifyObject(o1.getKey(), this.user);
+                        String o2Name = DetailsPanel.prettifyObject(o2.getKey(), this.user);
+
+                        return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
+                    }
+                    else
+                    {
+                        return Integer.compare(o2Value, o1Value);
+                    }
+                };
+            }
+            default ->
+            {
+                sorter = (o1, o2) ->
+                {
+                    String o1Name = DetailsPanel.prettifyObject(o1.getKey(), this.user);
+                    String o2Name = DetailsPanel.prettifyObject(o2.getKey(), this.user);
+
+                    return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
+                };
+            }
+        }
+
+        this.materialCountList.sort(sorter);
 
         this.pageIndex = 0;
     }
@@ -235,6 +293,117 @@ public class DetailsPanel
         }
 
         builder.glow(this.activeTab == tab);
+
+        return builder.build();
+    }
+
+
+    /**
+     * Create next button panel item.
+     *
+     * @param template the template
+     * @param slot the slot
+     * @return the panel item
+     */
+    private PanelItem createFilterButton(ItemTemplateRecord template, TemplatedPanel.ItemSlot slot)
+    {
+        PanelItemBuilder builder = new PanelItemBuilder();
+
+        if (template.icon() != null)
+        {
+            // Set icon
+            builder.icon(template.icon().clone());
+        }
+
+        Filter filter;
+
+        if (slot.amountMap().getOrDefault("FILTER", 0) > 1)
+        {
+            filter = Enums.getIfPresent(Filter.class, String.valueOf(template.dataMap().get("filter"))).or(Filter.NAME);
+        }
+        else
+        {
+            filter = this.activeFilter;
+        }
+
+        final String reference = "level.gui.buttons.filters.";
+
+        if (template.title() != null)
+        {
+            // Set title
+            builder.name(this.user.getTranslation(this.world, template.title().replace("[filter]", filter.name().toLowerCase())));
+        }
+        else
+        {
+            builder.name(this.user.getTranslation(this.world, reference + filter.name().toLowerCase() + ".name"));
+        }
+
+        if (template.description() != null)
+        {
+            // Set description
+            builder.description(this.user.getTranslation(this.world, template.description().replace("[filter]", filter.name().toLowerCase())));
+        }
+        else
+        {
+            builder.name(this.user.getTranslation(this.world, reference + filter.name().toLowerCase() + ".description"));
+        }
+
+        // Get only possible actions, by removing all inactive ones.
+        List<ItemTemplateRecord.ActionRecords> activeActions = new ArrayList<>(template.actions());
+
+        // Add Click handler
+        builder.clickHandler((panel, user, clickType, i) ->
+        {
+            for (ItemTemplateRecord.ActionRecords action : activeActions)
+            {
+                if (clickType == action.clickType() || ClickType.UNKNOWN.equals(action.clickType()))
+                {
+                    if ("UP".equalsIgnoreCase(action.actionType()))
+                    {
+                        this.activeFilter = Utils.getNextValue(Filter.values(), filter);
+
+                        // Update filters.
+                        this.updateFilters();
+                        this.build();
+                    }
+                    else if ("DOWN".equalsIgnoreCase(action.actionType()))
+                    {
+                        this.activeFilter = Utils.getPreviousValue(Filter.values(), filter);
+
+                        // Update filters.
+                        this.updateFilters();
+                        this.build();
+                    }
+                    else if ("SELECT".equalsIgnoreCase(action.actionType()))
+                    {
+                        this.activeFilter = filter;
+
+                        // Update filters.
+                        this.updateFilters();
+                        this.build();
+                    }
+                }
+            }
+
+            return true;
+        });
+
+        // Collect tooltips.
+        List<String> tooltips = activeActions.stream().
+            filter(action -> action.tooltip() != null).
+            map(action -> this.user.getTranslation(this.world, action.tooltip())).
+            filter(text -> !text.isBlank()).
+            collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
+
+        // Add tooltips.
+        if (!tooltips.isEmpty())
+        {
+            // Empty line and tooltips.
+            builder.description("");
+            builder.description(tooltips);
+        }
+
+        builder.glow(this.activeFilter == filter);
 
         return builder.build();
     }
@@ -646,6 +815,26 @@ public class DetailsPanel
     }
 
 
+    /**
+     * Sorting order of blocks.
+     */
+    private enum Filter
+    {
+        /**
+         * By name
+         */
+        NAME,
+        /**
+         * By value
+         */
+        VALUE,
+        /**
+         * By number
+         */
+        COUNT
+    }
+
+
 // ---------------------------------------------------------------------
 // Section: Variables
 // ---------------------------------------------------------------------
@@ -689,4 +878,9 @@ public class DetailsPanel
      * This variable stores which tab currently is active.
      */
     private Tab activeTab;
+
+    /**
+     * This variable stores active filter for items.
+     */
+    private Filter activeFilter;
 }
