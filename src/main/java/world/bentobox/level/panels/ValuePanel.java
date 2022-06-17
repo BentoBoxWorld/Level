@@ -8,6 +8,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import java.io.File;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import lv.id.bonne.panelutils.PanelUtils;
@@ -17,18 +18,17 @@ import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;
 import world.bentobox.bentobox.api.panels.builders.TemplatedPanelBuilder;
 import world.bentobox.bentobox.api.panels.reader.ItemTemplateRecord;
 import world.bentobox.bentobox.api.user.User;
-import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.hooks.LangUtilsHook;
 import world.bentobox.bentobox.util.Pair;
 import world.bentobox.level.Level;
-import world.bentobox.level.objects.IslandLevels;
+import world.bentobox.level.util.ConversationUtils;
 import world.bentobox.level.util.Utils;
 
 
 /**
  * This class opens GUI that shows generator view for user.
  */
-public class DetailsPanel
+public class ValuePanel
 {
     // ---------------------------------------------------------------------
     // Section: Internal Constructor
@@ -42,7 +42,7 @@ public class DetailsPanel
      * @param world World where user is operating
      * @param user User who opens panel
      */
-    private DetailsPanel(Level addon,
+    private ValuePanel(Level addon,
         World world,
         User user)
     {
@@ -50,21 +50,23 @@ public class DetailsPanel
         this.world = world;
         this.user = user;
 
-        this.island = this.addon.getIslands().getIsland(world, user);
+        this.activeFilter = Filter.NAME_ASC;
+        this.materialRecordList = Arrays.stream(Material.values()).
+            filter(Material::isBlock).
+            filter(m -> !m.name().startsWith("LEGACY_")).
+            map(material ->
+            {
+                Integer value = this.addon.getBlockConfig().getValue(this.world, material);
+                Integer limit = this.addon.getBlockConfig().getBlockLimits().get(material);
 
-        if (this.island != null)
-        {
-            this.levelsData = this.addon.getManager().getLevelsData(this.island);
-        }
-        else
-        {
-            this.levelsData = null;
-        }
+                return new MaterialRecord(material,
+                    value != null ? value : 0,
+                    limit != null ? limit : 0);
+            }).
+            collect(Collectors.toList());
 
-        // By default no-filters are active.
-        this.activeTab = Tab.ALL_BLOCKS;
-        this.activeFilter = Filter.NAME;
-        this.materialCountList = new ArrayList<>(Material.values().length);
+        this.elementList = new ArrayList<>(Material.values().length);
+        this.searchText = "";
 
         this.updateFilters();
     }
@@ -75,37 +77,19 @@ public class DetailsPanel
      */
     private void build()
     {
-        if (this.island == null || this.levelsData == null)
-        {
-            // Nothing to see.
-            Utils.sendMessage(this.user, this.user.getTranslation("general.errors.no-island"));
-            return;
-        }
-
-        if (this.levelsData.getMdCount().isEmpty() && this.levelsData.getUwCount().isEmpty())
-        {
-            // Nothing to see.
-            Utils.sendMessage(this.user, this.user.getTranslation("level.conversations.no-data"));
-            return;
-        }
-
         // Start building panel.
         TemplatedPanelBuilder panelBuilder = new TemplatedPanelBuilder();
         panelBuilder.user(this.user);
         panelBuilder.world(this.user.getWorld());
 
-        panelBuilder.template("detail_panel", new File(this.addon.getDataFolder(), "panels"));
-
-        panelBuilder.parameters("[name]", this.user.getName());
+        panelBuilder.template("value_panel", new File(this.addon.getDataFolder(), "panels"));
 
         panelBuilder.registerTypeBuilder("NEXT", this::createNextButton);
         panelBuilder.registerTypeBuilder("PREVIOUS", this::createPreviousButton);
         panelBuilder.registerTypeBuilder("BLOCK", this::createMaterialButton);
 
         panelBuilder.registerTypeBuilder("FILTER", this::createFilterButton);
-
-        // Register tabs
-        panelBuilder.registerTypeBuilder("TAB", this::createTabButton);
+        panelBuilder.registerTypeBuilder("SEARCH", this::createSearchButton);
 
         // Register unknown type builder.
         panelBuilder.build();
@@ -117,106 +101,86 @@ public class DetailsPanel
      */
     private void updateFilters()
     {
-        this.materialCountList.clear();
-
-        switch (this.activeTab)
-        {
-            case ALL_BLOCKS -> {
-                Map<Material, Integer> materialCountMap = new EnumMap<>(Material.class);
-
-                materialCountMap.putAll(this.levelsData.getMdCount());
-
-                // Add underwater blocks.
-                this.levelsData.getUwCount().forEach((material, count) -> {
-                    materialCountMap.put(material,
-                        materialCountMap.computeIfAbsent(material, key -> 0) + count);
-                });
-
-                materialCountMap.entrySet().stream().sorted((Map.Entry.comparingByKey())).
-                    forEachOrdered(entry ->
-                        this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue())));
-            }
-            case ABOVE_SEA_LEVEL -> {
-                this.levelsData.getMdCount().entrySet().stream().sorted((Map.Entry.comparingByKey())).
-                    forEachOrdered(entry ->
-                        this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue())));
-            }
-            case UNDERWATER -> {
-                this.levelsData.getUwCount().entrySet().stream().sorted((Map.Entry.comparingByKey())).
-                    forEachOrdered(entry ->
-                        this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue())));
-            }
-            case SPAWNER -> {
-                int aboveWater = this.levelsData.getMdCount().getOrDefault(Material.SPAWNER, 0);
-                int underWater = this.levelsData.getUwCount().getOrDefault(Material.SPAWNER, 0);
-
-                // TODO: spawners need some touch...
-                this.materialCountList.add(new Pair<>(Material.SPAWNER, underWater + aboveWater));
-            }
-        }
-
-        Comparator<Pair<Material, Integer>> sorter;
+        Comparator<MaterialRecord> sorter;
 
         switch (this.activeFilter)
         {
-            case COUNT ->
+            case VALUE_ASC ->
             {
                 sorter = (o1, o2) ->
                 {
-                    if (o1.getValue().equals(o2.getValue()))
+                    if (o1.value().equals(o2.value()))
                     {
-                        String o1Name = Utils.prettifyObject(o1.getKey(), this.user);
-                        String o2Name = Utils.prettifyObject(o2.getKey(), this.user);
+                        String o1Name = Utils.prettifyObject(o1.material(), this.user);
+                        String o2Name = Utils.prettifyObject(o2.material(), this.user);
 
                         return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
                     }
                     else
                     {
-                        return Integer.compare(o2.getValue(), o1.getValue());
+                        return Integer.compare(o1.value(), o2.value());
                     }
                 };
             }
-            case VALUE ->
+            case VALUE_DESC ->
             {
                 sorter = (o1, o2) ->
                 {
-                    int blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(o1.getKey(), 0);
-                    int o1Count = blockLimit > 0 ? Math.min(o1.getValue(), blockLimit) : o1.getValue();
-
-                    blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(o2.getKey(), 0);
-                    int o2Count = blockLimit > 0 ? Math.min(o2.getValue(), blockLimit) : o2.getValue();
-
-                    long o1Value = (long) o1Count *
-                        this.addon.getBlockConfig().getBlockValues().getOrDefault(o1.getKey(), 0);
-                    long o2Value = (long) o2Count *
-                        this.addon.getBlockConfig().getBlockValues().getOrDefault(o2.getKey(), 0);
-
-                    if (o1Value == o2Value)
+                    if (o1.value().equals(o2.value()))
                     {
-                        String o1Name = Utils.prettifyObject(o1.getKey(), this.user);
-                        String o2Name = Utils.prettifyObject(o2.getKey(), this.user);
+                        String o1Name = Utils.prettifyObject(o1.material(), this.user);
+                        String o2Name = Utils.prettifyObject(o2.material(), this.user);
 
                         return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
                     }
                     else
                     {
-                        return Long.compare(o2Value, o1Value);
+                        return Integer.compare(o2.value(), o1.value());
                     }
+                };
+            }
+            case NAME_DESC ->
+            {
+                sorter = (o1, o2) ->
+                {
+                    String o1Name = Utils.prettifyObject(o1.material(), this.user);
+                    String o2Name = Utils.prettifyObject(o2.material(), this.user);
+
+                    return String.CASE_INSENSITIVE_ORDER.compare(o2Name, o1Name);
                 };
             }
             default ->
             {
                 sorter = (o1, o2) ->
                 {
-                    String o1Name = Utils.prettifyObject(o1.getKey(), this.user);
-                    String o2Name = Utils.prettifyObject(o2.getKey(), this.user);
+                    String o1Name = Utils.prettifyObject(o1.material(), this.user);
+                    String o2Name = Utils.prettifyObject(o2.material(), this.user);
 
                     return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
                 };
             }
         }
 
-        this.materialCountList.sort(sorter);
+        this.materialRecordList.sort(sorter);
+
+        if (!this.searchText.isBlank())
+        {
+            this.elementList = new ArrayList<>(this.materialRecordList.size());
+            final String text = this.searchText.toLowerCase();
+
+            this.materialRecordList.forEach(record ->
+            {
+                if (record.material.name().toLowerCase().contains(text) ||
+                    Utils.prettifyObject(record.material(), this.user).toLowerCase().contains(text))
+                {
+                    this.elementList.add(record);
+                }
+            });
+        }
+        else
+        {
+            this.elementList = this.materialRecordList;
+        }
 
         this.pageIndex = 0;
     }
@@ -234,7 +198,7 @@ public class DetailsPanel
      * @param slot the slot
      * @return the panel item
      */
-    private PanelItem createTabButton(ItemTemplateRecord template, TemplatedPanel.ItemSlot slot)
+    private PanelItem createSearchButton(ItemTemplateRecord template, TemplatedPanel.ItemSlot slot)
     {
         PanelItemBuilder builder = new PanelItemBuilder();
 
@@ -247,22 +211,20 @@ public class DetailsPanel
         if (template.title() != null)
         {
             // Set title
-            builder.name(this.user.getTranslation(this.world, template.title()));
+            builder.name(this.user.getTranslation(this.world, template.title(), "[text]", this.searchText));
         }
 
         if (template.description() != null)
         {
             // Set description
-            builder.description(this.user.getTranslation(this.world, template.description()));
+            builder.description(this.user.getTranslation(this.world, template.description(), "[text]", this.searchText));
         }
-
-        Tab tab = Enums.getIfPresent(Tab.class, String.valueOf(template.dataMap().get("tab"))).or(Tab.ALL_BLOCKS);
 
         // Get only possible actions, by removing all inactive ones.
         List<ItemTemplateRecord.ActionRecords> activeActions = new ArrayList<>(template.actions());
 
         activeActions.removeIf(action ->
-            "VIEW".equalsIgnoreCase(action.actionType()) && this.activeTab == tab);
+            "CLEAR".equalsIgnoreCase(action.actionType()) && this.searchText.isBlank());
 
         // Add Click handler
         builder.clickHandler((panel, user, clickType, i) ->
@@ -271,13 +233,33 @@ public class DetailsPanel
             {
                 if (clickType == action.clickType() || ClickType.UNKNOWN.equals(action.clickType()))
                 {
-                    if ("VIEW".equalsIgnoreCase(action.actionType()))
+                    if ("CLEAR".equalsIgnoreCase(action.actionType()))
                     {
-                        this.activeTab = tab;
+                        this.searchText = "";
 
                         // Update filters.
                         this.updateFilters();
                         this.build();
+                    }
+                    else if ("INPUT".equalsIgnoreCase(action.actionType()))
+                    {
+                        // Create consumer that process description change
+                        Consumer<String> consumer = value ->
+                        {
+                            if (value != null)
+                            {
+                                this.searchText = value;
+                                this.updateFilters();
+                            }
+
+                            this.build();
+                        };
+
+                        // start conversation
+                        ConversationUtils.createStringInput(consumer,
+                            user,
+                            user.getTranslation("level.conversations.write-search"),
+                            user.getTranslation("level.conversations.search-updated"));
                     }
                 }
             }
@@ -300,7 +282,7 @@ public class DetailsPanel
             builder.description(tooltips);
         }
 
-        builder.glow(this.activeTab == tab);
+        builder.glow(!this.searchText.isBlank());
 
         return builder.build();
     }
@@ -323,41 +305,44 @@ public class DetailsPanel
             builder.icon(template.icon().clone());
         }
 
-        Filter filter;
-
-        if (slot.amountMap().getOrDefault("FILTER", 0) > 1)
-        {
-            filter = Enums.getIfPresent(Filter.class, String.valueOf(template.dataMap().get("filter"))).or(Filter.NAME);
-        }
-        else
-        {
-            filter = this.activeFilter;
-        }
+        String filterName = String.valueOf(template.dataMap().get("filter"));
 
         final String reference = "level.gui.buttons.filters.";
 
         if (template.title() != null)
         {
             // Set title
-            builder.name(this.user.getTranslation(this.world, template.title().replace("[filter]", filter.name().toLowerCase())));
+            builder.name(this.user.getTranslation(this.world, template.title()));
         }
         else
         {
-            builder.name(this.user.getTranslation(this.world, reference + filter.name().toLowerCase() + ".name"));
+            builder.name(this.user.getTranslation(this.world, reference + filterName.toLowerCase() + ".name"));
         }
 
         if (template.description() != null)
         {
             // Set description
-            builder.description(this.user.getTranslation(this.world, template.description().replace("[filter]", filter.name().toLowerCase())));
+            builder.description(this.user.getTranslation(this.world, template.description()));
         }
         else
         {
-            builder.name(this.user.getTranslation(this.world, reference + filter.name().toLowerCase() + ".description"));
+            builder.name(this.user.getTranslation(this.world, reference + filterName.toLowerCase() + ".description"));
         }
 
         // Get only possible actions, by removing all inactive ones.
         List<ItemTemplateRecord.ActionRecords> activeActions = new ArrayList<>(template.actions());
+
+        activeActions.removeIf(action -> {
+            if (this.activeFilter.name().startsWith(filterName))
+            {
+                return this.activeFilter.name().endsWith("ASC") && "ASC".equalsIgnoreCase(action.actionType()) ||
+                    this.activeFilter.name().endsWith("DESC") && "DESC".equalsIgnoreCase(action.actionType());
+            }
+            else
+            {
+                return "DESC".equalsIgnoreCase(action.actionType());
+            }
+        });
 
         // Add Click handler
         builder.clickHandler((panel, user, clickType, i) ->
@@ -366,25 +351,17 @@ public class DetailsPanel
             {
                 if (clickType == action.clickType() || ClickType.UNKNOWN.equals(action.clickType()))
                 {
-                    if ("UP".equalsIgnoreCase(action.actionType()))
+                    if ("ASC".equalsIgnoreCase(action.actionType()))
                     {
-                        this.activeFilter = Utils.getNextValue(Filter.values(), filter);
+                        this.activeFilter = Enums.getIfPresent(Filter.class, filterName + "_ASC").or(Filter.NAME_ASC);
 
                         // Update filters.
                         this.updateFilters();
                         this.build();
                     }
-                    else if ("DOWN".equalsIgnoreCase(action.actionType()))
+                    else if ("DESC".equalsIgnoreCase(action.actionType()))
                     {
-                        this.activeFilter = Utils.getPreviousValue(Filter.values(), filter);
-
-                        // Update filters.
-                        this.updateFilters();
-                        this.build();
-                    }
-                    else if ("SELECT".equalsIgnoreCase(action.actionType()))
-                    {
-                        this.activeFilter = filter;
+                        this.activeFilter = Enums.getIfPresent(Filter.class, filterName + "_DESC").or(Filter.NAME_DESC);
 
                         // Update filters.
                         this.updateFilters();
@@ -411,7 +388,7 @@ public class DetailsPanel
             builder.description(tooltips);
         }
 
-        builder.glow(this.activeFilter == filter);
+        builder.glow(this.activeFilter.name().startsWith(filterName.toUpperCase()));
 
         return builder.build();
     }
@@ -431,7 +408,7 @@ public class DetailsPanel
      */
     private PanelItem createNextButton(ItemTemplateRecord template, TemplatedPanel.ItemSlot slot)
     {
-        long size = this.materialCountList.size();
+        long size = this.elementList.size();
 
         if (size <= slot.amountMap().getOrDefault("BLOCK", 1) ||
             1.0 * size / slot.amountMap().getOrDefault("BLOCK", 1) <= this.pageIndex + 1)
@@ -599,7 +576,7 @@ public class DetailsPanel
      */
     private PanelItem createMaterialButton(ItemTemplateRecord template, TemplatedPanel.ItemSlot slot)
     {
-        if (this.materialCountList.isEmpty())
+        if (this.elementList.isEmpty())
         {
             // Does not contain any generators.
             return null;
@@ -607,13 +584,13 @@ public class DetailsPanel
 
         int index = this.pageIndex * slot.amountMap().getOrDefault("BLOCK", 1) + slot.slot();
 
-        if (index >= this.materialCountList.size())
+        if (index >= this.elementList.size())
         {
             // Out of index.
             return null;
         }
 
-        return this.createMaterialButton(template, this.materialCountList.get(index));
+        return this.createMaterialButton(template, this.elementList.get(index));
     }
 
 
@@ -621,11 +598,11 @@ public class DetailsPanel
      * This method creates button for material.
      *
      * @param template the template of the button
-     * @param materialCount materialCount which button must be created.
+     * @param materialRecord materialRecord which button must be created.
      * @return PanelItem for generator tier.
      */
     private PanelItem createMaterialButton(ItemTemplateRecord template,
-        Pair<Material, Integer> materialCount)
+        MaterialRecord materialRecord)
     {
         PanelItemBuilder builder = new PanelItemBuilder();
 
@@ -635,41 +612,43 @@ public class DetailsPanel
         }
         else
         {
-            builder.icon(PanelUtils.getMaterialItem(materialCount.getKey()));
+            builder.icon(PanelUtils.getMaterialItem(materialRecord.material()));
         }
 
-        if (materialCount.getValue() < 64)
+        if (materialRecord.value() <= 64 && materialRecord.value() > 0)
         {
-            builder.amount(materialCount.getValue());
+            builder.amount(materialRecord.value());
         }
 
         if (template.title() != null)
         {
             builder.name(this.user.getTranslation(this.world, template.title(),
-                "[number]", String.valueOf(materialCount.getValue()),
-                "[material]", Utils.prettifyObject(materialCount.getKey(), this.user)));
+                "[material]", Utils.prettifyObject(materialRecord.material(), this.user)));
         }
 
-        String description = Utils.prettifyDescription(materialCount.getKey(), this.user);
+        String description = Utils.prettifyDescription(materialRecord.material(), this.user);
 
         final String reference = "level.gui.buttons.material.";
         String blockId = this.user.getTranslationOrNothing(reference + "id",
-            "[id]", materialCount.getKey().name());
+            "[id]", materialRecord.material().name());
 
-        int blockValue = this.addon.getBlockConfig().getBlockValues().getOrDefault(materialCount.getKey(), 0);
-        String value = blockValue > 0 ? this.user.getTranslationOrNothing(reference + "value",
-            "[number]", String.valueOf(blockValue)) : "";
+        String value = this.user.getTranslationOrNothing(reference + "value",
+            "[number]", String.valueOf(materialRecord.value()));
 
-        int blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(materialCount.getKey(), 0);
-        String limit = blockLimit > 0 ? this.user.getTranslationOrNothing(reference + "limit",
-            "[number]",  String.valueOf(blockLimit)) : "";
+        String underWater;
 
-        String count = this.user.getTranslationOrNothing(reference + "count",
-            "[number]", String.valueOf(materialCount.getValue()));
+        if (this.addon.getSettings().getUnderWaterMultiplier() > 1.0)
+        {
+            underWater = this.user.getTranslationOrNothing(reference + "underwater",
+                "[number]", String.valueOf(materialRecord.value() * this.addon.getSettings().getUnderWaterMultiplier()));
+        }
+        else
+        {
+            underWater = "";
+        }
 
-        long calculatedValue = (long) Math.min(blockLimit > 0 ? blockLimit : Integer.MAX_VALUE, materialCount.getValue()) * blockValue;
-        String valueText = calculatedValue > 0 ? this.user.getTranslationOrNothing(reference + "calculated",
-            "[number]", String.valueOf(calculatedValue)) : "";
+        String limit = materialRecord.limit() > 0 ? this.user.getTranslationOrNothing(reference + "limit",
+            "[number]",  String.valueOf(materialRecord.limit())) : "";
 
         if (template.description() != null)
         {
@@ -677,13 +656,17 @@ public class DetailsPanel
                     "[description]", description,
                     "[id]", blockId,
                     "[value]", value,
-                    "[calculated]", valueText,
-                    "[limit]", limit,
-                    "[count]", count).
+                    "[underwater]", underWater,
+                    "[limit]", limit).
                 replaceAll("(?m)^[ \\t]*\\r?\\n", "").
                 replaceAll("(?<!\\\\)\\|", "\n").
                 replaceAll("\\\\\\|", "|"));
         }
+
+        builder.clickHandler((panel, user1, clickType, i) -> {
+            System.out.println("Material: " + materialRecord.material());
+            return true;
+        });
 
         return builder.build();
     }
@@ -706,7 +689,7 @@ public class DetailsPanel
         World world,
         User user)
     {
-        new DetailsPanel(addon, world, user).build();
+        new ValuePanel(addon, world, user).build();
     }
 
 
@@ -716,62 +699,37 @@ public class DetailsPanel
 
 
     /**
-     * This enum holds possible tabs for current gui.
-     */
-    private enum Tab
-    {
-        /**
-         * All block Tab
-         */
-        ALL_BLOCKS,
-        /**
-         * Above Sea level Tab.
-         */
-        ABOVE_SEA_LEVEL,
-        /**
-         * Underwater Tab.
-         */
-        UNDERWATER,
-        /**
-         * Spawner Tab.
-         */
-        SPAWNER
-    }
-
-
-    /**
      * Sorting order of blocks.
      */
     private enum Filter
     {
         /**
-         * By name
+         * By name asc
          */
-        NAME,
+        NAME_ASC,
         /**
-         * By value
+         * By name desc
          */
-        VALUE,
+        NAME_DESC,
         /**
-         * By number
+         * By value asc
          */
-        COUNT
+        VALUE_ASC,
+        /**
+         * By value desc
+         */
+        VALUE_DESC,
+    }
+
+
+    private record MaterialRecord(Material material, Integer value, Integer limit)
+    {
     }
 
 
 // ---------------------------------------------------------------------
 // Section: Variables
 // ---------------------------------------------------------------------
-
-    /**
-     * This variable holds targeted island.
-     */
-    private final Island island;
-
-    /**
-     * This variable holds targeted island level data.
-     */
-    private final IslandLevels levelsData;
 
     /**
      * This variable allows to access addon object.
@@ -791,7 +749,12 @@ public class DetailsPanel
     /**
      * This variable stores the list of elements to display.
      */
-    private final List<Pair<Material, Integer>> materialCountList;
+    private final List<MaterialRecord> materialRecordList;
+
+    /**
+     * This variable stores the list of elements to display.
+     */
+    private List<MaterialRecord> elementList;
 
     /**
      * This variable holds current pageIndex for multi-page generator choosing.
@@ -801,7 +764,7 @@ public class DetailsPanel
     /**
      * This variable stores which tab currently is active.
      */
-    private Tab activeTab;
+    private String searchText;
 
     /**
      * This variable stores active filter for items.

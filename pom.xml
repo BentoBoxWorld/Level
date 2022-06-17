@@ -61,7 +61,7 @@
         <spigot.version>1.16.5-R0.1-SNAPSHOT</spigot.version>
         <bentobox.version>1.20.0</bentobox.version>
         <!-- Panel Utils version -->
-        <panelutils.version>1.0.0</panelutils.version>
+        <panelutils.version>1.1.0</panelutils.version>
         <!-- Revision variable removes warning about dynamic version -->
         <revision>${build.version}-SNAPSHOT</revision>
         <!-- Do not change unless you want different name for local builds. -->

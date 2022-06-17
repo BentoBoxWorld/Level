@@ -7,11 +7,13 @@
 package world.bentobox.level.util;
 
 
+import org.bukkit.Material;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import world.bentobox.bentobox.api.user.User;
+import world.bentobox.bentobox.hooks.LangUtilsHook;
 
 
 public class Utils
@@ -130,5 +132,94 @@ public class Utils
         }
 
         return currentValue;
+    }
+
+
+    /**
+     * Prettify Material object for user.
+     * @param object Object that must be pretty.
+     * @param user User who will see the object.
+     * @return Prettified string for Material.
+     */
+    public static String prettifyObject(Material object, User user)
+    {
+        // Nothing to translate
+        if (object == null)
+        {
+            return "";
+        }
+
+        // Find addon structure with:
+        // [addon]:
+        //   materials:
+        //     [material]:
+        //       name: [name]
+        String translation = user.getTranslationOrNothing("level.materials." + object.name().toLowerCase() + ".name");
+
+        if (!translation.isEmpty())
+        {
+            // We found our translation.
+            return translation;
+        }
+
+        // Find addon structure with:
+        // [addon]:
+        //   materials:
+        //     [material]: [name]
+
+        translation = user.getTranslationOrNothing("level.materials." + object.name().toLowerCase());
+
+        if (!translation.isEmpty())
+        {
+            // We found our translation.
+            return translation;
+        }
+
+        // Find general structure with:
+        // materials:
+        //   [material]: [name]
+
+        translation = user.getTranslationOrNothing("materials." + object.name().toLowerCase());
+
+        if (!translation.isEmpty())
+        {
+            // We found our translation.
+            return translation;
+        }
+
+        // Use Lang Utils Hook to translate material
+        return LangUtilsHook.getMaterialName(object, user);
+    }
+
+
+    /**
+     * Prettify Material object description for user.
+     * @param object Object that must be pretty.
+     * @param user User who will see the object.
+     * @return Prettified description string for Material.
+     */
+    public static String prettifyDescription(Material object, User user)
+    {
+        // Nothing to translate
+        if (object == null)
+        {
+            return "";
+        }
+
+        // Find addon structure with:
+        // [addon]:
+        //   materials:
+        //     [material]:
+        //       description: [text]
+        String translation = user.getTranslationOrNothing("level.materials." + object.name().toLowerCase() + ".description");
+
+        if (!translation.isEmpty())
+        {
+            // We found our translation.
+            return translation;
+        }
+
+        // No text to return.
+        return "";
     }
 }
