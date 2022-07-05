@@ -182,6 +182,7 @@ public class LevelsManager {
         results.setInitialLevel((Long)ilce.getKeyValues().getOrDefault("initialLevel", results.getInitialLevel()));
         results.setDeathHandicap((int)ilce.getKeyValues().getOrDefault("deathHandicap", results.getDeathHandicap()));
         results.setPointsToNextLevel((Long)ilce.getKeyValues().getOrDefault("pointsToNextLevel", results.getPointsToNextLevel()));
+        results.setTotalPoints((Long)ilce.getKeyValues().getOrDefault("totalPoints", results.getTotalPoints()));
         return ((Boolean)ilce.getKeyValues().getOrDefault("isCancelled", false));
     }
 
@@ -420,6 +421,7 @@ public class LevelsManager {
         ld.setUwCount(Maps.asMap(r.getUwCount().elementSet(), elem -> r.getUwCount().count(elem)));
         ld.setMdCount(Maps.asMap(r.getMdCount().elementSet(), elem -> r.getMdCount().count(elem)));
         ld.setPointsToNextLevel(r.getPointsToNextLevel());
+        ld.setTotalPoints(r.getTotalPoints());
         levelsCache.put(island.getUniqueId(), ld);
         handler.saveObjectAsync(ld);
         // Update TopTen

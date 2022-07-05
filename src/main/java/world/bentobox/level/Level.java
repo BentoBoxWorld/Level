@@ -38,6 +38,7 @@ import world.bentobox.level.config.BlockConfig;
 import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
+import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.objects.TopTenData;
 import world.bentobox.level.requests.LevelRequestHandler;
@@ -206,6 +207,13 @@ public class Level extends Addon implements Listener {
         getPlugin().getPlaceholdersManager().registerPlaceholder(this,
                 gm.getDescription().getName().toLowerCase() + "_island_level_raw",
                 user -> String.valueOf(getManager().getIslandLevel(gm.getOverWorld(), user.getUniqueId())));
+        getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                gm.getDescription().getName().toLowerCase() + "_island_total_points",
+                user -> {
+                IslandLevels data = getManager().getLevelsData(this.getIslands().getIsland(gm.getOverWorld(), user));
+                return data.getTotalPoints()+"";
+            });
+
         getPlugin().getPlaceholdersManager().registerPlaceholder(this,
                 gm.getDescription().getName().toLowerCase() + "_points_to_next_level",
                 user -> getManager().getPointsToNextString(gm.getOverWorld(), user.getUniqueId()));
