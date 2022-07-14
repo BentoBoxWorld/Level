@@ -425,11 +425,11 @@ public class IslandLevelCalculator {
         for (BlockState bs : chunk.getTileEntities()) {
             if (bs instanceof Container) {
                 if (addon.isAdvChestEnabled()) {
-                    AdvancedChest aChest = AdvancedChestsAPI.getChestManager().getAdvancedChest(bs.getLocation());
-                    if (aChest != null) {
+                    AdvancedChest<?,?> aChest = AdvancedChestsAPI.getChestManager().getAdvancedChest(bs.getLocation());
+                    if (aChest != null && aChest.getChestType().getName().equals("NORMAL")) {
                         aChest.getPages().stream().map(ChestPage::getItems).forEach(c -> {
-                            for (ItemStack i : c) {
-                                countItemStack(i);
+                            for (Object i : c) {
+                                countItemStack((ItemStack)i);
                             }
                         });
                         continue;
