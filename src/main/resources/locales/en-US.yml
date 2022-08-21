@@ -175,6 +175,9 @@ level:
       right-click-to-clear: "&e Right Click &7 to clear."
       click-to-asc: "&e Click &7 to sort in increasing order."
       click-to-desc: "&e Click &7 to sort in decreasing order."
+      click-to-warp: "&e Click &7 to warp."
+      click-to-visit: "&e Click &7 to visit."
+      right-click-to-visit: "&e Right Click &7 to visit."
   conversations:
     # Prefix for messages that are send from server.
     prefix: "&l&6 [BentoBox]: &r"

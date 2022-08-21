@@ -42,6 +42,9 @@ import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.objects.TopTenData;
 import world.bentobox.level.requests.LevelRequestHandler;
 import world.bentobox.level.requests.TopTenRequestHandler;
+import world.bentobox.visit.VisitAddon;
+import world.bentobox.warps.Warp;
+
 
 /**
  * @author tastybento
@@ -62,6 +65,17 @@ public class Level extends Addon implements Listener {
     private boolean advChestEnabled;
     private boolean roseStackersEnabled;
     private final List<GameModeAddon> registeredGameModes = new ArrayList<>();
+
+    /**
+     * Local variable that stores if warpHook is present.
+     */
+    private Warp warpHook;
+
+    /**
+     * Local variable that stores if visitHook is present.
+     */
+    private VisitAddon visitHook;
+
 
     @Override
     public void onLoad() {
@@ -125,10 +139,10 @@ public class Level extends Addon implements Listener {
         advChestEnabled = advChest != null;
         if (advChestEnabled) {
             // Check version
-            if (compareVersions(advChest.getDescription().getVersion(), "14.2") > 0) {
+            if (compareVersions(advChest.getDescription().getVersion(), "23.0") > 0) {
                 log("Hooked into AdvancedChests.");
             } else {
-                logError("Could not hook into AdvancedChests " + advChest.getDescription().getVersion() + " - requires version 14.3 or later");
+                logError("Could not hook into AdvancedChests " + advChest.getDescription().getVersion() + " - requires version 23.0 or later");
                 advChestEnabled = false;
             }
         }
@@ -138,6 +152,45 @@ public class Level extends Addon implements Listener {
             log("Hooked into RoseStackers.");
         }
     }
+
+    @Override
+    public void allLoaded()
+    {
+        super.allLoaded();
+
+        if (this.isEnabled())
+        {
+            this.hookExtensions();
+        }
+    }
+
+
+    /**
+     * This method tries to hook into addons and plugins
+     */
+    private void hookExtensions()
+    {
+        // Try to find Visit addon and if it does not exist, display a warning
+        this.getAddonByName("Visit").ifPresentOrElse(addon ->
+        {
+            this.visitHook = (VisitAddon) addon;
+            this.log("Likes Addon hooked into Visit addon.");
+        }, () ->
+        {
+            this.visitHook = null;
+        });
+
+        // Try to find Warps addon and if it does not exist, display a warning
+        this.getAddonByName("Warps").ifPresentOrElse(addon ->
+        {
+            this.warpHook = (Warp) addon;
+            this.log("Likes Addon hooked into Warps addon.");
+        }, () ->
+        {
+            this.warpHook = null;
+        });
+    }
+
 
     /**
      * Compares versions
@@ -507,4 +560,23 @@ public class Level extends Addon implements Listener {
         return roseStackersEnabled;
     }
 
+    /**
+     * Method Level#getVisitHook returns the visitHook of this object.
+     *
+     * @return {@code Visit} of this object, {@code null} otherwise.
+     */
+    public VisitAddon getVisitHook()
+    {
+        return this.visitHook;
+    }
+
+    /**
+     * Method Level#getWarpHook returns the warpHook of this object.
+     *
+     * @return {@code Warp} of this object, {@code null} otherwise.
+     */
+    public Warp getWarpHook()
+    {
+        return this.warpHook;
+    }
 }

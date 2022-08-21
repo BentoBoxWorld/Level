@@ -13,6 +13,7 @@ import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import world.bentobox.bentobox.api.addons.GameModeAddon;
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.TemplatedPanel;
 import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;
@@ -185,22 +186,66 @@ public class TopLevelPanel
         List<ItemTemplateRecord.ActionRecords> activeActions = new ArrayList<>(template.actions());
 
         activeActions.removeIf(action ->
-            "VIEW".equalsIgnoreCase(action.actionType()) && island.getOwner() == null &&
-                island.getMemberSet(RanksManager.MEMBER_RANK).
-                    contains(this.user.getUniqueId()));
+        {
+            switch (action.actionType().toUpperCase())
+            {
+                case "WARP" -> {
+                    return island.getOwner() == null ||
+                        this.addon.getWarpHook() == null ||
+                        !this.addon.getWarpHook().getWarpSignsManager().hasWarp(this.world, island.getOwner());
+                }
+                case "VISIT" -> {
+                    return island.getOwner() == null ||
+                        this.addon.getVisitHook() == null ||
+                        !this.addon.getVisitHook().getAddonManager().preprocessTeleportation(this.user, island);
+                }
+                case "VIEW" -> {
+                    return island.getOwner() == null ||
+                        !island.getMemberSet(RanksManager.MEMBER_RANK).contains(this.user.getUniqueId());
+                }
+                default -> {
+                    return false;
+                }
+            }
+        });
 
         // Add Click handler
         builder.clickHandler((panel, user, clickType, i) ->
         {
             for (ItemTemplateRecord.ActionRecords action : activeActions)
             {
-                if ((clickType == action.clickType() || action.clickType() == ClickType.UNKNOWN) &&
-                    "VIEW".equalsIgnoreCase(action.actionType()))
+                if (clickType == action.clickType() || action.clickType() == ClickType.UNKNOWN)
                 {
-                    this.user.closeInventory();
-                    // Open Detailed GUI.
+                    switch (action.actionType().toUpperCase())
+                    {
+                        case "WARP" -> {
+                            this.user.closeInventory();
+                            this.addon.getWarpHook().getWarpSignsManager().warpPlayer(this.world, this.user, island.getOwner());
+                        }
+                        case "VISIT" -> {
+                            // The command call implementation solves necessity to check for all visits options,
+                            // like cool down, confirmation and preprocess in single go. Would it be better to write
+                            // all logic here?
 
-                    DetailsPanel.openPanel(this.addon, this.world, this.user);
+                            this.addon.getPlugin().getIWM().getAddon(this.world).
+                                flatMap(GameModeAddon::getPlayerCommand).ifPresent(command ->
+                                {
+                                    String mainCommand =
+                                        this.addon.getVisitHook().getSettings().getPlayerMainCommand();
+
+                                    if (!mainCommand.isBlank())
+                                    {
+                                        this.user.closeInventory();
+                                        this.user.performCommand(command.getTopLabel() + " " + mainCommand + " " + island.getOwner());
+                                    }
+                                });
+                        }
+                        case "VIEW" -> {
+                            this.user.closeInventory();
+                            // Open Detailed GUI.
+                            DetailsPanel.openPanel(this.addon, this.world, this.user);
+                        }
+                    }
                 }
             }
 

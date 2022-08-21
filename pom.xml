@@ -60,6 +60,10 @@
         <!-- More visible way how to change dependency versions -->
         <spigot.version>1.16.5-R0.1-SNAPSHOT</spigot.version>
         <bentobox.version>1.20.0</bentobox.version>
+        <!-- Warps addon version -->
+        <warps.version>1.12.0</warps.version>
+        <!-- Visit addon version -->
+        <visit.version>1.4.0</visit.version>
         <!-- Panel Utils version -->
         <panelutils.version>1.1.0</panelutils.version>
         <!-- Revision variable removes warning about dynamic version -->
@@ -183,6 +187,18 @@
             <groupId>world.bentobox</groupId>
             <artifactId>bentobox</artifactId>
             <version>${bentobox.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>world.bentobox</groupId>
+            <artifactId>warps</artifactId>
+            <version>${warps.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>world.bentobox</groupId>
+            <artifactId>visit</artifactId>
+            <version>${visit.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
