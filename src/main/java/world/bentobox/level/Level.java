@@ -13,8 +13,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -22,7 +20,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import world.bentobox.bentobox.api.addons.Addon;
 import world.bentobox.bentobox.api.addons.GameModeAddon;
 import world.bentobox.bentobox.api.configuration.Config;
-import world.bentobox.bentobox.api.events.BentoBoxReadyEvent;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.util.Util;
@@ -38,6 +35,7 @@ import world.bentobox.level.config.BlockConfig;
 import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
+import world.bentobox.level.listeners.MigrationListener;
 import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.objects.TopTenData;
 import world.bentobox.level.requests.LevelRequestHandler;
@@ -50,7 +48,7 @@ import world.bentobox.warps.Warp;
  * @author tastybento
  *
  */
-public class Level extends Addon implements Listener {
+public class Level extends Addon {
 
     // The 10 in top ten
     public static final int TEN = 10;
@@ -112,7 +110,8 @@ public class Level extends Addon implements Listener {
         // Register listeners
         this.registerListener(new IslandActivitiesListeners(this));
         this.registerListener(new JoinLeaveListener(this));
-        this.registerListener(this);
+        this.registerListener(new MigrationListener(this));
+
         // Register commands for GameModes
         registeredGameModes.clear();
         getPlugin().getAddonsManager().getGameModeAddons().stream()
@@ -174,7 +173,7 @@ public class Level extends Addon implements Listener {
         this.getAddonByName("Visit").ifPresentOrElse(addon ->
         {
             this.visitHook = (VisitAddon) addon;
-            this.log("Likes Addon hooked into Visit addon.");
+            this.log("Level Addon hooked into Visit addon.");
         }, () ->
         {
             this.visitHook = null;
@@ -184,7 +183,7 @@ public class Level extends Addon implements Listener {
         this.getAddonByName("Warps").ifPresentOrElse(addon ->
         {
             this.warpHook = (Warp) addon;
-            this.log("Likes Addon hooked into Warps addon.");
+            this.log("Level Addon hooked into Warps addon.");
         }, () ->
         {
             this.warpHook = null;
@@ -216,39 +215,6 @@ public class Level extends Addon implements Listener {
         }
         return comparisonResult;
     }
-
-    @EventHandler
-    public void onBentoBoxReady(BentoBoxReadyEvent e) {
-        // Perform upgrade check
-        manager.migrate();
-        // Load TopTens
-        manager.loadTopTens();
-        /*
-         * DEBUG code to generate fake islands and then try to level them all.
-        Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
-            getPlugin().getAddonsManager().getGameModeAddons().stream()
-            .filter(gm -> !settings.getGameModes().contains(gm.getDescription().getName()))
-            .forEach(gm -> {
-                for (int i = 0; i < 1000; i++) {
-                    try {
-                        NewIsland.builder().addon(gm).player(User.getInstance(UUID.randomUUID())).name("default").reason(Reason.CREATE).noPaste().build();
-                    } catch (IOException e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
-                    }
-                }
-            });
-            // Queue all islands DEBUG
-
-            getIslands().getIslands().stream().filter(Island::isOwned).forEach(is -> {
-
-                this.getManager().calculateLevel(is.getOwner(), is).thenAccept(r ->
-                log("Result for island calc " + r.getLevel() + " at " + is.getCenter()));
-
-            });
-       }, 60L);*/
-    }
-
 
     private void registerPlaceholders(GameModeAddon gm) {
         if (getPlugin().getPlaceholdersManager() == null) return;

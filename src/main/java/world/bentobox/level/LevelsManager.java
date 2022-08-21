@@ -35,7 +35,6 @@ import world.bentobox.level.objects.TopTenData;
 public class LevelsManager {
     private static final String INTOPTEN = "intopten";
     private static final TreeMap<BigInteger, String> LEVELS;
-    private static final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
     private static final BigInteger THOUSAND = BigInteger.valueOf(1000);
     static {
         LEVELS = new TreeMap<>();
@@ -45,7 +44,7 @@ public class LevelsManager {
         LEVELS.put(THOUSAND.pow(3), "G");
         LEVELS.put(THOUSAND.pow(4), "T");
     }
-    private Level addon;
+    private final Level addon;
 
     // Database handler for level data
     private final Database<IslandLevels> handler;
@@ -341,7 +340,7 @@ public class LevelsManager {
     /**
      * Loads all the top tens from the database
      */
-    void loadTopTens() {
+    public void loadTopTens() {
         topTenLists.clear();
         Bukkit.getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
             addon.log("Generating rankings");
