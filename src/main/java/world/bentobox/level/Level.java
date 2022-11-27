@@ -228,6 +228,9 @@ public class Level extends Addon {
         getPlugin().getPlaceholdersManager().registerPlaceholder(this,
                 gm.getDescription().getName().toLowerCase() + "_points_to_next_level",
                 user -> getManager().getPointsToNextString(gm.getOverWorld(), user.getUniqueId()));
+        getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                gm.getDescription().getName().toLowerCase() + "_island_level_max",
+                user -> String.valueOf(getManager().getIslandMaxLevel(gm.getOverWorld(), user.getUniqueId())));
 
         // Visited Island Level
         getPlugin().getPlaceholdersManager().registerPlaceholder(this,

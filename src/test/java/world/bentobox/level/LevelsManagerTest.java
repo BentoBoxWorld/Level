@@ -270,6 +270,15 @@ public class LevelsManagerTest {
         //Map<UUID, Long> tt = lm.getTopTen(world, 10);
         //assertEquals(1, tt.size());
         //assertTrue(tt.get(uuid) == 10000);
+        assertEquals(10000L, lm.getIslandMaxLevel(world, uuid));
+
+        results.setLevel(5000);
+        lm.calculateLevel(uuid, island);
+        // Complete the pipelined completable future
+        cf.complete(results);
+        assertEquals(5000L, lm.getLevelsData(island).getLevel());
+        // Still should be 10000
+        assertEquals(10000L, lm.getIslandMaxLevel(world, uuid));
 
     }
 

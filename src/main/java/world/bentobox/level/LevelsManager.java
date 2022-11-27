@@ -232,6 +232,19 @@ public class LevelsManager {
     }
 
     /**
+     * Get the maximum level ever given to this island
+     * @param world - world where the island is
+     * @param targetPlayer - target player UUID
+     * @return Max level of the player's island or zero if player is unknown or UUID is null
+     */
+    public long getIslandMaxLevel(@NonNull World world, @Nullable UUID targetPlayer) {
+        if (targetPlayer == null) return 0L;
+        // Get the island
+        Island island = addon.getIslands().getIsland(world, targetPlayer);
+        return island == null ? 0L : getLevelsData(island).getMaxLevel();
+    }
+
+    /**
      * Returns a formatted string of the target player's island level
      * @param world - world where the island is
      * @param targetPlayer - target player's UUID
