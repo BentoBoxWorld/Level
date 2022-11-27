@@ -22,6 +22,7 @@ import world.bentobox.bentobox.api.addons.GameModeAddon;
 import world.bentobox.bentobox.api.configuration.Config;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.bentobox.managers.RanksManager;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.calculators.Pipeliner;
 import world.bentobox.level.commands.AdminLevelCommand;
@@ -286,6 +287,7 @@ public class Level extends Addon {
             if (island != null) {
                 // Sort members by rank
                 return island.getMembers().entrySet().stream()
+                        .filter(e -> e.getValue() >= RanksManager.MEMBER_RANK)
                         .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
                         .map(Map.Entry::getKey)
                         .map(getPlayers()::getName)
