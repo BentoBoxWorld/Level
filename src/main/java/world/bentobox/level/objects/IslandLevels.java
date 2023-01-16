@@ -151,6 +151,7 @@ public class IslandLevels implements DataObject {
      */
     public void setTotalPoints(long totalPoints) {
         this.totalPoints = totalPoints;
+    }
         
     /**
      * Get the maximum level ever set using {@link #setLevel(long)}
