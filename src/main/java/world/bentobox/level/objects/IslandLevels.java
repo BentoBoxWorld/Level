@@ -140,7 +140,7 @@ public class IslandLevels implements DataObject {
     }
 
     /**
-     * @return the pointsToNextLevel
+     * @return the totalPoints
      */
     public long getTotalPoints() {
         return totalPoints;
