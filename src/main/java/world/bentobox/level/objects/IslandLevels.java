@@ -50,6 +50,12 @@ public class IslandLevels implements DataObject {
     private long maxLevel;
 
     /**
+     * Total points
+     */
+    @Expose
+    private long totalPoints;
+
+    /**
      * Underwater count
      */
     @Expose
@@ -133,6 +139,20 @@ public class IslandLevels implements DataObject {
         this.pointsToNextLevel = pointsToNextLevel;
     }
 
+    /**
+     * @return the pointsToNextLevel
+     */
+    public long getTotalPoints() {
+        return totalPoints;
+    }
+
+    /**
+     * @param totalPoints the totalPoints to set
+     */
+    public void setTotalPoints(long totalPoints) {
+        this.totalPoints = totalPoints;
+    }
+        
     /**
      * Get the maximum level ever set using {@link #setLevel(long)}
      * @return the maxLevel

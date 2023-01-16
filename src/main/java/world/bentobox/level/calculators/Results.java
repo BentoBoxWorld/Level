@@ -36,6 +36,7 @@ public class Results {
     AtomicInteger deathHandicap = new AtomicInteger(0);
     AtomicLong pointsToNextLevel = new AtomicLong(0);
     AtomicLong initialLevel = new AtomicLong(0);
+    AtomicLong totalPoints = new AtomicLong(0);
     final Result state;
 
     public Results(Result state) {
@@ -93,6 +94,21 @@ public class Results {
         pointsToNextLevel.set(points);
     }
 
+    /**
+     * @return the totalPoints
+     */
+    public long getTotalPoints() {
+        return totalPoints.get();
+    }
+
+    /**
+     * Set the total points
+     * @param points
+     */
+    public void setTotalPoints(long points) {
+        totalPoints.set(points);
+    }
+
     public long getInitialLevel() {
         return initialLevel.get();
     }
@@ -109,7 +125,7 @@ public class Results {
         return "Results [report=" + report + ", mdCount=" + mdCount + ", uwCount=" + uwCount + ", ncCount="
                 + ncCount + ", ofCount=" + ofCount + ", rawBlockCount=" + rawBlockCount + ", underWaterBlockCount="
                 + underWaterBlockCount + ", level=" + level + ", deathHandicap=" + deathHandicap
-                + ", pointsToNextLevel=" + pointsToNextLevel + ", initialLevel=" + initialLevel + "]";
+                + ", pointsToNextLevel=" + pointsToNextLevel + ", totalPoints=" + totalPoints + ", initialLevel=" + initialLevel + "]";
     }
     /**
      * @return the mdCount

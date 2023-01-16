@@ -52,7 +52,7 @@ import world.bentobox.level.calculators.Results.Result;
 
 public class IslandLevelCalculator {
     private static final String LINE_BREAK = "==================================";
-    public static final long MAX_AMOUNT = 10000;
+    public static final long MAX_AMOUNT = 10000000;
     private static final List<Material> CHESTS = Arrays.asList(Material.CHEST, Material.CHEST_MINECART, Material.TRAPPED_CHEST,
             Material.SHULKER_BOX, Material.BLACK_SHULKER_BOX, Material.BLUE_SHULKER_BOX, Material.BROWN_SHULKER_BOX,
             Material.CYAN_SHULKER_BOX, Material.GRAY_SHULKER_BOX, Material.GREEN_SHULKER_BOX, Material.LIGHT_BLUE_SHULKER_BOX,
@@ -601,6 +601,7 @@ public class IslandLevelCalculator {
         }
 
         long blockAndDeathPoints = this.results.rawBlockCount.get();
+        this.results.totalPoints.set(blockAndDeathPoints);
 
         if (this.addon.getSettings().getDeathPenalty() > 0)
         {
