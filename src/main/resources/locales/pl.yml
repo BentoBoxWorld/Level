@@ -5,6 +5,9 @@ admin:
     description: oblicza poziom wyspy
     sethandicap:
       parameters: "<gracz> <uposledzenie>"
+      description: ustawić 0 poziom wyspy, zwykle poziom wyspy startowej
+      changed: "&a Początkowy poziom wysp został zmieniony z [number] na [new_number]."
+      invalid-level: "&c Nieprawidłowy poziom. Użyj liczby całkowitej."
   levelstatus:
     description: pokazuje ile wysp znajduje się w kolejce do skanowania
     islands-in-queue: "&a Wyspy w kolejce: [number]"
@@ -23,7 +26,7 @@ island:
     estimated-wait: "&a Szacowany czas: [number] sekund"
     in-queue: "&a Jestes numerem [number] w kolejce"
     island-level-is: "&aPoziom wyspy wynosi &b[level]"
-    required-points-to-next-level: "&a[points] punktów do następnego poziomu"
+    required-points-to-next-level: "&aPozostało [points] punktów do następnego poziomu"
     deaths: "&c([number] śmierci)"
     cooldown: "&cMusisz zaczekać &b[time] &csekund przed następnym obliczeniem poziomu"
     in-progress: "&6 Trwa obliczanie poziomu twojej wyspy..."
@@ -44,9 +47,125 @@ island:
     names-island: Wyspa gracza [name]
     syntax: "[name] x [number]"
     hint: "&c Uruchom poziom, aby wyświetlić raport o blokach"
-  value:
-    description: pokazuje wartość dowolnego przedmiotu
-    success: "&7Wartość punktowa tego bloku wynosi: &e[value]"
-    success-underwater: "&7Wartość tego bloku poniżej poziomu morza: &e[value]"
-    empty-hand: "&cNie trzymasz żadnego bloku."
-    no-value: "&cTen przedmiot nie ma wartości :("
+level:
+  commands:
+    value:
+      parameters: "[hand|<materiał>]"
+      description: pokazuje wartość bloków. Dodaj „hand” na końcu, aby wyświetlić
+        wartość pozycji w ręku.
+  gui:
+    titles:
+      top: "&0&l Najlepsze wyspy"
+      detail-panel: "&0&l Wyspa gracza [name] "
+      value-panel: "&0&l Wartości bloków"
+    buttons:
+      island:
+        empty: "&f&l [name]. miejsce"
+        name: "&f&l [name]"
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: wyspa gracza [player]
+        owner: "&7&l Lider: &r&b [player]"
+        members-title: "&7&l Członkowie:"
+        member: "&b - [player]"
+        unknown: nieznany
+        place: "&7&o [number]. &r&7 miejsce"
+        level: "&7 Poziom: &o [number]"
+      material:
+        name: "&f&l [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "&7 Identyfikator bloku: &e [id]"
+        value: "&7 Wartość bloku: &e [number]"
+        limit: "&7 Limit bloków: &e [number]"
+        count: "&7 Numer bloku: &e [number]"
+        calculated: "&7 Obliczona wartość: &e [number]"
+      all_blocks:
+        name: "&f&l Wszystkie bloki"
+        description: |-
+          &7 Wyświetl wszystkie bloki
+          &7 na wyspie.
+      above_sea_level:
+        name: "&f&l Bloki nad poziomem morza"
+        description: |-
+          &7 Wyświetlaj tylko bloki
+          &7 które są nad poziomem
+          &7 morza
+      underwater:
+        name: "&f&l Bloki pod poziomem morza"
+        description: |-
+          &7 Wyświetlaj tylko bloki
+          &7 ponad poziomem morza
+      spawner:
+        name: "&f&l Spawnery"
+        description: "&7 Wyświetlaj tylko spawnery."
+      filters:
+        name:
+          name: "&f&l Sortuj według nazwy"
+          description: "&7 Sortuj wszystkie bloki według nazwy."
+        value:
+          name: "&f&l Sortuj według wartości"
+          description: "&7 Sortuj wszystkie bloki według ich wartości."
+        count:
+          name: "&f&l Sortuj według liczby"
+          description: "&7 Sortuj wszystkie bloki według ich ilości."
+      value:
+        name: "&f&l [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "&7 Identyfikator bloku: &e [id]"
+        value: "&7 Wartość bloku: &e [number]"
+        underwater: "&7 Poniżej poziomu morza: &e [number]"
+        limit: "&7 Limit bloku: &e [number]"
+      previous:
+        name: "&f&l Poprzednia strona"
+        description: "&7 Przełącz na stronę [number]"
+      next:
+        name: "&f&l Następna strona"
+        description: "&7 Przełącz na stronę [number]"
+      search:
+        name: "&f&l Szukaj"
+        description: |-
+          &7 Wyszukaj konkretną
+          &7 wartość.
+        search: "&b Wartość: [value]"
+    tips:
+      click-to-view: "&e Kliknij &7, aby wyświetlić."
+      click-to-previous: "&e Kliknij &7, aby wyświetlić poprzednią stronę."
+      click-to-next: "&e Kliknij &7, aby wyświetlić następną stronę."
+      click-to-select: "&e Kliknij &7, aby wybrać."
+      left-click-to-cycle-up: "&e Kliknij lewym przyciskiem &7, aby przejść w górę."
+      right-click-to-cycle-down: "&e Kliknij prawym przyciskiem &7, aby przejść w
+        dół."
+      left-click-to-change: "&e Kliknij lewym przyciskiem &7, aby edytować."
+      right-click-to-clear: "&e Kliknij prawym przyciskiem &7, aby wyczyścić."
+      click-to-asc: "&e Kliknij &7, aby posortować w porządku rosnącym."
+      click-to-desc: "&e Kliknij &7, aby posortować w porządku malejącym."
+      click-to-warp: "&e Kliknij&7, aby przenieść"
+      click-to-visit: "&e Kliknij&7, aby odwiedzić"
+      right-click-to-visit: "&e Kliknij prawym przyciskiem &7, aby odwiedzić."
+  conversations:
+    prefix: "&l&6 [BentoBox]: &r"
+    no-data: "&c Wykonaj sprawdzenie poziomu, przed raportem bloków"
+    cancel-string: anuluj
+    exit-string: cancel, exit, quit, anuluj
+    write-search: "&e Wprowadź wartość wyszukiwania. (Napisz „anuluj”, aby wyjść)"
+    search-updated: "&a Zaktualizowano wartość wyszukiwania."
+    cancelled: "&c Rozmowa została anulowana!"
+    no-value: "&c Ten element nie ma wartości."
+    unknown-item: "&c „[material]” nie istnieje w grze."
+    value: "&7 Wartość '[material]' to: &e[value]"
+    value-underwater: "&7 Wartość „[material]” poniżej poziomu morza: &e[value]"
+    empty-hand: "&c W twojej ręce nie ma bloków"

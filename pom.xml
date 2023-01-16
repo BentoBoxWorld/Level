@@ -54,12 +54,16 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>16</java.version>
+        <java.version>17</java.version>
         <!-- Non-minecraft related dependencies -->
         <powermock.version>2.0.9</powermock.version>
         <!-- More visible way how to change dependency versions -->
-        <spigot.version>1.16.5-R0.1-SNAPSHOT</spigot.version>
+        <spigot.version>1.19.2-R0.1-SNAPSHOT</spigot.version>
         <bentobox.version>1.20.0</bentobox.version>
+        <!-- Warps addon version -->
+        <warps.version>1.12.0</warps.version>
+        <!-- Visit addon version -->
+        <visit.version>1.4.0</visit.version>
         <!-- Panel Utils version -->
         <panelutils.version>1.1.0</panelutils.version>
         <!-- Revision variable removes warning about dynamic version -->
@@ -67,7 +71,7 @@
         <!-- Do not change unless you want different name for local builds. -->
         <build.number>-LOCAL</build.number>
         <!-- This allows to change between versions. -->
-        <build.version>2.9.1</build.version>
+        <build.version>2.10.0</build.version>
         <sonar.projectKey>BentoBoxWorld_Level</sonar.projectKey>
         <sonar.organization>bentobox-world</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -186,6 +190,18 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>world.bentobox</groupId>
+            <artifactId>warps</artifactId>
+            <version>${warps.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>world.bentobox</groupId>
+            <artifactId>visit</artifactId>
+            <version>${visit.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>lv.id.bonne</groupId>
             <artifactId>panelutils</artifactId>
             <version>${panelutils.version}</version>
@@ -209,7 +225,7 @@
         <dependency>
             <groupId>com.github.DeadSilenceIV</groupId>
             <artifactId>AdvancedChestsAPI</artifactId>
-            <version>1.8</version>
+            <version>2.9-BETA</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

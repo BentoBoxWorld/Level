@@ -90,7 +90,7 @@ public class ConfigSettings implements ConfigObject {
     @ConfigComment("Island level calculation formula")
     @ConfigComment("blocks - the sum total of all block values, less any death penalty")
     @ConfigComment("level_cost - in a linear equation, the value of one level")
-    @ConfigComment("This formula can include +,=,*,/,sqrt,^,sin,cos,tan. Result will always be rounded to a long integer")
+    @ConfigComment("This formula can include +,=,*,/,sqrt,^,sin,cos,tan,log (natural log). Result will always be rounded to a long integer")
     @ConfigComment("for example, an alternative non-linear option could be: 3 * sqrt(blocks / level_cost)")
     @ConfigEntry(path = "level-calc")
     private String levelCalc = "blocks / level_cost";

@@ -13,8 +13,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -22,9 +20,9 @@ import org.eclipse.jdt.annotation.Nullable;
 import world.bentobox.bentobox.api.addons.Addon;
 import world.bentobox.bentobox.api.addons.GameModeAddon;
 import world.bentobox.bentobox.api.configuration.Config;
-import world.bentobox.bentobox.api.events.BentoBoxReadyEvent;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.bentobox.managers.RanksManager;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.calculators.Pipeliner;
 import world.bentobox.level.commands.AdminLevelCommand;
@@ -39,16 +37,20 @@ import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
 import world.bentobox.level.objects.IslandLevels;
+import world.bentobox.level.listeners.MigrationListener;
 import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.objects.TopTenData;
 import world.bentobox.level.requests.LevelRequestHandler;
 import world.bentobox.level.requests.TopTenRequestHandler;
+import world.bentobox.visit.VisitAddon;
+import world.bentobox.warps.Warp;
+
 
 /**
  * @author tastybento
  *
  */
-public class Level extends Addon implements Listener {
+public class Level extends Addon {
 
     // The 10 in top ten
     public static final int TEN = 10;
@@ -63,6 +65,17 @@ public class Level extends Addon implements Listener {
     private boolean advChestEnabled;
     private boolean roseStackersEnabled;
     private final List<GameModeAddon> registeredGameModes = new ArrayList<>();
+
+    /**
+     * Local variable that stores if warpHook is present.
+     */
+    private Warp warpHook;
+
+    /**
+     * Local variable that stores if visitHook is present.
+     */
+    private VisitAddon visitHook;
+
 
     @Override
     public void onLoad() {
@@ -99,7 +112,8 @@ public class Level extends Addon implements Listener {
         // Register listeners
         this.registerListener(new IslandActivitiesListeners(this));
         this.registerListener(new JoinLeaveListener(this));
-        this.registerListener(this);
+        this.registerListener(new MigrationListener(this));
+
         // Register commands for GameModes
         registeredGameModes.clear();
         getPlugin().getAddonsManager().getGameModeAddons().stream()
@@ -126,10 +140,10 @@ public class Level extends Addon implements Listener {
         advChestEnabled = advChest != null;
         if (advChestEnabled) {
             // Check version
-            if (compareVersions(advChest.getDescription().getVersion(), "14.2") > 0) {
+            if (compareVersions(advChest.getDescription().getVersion(), "23.0") > 0) {
                 log("Hooked into AdvancedChests.");
             } else {
-                logError("Could not hook into AdvancedChests " + advChest.getDescription().getVersion() + " - requires version 14.3 or later");
+                logError("Could not hook into AdvancedChests " + advChest.getDescription().getVersion() + " - requires version 23.0 or later");
                 advChestEnabled = false;
             }
         }
@@ -139,6 +153,45 @@ public class Level extends Addon implements Listener {
             log("Hooked into RoseStackers.");
         }
     }
+
+    @Override
+    public void allLoaded()
+    {
+        super.allLoaded();
+
+        if (this.isEnabled())
+        {
+            this.hookExtensions();
+        }
+    }
+
+
+    /**
+     * This method tries to hook into addons and plugins
+     */
+    private void hookExtensions()
+    {
+        // Try to find Visit addon and if it does not exist, display a warning
+        this.getAddonByName("Visit").ifPresentOrElse(addon ->
+        {
+            this.visitHook = (VisitAddon) addon;
+            this.log("Level Addon hooked into Visit addon.");
+        }, () ->
+        {
+            this.visitHook = null;
+        });
+
+        // Try to find Warps addon and if it does not exist, display a warning
+        this.getAddonByName("Warps").ifPresentOrElse(addon ->
+        {
+            this.warpHook = (Warp) addon;
+            this.log("Level Addon hooked into Warps addon.");
+        }, () ->
+        {
+            this.warpHook = null;
+        });
+    }
+
 
     /**
      * Compares versions
@@ -165,39 +218,6 @@ public class Level extends Addon implements Listener {
         return comparisonResult;
     }
 
-    @EventHandler
-    public void onBentoBoxReady(BentoBoxReadyEvent e) {
-        // Perform upgrade check
-        manager.migrate();
-        // Load TopTens
-        manager.loadTopTens();
-        /*
-         * DEBUG code to generate fake islands and then try to level them all.
-        Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
-            getPlugin().getAddonsManager().getGameModeAddons().stream()
-            .filter(gm -> !settings.getGameModes().contains(gm.getDescription().getName()))
-            .forEach(gm -> {
-                for (int i = 0; i < 1000; i++) {
-                    try {
-                        NewIsland.builder().addon(gm).player(User.getInstance(UUID.randomUUID())).name("default").reason(Reason.CREATE).noPaste().build();
-                    } catch (IOException e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
-                    }
-                }
-            });
-            // Queue all islands DEBUG
-
-            getIslands().getIslands().stream().filter(Island::isOwned).forEach(is -> {
-
-                this.getManager().calculateLevel(is.getOwner(), is).thenAccept(r ->
-                log("Result for island calc " + r.getLevel() + " at " + is.getCenter()));
-
-            });
-       }, 60L);*/
-    }
-
-
     private void registerPlaceholders(GameModeAddon gm) {
         if (getPlugin().getPlaceholdersManager() == null) return;
         // Island Level
@@ -217,6 +237,9 @@ public class Level extends Addon implements Listener {
         getPlugin().getPlaceholdersManager().registerPlaceholder(this,
                 gm.getDescription().getName().toLowerCase() + "_points_to_next_level",
                 user -> getManager().getPointsToNextString(gm.getOverWorld(), user.getUniqueId()));
+        getPlugin().getPlaceholdersManager().registerPlaceholder(this,
+                gm.getDescription().getName().toLowerCase() + "_island_level_max",
+                user -> String.valueOf(getManager().getIslandMaxLevel(gm.getOverWorld(), user.getUniqueId())));
 
         // Visited Island Level
         getPlugin().getPlaceholdersManager().registerPlaceholder(this,
@@ -272,6 +295,7 @@ public class Level extends Addon implements Listener {
             if (island != null) {
                 // Sort members by rank
                 return island.getMembers().entrySet().stream()
+                        .filter(e -> e.getValue() >= RanksManager.MEMBER_RANK)
                         .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
                         .map(Map.Entry::getKey)
                         .map(getPlayers()::getName)
@@ -515,4 +539,23 @@ public class Level extends Addon implements Listener {
         return roseStackersEnabled;
     }
 
+    /**
+     * Method Level#getVisitHook returns the visitHook of this object.
+     *
+     * @return {@code Visit} of this object, {@code null} otherwise.
+     */
+    public VisitAddon getVisitHook()
+    {
+        return this.visitHook;
+    }
+
+    /**
+     * Method Level#getWarpHook returns the warpHook of this object.
+     *
+     * @return {@code Warp} of this object, {@code null} otherwise.
+     */
+    public Warp getWarpHook()
+    {
+        return this.warpHook;
+    }
 }
