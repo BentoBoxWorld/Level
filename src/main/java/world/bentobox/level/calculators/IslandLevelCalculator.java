@@ -135,6 +135,9 @@ public class IslandLevelCalculator {
                     case "tan":
                         x = Math.tan(Math.toRadians(x));
                         break;
+                    case "log":
+                        x = Math.log(x);
+                        break;
                     default:
                         throw new RuntimeException("Unknown function: " + func);
                     }
