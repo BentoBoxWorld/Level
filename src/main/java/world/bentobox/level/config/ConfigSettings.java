@@ -119,6 +119,12 @@ public class ConfigSettings implements ConfigObject {
     @ConfigComment("Shows large level values rounded down, e.g., 10,345 -> 10k")
     @ConfigEntry(path = "shorthand")
     private boolean shorthand = false;
+    @ConfigComment("")
+    @ConfigComment("Include Shulker Box content in chests in level calculations.")
+    @ConfigComment("Will count blocks in Shulker Boxes inside of chests.")
+    @ConfigComment("NOTE: include-chests needs to be enabled for this to work!.")
+    @ConfigEntry(path = "include-shulkers-in-chest")
+    private boolean includeShulkersInChest = false;
 
 
     /**
@@ -385,4 +391,17 @@ public class ConfigSettings implements ConfigObject {
         this.logReportToConsole = logReportToConsole;
     }
 
+    /**
+     * @return includeShulkersInChest
+     */
+    public boolean isIncludeShulkersInChest() {
+        return includeShulkersInChest;
+    }
+
+    /**
+     * @param includeShulkersInChest the includeChests to set
+     */
+    public void setIncludeShulkersInChest(boolean includeShulkersInChest) {
+        this.includeShulkersInChest = includeShulkersInChest;
+    }
 }
