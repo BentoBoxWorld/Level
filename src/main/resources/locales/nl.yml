@@ -1,0 +1,165 @@
+---
+admin:
+  level:
+    parameters: "<speler>"
+    description: bereken het eiland level voor een speler
+    sethandicap:
+      parameters: "<speler> <handicap>"
+      description: stel handicap in voor het eiland, normaal gesproken het level van
+        het starter eiland.
+      changed: "&a Initiële handicap is veranderd van [number] naar [new_number]."
+      invalid-level: "&c Ongeldige handicap. Gebruik een getal."
+  levelstatus:
+    description: laat zien hoeveel eilanden er in de wachtrij staan voor het scannen
+    islands-in-queue: "&a Aantal eilanden in de wachtrij: [number]"
+  top:
+    description: Laat de top tien zien
+    unknown-world: "&c Ongeldige wereld!"
+    display: "&f[rank]. &a[name] &7- &b[level]"
+    remove:
+      description: verwijder speler van de top tien
+      parameters: "<speler>"
+island:
+  level:
+    parameters: "[speler]"
+    description: bereken het eiland level voor [player]
+    calculating: "&a Level aan het berekenen..."
+    estimated-wait: "&a Verwachtte wachttijd: [number] seconde"
+    in-queue: "&a Jij staat op plek [number] in de wachtrij"
+    island-level-is: "&a Eiland level is &b[level]"
+    required-points-to-next-level: "&a [points] punten nodig voor het volgende level"
+    deaths: "&c([number] doodgegaan)"
+    cooldown: "&c Je moet nog &b[time] &c seconden wachten tot je dit weer kan doen."
+    in-progress: "&6 Eiland level wordt berekend..."
+    time-out: "&c De level berekening duurde te lang. Probeer het later opnieuw."
+  top:
+    description: Toon de Top tien
+    gui-title: "&a Top tien"
+    gui-heading: "&6[name]: &B[rank]"
+    island-level: "&b Level [level]"
+    warp-to: "&A Teleporteren naar [name]'s eiland"
+  level-details:
+    above-sea-level-blocks: 'Blokken boven zeeniveau '
+    spawners: Monsterkooien
+    underwater-blocks: Blokken onder zeeniveau
+    all-blocks: Alle blokken
+    no-island: "&c Geen eiland!"
+    names-island: "[name]'s eiland"
+    syntax: "[name] x [number]"
+    hint: "&c Gebruik level om het blokkenrapport te zien"
+level:
+  commands:
+    value:
+      parameters: "[hand|<type>]"
+      description: toont de waarde van blokken. Voeg 'hand' toe aan het einde om de
+        waarde te laten zien van het item in je hand.
+  gui:
+    titles:
+      top: "&0&l Top eilanden"
+      detail-panel: "&0&l [name]'s eiland"
+      value-panel: "&0&l Blok waardes"
+    buttons:
+      island:
+        empty: "&f&l [name]. plaats"
+        name: "&f&l [name]"
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: "[player]'s Eiland"
+        owner: "&7&l Eigenaar: &r&b [player]"
+        members-title: "&7&l Leden:"
+        member: "&b - [player]"
+        unknown: onbekend
+        place: "&7&o [number]. &r&7 plaats"
+        level: "&7 Level: &o [number]"
+      material:
+        name: "&f&l [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "&7 Blok id: &e [id]"
+        value: "&7 Block waarde: &e [number]"
+        limit: "&7 Block limiet: &e [number]"
+        count: "&7 Aantal blokken: &e [number]"
+        calculated: "&7 Berekende waarde: &e [number]"
+      all_blocks:
+        name: "&f&l Alle Blokken"
+        description: "&7 Toon alle blokken \n&7 op het eiland."
+      above_sea_level:
+        name: "&f&l Blokken boven zeeniveau"
+        description: |-
+          &7 Toon alleen blokken
+          &7 die boven zeeniveau zijn
+      underwater:
+        name: "&f&l Blokken onder zeeniveau"
+        description: |-
+          &7 Toon alleen blokken
+          &7 die onder zeeniveau zijn
+      spawner:
+        name: "&f&l Monsterkooien"
+        description: "&7 Toon alleen monsterkooien."
+      filters:
+        name:
+          name: "&f&l Sorteer aan de hand van naam"
+          description: "&7 Sorteer alle blokken aan de hand van naam."
+        value:
+          name: "&f&l Sorteer aan de hand van waarde"
+          description: "&7 Sorteer alle blokken aan de hand van waarde."
+        count:
+          name: "&f&l Sorteer aan de hand van aantal"
+          description: "&7 Sorteer alle blokken aan de hand van aantal."
+      value:
+        name: "&f&l [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "&7 Blok id: &e [id]"
+        value: "&7 Block waarrde: &e [number]"
+        underwater: "&7 Onder zeeniveau: &e [number]"
+        limit: "&7 Blok limiet: &e [number]"
+      previous:
+        name: "&f&l Vorige pagina"
+        description: "&7 Ga naar pagina [number]"
+      next:
+        name: "&f&l Volgende pagina"
+        description: "&7 Ga naar pagina [number]"
+      search:
+        name: "&f&l Zoek"
+        description: "&7 Zoek voor een \n&7 specifieke waarde."
+        search: "&b Waarde: [value]"
+    tips:
+      click-to-view: "&e Klik &7 om te zien."
+      click-to-previous: "&e Klik &7 om de vorige pagina te zien."
+      click-to-next: "&e Klik &7 om de volgende pagina te zien."
+      click-to-select: "&e Klik &7 om te selecteren."
+      left-click-to-cycle-up: "&e Linker Klik &7 om door te lopen."
+      right-click-to-cycle-down: "&e Rechter Klik &7 om terug door te lopen."
+      left-click-to-change: "&e Linker Klik &7 om bij te werken."
+      right-click-to-clear: "&e Linker Klik &7 om te verwijderen."
+      click-to-asc: "&e Klik &7 om te toenemend te sorteren."
+      click-to-desc: "&e Klik &7 om te afnemenend te sorteren."
+      click-to-warp: "&e Klik &7 om te teleporteren."
+      click-to-visit: "&e Klik &7 om te bezoeken."
+      right-click-to-visit: "&e Rechter Klik &7 om te bezoeken."
+  conversations:
+    prefix: "&l&6 [BentoBox]: &r"
+    no-data: "&c Gebruik level om het blokkenrapport te zien."
+    cancel-string: stop
+    exit-string: stop
+    write-search: "&e Schrijf een zoekopdracht. (Schrijf 'stop' om te zoeken)"
+    search-updated: "&a Zoekopdracht bijgewerkt."
+    cancelled: "&c Conversatie gestopt!"
+    no-value: "&c Dit item heeft geen waarde."
+    unknown-item: "&c '[material]' bestaat niet in het spel."
+    value: "&7 De waarde van '[material]' is: &e[value]"
+    value-underwater: "&7 The waarde van '[material]' onder zeeniveau: &e[value]"
+    empty-hand: "&c Je hebt geen blok vast"
