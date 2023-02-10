@@ -24,13 +24,11 @@ import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Container;
-import org.bukkit.block.CreatureSpawner;
+import org.bukkit.block.*;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.bgsoftware.wildstacker.api.WildStackerAPI;
@@ -445,10 +443,16 @@ public class IslandLevelCalculator {
     }
 
     private void countItemStack(ItemStack i) {
-        if (i != null && i.getType().isBlock()) {
-            for (int c = 0; c < i.getAmount(); c++) {
-                checkBlock(i.getType(), false);
+        if (i == null || !i.getType().isBlock()) return;
+
+        for (int c = 0; c < i.getAmount(); c++) {
+            if (addon.getSettings().isIncludeShulkersInChest()
+                    && i.getItemMeta() instanceof BlockStateMeta blockStateMeta
+                    && blockStateMeta.getBlockState() instanceof ShulkerBox shulkerBox) {
+                shulkerBox.getSnapshotInventory().forEach(this::countItemStack);
             }
+
+            checkBlock(i.getType(), false);
         }
     }
 
