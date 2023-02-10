@@ -1,11 +1,11 @@
 package world.bentobox.level.calculators;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -65,9 +65,10 @@ public class IslandLevelCalculator {
      * @param str - equation to evaluate
      * @return value of equation
      */
-    private static double eval(final String str) {
+    private static double eval(final String str) throws IOException {
         return new Object() {
-            int pos = -1, ch;
+            int pos = -1;
+            int ch;
 
             boolean eat(int charToEat) {
                 while (ch == ' ') nextChar();
@@ -82,10 +83,10 @@ public class IslandLevelCalculator {
                 ch = (++pos < str.length()) ? str.charAt(pos) : -1;
             }
 
-            double parse() {
+            double parse() throws IOException {
                 nextChar();
                 double x = parseExpression();
-                if (pos < str.length()) throw new RuntimeException("Unexpected: " + (char)ch);
+                if (pos < str.length()) throw new IOException("Unexpected: " + (char)ch);
                 return x;
             }
 
@@ -95,7 +96,7 @@ public class IslandLevelCalculator {
             // factor = `+` factor | `-` factor | `(` expression `)`
             //        | number | functionName factor | factor `^` factor
 
-            double parseExpression() {
+            double parseExpression() throws IOException {
                 double x = parseTerm();
                 for (;;) {
                     if      (eat('+')) x += parseTerm(); // addition
@@ -104,7 +105,7 @@ public class IslandLevelCalculator {
                 }
             }
 
-            double parseFactor() {
+            double parseFactor() throws IOException {
                 if (eat('+')) return parseFactor(); // unary plus
                 if (eat('-')) return -parseFactor(); // unary minus
 
@@ -137,10 +138,10 @@ public class IslandLevelCalculator {
                         x = Math.log(x);
                         break;
                     default:
-                        throw new RuntimeException("Unknown function: " + func);
+                        throw new IOException("Unknown function: " + func);
                     }
                 } else {
-                    throw new RuntimeException("Unexpected: " + (char)ch);
+                    throw new IOException("Unexpected: " + (char)ch);
                 }
 
                 if (eat('^')) x = Math.pow(x, parseFactor()); // exponentiation
@@ -148,7 +149,7 @@ public class IslandLevelCalculator {
                 return x;
             }
 
-            double parseTerm() {
+            double parseTerm() throws IOException {
                 double x = parseFactor();
                 for (;;) {
                     if      (eat('*')) x *= parseFactor(); // multiplication
@@ -161,7 +162,7 @@ public class IslandLevelCalculator {
     private final Level addon;
     private final Queue<Pair<Integer, Integer>> chunksToCheck;
     private final Island island;
-    private final HashMap<Material, Integer> limitCount;
+    private final Map<Material, Integer> limitCount;
     private final CompletableFuture<Results> r;
 
 
@@ -190,7 +191,7 @@ public class IslandLevelCalculator {
         results = new Results();
         duration = System.currentTimeMillis();
         chunksToCheck = getChunksToScan(island);
-        this.limitCount = new HashMap<>(addon.getBlockConfig().getBlockLimits());
+        this.limitCount = new EnumMap<>(addon.getBlockConfig().getBlockLimits());
         // Get the initial island level
         results.initialLevel.set(addon.getInitialIslandLevel(island));
         // Set up the worlds
@@ -221,7 +222,15 @@ public class IslandLevelCalculator {
     private long calculateLevel(long blockAndDeathPoints) {
         String calcString = addon.getSettings().getLevelCalc();
         String withValues = calcString.replace("blocks", String.valueOf(blockAndDeathPoints)).replace("level_cost", String.valueOf(this.addon.getSettings().getLevelCost()));
-        return (long)eval(withValues) - (addon.getSettings().isZeroNewIslandLevels() ? results.initialLevel.get() : 0);
+        long evalWithValues;
+        try {
+            evalWithValues = (long)eval(withValues);
+            return evalWithValues - (addon.getSettings().isZeroNewIslandLevels() ? results.initialLevel.get() : 0);
+
+        } catch (IOException e) {
+            addon.getPlugin().logStacktrace(e);
+            return 0L;
+        }
     }
 
     /**
@@ -424,7 +433,7 @@ public class IslandLevelCalculator {
     private void scanChests(Chunk chunk) {
         // Count blocks in chests
         for (BlockState bs : chunk.getTileEntities()) {
-            if (bs instanceof Container) {
+            if (bs instanceof Container container) {
                 if (addon.isAdvChestEnabled()) {
                     AdvancedChest<?,?> aChest = AdvancedChestsAPI.getChestManager().getAdvancedChest(bs.getLocation());
                     if (aChest != null && aChest.getChestType().getName().equals("NORMAL")) {
@@ -437,7 +446,7 @@ public class IslandLevelCalculator {
                     }
                 }
                 // Regular chest
-                ((Container)bs).getSnapshotInventory().forEach(this::countItemStack);
+                container.getSnapshotInventory().forEach(this::countItemStack);
             }
         }
     }
@@ -513,7 +522,7 @@ public class IslandLevelCalculator {
                     }
                     // Hook for Wild Stackers (Blocks and Spawners Only) - this has to use the real chunk
                     if (addon.isStackersEnabled() && (blockData.getMaterial().equals(Material.CAULDRON) || blockData.getMaterial().equals(Material.SPAWNER))) {
-                        stackedBlocks.add(new Location(cp.world, x + cp.chunkSnapshot.getX() * 16,y,z + cp.chunkSnapshot.getZ() * 16));
+                        stackedBlocks.add(new Location(cp.world, (double)x + cp.chunkSnapshot.getX() * 16, y, (double)z + cp.chunkSnapshot.getZ() * 16));
                     }
                     // Scan chests
                     if (addon.getSettings().isIncludeChests() && CHESTS.contains(blockData.getMaterial())) {
@@ -564,21 +573,21 @@ public class IslandLevelCalculator {
     }
 
     private Collection<String> sortedReport(int total, Multiset<Material> materialCount) {
-        Collection<String> r = new ArrayList<>();
+        Collection<String> result = new ArrayList<>();
         Iterable<Multiset.Entry<Material>> entriesSortedByCount = Multisets.copyHighestCountFirst(materialCount).entrySet();
         for (Entry<Material> en : entriesSortedByCount) {
             Material type = en.getElement();
 
             int value = getValue(type);
 
-            r.add(type.toString() + ":"
+            result.add(type.toString() + ":"
                     + String.format("%,d", en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
             total += (value * en.getCount());
 
         }
-        r.add("Subtotal = " + total);
-        r.add(LINE_BREAK);
-        return r;
+        result.add("Subtotal = " + total);
+        result.add(LINE_BREAK);
+        return result;
     }
 
 
@@ -638,7 +647,7 @@ public class IslandLevelCalculator {
 
     public void scanIsland(Pipeliner pipeliner) {
         // Scan the next chunk
-        scanNextChunk().thenAccept(r -> {
+        scanNextChunk().thenAccept(result -> {
             if (!Bukkit.isPrimaryThread()) {
                 addon.getPlugin().logError("scanChunk not on Primary Thread!");
             }
@@ -653,7 +662,7 @@ public class IslandLevelCalculator {
                 }
                 return;
             }
-            if (Boolean.TRUE.equals(r) && !pipeliner.getTask().isCancelled()) {
+            if (Boolean.TRUE.equals(result) && !pipeliner.getTask().isCancelled()) {
                 // scanNextChunk returns true if there are more chunks to scan
                 scanIsland(pipeliner);
             } else {

@@ -1,16 +1,23 @@
 package world.bentobox.level.panels;
 
 
-import com.google.common.base.Enums;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
+
+import com.google.common.base.Enums;
 
 import lv.id.bonne.panelutils.PanelUtils;
+import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.TemplatedPanel;
 import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;
@@ -18,7 +25,6 @@ import world.bentobox.bentobox.api.panels.builders.TemplatedPanelBuilder;
 import world.bentobox.bentobox.api.panels.reader.ItemTemplateRecord;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
-import world.bentobox.bentobox.hooks.LangUtilsHook;
 import world.bentobox.bentobox.util.Pair;
 import world.bentobox.level.Level;
 import world.bentobox.level.objects.IslandLevels;
@@ -43,8 +49,8 @@ public class DetailsPanel
      * @param user User who opens panel
      */
     private DetailsPanel(Level addon,
-        World world,
-        User user)
+            World world,
+            User user)
     {
         this.addon = addon;
         this.world = world;
@@ -121,99 +127,93 @@ public class DetailsPanel
 
         switch (this.activeTab)
         {
-            case ALL_BLOCKS -> {
-                Map<Material, Integer> materialCountMap = new EnumMap<>(Material.class);
+        case ALL_BLOCKS -> {
+            Map<Material, Integer> materialCountMap = new EnumMap<>(Material.class);
 
-                materialCountMap.putAll(this.levelsData.getMdCount());
+            materialCountMap.putAll(this.levelsData.getMdCount());
 
-                // Add underwater blocks.
-                this.levelsData.getUwCount().forEach((material, count) -> {
-                    materialCountMap.put(material,
-                        materialCountMap.computeIfAbsent(material, key -> 0) + count);
-                });
+            // Add underwater blocks.
+            this.levelsData.getUwCount().forEach((material, count) -> materialCountMap.put(material,
+                    materialCountMap.computeIfAbsent(material, key -> 0) + count));
 
-                materialCountMap.entrySet().stream().sorted((Map.Entry.comparingByKey())).
-                    forEachOrdered(entry ->
-                        this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue())));
-            }
-            case ABOVE_SEA_LEVEL -> {
-                this.levelsData.getMdCount().entrySet().stream().sorted((Map.Entry.comparingByKey())).
-                    forEachOrdered(entry ->
-                        this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue())));
-            }
-            case UNDERWATER -> {
-                this.levelsData.getUwCount().entrySet().stream().sorted((Map.Entry.comparingByKey())).
-                    forEachOrdered(entry ->
-                        this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue())));
-            }
-            case SPAWNER -> {
-                int aboveWater = this.levelsData.getMdCount().getOrDefault(Material.SPAWNER, 0);
-                int underWater = this.levelsData.getUwCount().getOrDefault(Material.SPAWNER, 0);
+            materialCountMap.entrySet().stream().sorted((Map.Entry.comparingByKey())).
+            forEachOrdered(entry ->
+            this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue())));
+        }
+        case ABOVE_SEA_LEVEL -> this.levelsData.getMdCount().entrySet().stream().sorted((Map.Entry.comparingByKey()))
+        .forEachOrdered(entry -> this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue())));
 
-                // TODO: spawners need some touch...
-                this.materialCountList.add(new Pair<>(Material.SPAWNER, underWater + aboveWater));
-            }
+        case UNDERWATER -> this.levelsData.getUwCount().entrySet().stream().sorted((Map.Entry.comparingByKey()))
+        .forEachOrdered(entry -> this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue())));
+
+        case SPAWNER -> {
+            int aboveWater = this.levelsData.getMdCount().getOrDefault(Material.SPAWNER, 0);
+            int underWater = this.levelsData.getUwCount().getOrDefault(Material.SPAWNER, 0);
+
+            // TODO: spawners need some touch...
+            this.materialCountList.add(new Pair<>(Material.SPAWNER, underWater + aboveWater));
+        }
         }
 
         Comparator<Pair<Material, Integer>> sorter;
 
         switch (this.activeFilter)
         {
-            case COUNT ->
+        case COUNT ->
+        {
+            sorter = (o1, o2) ->
             {
-                sorter = (o1, o2) ->
-                {
-                    if (o1.getValue().equals(o2.getValue()))
-                    {
-                        String o1Name = Utils.prettifyObject(o1.getKey(), this.user);
-                        String o2Name = Utils.prettifyObject(o2.getKey(), this.user);
-
-                        return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
-                    }
-                    else
-                    {
-                        return Integer.compare(o2.getValue(), o1.getValue());
-                    }
-                };
-            }
-            case VALUE ->
-            {
-                sorter = (o1, o2) ->
-                {
-                    int blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(o1.getKey(), 0);
-                    int o1Count = blockLimit > 0 ? Math.min(o1.getValue(), blockLimit) : o1.getValue();
-
-                    blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(o2.getKey(), 0);
-                    int o2Count = blockLimit > 0 ? Math.min(o2.getValue(), blockLimit) : o2.getValue();
-
-                    long o1Value = (long) o1Count *
-                        this.addon.getBlockConfig().getBlockValues().getOrDefault(o1.getKey(), 0);
-                    long o2Value = (long) o2Count *
-                        this.addon.getBlockConfig().getBlockValues().getOrDefault(o2.getKey(), 0);
-
-                    if (o1Value == o2Value)
-                    {
-                        String o1Name = Utils.prettifyObject(o1.getKey(), this.user);
-                        String o2Name = Utils.prettifyObject(o2.getKey(), this.user);
-
-                        return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
-                    }
-                    else
-                    {
-                        return Long.compare(o2Value, o1Value);
-                    }
-                };
-            }
-            default ->
-            {
-                sorter = (o1, o2) ->
+                if (o1.getValue().equals(o2.getValue()))
                 {
                     String o1Name = Utils.prettifyObject(o1.getKey(), this.user);
                     String o2Name = Utils.prettifyObject(o2.getKey(), this.user);
 
                     return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
-                };
-            }
+                }
+                else
+                {
+                    return Integer.compare(o2.getValue(), o1.getValue());
+                }
+            };
+        }
+        case VALUE ->
+        {
+            sorter = (o1, o2) ->
+            {
+                int blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(o1.getKey(), 0);
+                int o1Count = blockLimit > 0 ? Math.min(o1.getValue(), blockLimit) : o1.getValue();
+
+                blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(o2.getKey(), 0);
+                int o2Count = blockLimit > 0 ? Math.min(o2.getValue(), blockLimit) : o2.getValue();
+
+                long o1Value = (long) o1Count *
+                        this.addon.getBlockConfig().getBlockValues().getOrDefault(o1.getKey(), 0);
+                long o2Value = (long) o2Count *
+                        this.addon.getBlockConfig().getBlockValues().getOrDefault(o2.getKey(), 0);
+
+                if (o1Value == o2Value)
+                {
+                    String o1Name = Utils.prettifyObject(o1.getKey(), this.user);
+                    String o2Name = Utils.prettifyObject(o2.getKey(), this.user);
+
+                    return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
+                }
+                else
+                {
+                    return Long.compare(o2Value, o1Value);
+                }
+            };
+        }
+        default ->
+        {
+            sorter = (o1, o2) ->
+            {
+                String o1Name = Utils.prettifyObject(o1.getKey(), this.user);
+                String o2Name = Utils.prettifyObject(o2.getKey(), this.user);
+
+                return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
+            };
+        }
         }
 
         this.materialCountList.sort(sorter);
@@ -222,9 +222,9 @@ public class DetailsPanel
     }
 
 
-// ---------------------------------------------------------------------
-// Section: Tab Button Type
-// ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
+    // Section: Tab Button Type
+    // ---------------------------------------------------------------------
 
 
     /**
@@ -262,23 +262,21 @@ public class DetailsPanel
         List<ItemTemplateRecord.ActionRecords> activeActions = new ArrayList<>(template.actions());
 
         activeActions.removeIf(action ->
-            "VIEW".equalsIgnoreCase(action.actionType()) && this.activeTab == tab);
+        "VIEW".equalsIgnoreCase(action.actionType()) && this.activeTab == tab);
 
         // Add Click handler
         builder.clickHandler((panel, user, clickType, i) ->
         {
             for (ItemTemplateRecord.ActionRecords action : activeActions)
             {
-                if (clickType == action.clickType() || ClickType.UNKNOWN.equals(action.clickType()))
+                if ((clickType == action.clickType() || ClickType.UNKNOWN.equals(action.clickType()))
+                        && "VIEW".equalsIgnoreCase(action.actionType()))
                 {
-                    if ("VIEW".equalsIgnoreCase(action.actionType()))
-                    {
-                        this.activeTab = tab;
+                    this.activeTab = tab;
 
-                        // Update filters.
-                        this.updateFilters();
-                        this.build();
-                    }
+                    // Update filters.
+                    this.updateFilters();
+                    this.build();
                 }
             }
 
@@ -287,10 +285,10 @@ public class DetailsPanel
 
         // Collect tooltips.
         List<String> tooltips = activeActions.stream().
-            filter(action -> action.tooltip() != null).
-            map(action -> this.user.getTranslation(this.world, action.tooltip())).
-            filter(text -> !text.isBlank()).
-            collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
+                filter(action -> action.tooltip() != null).
+                map(action -> this.user.getTranslation(this.world, action.tooltip())).
+                filter(text -> !text.isBlank()).
+                collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
 
         // Add tooltips.
         if (!tooltips.isEmpty())
@@ -398,10 +396,10 @@ public class DetailsPanel
 
         // Collect tooltips.
         List<String> tooltips = activeActions.stream().
-            filter(action -> action.tooltip() != null).
-            map(action -> this.user.getTranslation(this.world, action.tooltip())).
-            filter(text -> !text.isBlank()).
-            collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
+                filter(action -> action.tooltip() != null).
+                map(action -> this.user.getTranslation(this.world, action.tooltip())).
+                filter(text -> !text.isBlank()).
+                collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
 
         // Add tooltips.
         if (!tooltips.isEmpty())
@@ -417,9 +415,9 @@ public class DetailsPanel
     }
 
 
-// ---------------------------------------------------------------------
-// Section: Create common buttons
-// ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
+    // Section: Create common buttons
+    // ---------------------------------------------------------------------
 
 
     /**
@@ -434,7 +432,7 @@ public class DetailsPanel
         long size = this.materialCountList.size();
 
         if (size <= slot.amountMap().getOrDefault("BLOCK", 1) ||
-            1.0 * size / slot.amountMap().getOrDefault("BLOCK", 1) <= this.pageIndex + 1)
+                1.0 * size / slot.amountMap().getOrDefault("BLOCK", 1) <= this.pageIndex + 1)
         {
             // There are no next elements
             return null;
@@ -448,7 +446,7 @@ public class DetailsPanel
         {
             ItemStack clone = template.icon().clone();
 
-            if ((Boolean) template.dataMap().getOrDefault("indexing", false))
+            if (Boolean.TRUE.equals(template.dataMap().getOrDefault("indexing", false)))
             {
                 clone.setAmount(nextPageIndex);
             }
@@ -464,7 +462,7 @@ public class DetailsPanel
         if (template.description() != null)
         {
             builder.description(this.user.getTranslation(this.world, template.description(),
-                "[number]", String.valueOf(nextPageIndex)));
+                    TextVariables.NUMBER, String.valueOf(nextPageIndex)));
         }
 
         // Add ClickHandler
@@ -472,13 +470,11 @@ public class DetailsPanel
         {
             for (ItemTemplateRecord.ActionRecords action : template.actions())
             {
-                if (clickType == action.clickType() || ClickType.UNKNOWN.equals(action.clickType()))
+                if ((clickType == action.clickType() || ClickType.UNKNOWN.equals(action.clickType())) &&
+                        "NEXT".equalsIgnoreCase(action.actionType()))
                 {
-                    if ("NEXT".equalsIgnoreCase(action.actionType()))
-                    {
-                        this.pageIndex++;
-                        this.build();
-                    }
+                    this.pageIndex++;
+                    this.build();
                 }
             }
 
@@ -488,10 +484,10 @@ public class DetailsPanel
 
         // Collect tooltips.
         List<String> tooltips = template.actions().stream().
-            filter(action -> action.tooltip() != null).
-            map(action -> this.user.getTranslation(this.world, action.tooltip())).
-            filter(text -> !text.isBlank()).
-            collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
+                filter(action -> action.tooltip() != null).
+                map(action -> this.user.getTranslation(this.world, action.tooltip())).
+                filter(text -> !text.isBlank()).
+                collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
 
         // Add tooltips.
         if (!tooltips.isEmpty())
@@ -528,7 +524,7 @@ public class DetailsPanel
         {
             ItemStack clone = template.icon().clone();
 
-            if ((Boolean) template.dataMap().getOrDefault("indexing", false))
+            if (Boolean.TRUE.equals(template.dataMap().getOrDefault("indexing", false)))
             {
                 clone.setAmount(previousPageIndex);
             }
@@ -544,7 +540,7 @@ public class DetailsPanel
         if (template.description() != null)
         {
             builder.description(this.user.getTranslation(this.world, template.description(),
-                "[number]", String.valueOf(previousPageIndex)));
+                    TextVariables.NUMBER, String.valueOf(previousPageIndex)));
         }
 
         // Add ClickHandler
@@ -552,13 +548,11 @@ public class DetailsPanel
         {
             for (ItemTemplateRecord.ActionRecords action : template.actions())
             {
-                if (clickType == action.clickType() || ClickType.UNKNOWN.equals(action.clickType()))
+                if ((clickType == action.clickType() || ClickType.UNKNOWN.equals(action.clickType()))
+                        && "PREVIOUS".equalsIgnoreCase(action.actionType()))
                 {
-                    if ("PREVIOUS".equalsIgnoreCase(action.actionType()))
-                    {
-                        this.pageIndex--;
-                        this.build();
-                    }
+                    this.pageIndex--;
+                    this.build();
                 }
             }
 
@@ -568,10 +562,10 @@ public class DetailsPanel
 
         // Collect tooltips.
         List<String> tooltips = template.actions().stream().
-            filter(action -> action.tooltip() != null).
-            map(action -> this.user.getTranslation(this.world, action.tooltip())).
-            filter(text -> !text.isBlank()).
-            collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
+                filter(action -> action.tooltip() != null).
+                map(action -> this.user.getTranslation(this.world, action.tooltip())).
+                filter(text -> !text.isBlank()).
+                collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
 
         // Add tooltips.
         if (!tooltips.isEmpty())
@@ -585,9 +579,9 @@ public class DetailsPanel
     }
 
 
-// ---------------------------------------------------------------------
-// Section: Create Material Button
-// ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
+    // Section: Create Material Button
+    // ---------------------------------------------------------------------
 
 
     /**
@@ -625,7 +619,7 @@ public class DetailsPanel
      * @return PanelItem for generator tier.
      */
     private PanelItem createMaterialButton(ItemTemplateRecord template,
-        Pair<Material, Integer> materialCount)
+            Pair<Material, Integer> materialCount)
     {
         PanelItemBuilder builder = new PanelItemBuilder();
 
@@ -646,30 +640,30 @@ public class DetailsPanel
         if (template.title() != null)
         {
             builder.name(this.user.getTranslation(this.world, template.title(),
-                "[number]", String.valueOf(materialCount.getValue()),
-                "[material]", Utils.prettifyObject(materialCount.getKey(), this.user)));
+                    TextVariables.NUMBER, String.valueOf(materialCount.getValue()),
+                    "[material]", Utils.prettifyObject(materialCount.getKey(), this.user)));
         }
 
         String description = Utils.prettifyDescription(materialCount.getKey(), this.user);
 
         final String reference = "level.gui.buttons.material.";
         String blockId = this.user.getTranslationOrNothing(reference + "id",
-            "[id]", materialCount.getKey().name());
+                "[id]", materialCount.getKey().name());
 
         int blockValue = this.addon.getBlockConfig().getBlockValues().getOrDefault(materialCount.getKey(), 0);
         String value = blockValue > 0 ? this.user.getTranslationOrNothing(reference + "value",
-            "[number]", String.valueOf(blockValue)) : "";
+                TextVariables.NUMBER, String.valueOf(blockValue)) : "";
 
         int blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(materialCount.getKey(), 0);
         String limit = blockLimit > 0 ? this.user.getTranslationOrNothing(reference + "limit",
-            "[number]",  String.valueOf(blockLimit)) : "";
+                TextVariables.NUMBER,  String.valueOf(blockLimit)) : "";
 
         String count = this.user.getTranslationOrNothing(reference + "count",
-            "[number]", String.valueOf(materialCount.getValue()));
+                TextVariables.NUMBER, String.valueOf(materialCount.getValue()));
 
         long calculatedValue = (long) Math.min(blockLimit > 0 ? blockLimit : Integer.MAX_VALUE, materialCount.getValue()) * blockValue;
         String valueText = calculatedValue > 0 ? this.user.getTranslationOrNothing(reference + "calculated",
-            "[number]", String.valueOf(calculatedValue)) : "";
+                TextVariables.NUMBER, String.valueOf(calculatedValue)) : "";
 
         if (template.description() != null)
         {
@@ -680,18 +674,18 @@ public class DetailsPanel
                     "[calculated]", valueText,
                     "[limit]", limit,
                     "[count]", count).
-                replaceAll("(?m)^[ \\t]*\\r?\\n", "").
-                replaceAll("(?<!\\\\)\\|", "\n").
-                replaceAll("\\\\\\|", "|"));
+                    replaceAll("(?m)^[ \\t]*\\r?\\n", "").
+                    replaceAll("(?<!\\\\)\\|", "\n").
+                    replace("\\\\\\|", "|"));
         }
 
         return builder.build();
     }
 
 
-// ---------------------------------------------------------------------
-// Section: Other Methods
-// ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
+    // Section: Other Methods
+    // ---------------------------------------------------------------------
 
 
     /**
@@ -703,16 +697,16 @@ public class DetailsPanel
      * @param user User who opens panel
      */
     public static void openPanel(Level addon,
-        World world,
-        User user)
+            World world,
+            User user)
     {
         new DetailsPanel(addon, world, user).build();
     }
 
 
-// ---------------------------------------------------------------------
-// Section: Enums
-// ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
+    // Section: Enums
+    // ---------------------------------------------------------------------
 
 
     /**
@@ -759,9 +753,9 @@ public class DetailsPanel
     }
 
 
-// ---------------------------------------------------------------------
-// Section: Variables
-// ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
+    // Section: Variables
+    // ---------------------------------------------------------------------
 
     /**
      * This variable holds targeted island.

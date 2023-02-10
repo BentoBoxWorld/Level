@@ -6,14 +6,18 @@
 package world.bentobox.level.panels;
 
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.event.inventory.ClickType;
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
 
 import world.bentobox.bentobox.api.addons.GameModeAddon;
+import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.TemplatedPanel;
 import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;
@@ -31,9 +35,11 @@ import world.bentobox.level.util.Utils;
  */
 public class TopLevelPanel
 {
-// ---------------------------------------------------------------------
-// Section: Internal Constructor
-// ---------------------------------------------------------------------
+
+
+    // ---------------------------------------------------------------------
+    // Section: Internal Constructor
+    // ---------------------------------------------------------------------
 
 
     /**
@@ -53,11 +59,11 @@ public class TopLevelPanel
         this.iconPermission = permissionPrefix + "level.icon";
 
         this.topIslands = this.addon.getManager().getTopTen(this.world, 10).entrySet().stream().
-            map(entry -> {
-                Island island = this.addon.getIslandsManager().getIsland(this.world, entry.getKey());
-                return new IslandTopRecord(island, entry.getValue());
-            }).
-            collect(Collectors.toList());
+                map(entry -> {
+                    Island island = this.addon.getIslandsManager().getIsland(this.world, entry.getKey());
+                    return new IslandTopRecord(island, entry.getValue());
+                }).
+                collect(Collectors.toList());
     }
 
 
@@ -82,9 +88,9 @@ public class TopLevelPanel
     }
 
 
-// ---------------------------------------------------------------------
-// Section: Methods
-// ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
+    // Section: Methods
+    // ---------------------------------------------------------------------
 
 
     /**
@@ -100,8 +106,6 @@ public class TopLevelPanel
             return null;
         }
 
-        final String reference = "level.gui.buttons.island.";
-
         PanelItemBuilder builder = new PanelItemBuilder();
 
         if (template.icon() != null)
@@ -112,18 +116,18 @@ public class TopLevelPanel
         if (template.title() != null)
         {
             builder.name(this.user.getTranslation(this.world, template.title(),
-                "[name]", String.valueOf(index)));
+                    TextVariables.NAME, String.valueOf(index)));
         }
         else
         {
-            builder.name(this.user.getTranslation(this.world, reference,
-                "[name]", String.valueOf(index)));
+            builder.name(this.user.getTranslation(this.world, REFERENCE,
+                    TextVariables.NAME, String.valueOf(index)));
         }
 
         if (template.description() != null)
         {
             builder.description(this.user.getTranslation(this.world, template.description(),
-                "[number]", String.valueOf(index)));
+                    TextVariables.NUMBER, String.valueOf(index)));
         }
 
         builder.amount(index != 0 ? (int) index : 1);
@@ -189,23 +193,23 @@ public class TopLevelPanel
         {
             switch (action.actionType().toUpperCase())
             {
-                case "WARP" -> {
-                    return island.getOwner() == null ||
+            case "WARP" -> {
+                return island.getOwner() == null ||
                         this.addon.getWarpHook() == null ||
                         !this.addon.getWarpHook().getWarpSignsManager().hasWarp(this.world, island.getOwner());
-                }
-                case "VISIT" -> {
-                    return island.getOwner() == null ||
+            }
+            case "VISIT" -> {
+                return island.getOwner() == null ||
                         this.addon.getVisitHook() == null ||
                         !this.addon.getVisitHook().getAddonManager().preprocessTeleportation(this.user, island);
-                }
-                case "VIEW" -> {
-                    return island.getOwner() == null ||
+            }
+            case "VIEW" -> {
+                return island.getOwner() == null ||
                         !island.getMemberSet(RanksManager.MEMBER_RANK).contains(this.user.getUniqueId());
-                }
-                default -> {
-                    return false;
-                }
+            }
+            default -> {
+                return false;
+            }
             }
         });
 
@@ -218,33 +222,38 @@ public class TopLevelPanel
                 {
                     switch (action.actionType().toUpperCase())
                     {
-                        case "WARP" -> {
-                            this.user.closeInventory();
-                            this.addon.getWarpHook().getWarpSignsManager().warpPlayer(this.world, this.user, island.getOwner());
-                        }
-                        case "VISIT" -> {
-                            // The command call implementation solves necessity to check for all visits options,
-                            // like cool down, confirmation and preprocess in single go. Would it be better to write
-                            // all logic here?
+                    case "WARP" -> {
+                        this.user.closeInventory();
+                        this.addon.getWarpHook().getWarpSignsManager().warpPlayer(this.world, this.user, island.getOwner());
+                    }
+                    case "VISIT" ->
+                    // The command call implementation solves necessity to check for all visits options,
+                    // like cool down, confirmation and preprocess in single go. Would it be better to write
+                    // all logic here?
 
-                            this.addon.getPlugin().getIWM().getAddon(this.world).
-                                flatMap(GameModeAddon::getPlayerCommand).ifPresent(command ->
-                                {
-                                    String mainCommand =
-                                        this.addon.getVisitHook().getSettings().getPlayerMainCommand();
+                    this.addon.getPlugin().getIWM().getAddon(this.world).
+                    flatMap(GameModeAddon::getPlayerCommand).ifPresent(command ->
+                    {
+                        String mainCommand =
+                                this.addon.getVisitHook().getSettings().getPlayerMainCommand();
 
-                                    if (!mainCommand.isBlank())
-                                    {
-                                        this.user.closeInventory();
-                                        this.user.performCommand(command.getTopLabel() + " " + mainCommand + " " + island.getOwner());
-                                    }
-                                });
-                        }
-                        case "VIEW" -> {
+                        if (!mainCommand.isBlank())
+                        {
                             this.user.closeInventory();
-                            // Open Detailed GUI.
-                            DetailsPanel.openPanel(this.addon, this.world, this.user);
+                            this.user.performCommand(command.getTopLabel() + " " + mainCommand + " " + island.getOwner());
                         }
+                    });
+
+                    case "VIEW" -> {
+                        this.user.closeInventory();
+                        // Open Detailed GUI.
+                        DetailsPanel.openPanel(this.addon, this.world, this.user);
+                    }
+                    // Catch default
+                    default -> {
+                        this.user.closeInventory();
+                        addon.logError("Unknown action type " + action.actionType().toUpperCase());
+                    }
                     }
                 }
             }
@@ -254,10 +263,10 @@ public class TopLevelPanel
 
         // Collect tooltips.
         List<String> tooltips = activeActions.stream().
-            filter(action -> action.tooltip() != null).
-            map(action -> this.user.getTranslation(this.world, action.tooltip())).
-            filter(text -> !text.isBlank()).
-            collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
+                filter(action -> action.tooltip() != null).
+                map(action -> this.user.getTranslation(this.world, action.tooltip())).
+                filter(text -> !text.isBlank()).
+                collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
 
         // Add tooltips.
         if (!tooltips.isEmpty())
@@ -278,22 +287,21 @@ public class TopLevelPanel
      * @param template the template
      * @param island the island
      */
-    private void populateIslandTitle(PanelItemBuilder builder, 
-        ItemTemplateRecord template, 
-        Island island)
+    private void populateIslandTitle(PanelItemBuilder builder,
+            ItemTemplateRecord template,
+            Island island)
     {
-        final String reference = "level.gui.buttons.island.";
 
         // Get Island Name
         String nameText;
 
         if (island.getName() == null || island.getName().isEmpty())
         {
-            nameText = this.user.getTranslation(reference + "owners-island",
-                "[player]",
-                island.getOwner() == null ?
-                    this.user.getTranslation(reference + "unknown") :
-                    this.addon.getPlayers().getName(island.getOwner()));
+            nameText = this.user.getTranslation(REFERENCE + "owners-island",
+                    PLAYER,
+                    island.getOwner() == null ?
+                            this.user.getTranslation(REFERENCE + "unknown") :
+                                this.addon.getPlayers().getName(island.getOwner()));
         }
         else
         {
@@ -304,11 +312,11 @@ public class TopLevelPanel
         if (template.title() != null && !template.title().isBlank())
         {
             builder.name(this.user.getTranslation(this.world, template.title(),
-                "[name]", nameText));
+                    TextVariables.NAME, nameText));
         }
         else
         {
-            builder.name(this.user.getTranslation(reference + "name", "[name]", nameText));
+            builder.name(this.user.getTranslation(REFERENCE + "name", TextVariables.NAME, nameText));
         }
     }
 
@@ -321,11 +329,11 @@ public class TopLevelPanel
      * @param island the island
      */
     private void populateIslandIcon(PanelItemBuilder builder,
-        ItemTemplateRecord template,
-        Island island)
+            ItemTemplateRecord template,
+            Island island)
     {
         User owner = island.getOwner() == null ? null : User.getInstance(island.getOwner());
-        
+
         // Get permission or island icon
         String permissionIcon = owner == null ? null :
             Utils.getPermissionValue(owner, this.iconPermission, null);
@@ -376,20 +384,18 @@ public class TopLevelPanel
      * @param islandTopRecord the top record object
      * @param index place index.
      */
-    private void populateIslandDescription(PanelItemBuilder builder, 
-        ItemTemplateRecord template,
-        Island island, 
-        IslandTopRecord islandTopRecord,
-        int index)
+    private void populateIslandDescription(PanelItemBuilder builder,
+            ItemTemplateRecord template,
+            Island island,
+            IslandTopRecord islandTopRecord,
+            int index)
     {
-        final String reference = "level.gui.buttons.island.";
-
         // Get Owner Name
-        String ownerText = this.user.getTranslation(reference + "owner",
-            "[player]",
-            island.getOwner() == null ?
-                this.user.getTranslation(reference + "unknown") :
-                this.addon.getPlayers().getName(island.getOwner()));
+        String ownerText = this.user.getTranslation(REFERENCE + "owner",
+                PLAYER,
+                island.getOwner() == null ?
+                        this.user.getTranslation(REFERENCE + "unknown") :
+                            this.addon.getPlayers().getName(island.getOwner()));
 
         // Get Members Text
         String memberText;
@@ -397,11 +403,11 @@ public class TopLevelPanel
         if (island.getMemberSet().size() > 1)
         {
             StringBuilder memberBuilder = new StringBuilder(
-                this.user.getTranslationOrNothing(reference + "members-title"));
+                    this.user.getTranslationOrNothing(REFERENCE + "members-title"));
 
             for (UUID uuid : island.getMemberSet())
             {
-                User user = User.getInstance(uuid);
+                User member = User.getInstance(uuid);
 
                 if (memberBuilder.length() > 0)
                 {
@@ -409,8 +415,8 @@ public class TopLevelPanel
                 }
 
                 memberBuilder.append(
-                    this.user.getTranslationOrNothing(reference + "member",
-                        "[player]", user.getName()));
+                        this.user.getTranslationOrNothing(REFERENCE + "member",
+                                PLAYER, member.getName()));
             }
 
             memberText = memberBuilder.toString();
@@ -420,11 +426,11 @@ public class TopLevelPanel
             memberText = "";
         }
 
-        String placeText = this.user.getTranslation(reference + "place",
-            "[number]", String.valueOf(index));
+        String placeText = this.user.getTranslation(REFERENCE + "place",
+                TextVariables.NUMBER, String.valueOf(index));
 
-        String levelText = this.user.getTranslation(reference + "level",
-            "[number]", this.addon.getManager().formatLevel(islandTopRecord.level()));
+        String levelText = this.user.getTranslation(REFERENCE + "level",
+                TextVariables.NUMBER, this.addon.getManager().formatLevel(islandTopRecord.level()));
 
         // Template specific description is always more important than custom one.
         if (template.description() != null && !template.description().isBlank())
@@ -434,26 +440,26 @@ public class TopLevelPanel
                     "[members]", memberText,
                     "[level]", levelText,
                     "[place]", placeText).
-                replaceAll("(?m)^[ \\t]*\\r?\\n", "").
-                replaceAll("(?<!\\\\)\\|", "\n").
-                replaceAll("\\\\\\|", "|"));
+                    replaceAll("(?m)^[ \\t]*\\r?\\n", "").
+                    replaceAll("(?<!\\\\)\\|", "\n").
+                    replace("\\\\\\|", "|")); // Not a regex - replace is more efficient
         }
         else
         {
             // Now combine everything.
-            String descriptionText = this.user.getTranslation(reference + "description",
-                "[owner]", ownerText,
-                "[members]", memberText,
-                "[level]", levelText,
-                "[place]", placeText);
+            String descriptionText = this.user.getTranslation(REFERENCE + "description",
+                    "[owner]", ownerText,
+                    "[members]", memberText,
+                    "[level]", levelText,
+                    "[place]", placeText);
 
             builder.description(descriptionText.
-                replaceAll("(?m)^[ \\t]*\\r?\\n", "").
-                replaceAll("(?<!\\\\)\\|", "\n").
-                replaceAll("\\\\\\|", "|"));
+                    replaceAll("(?m)^[ \\t]*\\r?\\n", "").
+                    replaceAll("(?<!\\\\)\\|", "\n").
+                    replace("\\\\\\|", "|")); // Not a regex - replace is more efficient
         }
     }
-    
+
 
     /**
      * Create viewer button panel item.
@@ -473,11 +479,11 @@ public class TopLevelPanel
         int place = this.addon.getManager().getRank(this.world, this.user.getUniqueId());
         long level = this.addon.getIslandLevel(this.world, island.getOwner());
 
-        IslandTopRecord record = new IslandTopRecord(island, level);
+        IslandTopRecord topRecord = new IslandTopRecord(island, level);
 
-        return this.createIslandIcon(template, record, place);
+        return this.createIslandIcon(template, topRecord, place);
     }
-    
+
 
     /**
      * This method is used to open UserPanel outside this class. It will be much easier to open panel with single method
@@ -493,11 +499,16 @@ public class TopLevelPanel
         new TopLevelPanel(addon, user, world, permissionPrefix).build();
     }
 
+    // ---------------------------------------------------------------------
+    // Section: Constants
+    // ---------------------------------------------------------------------
 
-// ---------------------------------------------------------------------
-// Section: Record
-// ---------------------------------------------------------------------
+    private static final String REFERENCE = "level.gui.buttons.island.";
+    private static final String PLAYER = "[player]";
 
+    // ---------------------------------------------------------------------
+    // Section: Record
+    // ---------------------------------------------------------------------
 
     /**
      * This record is used internally. It converts user -> level to island -> level.
@@ -505,9 +516,9 @@ public class TopLevelPanel
     private record IslandTopRecord(Island island, Long level) {}
 
 
-// ---------------------------------------------------------------------
-// Section: Variables
-// ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
+    // Section: Variables
+    // ---------------------------------------------------------------------
 
     /**
      * This variable allows to access addon object.

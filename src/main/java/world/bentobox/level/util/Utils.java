@@ -7,10 +7,10 @@
 package world.bentobox.level.util;
 
 
+import java.util.List;
+
 import org.bukkit.Material;
 import org.bukkit.permissions.PermissionAttachmentInfo;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.hooks.LangUtilsHook;
@@ -18,6 +18,10 @@ import world.bentobox.bentobox.hooks.LangUtilsHook;
 
 public class Utils
 {
+    private static final String LEVEL_MATERIALS = "level.materials.";
+
+    private Utils() {} // Private constructor as this is a utility class only with static methods
+
     /**
      * This method sends a message to the user with appended "prefix" text before message.
      * @param user User who receives message.
@@ -27,7 +31,7 @@ public class Utils
     public static void sendMessage(User user, String translationText, String... parameters)
     {
         user.sendMessage(user.getTranslation( "level.conversations.prefix") +
-            user.getTranslation( translationText, parameters));
+                user.getTranslation( translationText, parameters));
     }
 
 
@@ -52,9 +56,9 @@ public class Utils
             String permPrefix = permissionPrefix + ".";
 
             List<String> permissions = user.getEffectivePermissions().stream().
-                map(PermissionAttachmentInfo::getPermission).
-                filter(permission -> permission.startsWith(permPrefix)).
-                collect(Collectors.toList());
+                    map(PermissionAttachmentInfo::getPermission).
+                    filter(permission -> permission.startsWith(permPrefix)).
+                    toList();
 
             for (String permission : permissions)
             {
@@ -154,7 +158,7 @@ public class Utils
         //   materials:
         //     [material]:
         //       name: [name]
-        String translation = user.getTranslationOrNothing("level.materials." + object.name().toLowerCase() + ".name");
+        String translation = user.getTranslationOrNothing(LEVEL_MATERIALS + object.name().toLowerCase() + ".name");
 
         if (!translation.isEmpty())
         {
@@ -167,7 +171,7 @@ public class Utils
         //   materials:
         //     [material]: [name]
 
-        translation = user.getTranslationOrNothing("level.materials." + object.name().toLowerCase());
+        translation = user.getTranslationOrNothing(LEVEL_MATERIALS + object.name().toLowerCase());
 
         if (!translation.isEmpty())
         {
@@ -211,7 +215,7 @@ public class Utils
         //   materials:
         //     [material]:
         //       description: [text]
-        String translation = user.getTranslationOrNothing("level.materials." + object.name().toLowerCase() + ".description");
+        String translation = user.getTranslationOrNothing(LEVEL_MATERIALS + object.name().toLowerCase() + ".description");
 
         if (!translation.isEmpty())
         {

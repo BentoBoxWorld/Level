@@ -19,6 +19,7 @@ import world.bentobox.level.util.Utils;
 
 public class IslandValueCommand extends CompositeCommand
 {
+    private static final String MATERIAL = "[material]";
     private final Level addon;
 
 
@@ -45,7 +46,7 @@ public class IslandValueCommand extends CompositeCommand
         if (args.size() > 1)
         {
             this.showHelp(this, user);
-            return true;
+            return false;
         }
 
         if (args.isEmpty())
@@ -73,8 +74,8 @@ public class IslandValueCommand extends CompositeCommand
             if (material == null)
             {
                 Utils.sendMessage(user,
-                    user.getTranslation(this.getWorld(), "level.conversations.unknown-item",
-                        "[material]", args.get(0)));
+                        user.getTranslation(this.getWorld(), "level.conversations.unknown-item",
+                                MATERIAL, args.get(0)));
             }
             else
             {
@@ -98,24 +99,24 @@ public class IslandValueCommand extends CompositeCommand
         if (value != null)
         {
             Utils.sendMessage(user,
-                user.getTranslation(this.getWorld(), "level.conversations.value",
-                    "[value]", String.valueOf(value),
-                    "[material]", Utils.prettifyObject(material, user)));
+                    user.getTranslation(this.getWorld(), "level.conversations.value",
+                            "[value]", String.valueOf(value),
+                            MATERIAL, Utils.prettifyObject(material, user)));
 
             double underWater = this.addon.getSettings().getUnderWaterMultiplier();
 
             if (underWater > 1.0)
             {
                 Utils.sendMessage(user,
-                    user.getTranslation(this.getWorld(),"level.conversations.success-underwater",
-                        "[value]", (underWater * value) + ""),
-                    "[material]", Utils.prettifyObject(material, user));
+                        user.getTranslation(this.getWorld(),"level.conversations.success-underwater",
+                                "[value]", (underWater * value) + ""),
+                        MATERIAL, Utils.prettifyObject(material, user));
             }
         }
         else
         {
             Utils.sendMessage(user,
-                user.getTranslation(this.getWorld(),"level.conversations.no-value"));
+                    user.getTranslation(this.getWorld(),"level.conversations.no-value"));
         }
     }
 
@@ -132,8 +133,8 @@ public class IslandValueCommand extends CompositeCommand
         }
 
         List<String> options = new ArrayList<>(Arrays.stream(Material.values()).
-            filter(Material::isBlock).
-            map(Material::name).toList());
+                filter(Material::isBlock).
+                map(Material::name).toList());
 
         options.add("HAND");
 
