@@ -2,7 +2,6 @@ package world.bentobox.level.commands;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.localization.TextVariables;
@@ -60,6 +59,6 @@ public class AdminTopRemoveCommand extends CompositeCommand {
     @Override
     public Optional<List<String>> tabComplete(User user, String alias, List<String> args) {
         return Optional.of(addon.getManager().getTopTen(getWorld(), Level.TEN).keySet().stream().map(addon.getPlayers()::getName)
-                .filter(n -> !n.isEmpty()).collect(Collectors.toList()));
+                .filter(n -> !n.isEmpty()).toList());
     }
 }

@@ -36,8 +36,8 @@ import world.bentobox.level.config.BlockConfig;
 import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
-import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.listeners.MigrationListener;
+import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.objects.TopTenData;
 import world.bentobox.level.requests.LevelRequestHandler;
@@ -176,20 +176,14 @@ public class Level extends Addon {
         {
             this.visitHook = (VisitAddon) addon;
             this.log("Level Addon hooked into Visit addon.");
-        }, () ->
-        {
-            this.visitHook = null;
-        });
+        }, () -> this.visitHook = null);
 
         // Try to find Warps addon and if it does not exist, display a warning
         this.getAddonByName("Warps").ifPresentOrElse(addon ->
         {
             this.warpHook = (Warp) addon;
             this.log("Level Addon hooked into Warps addon.");
-        }, () ->
-        {
-            this.warpHook = null;
-        });
+        }, () -> this.warpHook = null);
     }
 
 
@@ -230,9 +224,9 @@ public class Level extends Addon {
         getPlugin().getPlaceholdersManager().registerPlaceholder(this,
                 gm.getDescription().getName().toLowerCase() + "_island_total_points",
                 user -> {
-                IslandLevels data = getManager().getLevelsData(this.getIslands().getIsland(gm.getOverWorld(), user));
-                return data.getTotalPoints()+"";
-            });
+                    IslandLevels data = getManager().getLevelsData(this.getIslands().getIsland(gm.getOverWorld(), user));
+                    return data.getTotalPoints()+"";
+                });
 
         getPlugin().getPlaceholdersManager().registerPlaceholder(this,
                 gm.getDescription().getName().toLowerCase() + "_points_to_next_level",
@@ -478,7 +472,7 @@ public class Level extends Addon {
      * @param playerUUID - the target island member's UUID
      * @deprecated Do not use this anymore. Use getManager().calculateLevel(playerUUID, island)
      */
-    @Deprecated
+    @Deprecated(since="2.3.0", forRemoval=true)
     public void calculateIslandLevel(World world, @Nullable User user, @NonNull UUID playerUUID) {
         Island island = getIslands().getIsland(world, playerUUID);
         if (island != null) getManager().calculateLevel(playerUUID, island);
@@ -490,7 +484,7 @@ public class Level extends Addon {
      * @return LevelsData object or null if not found. Only island levels are set!
      * @deprecated Do not use this anymore. Use {@link #getIslandLevel(World, UUID)}
      */
-    @Deprecated
+    @Deprecated(since="2.3.0", forRemoval=true)
     public LevelsData getLevelsData(UUID targetPlayer) {
         LevelsData ld = new LevelsData(targetPlayer);
         getPlugin().getAddonsManager().getGameModeAddons().stream()

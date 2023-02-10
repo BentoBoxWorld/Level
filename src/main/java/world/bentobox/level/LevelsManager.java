@@ -152,8 +152,6 @@ public class LevelsManager {
         addon.getPipeliner().addIsland(island).thenAccept(r -> {
             // Results are irrelevant because the island is unowned or deleted, or IslandLevelCalcEvent is cancelled
             if (r == null || fireIslandLevelCalcEvent(targetPlayer, island, r)) {
-                System.out.println("results are null or event canceled");
-
                 result.complete(null);
             }
             // Save result
@@ -337,7 +335,7 @@ public class LevelsManager {
                 .filter(e -> addon.getIslands().isOwner(world, e.getKey()))
                 .filter(l -> l.getValue() > 0)
                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
-        return stream.takeWhile(x -> !x.getKey().equals(uuid)).map(Map.Entry::getKey).collect(Collectors.toList()).size() + 1;
+        return (int) (stream.takeWhile(x -> !x.getKey().equals(uuid)).map(Map.Entry::getKey).count() + 1);
     }
 
     /**
@@ -363,10 +361,7 @@ public class LevelsManager {
                     addon.getIslands().getIslandById(il.getUniqueId()).ifPresent(i -> this.addToTopTen(i, il.getLevel()));
                 }
             });
-            topTenLists.keySet().forEach(w -> {
-                addon.log("Generated rankings for " + w.getName());
-            });
-
+            topTenLists.keySet().forEach(w -> addon.log("Generated rankings for " + w.getName()));
         });
     }
 

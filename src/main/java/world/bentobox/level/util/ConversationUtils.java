@@ -7,10 +7,16 @@
 package world.bentobox.level.util;
 
 
-import org.bukkit.conversations.*;
+import java.util.function.Consumer;
+
+import org.bukkit.conversations.ConversationAbandonedListener;
+import org.bukkit.conversations.ConversationContext;
+import org.bukkit.conversations.ConversationFactory;
+import org.bukkit.conversations.MessagePrompt;
+import org.bukkit.conversations.Prompt;
+import org.bukkit.conversations.StringPrompt;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import java.util.function.Consumer;
 
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.user.User;
@@ -18,10 +24,11 @@ import world.bentobox.bentobox.api.user.User;
 
 public class ConversationUtils
 {
-// ---------------------------------------------------------------------
-// Section: Conversation API implementation
-// ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
+    // Section: Conversation API implementation
+    // ---------------------------------------------------------------------
 
+    private ConversationUtils() {} // Private constructor as this is a utility class only with static methods
 
     /**
      * This method will close opened gui and writes question in chat. After players answers on question in chat, message
@@ -32,9 +39,9 @@ public class ConversationUtils
      * @param user User who is targeted with current confirmation.
      */
     public static void createStringInput(Consumer<String> consumer,
-        User user,
-        @NonNull String question,
-        @Nullable String successMessage)
+            User user,
+            @NonNull String question,
+            @Nullable String successMessage)
     {
         // Text input message.
         StringPrompt stringPrompt = new StringPrompt()
@@ -56,16 +63,16 @@ public class ConversationUtils
         };
 
         new ConversationFactory(BentoBox.getInstance()).
-            withPrefix(context -> user.getTranslation("level.conversations.prefix")).
-            withFirstPrompt(stringPrompt).
-            // On cancel conversation will be closed.
-                withLocalEcho(false).
-            withTimeout(90).
-            withEscapeSequence(user.getTranslation("level.conversations.cancel-string")).
-            // Use null value in consumer to detect if user has abandoned conversation.
-                addConversationAbandonedListener(ConversationUtils.getAbandonListener(consumer, user)).
-            buildConversation(user.getPlayer()).
-            begin();
+        withPrefix(context -> user.getTranslation("level.conversations.prefix")).
+        withFirstPrompt(stringPrompt).
+        // On cancel conversation will be closed.
+        withLocalEcho(false).
+        withTimeout(90).
+        withEscapeSequence(user.getTranslation("level.conversations.cancel-string")).
+        // Use null value in consumer to detect if user has abandoned conversation.
+        addConversationAbandonedListener(ConversationUtils.getAbandonListener(consumer, user)).
+        buildConversation(user.getPlayer()).
+        begin();
     }
 
 
@@ -111,7 +118,7 @@ public class ConversationUtils
                 consumer.accept(null);
                 // send cancell message
                 abandonedEvent.getContext().getForWhom().sendRawMessage(
-                    user.getTranslation("level.conversations.prefix") +
+                        user.getTranslation("level.conversations.prefix") +
                         user.getTranslation("level.conversations.cancelled"));
             }
         };
