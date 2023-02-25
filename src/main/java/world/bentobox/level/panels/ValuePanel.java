@@ -17,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import com.google.common.base.Enums;
 
 import lv.id.bonne.panelutils.PanelUtils;
+import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.TemplatedPanel;
 import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;
@@ -33,6 +34,7 @@ import world.bentobox.level.util.Utils;
  */
 public class ValuePanel
 {
+
     // ---------------------------------------------------------------------
     // Section: Internal Constructor
     // ---------------------------------------------------------------------
@@ -46,8 +48,8 @@ public class ValuePanel
      * @param user User who opens panel
      */
     private ValuePanel(Level addon,
-        World world,
-        User user)
+            World world,
+            User user)
     {
         this.addon = addon;
         this.world = world;
@@ -55,18 +57,18 @@ public class ValuePanel
 
         this.activeFilter = Filter.NAME_ASC;
         this.materialRecordList = Arrays.stream(Material.values()).
-            filter(Material::isBlock).
-            filter(m -> !m.name().startsWith("LEGACY_")).
-            map(material ->
-            {
-                Integer value = this.addon.getBlockConfig().getValue(this.world, material);
-                Integer limit = this.addon.getBlockConfig().getBlockLimits().get(material);
+                filter(Material::isBlock).
+                filter(m -> !m.name().startsWith("LEGACY_")).
+                map(material ->
+                {
+                    Integer value = this.addon.getBlockConfig().getValue(this.world, material);
+                    Integer limit = this.addon.getBlockConfig().getBlockLimits().get(material);
 
-                return new MaterialRecord(material,
-                    value != null ? value : 0,
-                    limit != null ? limit : 0);
-            }).
-            collect(Collectors.toList());
+                    return new MaterialRecord(material,
+                            value != null ? value : 0,
+                                    limit != null ? limit : 0);
+                }).
+                collect(Collectors.toList());
 
         this.elementList = new ArrayList<>(Material.values().length);
         this.searchText = "";
@@ -89,7 +91,7 @@ public class ValuePanel
 
         panelBuilder.registerTypeBuilder("NEXT", this::createNextButton);
         panelBuilder.registerTypeBuilder("PREVIOUS", this::createPreviousButton);
-        panelBuilder.registerTypeBuilder("BLOCK", this::createMaterialButton);
+        panelBuilder.registerTypeBuilder(BLOCK, this::createMaterialButton);
 
         panelBuilder.registerTypeBuilder("FILTER", this::createFilterButton);
         panelBuilder.registerTypeBuilder("SEARCH", this::createSearchButton);
@@ -108,60 +110,60 @@ public class ValuePanel
 
         switch (this.activeFilter)
         {
-            case VALUE_ASC ->
-            {
-                sorter = (o1, o2) ->
-                {
-                    if (o1.value().equals(o2.value()))
-                    {
-                        String o1Name = Utils.prettifyObject(o1.material(), this.user);
-                        String o2Name = Utils.prettifyObject(o2.material(), this.user);
+        case VALUE_ASC ->
 
-                        return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
-                    }
-                    else
-                    {
-                        return Integer.compare(o1.value(), o2.value());
-                    }
-                };
-            }
-            case VALUE_DESC ->
+        sorter = (o1, o2) ->
+        {
+            if (o1.value().equals(o2.value()))
             {
-                sorter = (o1, o2) ->
-                {
-                    if (o1.value().equals(o2.value()))
-                    {
-                        String o1Name = Utils.prettifyObject(o1.material(), this.user);
-                        String o2Name = Utils.prettifyObject(o2.material(), this.user);
+                String o1Name = Utils.prettifyObject(o1.material(), this.user);
+                String o2Name = Utils.prettifyObject(o2.material(), this.user);
 
-                        return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
-                    }
-                    else
-                    {
-                        return Integer.compare(o2.value(), o1.value());
-                    }
-                };
+                return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
             }
-            case NAME_DESC ->
+            else
             {
-                sorter = (o1, o2) ->
-                {
-                    String o1Name = Utils.prettifyObject(o1.material(), this.user);
-                    String o2Name = Utils.prettifyObject(o2.material(), this.user);
-
-                    return String.CASE_INSENSITIVE_ORDER.compare(o2Name, o1Name);
-                };
+                return Integer.compare(o1.value(), o2.value());
             }
-            default ->
+        };
+
+        case VALUE_DESC ->
+
+        sorter = (o1, o2) ->
+        {
+            if (o1.value().equals(o2.value()))
             {
-                sorter = (o1, o2) ->
-                {
-                    String o1Name = Utils.prettifyObject(o1.material(), this.user);
-                    String o2Name = Utils.prettifyObject(o2.material(), this.user);
+                String o1Name = Utils.prettifyObject(o1.material(), this.user);
+                String o2Name = Utils.prettifyObject(o2.material(), this.user);
 
-                    return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
-                };
+                return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
             }
+            else
+            {
+                return Integer.compare(o2.value(), o1.value());
+            }
+        };
+
+        case NAME_DESC ->
+
+        sorter = (o1, o2) ->
+        {
+            String o1Name = Utils.prettifyObject(o1.material(), this.user);
+            String o2Name = Utils.prettifyObject(o2.material(), this.user);
+
+            return String.CASE_INSENSITIVE_ORDER.compare(o2Name, o1Name);
+        };
+
+        default ->
+
+        sorter = (o1, o2) ->
+        {
+            String o1Name = Utils.prettifyObject(o1.material(), this.user);
+            String o2Name = Utils.prettifyObject(o2.material(), this.user);
+
+            return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
+        };
+
         }
 
         this.materialRecordList.sort(sorter);
@@ -171,12 +173,12 @@ public class ValuePanel
             this.elementList = new ArrayList<>(this.materialRecordList.size());
             final String text = this.searchText.toLowerCase();
 
-            this.materialRecordList.forEach(record ->
+            this.materialRecordList.forEach(rec ->
             {
-                if (record.material.name().toLowerCase().contains(text) ||
-                    Utils.prettifyObject(record.material(), this.user).toLowerCase().contains(text))
+                if (rec.material.name().toLowerCase().contains(text) ||
+                        Utils.prettifyObject(rec.material(), this.user).toLowerCase().contains(text))
                 {
-                    this.elementList.add(record);
+                    this.elementList.add(rec);
                 }
             });
         }
@@ -189,9 +191,9 @@ public class ValuePanel
     }
 
 
-// ---------------------------------------------------------------------
-// Section: Tab Button Type
-// ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
+    // Section: Tab Button Type
+    // ---------------------------------------------------------------------
 
 
     /**
@@ -227,7 +229,7 @@ public class ValuePanel
         List<ItemTemplateRecord.ActionRecords> activeActions = new ArrayList<>(template.actions());
 
         activeActions.removeIf(action ->
-            "CLEAR".equalsIgnoreCase(action.actionType()) && this.searchText.isBlank());
+        "CLEAR".equalsIgnoreCase(action.actionType()) && this.searchText.isBlank());
 
         // Add Click handler
         builder.clickHandler((panel, user, clickType, i) ->
@@ -260,9 +262,9 @@ public class ValuePanel
 
                         // start conversation
                         ConversationUtils.createStringInput(consumer,
-                            user,
-                            user.getTranslation("level.conversations.write-search"),
-                            user.getTranslation("level.conversations.search-updated"));
+                                user,
+                                user.getTranslation("level.conversations.write-search"),
+                                user.getTranslation("level.conversations.search-updated"));
                     }
                 }
             }
@@ -272,10 +274,10 @@ public class ValuePanel
 
         // Collect tooltips.
         List<String> tooltips = activeActions.stream().
-            filter(action -> action.tooltip() != null).
-            map(action -> this.user.getTranslation(this.world, action.tooltip())).
-            filter(text -> !text.isBlank()).
-            collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
+                filter(action -> action.tooltip() != null).
+                map(action -> this.user.getTranslation(this.world, action.tooltip())).
+                filter(text -> !text.isBlank()).
+                collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
 
         // Add tooltips.
         if (!tooltips.isEmpty())
@@ -339,7 +341,7 @@ public class ValuePanel
             if (this.activeFilter.name().startsWith(filterName))
             {
                 return this.activeFilter.name().endsWith("ASC") && "ASC".equalsIgnoreCase(action.actionType()) ||
-                    this.activeFilter.name().endsWith("DESC") && "DESC".equalsIgnoreCase(action.actionType());
+                        this.activeFilter.name().endsWith("DESC") && "DESC".equalsIgnoreCase(action.actionType());
             }
             else
             {
@@ -378,10 +380,10 @@ public class ValuePanel
 
         // Collect tooltips.
         List<String> tooltips = activeActions.stream().
-            filter(action -> action.tooltip() != null).
-            map(action -> this.user.getTranslation(this.world, action.tooltip())).
-            filter(text -> !text.isBlank()).
-            collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
+                filter(action -> action.tooltip() != null).
+                map(action -> this.user.getTranslation(this.world, action.tooltip())).
+                filter(text -> !text.isBlank()).
+                collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
 
         // Add tooltips.
         if (!tooltips.isEmpty())
@@ -397,9 +399,9 @@ public class ValuePanel
     }
 
 
-// ---------------------------------------------------------------------
-// Section: Create common buttons
-// ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
+    // Section: Create common buttons
+    // ---------------------------------------------------------------------
 
 
     /**
@@ -413,8 +415,8 @@ public class ValuePanel
     {
         long size = this.elementList.size();
 
-        if (size <= slot.amountMap().getOrDefault("BLOCK", 1) ||
-            1.0 * size / slot.amountMap().getOrDefault("BLOCK", 1) <= this.pageIndex + 1)
+        if (size <= slot.amountMap().getOrDefault(BLOCK, 1) ||
+                1.0 * size / slot.amountMap().getOrDefault(BLOCK, 1) <= this.pageIndex + 1)
         {
             // There are no next elements
             return null;
@@ -428,7 +430,7 @@ public class ValuePanel
         {
             ItemStack clone = template.icon().clone();
 
-            if ((Boolean) template.dataMap().getOrDefault("indexing", false))
+            if (Boolean.TRUE.equals(template.dataMap().getOrDefault("indexing", false)))
             {
                 clone.setAmount(nextPageIndex);
             }
@@ -444,7 +446,7 @@ public class ValuePanel
         if (template.description() != null)
         {
             builder.description(this.user.getTranslation(this.world, template.description(),
-                "[number]", String.valueOf(nextPageIndex)));
+                    TextVariables.NUMBER, String.valueOf(nextPageIndex)));
         }
 
         // Add ClickHandler
@@ -452,13 +454,11 @@ public class ValuePanel
         {
             for (ItemTemplateRecord.ActionRecords action : template.actions())
             {
-                if (clickType == action.clickType() || ClickType.UNKNOWN.equals(action.clickType()))
+                if ((clickType == action.clickType() || ClickType.UNKNOWN.equals(action.clickType()))
+                        && "NEXT".equalsIgnoreCase(action.actionType()))
                 {
-                    if ("NEXT".equalsIgnoreCase(action.actionType()))
-                    {
-                        this.pageIndex++;
-                        this.build();
-                    }
+                    this.pageIndex++;
+                    this.build();
                 }
             }
 
@@ -468,10 +468,10 @@ public class ValuePanel
 
         // Collect tooltips.
         List<String> tooltips = template.actions().stream().
-            filter(action -> action.tooltip() != null).
-            map(action -> this.user.getTranslation(this.world, action.tooltip())).
-            filter(text -> !text.isBlank()).
-            collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
+                filter(action -> action.tooltip() != null).
+                map(action -> this.user.getTranslation(this.world, action.tooltip())).
+                filter(text -> !text.isBlank()).
+                collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
 
         // Add tooltips.
         if (!tooltips.isEmpty())
@@ -508,7 +508,7 @@ public class ValuePanel
         {
             ItemStack clone = template.icon().clone();
 
-            if ((Boolean) template.dataMap().getOrDefault("indexing", false))
+            if (Boolean.TRUE.equals(template.dataMap().getOrDefault("indexing", false)))
             {
                 clone.setAmount(previousPageIndex);
             }
@@ -524,7 +524,7 @@ public class ValuePanel
         if (template.description() != null)
         {
             builder.description(this.user.getTranslation(this.world, template.description(),
-                "[number]", String.valueOf(previousPageIndex)));
+                    TextVariables.NUMBER, String.valueOf(previousPageIndex)));
         }
 
         // Add ClickHandler
@@ -532,13 +532,11 @@ public class ValuePanel
         {
             for (ItemTemplateRecord.ActionRecords action : template.actions())
             {
-                if (clickType == action.clickType() || ClickType.UNKNOWN.equals(action.clickType()))
+                if ((clickType == action.clickType() || ClickType.UNKNOWN.equals(action.clickType()))
+                        && "PREVIOUS".equalsIgnoreCase(action.actionType()))
                 {
-                    if ("PREVIOUS".equalsIgnoreCase(action.actionType()))
-                    {
-                        this.pageIndex--;
-                        this.build();
-                    }
+                    this.pageIndex--;
+                    this.build();
                 }
             }
 
@@ -548,10 +546,10 @@ public class ValuePanel
 
         // Collect tooltips.
         List<String> tooltips = template.actions().stream().
-            filter(action -> action.tooltip() != null).
-            map(action -> this.user.getTranslation(this.world, action.tooltip())).
-            filter(text -> !text.isBlank()).
-            collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
+                filter(action -> action.tooltip() != null).
+                map(action -> this.user.getTranslation(this.world, action.tooltip())).
+                filter(text -> !text.isBlank()).
+                collect(Collectors.toCollection(() -> new ArrayList<>(template.actions().size())));
 
         // Add tooltips.
         if (!tooltips.isEmpty())
@@ -565,9 +563,9 @@ public class ValuePanel
     }
 
 
-// ---------------------------------------------------------------------
-// Section: Create Material Button
-// ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
+    // Section: Create Material Button
+    // ---------------------------------------------------------------------
 
 
     /**
@@ -585,7 +583,7 @@ public class ValuePanel
             return null;
         }
 
-        int index = this.pageIndex * slot.amountMap().getOrDefault("BLOCK", 1) + slot.slot();
+        int index = this.pageIndex * slot.amountMap().getOrDefault(BLOCK, 1) + slot.slot();
 
         if (index >= this.elementList.size())
         {
@@ -605,7 +603,7 @@ public class ValuePanel
      * @return PanelItem for generator tier.
      */
     private PanelItem createMaterialButton(ItemTemplateRecord template,
-        MaterialRecord materialRecord)
+            MaterialRecord materialRecord)
     {
         PanelItemBuilder builder = new PanelItemBuilder();
 
@@ -626,24 +624,24 @@ public class ValuePanel
         if (template.title() != null)
         {
             builder.name(this.user.getTranslation(this.world, template.title(),
-                "[material]", Utils.prettifyObject(materialRecord.material(), this.user)));
+                    "[material]", Utils.prettifyObject(materialRecord.material(), this.user)));
         }
 
         String description = Utils.prettifyDescription(materialRecord.material(), this.user);
 
         final String reference = "level.gui.buttons.material.";
         String blockId = this.user.getTranslationOrNothing(reference + "id",
-            "[id]", materialRecord.material().name());
+                "[id]", materialRecord.material().name());
 
         String value = this.user.getTranslationOrNothing(reference + "value",
-            "[number]", String.valueOf(materialRecord.value()));
+                TextVariables.NUMBER, String.valueOf(materialRecord.value()));
 
         String underWater;
 
         if (this.addon.getSettings().getUnderWaterMultiplier() > 1.0)
         {
             underWater = this.user.getTranslationOrNothing(reference + "underwater",
-                "[number]", String.valueOf(materialRecord.value() * this.addon.getSettings().getUnderWaterMultiplier()));
+                    TextVariables.NUMBER, String.valueOf(materialRecord.value() * this.addon.getSettings().getUnderWaterMultiplier()));
         }
         else
         {
@@ -651,7 +649,7 @@ public class ValuePanel
         }
 
         String limit = materialRecord.limit() > 0 ? this.user.getTranslationOrNothing(reference + "limit",
-            "[number]",  String.valueOf(materialRecord.limit())) : "";
+                TextVariables.NUMBER,  String.valueOf(materialRecord.limit())) : "";
 
         if (template.description() != null)
         {
@@ -661,13 +659,13 @@ public class ValuePanel
                     "[value]", value,
                     "[underwater]", underWater,
                     "[limit]", limit).
-                replaceAll("(?m)^[ \\t]*\\r?\\n", "").
-                replaceAll("(?<!\\\\)\\|", "\n").
-                replaceAll("\\\\\\|", "|"));
+                    replaceAll("(?m)^[ \\t]*\\r?\\n", "").
+                    replaceAll("(?<!\\\\)\\|", "\n").
+                    replace("\\\\\\|", "|")); // Non regex
         }
 
         builder.clickHandler((panel, user1, clickType, i) -> {
-            System.out.println("Material: " + materialRecord.material());
+            addon.log("Material: " + materialRecord.material());
             return true;
         });
 
@@ -675,9 +673,9 @@ public class ValuePanel
     }
 
 
-// ---------------------------------------------------------------------
-// Section: Other Methods
-// ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
+    // Section: Other Methods
+    // ---------------------------------------------------------------------
 
 
     /**
@@ -689,16 +687,16 @@ public class ValuePanel
      * @param user User who opens panel
      */
     public static void openPanel(Level addon,
-        World world,
-        User user)
+            World world,
+            User user)
     {
         new ValuePanel(addon, world, user).build();
     }
 
 
-// ---------------------------------------------------------------------
-// Section: Enums
-// ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
+    // Section: Enums
+    // ---------------------------------------------------------------------
 
 
     /**
@@ -729,10 +727,15 @@ public class ValuePanel
     {
     }
 
+    // ---------------------------------------------------------------------
+    // Section: Constants
+    // ---------------------------------------------------------------------
 
-// ---------------------------------------------------------------------
-// Section: Variables
-// ---------------------------------------------------------------------
+    private static final String BLOCK = "BLOCK";
+
+    // ---------------------------------------------------------------------
+    // Section: Variables
+    // ---------------------------------------------------------------------
 
     /**
      * This variable allows to access addon object.

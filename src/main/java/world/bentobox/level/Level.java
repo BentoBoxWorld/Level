@@ -170,20 +170,14 @@ public class Level extends Addon {
         {
             this.visitHook = (VisitAddon) addon;
             this.log("Level Addon hooked into Visit addon.");
-        }, () ->
-        {
-            this.visitHook = null;
-        });
+        }, () -> this.visitHook = null);
 
         // Try to find Warps addon and if it does not exist, display a warning
         this.getAddonByName("Warps").ifPresentOrElse(addon ->
         {
             this.warpHook = (Warp) addon;
             this.log("Level Addon hooked into Warps addon.");
-        }, () ->
-        {
-            this.warpHook = null;
-        });
+        }, () -> this.warpHook = null);
     }
 
 
@@ -211,9 +205,6 @@ public class Level extends Addon {
         }
         return comparisonResult;
     }
-
-
-
 
     private void registerCommands(GameModeAddon gm) {
         gm.getAdminCommand().ifPresent(adminCommand ->  {
@@ -351,7 +342,7 @@ public class Level extends Addon {
      * @param playerUUID - the target island member's UUID
      * @deprecated Do not use this anymore. Use getManager().calculateLevel(playerUUID, island)
      */
-    @Deprecated
+    @Deprecated(since="2.3.0", forRemoval=true)
     public void calculateIslandLevel(World world, @Nullable User user, @NonNull UUID playerUUID) {
         Island island = getIslands().getIsland(world, playerUUID);
         if (island != null) getManager().calculateLevel(playerUUID, island);
@@ -363,7 +354,7 @@ public class Level extends Addon {
      * @return LevelsData object or null if not found. Only island levels are set!
      * @deprecated Do not use this anymore. Use {@link #getIslandLevel(World, UUID)}
      */
-    @Deprecated
+    @Deprecated(since="2.3.0", forRemoval=true)
     public LevelsData getLevelsData(UUID targetPlayer) {
         LevelsData ld = new LevelsData(targetPlayer);
         getPlugin().getAddonsManager().getGameModeAddons().stream()

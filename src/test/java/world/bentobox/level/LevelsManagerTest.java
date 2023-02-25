@@ -166,7 +166,7 @@ public class LevelsManagerTest {
         // Default to uuid's being island owners
         when(im.isOwner(eq(world), any())).thenReturn(true);
         when(im.getOwner(any(), any(UUID.class))).thenAnswer(in -> in.getArgument(1, UUID.class));
-        when(im.getIsland(eq(world), eq(uuid))).thenReturn(island);
+        when(im.getIsland(world, uuid)).thenReturn(island);
         when(im.getIslandById(anyString())).thenReturn(Optional.of(island));
 
         // Player
@@ -392,8 +392,8 @@ public class LevelsManagerTest {
         Bukkit.getScheduler();
         verify(scheduler).runTaskAsynchronously(eq(plugin), task.capture());
         task.getValue().run();
-        verify(addon).log(eq("Generating rankings"));
-        verify(addon).log(eq("Generated rankings for bskyblock-world"));
+        verify(addon).log("Generating rankings");
+        verify(addon).log("Generated rankings for bskyblock-world");
 
     }
 
