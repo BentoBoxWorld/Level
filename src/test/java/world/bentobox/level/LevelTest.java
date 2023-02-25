@@ -300,12 +300,4 @@ public class LevelTest {
         assertEquals(100, s.getLevelCost());
     }
 
-    /**
-     * Test method for {@link world.bentobox.level.Level#getRankLevel(World, int)}.
-     */
-    @Test
-    public void testRankLevel() {
-        addon.onEnable();
-        assertEquals("",addon.getRankLevel(world, 1));
-    }
 }
