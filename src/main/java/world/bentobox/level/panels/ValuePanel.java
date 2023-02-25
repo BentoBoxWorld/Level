@@ -1,15 +1,20 @@
 package world.bentobox.level.panels;
 
 
-import com.google.common.base.Enums;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
-import java.io.File;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
+
+import com.google.common.base.Enums;
 
 import lv.id.bonne.panelutils.PanelUtils;
 import world.bentobox.bentobox.api.panels.PanelItem;
@@ -18,8 +23,6 @@ import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;
 import world.bentobox.bentobox.api.panels.builders.TemplatedPanelBuilder;
 import world.bentobox.bentobox.api.panels.reader.ItemTemplateRecord;
 import world.bentobox.bentobox.api.user.User;
-import world.bentobox.bentobox.hooks.LangUtilsHook;
-import world.bentobox.bentobox.util.Pair;
 import world.bentobox.level.Level;
 import world.bentobox.level.util.ConversationUtils;
 import world.bentobox.level.util.Utils;
