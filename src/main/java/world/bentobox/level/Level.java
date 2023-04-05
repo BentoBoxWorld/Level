@@ -58,6 +58,7 @@ public class Level extends Addon {
     private boolean stackersEnabled;
     private boolean advChestEnabled;
     private boolean roseStackersEnabled;
+    private boolean ultimateStackerEnabled;
     private final List<GameModeAddon> registeredGameModes = new ArrayList<>();
 
     /**
@@ -145,6 +146,12 @@ public class Level extends Addon {
         roseStackersEnabled = Bukkit.getPluginManager().isPluginEnabled("RoseStacker");
         if (roseStackersEnabled) {
             log("Hooked into RoseStackers.");
+        }
+
+        // Check if UltimateStacker is enabled
+        ultimateStackerEnabled = Bukkit.getPluginManager().isPluginEnabled("UltimateStacker");
+        if (ultimateStackerEnabled) {
+            log("Hooked into UltimateStacker.");
         }
     }
 
@@ -401,6 +408,13 @@ public class Level extends Addon {
      */
     public boolean isRoseStackersEnabled() {
         return roseStackersEnabled;
+    }
+
+    /**
+     * @return the ultimateStackerEnabled
+     */
+    public boolean isUltimateStackerEnabled() {
+        return ultimateStackerEnabled;
     }
 
     /**
