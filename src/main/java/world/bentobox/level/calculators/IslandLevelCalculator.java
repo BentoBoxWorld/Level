@@ -16,6 +16,9 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.songoda.ultimatestacker.UltimateStacker;
+import com.songoda.ultimatestacker.core.compatibility.CompatibleMaterial;
+import com.songoda.ultimatestacker.stackable.block.BlockStack;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
@@ -524,6 +527,25 @@ public class IslandLevelCalculator {
                     if (addon.isStackersEnabled() && (blockData.getMaterial().equals(Material.CAULDRON) || blockData.getMaterial().equals(Material.SPAWNER))) {
                         stackedBlocks.add(new Location(cp.world, (double)x + cp.chunkSnapshot.getX() * 16, y, (double)z + cp.chunkSnapshot.getZ() * 16));
                     }
+
+                    Block block = cp.chunk.getBlock(x, y, z);
+
+                    if (addon.isUltimateStackerEnabled()) {
+                        if (!blockData.getMaterial().equals(Material.AIR)) {
+                            BlockStack stack = UltimateStacker.getInstance().getBlockStackManager().getBlock(block, CompatibleMaterial.getMaterial(block));
+                            if (stack != null) {
+                                int value = limitCount(blockData.getMaterial());
+                                if (belowSeaLevel) {
+                                    results.underWaterBlockCount.addAndGet((long) stack.getAmount() * value);
+                                    results.uwCount.add(blockData.getMaterial());
+                                } else {
+                                    results.rawBlockCount.addAndGet((long) stack.getAmount() * value);
+                                    results.mdCount.add(blockData.getMaterial());
+                                }
+                            }
+                        }
+                    }
+
                     // Scan chests
                     if (addon.getSettings().isIncludeChests() && CHESTS.contains(blockData.getMaterial())) {
                         chestBlocks.add(cp.chunk);
