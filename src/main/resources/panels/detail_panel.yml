@@ -1,0 +1,130 @@
+detail_panel:
+  title: level.gui.titles.detail-panel
+  type: INVENTORY
+  background:
+    icon: BLACK_STAINED_GLASS_PANE
+    title: "&b&r" # Empty text
+  border:
+    icon: BLACK_STAINED_GLASS_PANE
+    title: "&b&r"  # Empty text
+  force-shown: []
+  content:
+    1:
+      2:
+        icon: STONE
+        title: level.gui.buttons.all_blocks.name
+        description: level.gui.buttons.all_blocks.description
+        data:
+          type: TAB
+          tab: ALL_BLOCKS
+        actions:
+          view:
+            click-type: unknown
+            tooltip: level.gui.tips.click-to-view
+      3:
+        icon: GRASS_BLOCK
+        title: level.gui.buttons.above_sea_level.name
+        description: level.gui.buttons.above_sea_level.description
+        data:
+          type: TAB
+          tab: ABOVE_SEA_LEVEL
+        actions:
+          view:
+            click-type: unknown
+            tooltip: level.gui.tips.click-to-view
+      4:
+        icon: WATER_BUCKET
+        title: level.gui.buttons.underwater.name
+        description: level.gui.buttons.underwater.description
+        data:
+          type: TAB
+          tab: UNDERWATER
+        actions:
+          view:
+            click-type: unknown
+            tooltip: level.gui.tips.click-to-view
+      5:
+        icon: SPAWNER
+        title: level.gui.buttons.spawner.name
+        description: level.gui.buttons.spawner.description
+        data:
+          type: TAB
+          tab: SPAWNER
+        actions:
+          view:
+            click-type: unknown
+            tooltip: level.gui.tips.click-to-view
+      9:
+        # You can create multiple buttons. By default it is one.
+        icon: IRON_TRAPDOOR
+        # [filter] is placeholder for different filter types. It will be replaced with name, value, count.
+        title: level.gui.buttons.filters.[filter].name
+        description: level.gui.buttons.filters.[filter].description
+        data:
+          type: FILTER
+          # the value of filter button. Suggestion is to leave fist value to name if you use single button.
+          filter: NAME
+        actions:
+          up:
+            click-type: left
+            tooltip: level.gui.tips.left-click-to-cycle-up
+          down:
+            click-type: right
+            tooltip: level.gui.tips.right-click-to-cycle-down
+          # There is also select action. With it you can create multiple filter buttons.
+          # select:
+          #   click-type: unknown
+          #   tooltip: level.gui.tips.click-to-select
+    2:
+      2: material_button
+      3: material_button
+      4: material_button
+      5: material_button
+      6: material_button
+      7: material_button
+      8: material_button
+    3:
+      1:
+        icon: TIPPED_ARROW:INSTANT_HEAL::::1
+        title: level.gui.buttons.previous.name
+        description: level.gui.buttons.previous.description
+        data:
+          type: PREVIOUS
+          indexing: true
+        actions:
+          previous:
+            click-type: unknown
+            tooltip: level.gui.tips.click-to-previous
+      2: material_button
+      3: material_button
+      4: material_button
+      5: material_button
+      6: material_button
+      7: material_button
+      8: material_button
+      9:
+        icon: TIPPED_ARROW:JUMP::::1
+        title: level.gui.buttons.next.name
+        description: level.gui.buttons.next.description
+        data:
+          type: NEXT
+          indexing: true
+        actions:
+          next:
+            click-type: unknown
+            tooltip: level.gui.tips.click-to-next
+    4:
+      2: material_button
+      3: material_button
+      4: material_button
+      5: material_button
+      6: material_button
+      7: material_button
+      8: material_button
+  reusable:
+    material_button:
+      #icon: STONE
+      title: level.gui.buttons.material.name
+      description: level.gui.buttons.material.description
+      data:
+        type: BLOCK

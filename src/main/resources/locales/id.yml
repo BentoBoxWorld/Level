@@ -1,1 +1,55 @@
-
+---
+admin:
+  level:
+    parameters: "<player>"
+    description: hitung level pulau untuk player
+    sethandicap:
+      parameters: "<player> <handicap>"
+      description: mengatur handicap pulau, biasanya tingkat pulau pemula
+      changed: "& Handicap pulau awal diubah dari [number] menjadi [new_number]."
+      invalid-level: "& c Handicap tidak valid. Gunakan angka bulat."
+  levelstatus:
+    description: menunjukkan berapa pulau yang menunggu pindaian
+    islands-in-queue: "&a Pulau di dalam menunggu: [number]"
+  top:
+    description: menunjukkan daftar sepuluh besar
+    unknown-world: "&c World tidak ditemukan!"
+    display: "&f[rank]. &a[name] &7- &b[level]"
+    remove:
+      description: menghilangkan player dari sepuluh besar
+      parameters: "<player>"
+island:
+  level:
+    parameters: "[player]"
+    description: hitung level pulau Anda atau tunjukkan level [player]
+    calculating: "&a Menghitung level..."
+    estimated-wait: "&a Waktu tunggu perkiraan: [number] detik"
+    in-queue: "&aAnda berada pada posisi [number] pada urutan menunggu"
+    island-level-is: "&a Level pulau adalah &b[level]"
+    required-points-to-next-level: "&a [points] poin dibutuhkan hingga level selanjutnya"
+    deaths: "&c([number] kematian)"
+    cooldown: "&c Anda harus menunggu &b[time] &c detik sebelum Anda dapat melakukannya
+      lagi"
+    in-progress: "&6 Perhitungan level pulau sedang dijalankan..."
+    time-out: "&c Perhitungan level pulau terlalu lama. Coba lagi nanti."
+  top:
+    description: menunjukkan sepuluh besar
+    gui-title: "&a Sepuluh Besar"
+    gui-heading: "&6[name]: &B[rank]"
+    island-level: "&b Level [level]"
+    warp-to: "&A Warping ke pulau milik [name]"
+  level-details:
+    above-sea-level-blocks: Blok di atas permukaan laut
+    spawners: Spawner
+    underwater-blocks: Blok di bawah permukaan laut
+    all-blocks: Semua blok
+    no-island: "&c Tidak terdapat pulau!"
+    names-island: Pulau milik [name]
+    syntax: "[name] x [number]"
+    hint: "& c Jalankan perintah level untuk melihat laporan blok"
+  value:
+    description: menunjukkan nilai dari apapun blok
+    success: "&7 Nilai blok ini adalah: &e[value]"
+    success-underwater: "&7 Nilai blok ini di bawah permukaan laut adalah: &e[value]"
+    empty-hand: "&c Tidak ada balok di tangan Anda"
+    no-value: "&c Benda itu tidak bernilai."

@@ -166,7 +166,7 @@ public class LevelsManagerTest {
         // Default to uuid's being island owners
         when(im.isOwner(eq(world), any())).thenReturn(true);
         when(im.getOwner(any(), any(UUID.class))).thenAnswer(in -> in.getArgument(1, UUID.class));
-        when(im.getIsland(eq(world), eq(uuid))).thenReturn(island);
+        when(im.getIsland(world, uuid)).thenReturn(island);
         when(im.getIslandById(anyString())).thenReturn(Optional.of(island));
 
         // Player
@@ -270,6 +270,15 @@ public class LevelsManagerTest {
         //Map<UUID, Long> tt = lm.getTopTen(world, 10);
         //assertEquals(1, tt.size());
         //assertTrue(tt.get(uuid) == 10000);
+        assertEquals(10000L, lm.getIslandMaxLevel(world, uuid));
+
+        results.setLevel(5000);
+        lm.calculateLevel(uuid, island);
+        // Complete the pipelined completable future
+        cf.complete(results);
+        assertEquals(5000L, lm.getLevelsData(island).getLevel());
+        // Still should be 10000
+        assertEquals(10000L, lm.getIslandMaxLevel(world, uuid));
 
     }
 
@@ -383,8 +392,8 @@ public class LevelsManagerTest {
         Bukkit.getScheduler();
         verify(scheduler).runTaskAsynchronously(eq(plugin), task.capture());
         task.getValue().run();
-        verify(addon).log(eq("Generating rankings"));
-        verify(addon).log(eq("Generated rankings for bskyblock-world"));
+        verify(addon).log("Generating rankings");
+        verify(addon).log("Generated rankings for bskyblock-world");
 
     }
 
@@ -420,21 +429,6 @@ public class LevelsManagerTest {
 
     }
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#getGUI(org.bukkit.World, world.bentobox.bentobox.api.user.User)}.
-     */
-    @Test
-    public void testGetGUI() {
-        lm.getGUI(world, user);
-        verify(user).getTranslation(eq("island.top.gui-title"));
-        verify(player).openInventory(inv);
-        /*
-        int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
-        for (int i : SLOTS) {
-            verify(inv).setItem(eq(i), any());
-        }
-         */
-    }
 
     /**
      * Test method for {@link world.bentobox.level.LevelsManager#getRank(World, UUID)}

@@ -1,0 +1,195 @@
+top_panel:
+  title: level.gui.titles.top
+  type: INVENTORY
+  background:
+    icon: BLACK_STAINED_GLASS_PANE
+    title: "&b&r" # Empty text
+  border:
+    icon: BLACK_STAINED_GLASS_PANE
+    title: "&b&r"  # Empty text
+  force-shown: [2,3,4,5]
+  content:
+    2:
+      5:
+        #icon: PLAYER_HEAD
+        title: level.gui.buttons.island.name
+        description: level.gui.buttons.island.description
+        data:
+          type: TOP
+          index: 1
+        actions:
+          warp:
+            click-type: LEFT
+            tooltip: level.gui.tips.click-to-warp
+          visit:
+            click-type: RIGHT
+            tooltip: level.gui.tips.right-click-to-visit
+        fallback:
+          icon: LIME_STAINED_GLASS_PANE
+          title: level.gui.buttons.island.empty
+    3:
+      4:
+        #icon: PLAYER_HEAD
+        title: level.gui.buttons.island.name
+        description: level.gui.buttons.island.description
+        data:
+          type: TOP
+          index: 2
+        actions:
+          warp:
+            click-type: LEFT
+            tooltip: level.gui.tips.click-to-warp
+          visit:
+            click-type: RIGHT
+            tooltip: level.gui.tips.right-click-to-visit
+        fallback:
+          icon: LIME_STAINED_GLASS_PANE
+          title: level.gui.buttons.island.empty
+      6:
+        #icon: PLAYER_HEAD
+        title: level.gui.buttons.island.name
+        description: level.gui.buttons.island.description
+        data:
+          type: TOP
+          index: 3
+        actions:
+          warp:
+            click-type: LEFT
+            tooltip: level.gui.tips.click-to-warp
+          visit:
+            click-type: RIGHT
+            tooltip: level.gui.tips.right-click-to-visit
+        fallback:
+          icon: LIME_STAINED_GLASS_PANE
+          title: level.gui.buttons.island.empty
+    4:
+      2:
+        #icon: PLAYER_HEAD
+        title: level.gui.buttons.island.name
+        description: level.gui.buttons.island.description
+        data:
+          type: TOP
+          index: 4
+        actions:
+          warp:
+            click-type: LEFT
+            tooltip: level.gui.tips.click-to-warp
+          visit:
+            click-type: RIGHT
+            tooltip: level.gui.tips.right-click-to-visit
+        fallback:
+          icon: LIME_STAINED_GLASS_PANE
+          title: level.gui.buttons.island.empty
+      3:
+        #icon: PLAYER_HEAD
+        title: level.gui.buttons.island.name
+        description: level.gui.buttons.island.description
+        data:
+          type: TOP
+          index: 5
+        actions:
+          warp:
+            click-type: LEFT
+            tooltip: level.gui.tips.click-to-warp
+          visit:
+            click-type: RIGHT
+            tooltip: level.gui.tips.right-click-to-visit
+        fallback:
+          icon: LIME_STAINED_GLASS_PANE
+          title: level.gui.buttons.island.empty
+      4:
+        #icon: PLAYER_HEAD
+        title: level.gui.buttons.island.name
+        description: level.gui.buttons.island.description
+        data:
+          type: TOP
+          index: 6
+        actions:
+          warp:
+            click-type: LEFT
+            tooltip: level.gui.tips.click-to-warp
+          visit:
+            click-type: RIGHT
+            tooltip: level.gui.tips.right-click-to-visit
+        fallback:
+          icon: LIME_STAINED_GLASS_PANE
+          title: level.gui.buttons.island.empty
+      5:
+        #icon: PLAYER_HEAD
+        title: level.gui.buttons.island.name
+        description: level.gui.buttons.island.description
+        data:
+          type: TOP
+          index: 7
+        actions:
+          warp:
+            click-type: LEFT
+            tooltip: level.gui.tips.click-to-warp
+          visit:
+            click-type: RIGHT
+            tooltip: level.gui.tips.right-click-to-visit
+        fallback:
+          icon: LIME_STAINED_GLASS_PANE
+          title: level.gui.buttons.island.empty
+      6:
+        #icon: PLAYER_HEAD
+        title: level.gui.buttons.island.name
+        description: level.gui.buttons.island.description
+        data:
+          type: TOP
+          index: 8
+        actions:
+          warp:
+            click-type: LEFT
+            tooltip: level.gui.tips.click-to-warp
+          visit:
+            click-type: RIGHT
+            tooltip: level.gui.tips.right-click-to-visit
+        fallback:
+          icon: LIME_STAINED_GLASS_PANE
+          title: level.gui.buttons.island.empty
+      7:
+        #icon: PLAYER_HEAD
+        title: level.gui.buttons.island.name
+        description: level.gui.buttons.island.description
+        data:
+          type: TOP
+          index: 9
+        actions:
+          warp:
+            click-type: LEFT
+            tooltip: level.gui.tips.click-to-warp
+          visit:
+            click-type: RIGHT
+            tooltip: level.gui.tips.right-click-to-visit
+        fallback:
+          icon: LIME_STAINED_GLASS_PANE
+          title: level.gui.buttons.island.empty
+      8:
+        #icon: PLAYER_HEAD
+        title: level.gui.buttons.island.name
+        description: level.gui.buttons.island.description
+        data:
+          type: TOP
+          index: 10
+        actions:
+          warp:
+            click-type: LEFT
+            tooltip: level.gui.tips.click-to-warp
+          visit:
+            click-type: RIGHT
+            tooltip: level.gui.tips.right-click-to-visit
+        fallback:
+          icon: LIME_STAINED_GLASS_PANE
+          title: level.gui.buttons.island.empty
+    6:
+      5:
+        #icon: PLAYER_HEAD
+        title: level.gui.buttons.island.name
+        description: level.gui.buttons.island.description
+        data:
+          type: VIEW
+        actions:
+          view:
+            click-type: unknown
+            tooltip: level.gui.tips.click-to-view

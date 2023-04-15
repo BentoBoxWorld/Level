@@ -1,10 +1,18 @@
 # Level
-[![Build Status](https://ci.codemc.org/buildStatus/icon?job=BentoBoxWorld/Level)](https://ci.codemc.org/job/BentoBoxWorld/job/Level/)
+[![Build Status](https://ci.codemc.org/buildStatus/icon?job=BentoBoxWorld/Level)](https://ci.codemc.org/job/BentoBoxWorld/job/Level/)[
+![Bugs](https://sonarcloud.io/api/project_badges/measure?project=BentoBoxWorld_Level&metric=bugs)](https://sonarcloud.io/dashboard?id=BentoBoxWorld_Level)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=BentoBoxWorld_Level&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=BentoBoxWorld_Level)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=BentoBoxWorld_Level&metric=ncloc)](https://sonarcloud.io/dashboard?id=BentoBoxWorld_Level)
 
-## Note: Java 16 and Minecraft 17, or higher are now required
+## About
 
-Add-on for BentoBox to calculate island levels for BSkyBlock and AcidIsland. This add-on will work
+Add-on for BentoBox to calculate island levels for BentoBox game modes like BSkyBlock and AcidIsland. It counts blocks and assigns a value to them. 
+Players gain levels by accumulating points and can lose levels too if their points go down. This add-on will work
 for game modes listed in the config.yml.
+
+Full documentation for Level can be found at [docs.bentobox.world](https://docs.bentobox.world/en/latest/addons/Level/).
+
+Official download releases are at [download.bentobox.world](download.bentobox.world).
 
 ## How to use
 

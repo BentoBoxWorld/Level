@@ -164,7 +164,7 @@ public class AdminTopRemoveCommandTest {
     @Test
     public void testCanExecuteWrongArgs() {
         assertFalse(atrc.canExecute(user, "delete", Collections.emptyList()));
-        verify(user).sendMessage(eq("commands.help.header"), eq(TextVariables.LABEL), eq("BSkyBlock"));
+        verify(user).sendMessage("commands.help.header", TextVariables.LABEL, "BSkyBlock");
     }
 
     /**
@@ -174,7 +174,7 @@ public class AdminTopRemoveCommandTest {
     public void testCanExecuteUnknown() {
         when(pm.getUser(anyString())).thenReturn(null);
         assertFalse(atrc.canExecute(user, "delete", Collections.singletonList("tastybento")));
-        verify(user).sendMessage(eq("general.errors.unknown-player"), eq(TextVariables.NAME), eq("tastybento"));
+        verify(user).sendMessage("general.errors.unknown-player", TextVariables.NAME, "tastybento");
     }
 
     /**
@@ -193,7 +193,7 @@ public class AdminTopRemoveCommandTest {
         testCanExecuteKnown();
         assertTrue(atrc.execute(user, "delete", Collections.singletonList("tastybento")));
         verify(manager).removeEntry(any(World.class), eq(uuid));
-        verify(user).sendMessage(eq("general.success"));
+        verify(user).sendMessage("general.success");
     }
 
 }

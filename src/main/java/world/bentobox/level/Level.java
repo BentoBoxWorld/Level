@@ -3,18 +3,13 @@ package world.bentobox.level;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -22,7 +17,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import world.bentobox.bentobox.api.addons.Addon;
 import world.bentobox.bentobox.api.addons.GameModeAddon;
 import world.bentobox.bentobox.api.configuration.Config;
-import world.bentobox.bentobox.api.events.BentoBoxReadyEvent;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.util.Util;
@@ -38,16 +32,19 @@ import world.bentobox.level.config.BlockConfig;
 import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
+import world.bentobox.level.listeners.MigrationListener;
 import world.bentobox.level.objects.LevelsData;
-import world.bentobox.level.objects.TopTenData;
 import world.bentobox.level.requests.LevelRequestHandler;
 import world.bentobox.level.requests.TopTenRequestHandler;
+import world.bentobox.visit.VisitAddon;
+import world.bentobox.warps.Warp;
+
 
 /**
  * @author tastybento
  *
  */
-public class Level extends Addon implements Listener {
+public class Level extends Addon {
 
     // The 10 in top ten
     public static final int TEN = 10;
@@ -61,7 +58,19 @@ public class Level extends Addon implements Listener {
     private boolean stackersEnabled;
     private boolean advChestEnabled;
     private boolean roseStackersEnabled;
+    private boolean ultimateStackerEnabled;
     private final List<GameModeAddon> registeredGameModes = new ArrayList<>();
+
+    /**
+     * Local variable that stores if warpHook is present.
+     */
+    private Warp warpHook;
+
+    /**
+     * Local variable that stores if visitHook is present.
+     */
+    private VisitAddon visitHook;
+
 
     @Override
     public void onLoad() {
@@ -74,11 +83,17 @@ public class Level extends Addon implements Listener {
         } else {
             configObject.saveConfigObject(settings);
         }
+
+        // Save existing panels.
+        this.saveResource("panels/top_panel.yml", false);
+        this.saveResource("panels/detail_panel.yml", false);
+        this.saveResource("panels/value_panel.yml", false);
     }
 
     private boolean loadSettings() {
         // Load settings again to get worlds
         settings = configObject.loadConfigObject();
+
         return settings == null;
     }
 
@@ -92,7 +107,8 @@ public class Level extends Addon implements Listener {
         // Register listeners
         this.registerListener(new IslandActivitiesListeners(this));
         this.registerListener(new JoinLeaveListener(this));
-        this.registerListener(this);
+        this.registerListener(new MigrationListener(this));
+
         // Register commands for GameModes
         registeredGameModes.clear();
         getPlugin().getAddonsManager().getGameModeAddons().stream()
@@ -100,7 +116,7 @@ public class Level extends Addon implements Listener {
         .forEach(gm -> {
             log("Level hooking into " + gm.getDescription().getName());
             registerCommands(gm);
-            registerPlaceholders(gm);
+            new PlaceholderManager(this).registerPlaceholders(gm);
             registeredGameModes.add(gm);
         });
         // Register request handlers
@@ -119,10 +135,10 @@ public class Level extends Addon implements Listener {
         advChestEnabled = advChest != null;
         if (advChestEnabled) {
             // Check version
-            if (compareVersions(advChest.getDescription().getVersion(), "14.2") > 0) {
+            if (compareVersions(advChest.getDescription().getVersion(), "23.0") > 0) {
                 log("Hooked into AdvancedChests.");
             } else {
-                logError("Could not hook into AdvancedChests " + advChest.getDescription().getVersion() + " - requires version 14.3 or later");
+                logError("Could not hook into AdvancedChests " + advChest.getDescription().getVersion() + " - requires version 23.0 or later");
                 advChestEnabled = false;
             }
         }
@@ -131,7 +147,46 @@ public class Level extends Addon implements Listener {
         if (roseStackersEnabled) {
             log("Hooked into RoseStackers.");
         }
+
+        // Check if UltimateStacker is enabled
+        ultimateStackerEnabled = Bukkit.getPluginManager().isPluginEnabled("UltimateStacker");
+        if (ultimateStackerEnabled) {
+            log("Hooked into UltimateStacker.");
+        }
     }
+
+    @Override
+    public void allLoaded()
+    {
+        super.allLoaded();
+
+        if (this.isEnabled())
+        {
+            this.hookExtensions();
+        }
+    }
+
+
+    /**
+     * This method tries to hook into addons and plugins
+     */
+    private void hookExtensions()
+    {
+        // Try to find Visit addon and if it does not exist, display a warning
+        this.getAddonByName("Visit").ifPresentOrElse(addon ->
+        {
+            this.visitHook = (VisitAddon) addon;
+            this.log("Level Addon hooked into Visit addon.");
+        }, () -> this.visitHook = null);
+
+        // Try to find Warps addon and if it does not exist, display a warning
+        this.getAddonByName("Warps").ifPresentOrElse(addon ->
+        {
+            this.warpHook = (Warp) addon;
+            this.log("Level Addon hooked into Warps addon.");
+        }, () -> this.warpHook = null);
+    }
+
 
     /**
      * Compares versions
@@ -157,152 +212,6 @@ public class Level extends Addon implements Listener {
         }
         return comparisonResult;
     }
-
-    @EventHandler
-    public void onBentoBoxReady(BentoBoxReadyEvent e) {
-        // Perform upgrade check
-        manager.migrate();
-        // Load TopTens
-        manager.loadTopTens();
-        /*
-         * DEBUG code to generate fake islands and then try to level them all.
-        Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
-            getPlugin().getAddonsManager().getGameModeAddons().stream()
-            .filter(gm -> !settings.getGameModes().contains(gm.getDescription().getName()))
-            .forEach(gm -> {
-                for (int i = 0; i < 1000; i++) {
-                    try {
-                        NewIsland.builder().addon(gm).player(User.getInstance(UUID.randomUUID())).name("default").reason(Reason.CREATE).noPaste().build();
-                    } catch (IOException e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
-                    }
-                }
-            });
-            // Queue all islands DEBUG
-
-            getIslands().getIslands().stream().filter(Island::isOwned).forEach(is -> {
-
-                this.getManager().calculateLevel(is.getOwner(), is).thenAccept(r ->
-                log("Result for island calc " + r.getLevel() + " at " + is.getCenter()));
-
-            });
-       }, 60L);*/
-    }
-
-
-    private void registerPlaceholders(GameModeAddon gm) {
-        if (getPlugin().getPlaceholdersManager() == null) return;
-        // Island Level
-        getPlugin().getPlaceholdersManager().registerPlaceholder(this,
-                gm.getDescription().getName().toLowerCase() + "_island_level",
-                user -> getManager().getIslandLevelString(gm.getOverWorld(), user.getUniqueId()));
-        getPlugin().getPlaceholdersManager().registerPlaceholder(this,
-                gm.getDescription().getName().toLowerCase() + "_island_level_raw",
-                user -> String.valueOf(getManager().getIslandLevel(gm.getOverWorld(), user.getUniqueId())));
-        getPlugin().getPlaceholdersManager().registerPlaceholder(this,
-                gm.getDescription().getName().toLowerCase() + "_points_to_next_level",
-                user -> getManager().getPointsToNextString(gm.getOverWorld(), user.getUniqueId()));
-
-        // Visited Island Level
-        getPlugin().getPlaceholdersManager().registerPlaceholder(this,
-                gm.getDescription().getName().toLowerCase() + "_visited_island_level", user -> getVisitedIslandLevel(gm, user));
-
-        // Register Top Ten Placeholders
-        for (int i = 1; i < 11; i++) {
-            final int rank = i;
-            // Name
-            getPlugin().getPlaceholdersManager().registerPlaceholder(this,
-                    gm.getDescription().getName().toLowerCase() + "_top_name_" + i, u -> getRankName(gm.getOverWorld(), rank));
-            // Island Name
-            getPlugin().getPlaceholdersManager().registerPlaceholder(this,
-                    gm.getDescription().getName().toLowerCase() + "_top_island_name_" + i, u -> getRankIslandName(gm.getOverWorld(), rank));
-            // Members
-            getPlugin().getPlaceholdersManager().registerPlaceholder(this,
-                    gm.getDescription().getName().toLowerCase() + "_top_members_" + i, u -> getRankMembers(gm.getOverWorld(), rank));
-            // Level
-            getPlugin().getPlaceholdersManager().registerPlaceholder(this,
-                    gm.getDescription().getName().toLowerCase() + "_top_value_" + i, u -> getRankLevel(gm.getOverWorld(), rank));
-        }
-
-        // Personal rank
-        getPlugin().getPlaceholdersManager().registerPlaceholder(this,
-                gm.getDescription().getName().toLowerCase() + "_rank_value", u -> getRankValue(gm.getOverWorld(), u));
-    }
-
-    String getRankName(World world, int rank) {
-        if (rank < 1) rank = 1;
-        if (rank > TEN) rank = TEN;
-        return getPlayers().getName(getManager().getTopTen(world, TEN).keySet().stream().skip(rank - 1L).limit(1L).findFirst().orElse(null));
-    }
-
-    String getRankIslandName(World world, int rank) {
-        if (rank < 1) rank = 1;
-        if (rank > TEN) rank = TEN;
-        UUID owner = getManager().getTopTen(world, TEN).keySet().stream().skip(rank - 1L).limit(1L).findFirst().orElse(null);
-        if (owner != null) {
-            Island island = getIslands().getIsland(world, owner);
-            if (island != null) {
-                return island.getName() == null ? "" : island.getName();
-            }
-        }
-        return "";
-    }
-
-    String getRankMembers(World world, int rank) {
-        if (rank < 1) rank = 1;
-        if (rank > TEN) rank = TEN;
-        UUID owner = getManager().getTopTen(world, TEN).keySet().stream().skip(rank - 1L).limit(1L).findFirst().orElse(null);
-        if (owner != null) {
-            Island island = getIslands().getIsland(world, owner);
-            if (island != null) {
-                // Sort members by rank
-                return island.getMembers().entrySet().stream()
-                        .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                        .map(Map.Entry::getKey)
-                        .map(getPlayers()::getName)
-                        .collect(Collectors.joining(","));
-            }
-        }
-        return "";
-    }
-
-    String getRankLevel(World world, int rank) {
-        if (rank < 1) rank = 1;
-        if (rank > TEN) rank = TEN;
-        return getManager()
-                .formatLevel(getManager()
-                        .getTopTen(world, TEN)
-                        .values()
-                        .stream()
-                        .skip(rank - 1L)
-                        .limit(1L)
-                        .findFirst()
-                        .orElse(null));
-    }
-
-    /**
-     * Return the rank of the player in a world
-     * @param world world
-     * @param user player
-     * @return rank where 1 is the top rank.
-     */
-    String getRankValue(World world, User user) {
-        if (user == null) {
-            return "";
-        }
-        // Get the island level for this user
-        long level = getManager().getIslandLevel(world, user.getUniqueId());
-        return String.valueOf(getManager().getTopTenLists().getOrDefault(world, new TopTenData(world)).getTopTen().values().stream().filter(l -> l > level).count() + 1);
-    }
-
-    String getVisitedIslandLevel(GameModeAddon gm, User user) {
-        if (user == null || !gm.inWorld(user.getLocation())) return "";
-        return getIslands().getIslandAt(user.getLocation())
-                .map(island -> getManager().getIslandLevelString(gm.getOverWorld(), island.getOwner()))
-                .orElse("0");
-    }
-
 
     private void registerCommands(GameModeAddon gm) {
         gm.getAdminCommand().ifPresent(adminCommand ->  {
@@ -440,7 +349,7 @@ public class Level extends Addon implements Listener {
      * @param playerUUID - the target island member's UUID
      * @deprecated Do not use this anymore. Use getManager().calculateLevel(playerUUID, island)
      */
-    @Deprecated
+    @Deprecated(since="2.3.0", forRemoval=true)
     public void calculateIslandLevel(World world, @Nullable User user, @NonNull UUID playerUUID) {
         Island island = getIslands().getIsland(world, playerUUID);
         if (island != null) getManager().calculateLevel(playerUUID, island);
@@ -452,7 +361,7 @@ public class Level extends Addon implements Listener {
      * @return LevelsData object or null if not found. Only island levels are set!
      * @deprecated Do not use this anymore. Use {@link #getIslandLevel(World, UUID)}
      */
-    @Deprecated
+    @Deprecated(since="2.3.0", forRemoval=true)
     public LevelsData getLevelsData(UUID targetPlayer) {
         LevelsData ld = new LevelsData(targetPlayer);
         getPlugin().getAddonsManager().getGameModeAddons().stream()
@@ -501,4 +410,30 @@ public class Level extends Addon implements Listener {
         return roseStackersEnabled;
     }
 
+    /**
+     * @return the ultimateStackerEnabled
+     */
+    public boolean isUltimateStackerEnabled() {
+        return ultimateStackerEnabled;
+    }
+
+    /**
+     * Method Level#getVisitHook returns the visitHook of this object.
+     *
+     * @return {@code Visit} of this object, {@code null} otherwise.
+     */
+    public VisitAddon getVisitHook()
+    {
+        return this.visitHook;
+    }
+
+    /**
+     * Method Level#getWarpHook returns the warpHook of this object.
+     *
+     * @return {@code Warp} of this object, {@code null} otherwise.
+     */
+    public Warp getWarpHook()
+    {
+        return this.warpHook;
+    }
 }

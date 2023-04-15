@@ -1,9 +1,9 @@
-name: Pladdon
+name: BentoBox-Level
 main: world.bentobox.level.LevelPladdon
-version: ${version}
-api-version: "1.17"
-description: Level Addon
-author: tastybento
-depend:
-  - BentoBox
+version: ${project.version}${build.number}
+api-version: "1.19"
 
+authors: [tastybento]
+contributors: ["The BentoBoxWorld Community"]
+website: https://bentobox.world
+description: ${project.description}

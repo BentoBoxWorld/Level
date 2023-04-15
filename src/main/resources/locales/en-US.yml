@@ -55,9 +55,149 @@ island:
     syntax: "[name] x [number]"
     hint: "&c Run level to see the block report"
 
-  value:
-    description: "shows the value of any block"
-    success: "&7 The value of this block is: &e[value]"
-    success-underwater: "&7 The value of this block below sea-level: &e[value]"
-    empty-hand: "&c There are no blocks in your hand"
+level:
+  commands:
+    value:
+      parameters: "[hand|<material>]"
+      description: "shows the value of blocks. Add 'hand' at the end to display value for item in hand."
+  gui:
+    titles:
+      top: "&0&l Top Islands"
+      detail-panel: "&0&l [name]'s island"
+      value-panel: "&0&l Block Values"
+    buttons:
+      island:
+        empty: '&f&l [name]. place'
+        name: '&f&l [name]'
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        # Text that is replacing [name] if island do not have a name
+        owners-island: "[player]'s Island"
+        # Text for [owner] in description.
+        owner: "&7&l Owner: &r&b [player]"
+        # Title before listing members for [members] in description
+        members-title: "&7&l Members:"
+        # List each member under the title for [members] in description
+        member: "&b - [player]"
+        # Name of unknown player.
+        unknown: "unknown"
+        # Section for parsing [place]
+        place: "&7&o [number]. &r&7 place"
+        # Section for parsing [level]
+        level: "&7 Level: &o [number]"
+      material:
+        name: "&f&l [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "&7 Block id: &e [id]"
+        value: "&7 Block value: &e [number]"
+        limit: "&7 Block limit: &e [number]"
+        count: "&7 Number of blocks: &e [number]"
+        calculated: "&7 Calculated value: &e [number]"
+      all_blocks:
+        name: "&f&l All Blocks"
+        description: |-
+          &7 Display all blocks
+          &7 on island.
+      above_sea_level:
+        name: "&f&l Blocks Above Sea Level"
+        description: |-
+          &7 Display only blocks
+          &7 that are above sea
+          &7 level.
+      underwater:
+        name: "&f&l Blocks Under Sea level"
+        description: |-
+          &7 Display only blocks
+          &7 that are bellow sea
+          &7 level.
+      spawner:
+        name: "&f&l Spawners"
+        description: |-
+          &7 Display only spawners.
+      filters:
+        name:
+          name: "&f&l Sort by Name"
+          description: |-
+            &7 Sort all blocks by name.
+        value:
+          name: "&f&l Sort by Value"
+          description: |-
+            &7 Sort all blocks by their value.
+        count:
+          name: "&f&l Sort by Count"
+          description: |-
+            &7 Sort all blocks by their amount.
+      value:
+        name: "&f&l [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "&7 Block id: &e [id]"
+        value: "&7 Block value: &e [number]"
+        underwater: "&7 Bellow sea level: &e [number]"
+        limit: "&7 Block limit: &e [number]"
+      # Button that is used in multi-page GUIs which allows to return to previous page.
+      previous:
+        name: "&f&l Previous Page"
+        description: |-
+          &7 Switch to [number] page
+      # Button that is used in multi-page GUIs which allows to go to next page.
+      next:
+        name: "&f&l Next Page"
+        description: |-
+          &7 Switch to [number] page
+      search:
+        name: "&f&l Search"
+        description: |-
+          &7 Search for a specific
+          &7 value.
+        search: "&b Value: [value]"
+    tips:
+      click-to-view: "&e Click &7 to view."
+      click-to-previous: "&e Click &7 to view previous page."
+      click-to-next: "&e Click &7 to view next page."
+      click-to-select: "&e Click &7 to select."
+      left-click-to-cycle-up: "&e Left Click &7 to cycle up."
+      right-click-to-cycle-down: "&e Right Click &7 to cycle down."
+      left-click-to-change: "&e Left Click &7 to edit."
+      right-click-to-clear: "&e Right Click &7 to clear."
+      click-to-asc: "&e Click &7 to sort in increasing order."
+      click-to-desc: "&e Click &7 to sort in decreasing order."
+      click-to-warp: "&e Click &7 to warp."
+      click-to-visit: "&e Click &7 to visit."
+      right-click-to-visit: "&e Right Click &7 to visit."
+  conversations:
+    # Prefix for messages that are send from server.
+    prefix: "&l&6 [BentoBox]: &r"
+    no-data: "&c Run level to see the block report."
+    # String that allows to cancel conversation. (can be only one)
+    cancel-string: "cancel"
+    # List of strings that allows to exit conversation. (separated with ,)
+    exit-string: "cancel, exit, quit"
+    # Message that asks for search value input.
+    write-search: "&e Please enter a search value. (Write 'cancel' to exit)"
+    # Message that appears after updating search value.
+    search-updated: "&a Search value updated."
+    # Message that is sent to user when conversation is cancelled.
+    cancelled: "&c Conversation cancelled!"
+    # Message that is sent to user when given material does not have any value.
     no-value: "&c That item has no value."
+    # Message that is sent to user when requested material does not exist.
+    unknown-item: "&c The '[material]' does not exist in game."
+    # Messages that is sent to user when requesting value for a specific material.
+    value: "&7 The value of '[material]' is: &e[value]"
+    value-underwater: "&7 The value of '[material]' below sea-level: &e[value]"
+    # Message that is sent to user when he does not hold any items in hand.
+    empty-hand: "&c There are no blocks in your hand"

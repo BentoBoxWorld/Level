@@ -2,11 +2,9 @@ package world.bentobox.level;
 
 import java.math.BigInteger;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -18,19 +16,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.collect.Maps;
 
-import world.bentobox.bentobox.api.panels.PanelItem;
-import world.bentobox.bentobox.api.panels.builders.PanelBuilder;
-import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;
-import world.bentobox.bentobox.api.panels.builders.TabbedPanelBuilder;
-import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.Database;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.level.calculators.Results;
@@ -39,13 +30,11 @@ import world.bentobox.level.events.IslandPreLevelEvent;
 import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.objects.TopTenData;
-import world.bentobox.level.panels.DetailsGUITab;
-import world.bentobox.level.panels.DetailsGUITab.DetailsType;
+
 
 public class LevelsManager {
     private static final String INTOPTEN = "intopten";
     private static final TreeMap<BigInteger, String> LEVELS;
-    private static final int[] SLOTS = new int[] {4, 12, 14, 19, 20, 21, 22, 23, 24, 25};
     private static final BigInteger THOUSAND = BigInteger.valueOf(1000);
     static {
         LEVELS = new TreeMap<>();
@@ -55,8 +44,7 @@ public class LevelsManager {
         LEVELS.put(THOUSAND.pow(3), "G");
         LEVELS.put(THOUSAND.pow(4), "T");
     }
-    private Level addon;
-
+    private final Level addon;
 
     // Database handler for level data
     private final Database<IslandLevels> handler;
@@ -64,9 +52,6 @@ public class LevelsManager {
     private final Map<String, IslandLevels> levelsCache;
     // Top ten lists
     private final Map<World,TopTenData> topTenLists;
-    // Background
-    private final PanelItem background;
-
 
 
     public LevelsManager(Level addon) {
@@ -79,8 +64,6 @@ public class LevelsManager {
         levelsCache = new HashMap<>();
         // Initialize top ten lists
         topTenLists = new ConcurrentHashMap<>();
-        // Background
-        background = new PanelItemBuilder().icon(Material.BLACK_STAINED_GLASS_PANE).name(" ").build();
     }
 
     public void migrate() {
@@ -169,8 +152,6 @@ public class LevelsManager {
         addon.getPipeliner().addIsland(island).thenAccept(r -> {
             // Results are irrelevant because the island is unowned or deleted, or IslandLevelCalcEvent is cancelled
             if (r == null || fireIslandLevelCalcEvent(targetPlayer, island, r)) {
-                System.out.println("results are null or event canceled");
-
                 result.complete(null);
             }
             // Save result
@@ -198,6 +179,7 @@ public class LevelsManager {
         results.setInitialLevel((Long)ilce.getKeyValues().getOrDefault("initialLevel", results.getInitialLevel()));
         results.setDeathHandicap((int)ilce.getKeyValues().getOrDefault("deathHandicap", results.getDeathHandicap()));
         results.setPointsToNextLevel((Long)ilce.getKeyValues().getOrDefault("pointsToNextLevel", results.getPointsToNextLevel()));
+        results.setTotalPoints((Long)ilce.getKeyValues().getOrDefault("totalPoints", results.getTotalPoints()));
         return ((Boolean)ilce.getKeyValues().getOrDefault("isCancelled", false));
     }
 
@@ -227,102 +209,6 @@ public class LevelsManager {
     }
 
     /**
-     * Displays the Top Ten list
-     * @param world - world
-     * @param user - the requesting player
-     */
-    public void getGUI(World world, final User user) {
-        // Check world
-        Map<UUID, Long> topTen = getTopTen(world, Level.TEN);
-
-        PanelBuilder panel = new PanelBuilder()
-                .name(user.getTranslation("island.top.gui-title"))
-                .size(54)
-                .user(user);
-        // Background
-        for (int j = 0; j < 54; panel.item(j++, background));
-
-        // Top Ten
-        int i = 0;
-        boolean inTopTen = false;
-        for (Entry<UUID, Long> m : topTen.entrySet()) {
-            PanelItem h = getHead((i+1), m.getValue(), m.getKey(), user, world);
-            panel.item(SLOTS[i], h);
-            // If this is also the asking player
-            if (m.getKey().equals(user.getUniqueId())) {
-                inTopTen = true;
-                addSelf(world, user, panel);
-            }
-            i++;
-        }
-        // Show remaining slots
-        for (; i < SLOTS.length; i++) {
-            panel.item(SLOTS[i], new PanelItemBuilder().icon(Material.GREEN_STAINED_GLASS_PANE).name(String.valueOf(i + 1)).build());
-        }
-
-        // Add yourself if you were not already in the top ten
-        if (!inTopTen) {
-            addSelf(world, user, panel);
-        }
-        panel.build();
-    }
-
-    private void addSelf(World world, User user, PanelBuilder panel) {
-        if (addon.getIslands().hasIsland(world, user) || addon.getIslands().inTeam(world, user.getUniqueId())) {
-            PanelItem head = getHead(this.getRank(world, user.getUniqueId()), this.getIslandLevel(world, user.getUniqueId()), user.getUniqueId(), user, world);
-            setClickHandler(head, user, world);
-            panel.item(49, head);
-        }
-    }
-
-    private void setClickHandler(PanelItem head, User user, World world) {
-        head.setClickHandler((p, u, ch, s) -> {
-            new TabbedPanelBuilder()
-            .user(user)
-            .world(world)
-            .tab(1, new DetailsGUITab(addon, world, user, DetailsType.ALL_BLOCKS))
-            .tab(2, new DetailsGUITab(addon, world, user, DetailsType.ABOVE_SEA_LEVEL_BLOCKS))
-            .tab(3, new DetailsGUITab(addon, world, user, DetailsType.UNDERWATER_BLOCKS))
-            .tab(4, new DetailsGUITab(addon, world, user, DetailsType.SPAWNERS))
-            .startingSlot(1)
-            .size(54)
-            .build().openPanel();
-            return true;
-        });
-
-    }
-
-    /**
-     * Get the head panel item
-     * @param rank - the top ten rank of this player/team. Can be used in the name of the island for vanity.
-     * @param level - the level of the island
-     * @param playerUUID - the UUID of the top ten player
-     * @param asker - the asker of the top ten
-     * @return PanelItem
-     */
-    private PanelItem getHead(int rank, long level, UUID playerUUID, User asker, World world) {
-        final String name = addon.getPlayers().getName(playerUUID);
-        List<String> description = new ArrayList<>();
-        if (rank > 0) {
-            description.add(asker.getTranslation("island.top.gui-heading", "[name]", name, "[rank]", String.valueOf(rank)));
-        }
-        description.add(asker.getTranslation("island.top.island-level","[level]", formatLevel(level)));
-        if (addon.getIslands().inTeam(world, playerUUID)) {
-            List<String> memberList = new ArrayList<>();
-            for (UUID members : addon.getIslands().getMembers(world, playerUUID)) {
-                memberList.add(ChatColor.AQUA + addon.getPlayers().getName(members));
-            }
-            description.addAll(memberList);
-        }
-
-        PanelItemBuilder builder = new PanelItemBuilder()
-                .icon(name)
-                .name(name)
-                .description(description);
-        return builder.build();
-    }
-
-    /**
      * Get the initial level of the island. Used to zero island levels
      * @param island - island
      * @return initial level of island
@@ -342,6 +228,19 @@ public class LevelsManager {
         // Get the island
         Island island = addon.getIslands().getIsland(world, targetPlayer);
         return island == null ? 0L : getLevelsData(island).getLevel();
+    }
+
+    /**
+     * Get the maximum level ever given to this island
+     * @param world - world where the island is
+     * @param targetPlayer - target player UUID
+     * @return Max level of the player's island or zero if player is unknown or UUID is null
+     */
+    public long getIslandMaxLevel(@NonNull World world, @Nullable UUID targetPlayer) {
+        if (targetPlayer == null) return 0L;
+        // Get the island
+        Island island = addon.getIslands().getIsland(world, targetPlayer);
+        return island == null ? 0L : getLevelsData(island).getMaxLevel();
     }
 
     /**
@@ -436,7 +335,7 @@ public class LevelsManager {
                 .filter(e -> addon.getIslands().isOwner(world, e.getKey()))
                 .filter(l -> l.getValue() > 0)
                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
-        return stream.takeWhile(x -> !x.getKey().equals(uuid)).map(Map.Entry::getKey).collect(Collectors.toList()).size() + 1;
+        return (int) (stream.takeWhile(x -> !x.getKey().equals(uuid)).map(Map.Entry::getKey).count() + 1);
     }
 
     /**
@@ -453,7 +352,7 @@ public class LevelsManager {
     /**
      * Loads all the top tens from the database
      */
-    void loadTopTens() {
+    public void loadTopTens() {
         topTenLists.clear();
         Bukkit.getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
             addon.log("Generating rankings");
@@ -462,10 +361,7 @@ public class LevelsManager {
                     addon.getIslands().getIslandById(il.getUniqueId()).ifPresent(i -> this.addToTopTen(i, il.getLevel()));
                 }
             });
-            topTenLists.keySet().forEach(w -> {
-                addon.log("Generated rankings for " + w.getName());
-            });
-
+            topTenLists.keySet().forEach(w -> addon.log("Generated rankings for " + w.getName()));
         });
     }
 
@@ -532,6 +428,7 @@ public class LevelsManager {
         ld.setUwCount(Maps.asMap(r.getUwCount().elementSet(), elem -> r.getUwCount().count(elem)));
         ld.setMdCount(Maps.asMap(r.getMdCount().elementSet(), elem -> r.getMdCount().count(elem)));
         ld.setPointsToNextLevel(r.getPointsToNextLevel());
+        ld.setTotalPoints(r.getTotalPoints());
         levelsCache.put(island.getUniqueId(), ld);
         handler.saveObjectAsync(ld);
         // Update TopTen

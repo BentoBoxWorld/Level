@@ -1,11 +1,11 @@
 package world.bentobox.level.calculators;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -16,6 +16,9 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.songoda.ultimatestacker.UltimateStacker;
+import com.songoda.ultimatestacker.core.compatibility.CompatibleMaterial;
+import com.songoda.ultimatestacker.stackable.block.BlockStack;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
@@ -24,12 +27,11 @@ import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Container;
+import org.bukkit.block.*;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.bgsoftware.wildstacker.api.WildStackerAPI;
@@ -51,7 +53,7 @@ import world.bentobox.level.calculators.Results.Result;
 
 public class IslandLevelCalculator {
     private static final String LINE_BREAK = "==================================";
-    public static final long MAX_AMOUNT = 10000;
+    public static final long MAX_AMOUNT = 10000000;
     private static final List<Material> CHESTS = Arrays.asList(Material.CHEST, Material.CHEST_MINECART, Material.TRAPPED_CHEST,
             Material.SHULKER_BOX, Material.BLACK_SHULKER_BOX, Material.BLUE_SHULKER_BOX, Material.BROWN_SHULKER_BOX,
             Material.CYAN_SHULKER_BOX, Material.GRAY_SHULKER_BOX, Material.GREEN_SHULKER_BOX, Material.LIGHT_BLUE_SHULKER_BOX,
@@ -66,9 +68,10 @@ public class IslandLevelCalculator {
      * @param str - equation to evaluate
      * @return value of equation
      */
-    private static double eval(final String str) {
+    private static double eval(final String str) throws IOException {
         return new Object() {
-            int pos = -1, ch;
+            int pos = -1;
+            int ch;
 
             boolean eat(int charToEat) {
                 while (ch == ' ') nextChar();
@@ -83,10 +86,10 @@ public class IslandLevelCalculator {
                 ch = (++pos < str.length()) ? str.charAt(pos) : -1;
             }
 
-            double parse() {
+            double parse() throws IOException {
                 nextChar();
                 double x = parseExpression();
-                if (pos < str.length()) throw new RuntimeException("Unexpected: " + (char)ch);
+                if (pos < str.length()) throw new IOException("Unexpected: " + (char)ch);
                 return x;
             }
 
@@ -96,7 +99,7 @@ public class IslandLevelCalculator {
             // factor = `+` factor | `-` factor | `(` expression `)`
             //        | number | functionName factor | factor `^` factor
 
-            double parseExpression() {
+            double parseExpression() throws IOException {
                 double x = parseTerm();
                 for (;;) {
                     if      (eat('+')) x += parseTerm(); // addition
@@ -105,7 +108,7 @@ public class IslandLevelCalculator {
                 }
             }
 
-            double parseFactor() {
+            double parseFactor() throws IOException {
                 if (eat('+')) return parseFactor(); // unary plus
                 if (eat('-')) return -parseFactor(); // unary minus
 
@@ -134,11 +137,14 @@ public class IslandLevelCalculator {
                     case "tan":
                         x = Math.tan(Math.toRadians(x));
                         break;
+                    case "log":
+                        x = Math.log(x);
+                        break;
                     default:
-                        throw new RuntimeException("Unknown function: " + func);
+                        throw new IOException("Unknown function: " + func);
                     }
                 } else {
-                    throw new RuntimeException("Unexpected: " + (char)ch);
+                    throw new IOException("Unexpected: " + (char)ch);
                 }
 
                 if (eat('^')) x = Math.pow(x, parseFactor()); // exponentiation
@@ -146,7 +152,7 @@ public class IslandLevelCalculator {
                 return x;
             }
 
-            double parseTerm() {
+            double parseTerm() throws IOException {
                 double x = parseFactor();
                 for (;;) {
                     if      (eat('*')) x *= parseFactor(); // multiplication
@@ -159,7 +165,7 @@ public class IslandLevelCalculator {
     private final Level addon;
     private final Queue<Pair<Integer, Integer>> chunksToCheck;
     private final Island island;
-    private final HashMap<Material, Integer> limitCount;
+    private final Map<Material, Integer> limitCount;
     private final CompletableFuture<Results> r;
 
 
@@ -188,7 +194,7 @@ public class IslandLevelCalculator {
         results = new Results();
         duration = System.currentTimeMillis();
         chunksToCheck = getChunksToScan(island);
-        this.limitCount = new HashMap<>(addon.getBlockConfig().getBlockLimits());
+        this.limitCount = new EnumMap<>(addon.getBlockConfig().getBlockLimits());
         // Get the initial island level
         results.initialLevel.set(addon.getInitialIslandLevel(island));
         // Set up the worlds
@@ -219,7 +225,15 @@ public class IslandLevelCalculator {
     private long calculateLevel(long blockAndDeathPoints) {
         String calcString = addon.getSettings().getLevelCalc();
         String withValues = calcString.replace("blocks", String.valueOf(blockAndDeathPoints)).replace("level_cost", String.valueOf(this.addon.getSettings().getLevelCost()));
-        return (long)eval(withValues) - (addon.getSettings().isZeroNewIslandLevels() ? results.initialLevel.get() : 0);
+        long evalWithValues;
+        try {
+            evalWithValues = (long)eval(withValues);
+            return evalWithValues - (addon.getSettings().isZeroNewIslandLevels() ? results.initialLevel.get() : 0);
+
+        } catch (IOException e) {
+            addon.getPlugin().logStacktrace(e);
+            return 0L;
+        }
     }
 
     /**
@@ -351,8 +365,7 @@ public class IslandLevelCalculator {
     /**
      * Get a chunk async
      * @param env - the environment
-     * @param x - chunk x coordinate
-     * @param z - chunk z coordinate
+     * @param pairList - chunk coordinate
      * @return a future chunk or future null if there is no chunk to load, e.g., there is no island nether
      */
     private CompletableFuture<List<Chunk>> getWorldChunk(Environment env, Queue<Pair<Integer, Integer>> pairList) {
@@ -417,83 +430,48 @@ public class IslandLevelCalculator {
 
 
     /**
-     * Count the blocks on the island
-     * @param chunk chunk to scan
-     */
-    private void scanAsync(Chunk chunk) {
-        ChunkSnapshot chunkSnapshot = chunk.getChunkSnapshot();
-        for (int x = 0; x< 16; x++) {
-            // Check if the block coordinate is inside the protection zone and if not, don't count it
-            if (chunkSnapshot.getX() * 16 + x < island.getMinProtectedX() || chunkSnapshot.getX() * 16 + x >= island.getMinProtectedX() + island.getProtectionRange() * 2) {
-                continue;
-            }
-            for (int z = 0; z < 16; z++) {
-                // Check if the block coordinate is inside the protection zone and if not, don't count it
-                if (chunkSnapshot.getZ() * 16 + z < island.getMinProtectedZ() || chunkSnapshot.getZ() * 16 + z >= island.getMinProtectedZ() + island.getProtectionRange() * 2) {
-                    continue;
-                }
-                // Only count to the highest block in the world for some optimization
-                for (int y = chunk.getWorld().getMinHeight(); y < chunk.getWorld().getMaxHeight(); y++) {
-                    BlockData blockData = chunkSnapshot.getBlockData(x, y, z);
-                    boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
-                    // Slabs can be doubled, so check them twice
-                    if (Tag.SLABS.isTagged(blockData.getMaterial())) {
-                        Slab slab = (Slab)blockData;
-                        if (slab.getType().equals(Slab.Type.DOUBLE)) {
-                            checkBlock(blockData.getMaterial(), belowSeaLevel);
-                        }
-                    }
-                    // Hook for Wild Stackers (Blocks Only) - this has to use the real chunk
-                    if (addon.isStackersEnabled() && blockData.getMaterial() == Material.CAULDRON) {
-                        stackedBlocks.add(new Location(chunk.getWorld(), x + chunkSnapshot.getX() * 16,y,z + chunkSnapshot.getZ() * 16));
-                    }
-                    // Scan chests
-                    if (addon.getSettings().isIncludeChests() && CHESTS.contains(blockData.getMaterial())) {
-                        chestBlocks.add(chunk);
-                    }
-                    // Add the value of the block's material
-                    checkBlock(blockData.getMaterial(), belowSeaLevel);
-                }
-            }
-        }
-    }
-
-    /**
      * Scan all containers in a chunk and count their blocks
      * @param chunk - the chunk to scan
      */
     private void scanChests(Chunk chunk) {
         // Count blocks in chests
         for (BlockState bs : chunk.getTileEntities()) {
-            if (bs instanceof Container) {
+            if (bs instanceof Container container) {
                 if (addon.isAdvChestEnabled()) {
-                    AdvancedChest aChest = AdvancedChestsAPI.getChestManager().getAdvancedChest(bs.getLocation());
-                    if (aChest != null) {
+                    AdvancedChest<?,?> aChest = AdvancedChestsAPI.getChestManager().getAdvancedChest(bs.getLocation());
+                    if (aChest != null && aChest.getChestType().getName().equals("NORMAL")) {
                         aChest.getPages().stream().map(ChestPage::getItems).forEach(c -> {
-                            for (ItemStack i : c) {
-                                countItemStack(i);
+                            for (Object i : c) {
+                                countItemStack((ItemStack)i);
                             }
                         });
                         continue;
                     }
                 }
                 // Regular chest
-                ((Container)bs).getSnapshotInventory().forEach(this::countItemStack);
+                container.getSnapshotInventory().forEach(this::countItemStack);
             }
         }
     }
 
     private void countItemStack(ItemStack i) {
-        if (i != null && i.getType().isBlock()) {
-            for (int c = 0; c < i.getAmount(); c++) {
-                checkBlock(i.getType(), false);
+        if (i == null || !i.getType().isBlock()) return;
+
+        for (int c = 0; c < i.getAmount(); c++) {
+            if (addon.getSettings().isIncludeShulkersInChest()
+                    && i.getItemMeta() instanceof BlockStateMeta blockStateMeta
+                    && blockStateMeta.getBlockState() instanceof ShulkerBox shulkerBox) {
+                shulkerBox.getSnapshotInventory().forEach(this::countItemStack);
             }
+
+            checkBlock(i.getType(), false);
         }
     }
 
     /**
-     * Scan the chunk chests and count the blocks
-     * @param chunks - the chunk to scan
+     * Scan the chunk chests and count the blocks. Note that the chunks are a list of all the island chunks
+     * in a particular world, so the memory usage is high, but I think most servers can handle it.
+     * @param chunks - a list of chunks to scan
      * @return future that completes when the scan is done and supplies a boolean that will be true if the scan was successful, false if not
      */
     private CompletableFuture<Boolean> scanChunk(List<Chunk> chunks) {
@@ -503,12 +481,80 @@ public class IslandLevelCalculator {
         }
         // Count blocks in chunk
         CompletableFuture<Boolean> result = new CompletableFuture<>();
-
+        /*
+         * At this point, we need to grab a snapshot of each chunk and then scan it async.
+         * At the end, we make the CompletableFuture true to show it is done.
+         * I'm not sure how much lag this will cause, but as all the chunks are loaded, maybe not that much.
+         */
+        List<ChunkPair> preLoad = chunks.stream().map(c -> new ChunkPair(c.getWorld(), c, c.getChunkSnapshot())).toList();
         Bukkit.getScheduler().runTaskAsynchronously(BentoBox.getInstance(), () -> {
-            chunks.forEach(chunk -> scanAsync(chunk));
+            preLoad.forEach(this::scanAsync);
+            // Once they are all done, return to the main thread.
             Bukkit.getScheduler().runTask(addon.getPlugin(),() -> result.complete(true));
         });
         return result;
+    }
+
+    record ChunkPair(World world, Chunk chunk, ChunkSnapshot chunkSnapshot) {}
+
+    /**
+     * Count the blocks on the island
+     * @param cp chunk to scan
+     */
+    private void scanAsync(ChunkPair cp) {
+        for (int x = 0; x< 16; x++) {
+            // Check if the block coordinate is inside the protection zone and if not, don't count it
+            if (cp.chunkSnapshot.getX() * 16 + x < island.getMinProtectedX() || cp.chunkSnapshot.getX() * 16 + x >= island.getMinProtectedX() + island.getProtectionRange() * 2) {
+                continue;
+            }
+            for (int z = 0; z < 16; z++) {
+                // Check if the block coordinate is inside the protection zone and if not, don't count it
+                if (cp.chunkSnapshot.getZ() * 16 + z < island.getMinProtectedZ() || cp.chunkSnapshot.getZ() * 16 + z >= island.getMinProtectedZ() + island.getProtectionRange() * 2) {
+                    continue;
+                }
+                // Only count to the highest block in the world for some optimization
+                for (int y = cp.world.getMinHeight(); y < cp.world.getMaxHeight(); y++) {
+                    BlockData blockData = cp.chunkSnapshot.getBlockData(x, y, z);
+                    boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
+                    // Slabs can be doubled, so check them twice
+                    if (Tag.SLABS.isTagged(blockData.getMaterial())) {
+                        Slab slab = (Slab)blockData;
+                        if (slab.getType().equals(Slab.Type.DOUBLE)) {
+                            checkBlock(blockData.getMaterial(), belowSeaLevel);
+                        }
+                    }
+                    // Hook for Wild Stackers (Blocks and Spawners Only) - this has to use the real chunk
+                    if (addon.isStackersEnabled() && (blockData.getMaterial().equals(Material.CAULDRON) || blockData.getMaterial().equals(Material.SPAWNER))) {
+                        stackedBlocks.add(new Location(cp.world, (double)x + cp.chunkSnapshot.getX() * 16, y, (double)z + cp.chunkSnapshot.getZ() * 16));
+                    }
+
+                    Block block = cp.chunk.getBlock(x, y, z);
+
+                    if (addon.isUltimateStackerEnabled()) {
+                        if (!blockData.getMaterial().equals(Material.AIR)) {
+                            BlockStack stack = UltimateStacker.getInstance().getBlockStackManager().getBlock(block, CompatibleMaterial.getMaterial(block));
+                            if (stack != null) {
+                                int value = limitCount(blockData.getMaterial());
+                                if (belowSeaLevel) {
+                                    results.underWaterBlockCount.addAndGet((long) stack.getAmount() * value);
+                                    results.uwCount.add(blockData.getMaterial());
+                                } else {
+                                    results.rawBlockCount.addAndGet((long) stack.getAmount() * value);
+                                    results.mdCount.add(blockData.getMaterial());
+                                }
+                            }
+                        }
+                    }
+
+                    // Scan chests
+                    if (addon.getSettings().isIncludeChests() && CHESTS.contains(blockData.getMaterial())) {
+                        chestBlocks.add(cp.chunk);
+                    }
+                    // Add the value of the block's material
+                    checkBlock(blockData.getMaterial(), belowSeaLevel);
+                }
+            }
+        }
     }
 
     /**
@@ -549,21 +595,21 @@ public class IslandLevelCalculator {
     }
 
     private Collection<String> sortedReport(int total, Multiset<Material> materialCount) {
-        Collection<String> r = new ArrayList<>();
+        Collection<String> result = new ArrayList<>();
         Iterable<Multiset.Entry<Material>> entriesSortedByCount = Multisets.copyHighestCountFirst(materialCount).entrySet();
         for (Entry<Material> en : entriesSortedByCount) {
             Material type = en.getElement();
 
             int value = getValue(type);
 
-            r.add(type.toString() + ":"
+            result.add(type.toString() + ":"
                     + String.format("%,d", en.getCount()) + " blocks x " + value + " = " + (value * en.getCount()));
             total += (value * en.getCount());
 
         }
-        r.add("Subtotal = " + total);
-        r.add(LINE_BREAK);
-        return r;
+        result.add("Subtotal = " + total);
+        result.add(LINE_BREAK);
+        return result;
     }
 
 
@@ -590,6 +636,7 @@ public class IslandLevelCalculator {
         }
 
         long blockAndDeathPoints = this.results.rawBlockCount.get();
+        this.results.totalPoints.set(blockAndDeathPoints);
 
         if (this.addon.getSettings().getDeathPenalty() > 0)
         {
@@ -622,7 +669,7 @@ public class IslandLevelCalculator {
 
     public void scanIsland(Pipeliner pipeliner) {
         // Scan the next chunk
-        scanNextChunk().thenAccept(r -> {
+        scanNextChunk().thenAccept(result -> {
             if (!Bukkit.isPrimaryThread()) {
                 addon.getPlugin().logError("scanChunk not on Primary Thread!");
             }
@@ -637,7 +684,7 @@ public class IslandLevelCalculator {
                 }
                 return;
             }
-            if (Boolean.TRUE.equals(r) && !pipeliner.getTask().isCancelled()) {
+            if (Boolean.TRUE.equals(result) && !pipeliner.getTask().isCancelled()) {
                 // scanNextChunk returns true if there are more chunks to scan
                 scanIsland(pipeliner);
             } else {
@@ -678,13 +725,18 @@ public class IslandLevelCalculator {
         while (it.hasNext()) {
             Location v = it.next();
             Util.getChunkAtAsync(v).thenAccept(c -> {
-                Block cauldronBlock = v.getBlock();
+                Block stackedBlock = v.getBlock();
                 boolean belowSeaLevel = seaHeight > 0 && v.getBlockY() <= seaHeight;
-                if (WildStackerAPI.getWildStacker().getSystemManager().isStackedBarrel(cauldronBlock)) {
-                    StackedBarrel barrel = WildStackerAPI.getStackedBarrel(cauldronBlock);
-                    int barrelAmt = WildStackerAPI.getBarrelAmount(cauldronBlock);
+                if (WildStackerAPI.getWildStacker().getSystemManager().isStackedBarrel(stackedBlock)) {
+                    StackedBarrel barrel = WildStackerAPI.getStackedBarrel(stackedBlock);
+                    int barrelAmt = WildStackerAPI.getBarrelAmount(stackedBlock);
                     for (int _x = 0; _x < barrelAmt; _x++) {
                         checkBlock(barrel.getType(), belowSeaLevel);
+                    }
+                } else if (WildStackerAPI.getWildStacker().getSystemManager().isStackedSpawner(stackedBlock)) {
+                    int spawnerAmt = WildStackerAPI.getSpawnersAmount((CreatureSpawner) stackedBlock.getState());
+                    for (int _x = 0; _x < spawnerAmt; _x++) {
+                        checkBlock(stackedBlock.getType(), belowSeaLevel);
                     }
                 }
                 it.remove();

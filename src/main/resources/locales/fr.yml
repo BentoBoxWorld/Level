@@ -1,37 +1,175 @@
 ---
 admin:
   level:
+    parameters: "<player>"
     description: calcule le niveau d'île d'un joueur
-    parameters: "<joueur>"
+    sethandicap:
+      parameters: "<player> <handicap>"
+      description: définir le handicap de l'île, généralement le niveau de l'île de
+        départ
+      changed: "&a le handicap initial de l'île est passé de [number] à [new_number]."
+      invalid-level: "&c Handicap non valide. Utilisez un nombre entier."
+  levelstatus:
+    description: affiche le nombre d'îles dans la file d'attente pour l'analyse
+    islands-in-queue: "&a Nombre d'Îles dans la file d'attente: [number]"
   top:
     description: affiche le top 10 des îles
-    display: "&f[rank]. &a[name] &7- &b[level]"
     unknown-world: "&cMonde inconnu."
+    display: "&f[rank]. &a[name] &7- &b[level]"
     remove:
       description: retire le joueur du top 10
-      parameters: "<joueur>"
+      parameters: "<player>"
 island:
   level:
-    calculating: "&aCalcul du niveau en cours..."
-    deaths: "&c([number] morts)"
-    description: calcule le niveau de votre île ou affiche le niveau d'un [joueur]
-    island-level-is: "&aLe niveau d'île est &b[level]"
     parameters: "[joueur]"
+    description: calcule le niveau de votre île ou affiche le niveau d'un [joueur]
+    calculating: "&aCalcul du niveau en cours..."
+    estimated-wait: "&a Attente estimée: [number] seconds"
+    in-queue: "&a Vous êtes le numéro [number ] dans la file d'attente"
+    island-level-is: "&aLe niveau d'île est &b[level]"
     required-points-to-next-level: "&a[points] points avant le prochain niveau"
+    deaths: "&c([number] morts)"
     cooldown: "&cVous devez attendre &b[time] &csecondes avant de pouvoir refaire
       cette action"
+    in-progress: "&6 Le calcul du niveau de l'île est en cours ..."
+    time-out: "&c Le calcul du niveau a pris trop de temps. Veuillez réessayer plus
+      tard."
   top:
     description: affiche le top 10
-    gui-heading: "&6[name]: &B[rank]"
     gui-title: "&aTop 10"
+    gui-heading: "&6[name]: &B[rank]"
     island-level: "&BNiveau [level]"
     warp-to: "&ATéléportation vers l'île de [name]"
-  value:
-    description: affiche la valeur d'un bloc
-    success: "&7Valeur de ce bloc : &e[value]"
-    success-underwater: "&7Valeur de ce bloc en dessous du niveau de la mer : &e[value]"
-    empty-hand: "&cIl n'y a aucun bloc dans votre main"
-    no-value: "&cCet objet n'a pas de valeur."
+  level-details:
+    above-sea-level-blocks: Blocs au-dessus du niveau de la mer
+    spawners: Spawners
+    underwater-blocks: Blocs en-dessous du niveau de la mer
+    all-blocks: Total des blocs
+    no-island: "&c Pas d'île!"
+    names-island: île de [name]
+    syntax: "[name] x [number]"
+    hint: "&c Exécuter level pour voir le rapport des blocs"
+level:
+  commands:
+    value:
+      parameters: "[hand|<material>]"
+      description: affiche la valeur des blocs. Ajoutez 'hand' à la fin pour afficher
+        la valeur de l'objet en main.
+  gui:
+    titles:
+      top: "&0&l Top Islands"
+      detail-panel: "&0&l [name]'s island"
+      value-panel: "&0&l Block Values"
+    buttons:
+      island:
+        empty: "&f&l [name]. place"
+        name: "&f&l [name]"
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: "[player]'s Island"
+        owner: "&7&l Propriétaire: &r&b [player]"
+        members-title: "&7&l Membres:"
+        member: "&b - [player]"
+        unknown: inconnue
+        place: "&7&o [number]. &r&7 place"
+        level: "&7 Level: &o [number]"
+      material:
+        name: "&f&l [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "&7 Block id: &e [id]"
+        value: "&7 Block value: &e [number]"
+        limit: "&7 Block limit: &e [number]"
+        count: "&7 Nombre de blocs: &e [number]"
+        calculated: "&7 Valeur calculée: &e [number]"
+      all_blocks:
+        name: "&f&l Tous les blocs"
+        description: |-
+          &7 Afficher tous les blocs
+          &7 sur l'île.
+      above_sea_level:
+        name: "&f&l Blocs au-dessus du niveau de la mer"
+        description: |-
+          &7 Afficher uniquement les blocs
+          &7 qui sont au-dessus du niveau
+          &7 de la mer.
+      underwater:
+        name: "&f&l Blocs sous le niveau de la mer"
+        description: |-
+          &7 Afficher uniquement les blocs
+          &7 situés sous le niveau
+          &7 de la mer.
+      spawner:
+        name: "&f&l Spawners"
+        description: "&7 Afficher uniquement les spawners."
+      filters:
+        name:
+          name: "&f&l STrier par nom"
+          description: "&7 Trier tous les blocs par nom."
+        value:
+          name: "&f&l Trier par valeur"
+          description: "&7 Triez tous les blocs par leur valeur."
+        count:
+          name: "&f&l Trier par nombre"
+          description: "&7 Trier tous les blocs par leur montant."
+      value:
+        name: "&f&l [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "&7 Block id: &e [id]"
+        value: "&7 Block value: &e [number]"
+        underwater: "&7 Sous le niveau de la mer : &e [number]"
+        limit: "&7 Block limit: &e [number]"
+      previous:
+        name: "&f&l Page précédente"
+        description: "&7 Passer à la page [number]"
+      next:
+        name: "&f&l Page suivante"
+        description: "&7 Passer à la page [number]"
+      search:
+        name: "&f&l Rechercher"
+        description: "&7 Recherche une valeur \n&7 spécifique."
+        search: "&b Valeur : [value]"
+    tips:
+      click-to-view: "&e Cliquez &7 pour afficher."
+      click-to-previous: "&e Cliquez &7 pour afficher la page précédente."
+      click-to-next: "&e Cliquez &7 pour afficher la page suivante."
+      click-to-select: "&e Cliquez &7 pour sélectionner."
+      left-click-to-cycle-up: "&e Clic gauche &7 pour monter."
+      right-click-to-cycle-down: "&e Clic droit &7 pour descendre."
+      left-click-to-change: "&e Clic gauche &7 pour éditer."
+      right-click-to-clear: "&e Clic droit &7 pour effacer."
+      click-to-asc: "&e Cliquez &7 pour trier par ordre croissant."
+      click-to-desc: "&e Cliquez &7 pour trier par ordre décroissant."
+      click-to-warp: "&e Cliquer &7 to warp."
+      click-to-visit: "&e Cliquer &7 pour visiter."
+      right-click-to-visit: "&e Clic droit&7 pour visiter."
+  conversations:
+    prefix: "&l&6 [BentoBox]: &r"
+    no-data: "&c Niveau d'exécution pour voir le rapport de blocage."
+    cancel-string: annuler
+    exit-string: annuler, sortir, quitter
+    write-search: "&e Veuillez entrer une valeur de recherche. (Ecrivez 'cancel' pour
+      quitter)"
+    search-updated: "&a Valeur de recherche mise à jour."
+    cancelled: "&c Conversation annulée !"
+    no-value: "&c Cet item n'a aucune valeur."
+    unknown-item: "&c Le '[material]' n'existe pas dans le jeu."
+    value: "&7 La valeur de '[material]' est : &e[value]"
+    value-underwater: "&7 La valeur de '[material]' sous le niveau de la mer : &e[value]"
+    empty-hand: "&c Il n'y a pas de blocs dans votre main"
 meta:
   authors:
-  - plagoutte
+    '0': plagoutte

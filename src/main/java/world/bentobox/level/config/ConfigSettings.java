@@ -90,7 +90,7 @@ public class ConfigSettings implements ConfigObject {
     @ConfigComment("Island level calculation formula")
     @ConfigComment("blocks - the sum total of all block values, less any death penalty")
     @ConfigComment("level_cost - in a linear equation, the value of one level")
-    @ConfigComment("This formula can include +,=,*,/,sqrt,^,sin,cos,tan. Result will always be rounded to a long integer")
+    @ConfigComment("This formula can include +,=,*,/,sqrt,^,sin,cos,tan,log (natural log). Result will always be rounded to a long integer")
     @ConfigComment("for example, an alternative non-linear option could be: 3 * sqrt(blocks / level_cost)")
     @ConfigEntry(path = "level-calc")
     private String levelCalc = "blocks / level_cost";
@@ -119,6 +119,12 @@ public class ConfigSettings implements ConfigObject {
     @ConfigComment("Shows large level values rounded down, e.g., 10,345 -> 10k")
     @ConfigEntry(path = "shorthand")
     private boolean shorthand = false;
+    @ConfigComment("")
+    @ConfigComment("Include Shulker Box content in chests in level calculations.")
+    @ConfigComment("Will count blocks in Shulker Boxes inside of chests.")
+    @ConfigComment("NOTE: include-chests needs to be enabled for this to work!.")
+    @ConfigEntry(path = "include-shulkers-in-chest")
+    private boolean includeShulkersInChest = false;
 
 
     /**
@@ -385,4 +391,17 @@ public class ConfigSettings implements ConfigObject {
         this.logReportToConsole = logReportToConsole;
     }
 
+    /**
+     * @return includeShulkersInChest
+     */
+    public boolean isIncludeShulkersInChest() {
+        return includeShulkersInChest;
+    }
+
+    /**
+     * @param includeShulkersInChest the includeChests to set
+     */
+    public void setIncludeShulkersInChest(boolean includeShulkersInChest) {
+        this.includeShulkersInChest = includeShulkersInChest;
+    }
 }

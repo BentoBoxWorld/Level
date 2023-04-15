@@ -110,7 +110,7 @@ public class IslandLevelCommand extends CompositeCommand {
                 user.sendMessage("island.level.deaths", "[number]", String.valueOf(results.getDeathHandicap()));
             }
             // Send player how many points are required to reach next island level
-            if (results.getPointsToNextLevel() >= 0 && results.getPointsToNextLevel() < 10000) {
+            if (results.getPointsToNextLevel() >= 0) {
                 user.sendMessage("island.level.required-points-to-next-level", "[points]", String.valueOf(results.getPointsToNextLevel()));
             }
             // Tell other team members
