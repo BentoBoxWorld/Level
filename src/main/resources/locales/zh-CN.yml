@@ -90,6 +90,7 @@ level:
         name: "&f&l 所有方块"
         description: "&7 显示岛屿上所有的方块"
       above_sea_level:
+        name: "&f&l 海平面以上的方块"
         description: |-
           &7 只显示所有
           &7 海平面以上的方块
