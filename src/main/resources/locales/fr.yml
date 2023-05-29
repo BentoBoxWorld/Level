@@ -16,7 +16,9 @@ admin:
     description: affiche le top 10 des îles
     unknown-world: "&cMonde inconnu."
     display: "&f[rank]. &a[name] &7- &b[level]"
-    remove: {}
+    remove:
+      description: retire le joueur du top 10
+      parameters: "<player>"
 island:
   level:
     parameters: "[joueur]"
@@ -27,6 +29,8 @@ island:
     island-level-is: "&aLe niveau d'île est &b[level]"
     required-points-to-next-level: "&a[points] points avant le prochain niveau"
     deaths: "&c([number] morts)"
+    cooldown: "&cVous devez attendre &b[time] &csecondes avant de pouvoir refaire
+      cette action"
     in-progress: "&6 Le calcul du niveau de l'île est en cours ..."
     time-out: "&c Le calcul du niveau a pris trop de temps. Veuillez réessayer plus
       tard."
