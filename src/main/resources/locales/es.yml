@@ -50,11 +50,15 @@ island:
     hint: "&cEscriba /level para ver el recuento de bloques"
 level:
   commands:
-    value: {}
+    value:
+      parameters: "[hand|<material>]"
+      description: muestra el valor de los bloques. Añade 'hand' al final para mostrar
+        el valor del bloque de la mano.
   gui:
     titles:
       top: "&0&lTop de islas"
       detail-panel: "&0&lIsla de [name]"
+      value-panel: "&0&l Valores de los Bloques"
     buttons:
       island:
         empty: "&f&l[name]. lugar"
@@ -115,14 +119,30 @@ level:
         count:
           name: "&f&lOrdenar por cantidad"
           description: "&7Ordenar todos los bloques por cantidad."
-      value: {}
+      value:
+        name: "&f&l [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "&7 ID de Bloque: &e [id]"
+        value: "&7 Valor del Bloque: &e [number]"
+        underwater: "&7 Por debajo del nivel del mar: &e [number]"
+        limit: "&7 Límite de bloque: &e [number]"
       previous:
         name: "&f&lPágina anterior"
         description: "&7Cambiar a la página [number]"
       next:
         name: "&f&lSiguiente página"
         description: "&7Cambiar a la página [number]"
-      search: {}
+      search:
+        name: "&f&l Buscar"
+        description: |-
+          &7 Buscar un determinado
+          &7 valor.
+        search: "&b Valor: [value]"
     tips:
       click-to-view: "&eClic &7para ver."
       click-to-previous: "&eClic &7 para ir a la página anterior."
@@ -130,6 +150,23 @@ level:
       click-to-select: "&eClic &7 para seleccionar."
       left-click-to-cycle-up: "&eClic izquierdo &7para ir hacia arriba."
       right-click-to-cycle-down: "&eClic derecho &7para ir hacia abajo."
+      left-click-to-change: "&e Clic Izquierdo &7 para editar."
+      right-click-to-clear: "&e Clic Derecho &7 para borrar."
+      click-to-asc: "&e Clic &7 para ordenar de forma creciente."
+      click-to-desc: "&e Clic &7 para ordenar de forma decreciente."
+      click-to-warp: "&e Clic &7 para teletransportarse."
+      click-to-visit: "&e Clic &7 para visitar."
+      right-click-to-visit: "&e Clic Derecho &7 para visitar."
   conversations:
     prefix: "&l&6[BentoBox]: &r"
     no-data: "&cEscriba /level para ver el recuento de bloques."
+    cancel-string: cancelar
+    exit-string: cancelar, salir, abandonar
+    write-search: "&e Introduce un valor de búsqueda. (Escribe 'cancel' para salir)"
+    search-updated: "&a Valor de búsqueda actualizado."
+    cancelled: "&c ¡Conversación cancelada!"
+    no-value: "&c Ese ítem no tiene valor."
+    unknown-item: "&c El '[material]' no existe en el juego."
+    value: "&7 El valor de '[material]' es: &e[value]"
+    value-underwater: "&7 El valor de '[material]' por debajo del nivel del mar: &e[value]"
+    empty-hand: "&c No hay bloques en tu mano"
