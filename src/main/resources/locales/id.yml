@@ -2,54 +2,170 @@
 admin:
   level:
     parameters: "<player>"
-    description: hitung level pulau untuk player
+    description: hitung level pulau untuk pemain
     sethandicap:
       parameters: "<player> <handicap>"
-      description: mengatur handicap pulau, biasanya tingkat pulau pemula
-      changed: "& Handicap pulau awal diubah dari [number] menjadi [new_number]."
-      invalid-level: "& c Handicap tidak valid. Gunakan angka bulat."
+      description: mengatur handicap pulau, biasanya level pulau pemula
+      changed: "&a Handicap pulau awal diubah dari [number] menjadi [new_number]."
+      invalid-level: "&c Handicap tidak valid. Gunakan angka bulat."
   levelstatus:
-    description: menunjukkan berapa pulau yang menunggu pindaian
-    islands-in-queue: "&a Pulau di dalam menunggu: [number]"
+    description: menunjukkan berapa banyak pulau dalam antrian untuk pemindaian
+    islands-in-queue: "&a Pulau di dalam antrian: [number]"
   top:
     description: menunjukkan daftar sepuluh besar
-    unknown-world: "&c World tidak ditemukan!"
+    unknown-world: "&c Dunia tidak ditemukan!"
     display: "&f[rank]. &a[name] &7- &b[level]"
     remove:
-      description: menghilangkan player dari sepuluh besar
+      description: menghapus pemain dari sepuluh besar
       parameters: "<player>"
 island:
   level:
     parameters: "[player]"
-    description: hitung level pulau Anda atau tunjukkan level [player]
+    description: hitung level pulau kamu atau melihat level [player]
     calculating: "&a Menghitung level..."
-    estimated-wait: "&a Waktu tunggu perkiraan: [number] detik"
-    in-queue: "&aAnda berada pada posisi [number] pada urutan menunggu"
+    estimated-wait: "&a Perkiraan menunggu: [number] detik"
+    in-queue: "&a Kamu berada pada antrian nomor [number]"
     island-level-is: "&a Level pulau adalah &b[level]"
     required-points-to-next-level: "&a [points] poin dibutuhkan hingga level selanjutnya"
     deaths: "&c([number] kematian)"
-    cooldown: "&c Anda harus menunggu &b[time] &c detik sebelum Anda dapat melakukannya
+    cooldown: "&c Kamu harus menunggu &b[time] &c detik sebelum kamu dapat melakukannya
       lagi"
     in-progress: "&6 Perhitungan level pulau sedang dijalankan..."
     time-out: "&c Perhitungan level pulau terlalu lama. Coba lagi nanti."
   top:
-    description: menunjukkan sepuluh besar
+    description: menunjukkan Sepuluh Besar
     gui-title: "&a Sepuluh Besar"
     gui-heading: "&6[name]: &B[rank]"
     island-level: "&b Level [level]"
-    warp-to: "&A Warping ke pulau milik [name]"
+    warp-to: "&A Warp ke pulau [name]"
   level-details:
     above-sea-level-blocks: Blok di atas permukaan laut
     spawners: Spawner
     underwater-blocks: Blok di bawah permukaan laut
     all-blocks: Semua blok
-    no-island: "&c Tidak terdapat pulau!"
-    names-island: Pulau milik [name]
+    no-island: "&c Tidak ada pulau!"
+    names-island: Pulau [name]
     syntax: "[name] x [number]"
-    hint: "& c Jalankan perintah level untuk melihat laporan blok"
-  value:
-    description: menunjukkan nilai dari apapun blok
-    success: "&7 Nilai blok ini adalah: &e[value]"
-    success-underwater: "&7 Nilai blok ini di bawah permukaan laut adalah: &e[value]"
-    empty-hand: "&c Tidak ada balok di tangan Anda"
-    no-value: "&c Benda itu tidak bernilai."
+    hint: "&c Jalankan perintah level untuk melihat laporan blok"
+level:
+  commands:
+    value:
+      parameters: "[hand|<material>]"
+      description: menunjukkan nilai blok. Tambah 'hand' di akhir untuk menjukkan
+        nilai item di tangan.
+  gui:
+    titles:
+      top: "&0&l Pulau Terbaik"
+      detail-panel: "&0&l Pulau [name]"
+      value-panel: "&0&l Nilai Blok"
+    buttons:
+      island:
+        empty: "&f&l [name]. place"
+        name: "&f&l [name]"
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: Pulau [player]
+        owner: "&7&l Pemilik: &r&b [player]"
+        members-title: "&7&l Anggota:"
+        member: "&b - [player]"
+        unknown: tidak diketahui
+        place: "&r&7Peringkat &7&o [number]."
+        level: "&7 Level: &o [number]"
+      material:
+        name: "&f&l [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "&7 Id blok: &e [id]"
+        value: "&7 Nilai blok: &e [number]"
+        limit: "&7 Batas blok: &e [number]"
+        count: "&7 Jumlah blok: &e [number]"
+        calculated: "&7 Nilai yang dihitung: &e [number]"
+      all_blocks:
+        name: "&f&l Semua blok"
+        description: |-
+          &7 Tampilkan semua blok
+          &7 di pulau.
+      above_sea_level:
+        name: "&f&l Blok Diatas Permukaan Laut"
+        description: |-
+          &7 Hanya mengampilkan blok
+          &7 yang berada di atas
+          &7 permukaan laut.
+      underwater:
+        name: "&f&l Blok Di bawah Permukaan Laut"
+        description: |-
+          &7 Hanya menampilkan blok
+          &7 yang berada di bawah
+          &7 permukaan laut.
+      spawner:
+        name: "&f&l Spawner"
+        description: "&7 Hanya tampilkan spawner."
+      filters:
+        name:
+          name: "&f&l Urut berdasarkan Nama"
+          description: "&7 Mengurutkan semua blok berdasarkan nama."
+        value:
+          name: "&f&l Urut berdasarkan Nilai"
+          description: "&7 Mengurutkan semua blok berdasarkan nilainya."
+        count:
+          name: "&f&l Urut berdasarkan Jumlah"
+          description: "&7 Mengurutkan semua blok berdasarkan jumlahnya."
+      value:
+        name: "&f&l [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "&7 Id blok: &e [id]"
+        value: "&7 Nilai blok: &e [number]"
+        underwater: "&7 Dibawah permukaan laut: &e [number]"
+        limit: "&7 Batas block: &e [number]"
+      previous:
+        name: "&f&l Halaman sebelumnya"
+        description: "&7 Beralih ke halaman [number]"
+      next:
+        name: "&f&l Halaman selanjutnya"
+        description: "&7 Beralih ke halaman [number]"
+      search:
+        name: "&f&l Cari"
+        description: |-
+          &7 Mencari nilai yang
+          &7 spesifik.
+        search: "&b Nilai: [value]"
+    tips:
+      click-to-view: "&e Klik &7 untuk melihat."
+      click-to-previous: "&e Klik &7 untuk melihat halaman sebelumnya."
+      click-to-next: "&e Klik &7 untuk melihat halaman selanjutnya."
+      click-to-select: "&e Klik &7 untuk memilih."
+      left-click-to-cycle-up: "&e Klik Kiri &7 untuk memutar ke atas."
+      right-click-to-cycle-down: "&e Klik Kanan &7 memutar ke bawah."
+      left-click-to-change: "&e Klik Kiri &7 untuk mengubah."
+      right-click-to-clear: "&e Klik Kanan &7 untuk membersihkan."
+      click-to-asc: "&e Klik &7 untuk mengurutkan dalam urutan menaik."
+      click-to-desc: "&e Klik &7 untuk mengurutkan dalam urutan menurun."
+      click-to-warp: "&e Klik &7 untuk warp."
+      click-to-visit: "&e Klik &7 untuk mengunjungi."
+      right-click-to-visit: "&e Klik Kanan &7 untuk mengunjungi."
+  conversations:
+    prefix: "&l&6 [BentoBox]: &r"
+    no-data: "&c Jalankan perintah level untuk melihat laporan blok"
+    cancel-string: batal
+    exit-string: batal, keluar, berhenti
+    write-search: "&e Tolong masukkan pencarian nilai. (Ketik 'batal' untuk keluar)"
+    search-updated: "&a Nilai pencarian diperbarui."
+    cancelled: "&c Percakapan dibatalkan!"
+    no-value: "&c Item itu tidak ada nilai."
+    unknown-item: "&c '[material]' tidak ada di dalam permainan."
+    value: "&7 Nilai dari '[material]' adalah: &e[value]"
+    value-underwater: "&7Nilai dari '[material]' di bawah permukaan laut: &e[value]"
+    empty-hand: "&c Tidak ada blok di tangan mu"
