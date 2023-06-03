@@ -71,7 +71,7 @@
         <!-- Do not change unless you want different name for local builds. -->
         <build.number>-LOCAL</build.number>
         <!-- This allows to change between versions. -->
-        <build.version>2.10.0</build.version>
+        <build.version>2.11.0</build.version>
         <sonar.projectKey>BentoBoxWorld_Level</sonar.projectKey>
         <sonar.organization>bentobox-world</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -127,18 +127,6 @@
     </pluginRepositories>
 
     <repositories>
-        <repository>
-            <id>spigot-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots</url>
-        </repository>
-        <repository>
-            <id>codemc-repo</id>
-            <url>https://repo.codemc.org/repository/maven-public/</url>
-        </repository>
-        <repository>
-            <id>codemc-public</id>
-            <url>https://repo.codemc.org/repository/maven-public/</url>
-        </repository>
         <!--Wild Stacker repo -->
         <repository>
             <id>jitpack.io</id>
@@ -153,6 +141,18 @@
         <repository>
             <id>songoda-public</id>
             <url>https://repo.songoda.com/repository/public/</url>
+        </repository>
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots</url>
+        </repository>
+        <repository>
+            <id>codemc-repo</id>
+            <url>https://repo.codemc.org/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>codemc-public</id>
+            <url>https://repo.codemc.org/repository/maven-public/</url>
         </repository>
     </repositories>
 
@@ -331,10 +331,10 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.0.1</version>
                 <configuration>
+                    <doclint>none</doclint>  <!-- Turnoff all checks -->
                     <failOnError>false</failOnError>
-                    <additionalJOption>-Xdoclint:none</additionalJOption>
                     <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
-                    <source>16</source>
+                    <source>17</source>
                 </configuration>
                 <executions>
                     <execution>
