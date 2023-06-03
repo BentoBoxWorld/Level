@@ -190,9 +190,9 @@ public class Level extends Addon {
 
     /**
      * Compares versions
-     * @param version1
-     * @param version2
-     * @return <0 if version 1 is older than version 2, =0 if the same, >0 if version 1 is newer than version 2
+     * @param version1 version 1
+     * @param version2 version 2
+     * @return {@code <0 if version 1 is older than version 2, =0 if the same, >0 if version 1 is newer than version 2}
      */
     public static int compareVersions(String version1, String version2) {
         int comparisonResult = 0;
