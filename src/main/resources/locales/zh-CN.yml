@@ -5,7 +5,7 @@ admin:
     description: 计算指定玩家的岛屿等级
     sethandicap:
       parameters: "<player> <handicap>"
-      description: 设置偏差值，通常用于调整新建的初始岛屿等级为零。实际岛屿等级 - <handicap> = 计算的岛屿等级
+      description: 设置偏差值，通常用于抵消初始岛屿等级，来保证岛屿等级从零开始。实际岛屿等级 - <handicap> = 最终的岛屿等级
       changed: "&a 岛屿的偏差值从 [number] 更改为 [new_number]"
       invalid-level: "&c 偏差值无效，请使用整数"
   levelstatus:
@@ -90,7 +90,7 @@ level:
         name: "&f&l 所有方块"
         description: "&7 显示岛屿上所有的方块"
       above_sea_level:
-        name: "&f&l 方块在海平面以上的价值"
+        name: "&f&l 海平面以上的方块"
         description: |-
           &7 只显示所有
           &7 海平面以上的方块
@@ -122,7 +122,7 @@ level:
           [id]
         id: "&7 方块ID：&e [id]"
         value: "&7 方块价值：&e [number]"
-        underwater: "&7 方块海平面下价值：&e [number]"
+        underwater: "&7 海平面以下方块的价值：&e [number]"
         limit: "&7 方块限制：&e [number]"
       previous:
         name: "&f&l 上一页"
