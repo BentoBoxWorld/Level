@@ -1,5 +1,6 @@
 package world.bentobox.level.config;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -125,6 +126,12 @@ public class ConfigSettings implements ConfigObject {
     @ConfigComment("NOTE: include-chests needs to be enabled for this to work!.")
     @ConfigEntry(path = "include-shulkers-in-chest")
     private boolean includeShulkersInChest = false;
+
+    @ConfigComment("")
+    @ConfigComment("Disables hooking with other plugins.")
+    @ConfigComment("Example: disabled-plugin-hooks: [UltimateStacker, RoseStacker]")
+    @ConfigEntry(path = "disabled-plugin-hooks")
+    private List<String> disabledPluginHooks = new ArrayList<>();
 
 
     /**
@@ -403,5 +410,13 @@ public class ConfigSettings implements ConfigObject {
      */
     public void setIncludeShulkersInChest(boolean includeShulkersInChest) {
         this.includeShulkersInChest = includeShulkersInChest;
+    }
+
+    public List<String> getDisabledPluginHooks() {
+        return disabledPluginHooks;
+    }
+
+    public void setDisabledPluginHooks(List<String> disabledPluginHooks) {
+        this.disabledPluginHooks = disabledPluginHooks;
     }
 }
