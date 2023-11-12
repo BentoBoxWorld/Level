@@ -126,32 +126,42 @@ public class Level extends Addon {
         // Check if WildStackers is enabled on the server
         // I only added support for counting blocks into the island level
         // Someone else can PR if they want spawners added to the Leveling system :)
-        stackersEnabled = Bukkit.getPluginManager().isPluginEnabled("WildStacker");
-        if (stackersEnabled) {
-            log("Hooked into WildStackers.");
-        }
-        // Check if AdvancedChests is enabled on the server
-        Plugin advChest = Bukkit.getPluginManager().getPlugin("AdvancedChests");
-        advChestEnabled = advChest != null;
-        if (advChestEnabled) {
-            // Check version
-            if (compareVersions(advChest.getDescription().getVersion(), "23.0") > 0) {
-                log("Hooked into AdvancedChests.");
-            } else {
-                logError("Could not hook into AdvancedChests " + advChest.getDescription().getVersion() + " - requires version 23.0 or later");
-                advChestEnabled = false;
+        if ( !settings.getDisabledPluginHooks().contains("WildStacker") ) {
+            stackersEnabled = Bukkit.getPluginManager().isPluginEnabled("WildStacker");
+            if (stackersEnabled) {
+                log("Hooked into WildStackers.");
             }
         }
+
+        // Check if AdvancedChests is enabled on the server
+        if ( !settings.getDisabledPluginHooks().contains("AdvancedChests") ) {
+            Plugin advChest = Bukkit.getPluginManager().getPlugin("AdvancedChests");
+            advChestEnabled = advChest != null;
+            if (advChestEnabled) {
+                // Check version
+                if (compareVersions(advChest.getDescription().getVersion(), "23.0") > 0) {
+                    log("Hooked into AdvancedChests.");
+                } else {
+                    logError("Could not hook into AdvancedChests " + advChest.getDescription().getVersion() + " - requires version 23.0 or later");
+                    advChestEnabled = false;
+                }
+            }
+        }
+
         // Check if RoseStackers is enabled
-        roseStackersEnabled = Bukkit.getPluginManager().isPluginEnabled("RoseStacker");
-        if (roseStackersEnabled) {
-            log("Hooked into RoseStackers.");
+        if ( !settings.getDisabledPluginHooks().contains("RoseStacker") ) {
+            roseStackersEnabled = Bukkit.getPluginManager().isPluginEnabled("RoseStacker");
+            if (roseStackersEnabled) {
+                log("Hooked into RoseStackers.");
+            }
         }
 
         // Check if UltimateStacker is enabled
-        ultimateStackerEnabled = Bukkit.getPluginManager().isPluginEnabled("UltimateStacker");
-        if (ultimateStackerEnabled) {
-            log("Hooked into UltimateStacker.");
+        if ( !settings.getDisabledPluginHooks().contains("UltimateStacker") ) {
+            ultimateStackerEnabled = Bukkit.getPluginManager().isPluginEnabled("UltimateStacker");
+            if (ultimateStackerEnabled) {
+                log("Hooked into UltimateStacker.");
+            }
         }
     }
 
