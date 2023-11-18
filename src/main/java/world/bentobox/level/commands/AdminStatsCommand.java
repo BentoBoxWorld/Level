@@ -37,7 +37,12 @@ public class AdminStatsCommand extends CompositeCommand {
 	@Override
 	public boolean execute(User user, String label, List<String> args) {
 		user.sendMessage("admin.stats.title");
-		for (Entry<World, TopTenData> en : level.getManager().getTopTenLists().entrySet()) {
+		Map<World, TopTenData> topTenLists = level.getManager().getTopTenLists();
+		if (topTenLists.isEmpty()) {
+			user.sendMessage("admin.stats.no-data");
+			return false;
+		}
+		for (Entry<World, TopTenData> en : topTenLists.entrySet()) {
 			user.sendMessage("admin.stats.world", TextVariables.NAME,
 					level.getPlugin().getIWM().getWorldName(en.getKey()));
 			Map<UUID, Long> topTen = en.getValue().getTopTen();
