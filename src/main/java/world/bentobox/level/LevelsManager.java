@@ -356,7 +356,7 @@ public class LevelsManager {
 	public int getRank(@NonNull World world, UUID uuid) {
 		createAndCleanRankings(world);
 		Stream<Entry<UUID, Long>> stream = topTenLists.get(world).getTopTen().entrySet().stream()
-				.filter(e -> addon.getIslands().isOwner(world, e.getKey())).filter(l -> l.getValue() > 0)
+				.filter(e -> addon.getIslands().hasIsland(world, e.getKey())).filter(l -> l.getValue() > 0)
 				.sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
 		return (int) (stream.takeWhile(x -> !x.getKey().equals(uuid)).map(Map.Entry::getKey).count() + 1);
 	}

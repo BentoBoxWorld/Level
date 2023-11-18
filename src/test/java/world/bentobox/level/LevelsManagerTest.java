@@ -70,65 +70,63 @@ import world.bentobox.level.objects.TopTenData;
  *
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Bukkit.class, BentoBox.class, DatabaseSetup.class, PanelBuilder.class})
+@PrepareForTest({ Bukkit.class, BentoBox.class, DatabaseSetup.class, PanelBuilder.class })
 public class LevelsManagerTest {
 
-    @Mock
-    private static AbstractDatabaseHandler<Object> handler;
-    @Mock
-    Level addon;
-    @Mock
-    private BentoBox plugin;
-    @Mock
-    private Settings pluginSettings;
+	@Mock
+	private static AbstractDatabaseHandler<Object> handler;
+	@Mock
+	Level addon;
+	@Mock
+	private BentoBox plugin;
+	@Mock
+	private Settings pluginSettings;
 
+	// Class under test
+	private LevelsManager lm;
+	@Mock
+	private Island island;
+	@Mock
+	private Pipeliner pipeliner;
+	private CompletableFuture<Results> cf;
+	private UUID uuid;
+	@Mock
+	private World world;
+	@Mock
+	private Player player;
+	@Mock
+	private ConfigSettings settings;
+	@Mock
+	private User user;
+	@Mock
+	private PlayersManager pm;
+	@Mock
+	private Inventory inv;
+	@Mock
+	private IslandWorldManager iwm;
+	@Mock
+	private PluginManager pim;
+	@Mock
+	private IslandLevels levelsData;
+	@Mock
+	private IslandsManager im;
+	@Mock
+	private BukkitScheduler scheduler;
 
-    // Class under test
-    private LevelsManager lm;
-    @Mock
-    private Island island;
-    @Mock
-    private Pipeliner pipeliner;
-    private CompletableFuture<Results> cf;
-    private UUID uuid;
-    @Mock
-    private World world;
-    @Mock
-    private Player player;
-    @Mock
-    private ConfigSettings settings;
-    @Mock
-    private User user;
-    @Mock
-    private PlayersManager pm;
-    @Mock
-    private Inventory inv;
-    @Mock
-    private IslandWorldManager iwm;
-    @Mock
-    private PluginManager pim;
-    @Mock
-    private IslandLevels levelsData;
-    @Mock
-    private IslandsManager im;
-    @Mock
-    private BukkitScheduler scheduler;
+	@SuppressWarnings("unchecked")
+	@BeforeClass
+	public static void beforeClass() {
+		// This has to be done beforeClass otherwise the tests will interfere with each
+		// other
+		handler = mock(AbstractDatabaseHandler.class);
+		// Database
+		PowerMockito.mockStatic(DatabaseSetup.class);
+		DatabaseSetup dbSetup = mock(DatabaseSetup.class);
+		when(DatabaseSetup.getDatabase()).thenReturn(dbSetup);
+		when(dbSetup.getHandler(any())).thenReturn(handler);
+	}
 
-
-
-    @SuppressWarnings("unchecked")
-    @BeforeClass
-    public static void beforeClass() {
-        // This has to be done beforeClass otherwise the tests will interfere with each other
-        handler = mock(AbstractDatabaseHandler.class);
-        // Database
-        PowerMockito.mockStatic(DatabaseSetup.class);
-        DatabaseSetup dbSetup = mock(DatabaseSetup.class);
-        when(DatabaseSetup.getDatabase()).thenReturn(dbSetup);
-        when(dbSetup.getHandler(any())).thenReturn(handler);
-    }
-
-    /**
+	/**
      * @throws java.lang.Exception
      */
     @SuppressWarnings("unchecked")
@@ -164,8 +162,7 @@ public class LevelsManagerTest {
         when(island.getWorld()).thenReturn(world);
         when(island.getUniqueId()).thenReturn(UUID.randomUUID().toString());
         // Default to uuid's being island owners
-        when(im.isOwner(eq(world), any())).thenReturn(true);
-        when(im.getOwner(any(), any(UUID.class))).thenAnswer(in -> in.getArgument(1, UUID.class));
+        when(im.hasIsland(eq(world), any(UUID.class))).thenReturn(true);
         when(im.getIsland(world, uuid)).thenReturn(island);
         when(im.getIslandById(anyString())).thenReturn(Optional.of(island));
 
@@ -235,220 +232,229 @@ public class LevelsManagerTest {
         lm.migrate();
     }
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @After
-    public void tearDown() throws Exception {
-        deleteAll(new File("database"));
-        User.clearUsers();
-        Mockito.framework().clearInlineMocks();
-    }
+	/**
+	 * @throws java.lang.Exception
+	 */
+	@After
+	public void tearDown() throws Exception {
+		deleteAll(new File("database"));
+		User.clearUsers();
+		Mockito.framework().clearInlineMocks();
+	}
 
-    private static void deleteAll(File file) throws IOException {
-        if (file.exists()) {
-            Files.walk(file.toPath())
-            .sorted(Comparator.reverseOrder())
-            .map(Path::toFile)
-            .forEach(File::delete);
-        }
-    }
+	private static void deleteAll(File file) throws IOException {
+		if (file.exists()) {
+			Files.walk(file.toPath()).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+		}
+	}
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#calculateLevel(UUID, world.bentobox.bentobox.database.objects.Island)}.
-     */
-    @Test
-    public void testCalculateLevel() {
-        Results results = new Results();
-        results.setLevel(10000);
-        results.setInitialLevel(3);
-        lm.calculateLevel(uuid, island);
-        // Complete the pipelined completable future
-        cf.complete(results);
+	/**
+	 * Test method for
+	 * {@link world.bentobox.level.LevelsManager#calculateLevel(UUID, world.bentobox.bentobox.database.objects.Island)}.
+	 */
+	@Test
+	public void testCalculateLevel() {
+		Results results = new Results();
+		results.setLevel(10000);
+		results.setInitialLevel(3);
+		lm.calculateLevel(uuid, island);
+		// Complete the pipelined completable future
+		cf.complete(results);
 
-        assertEquals(10000L, lm.getLevelsData(island).getLevel());
-        //Map<UUID, Long> tt = lm.getTopTen(world, 10);
-        //assertEquals(1, tt.size());
-        //assertTrue(tt.get(uuid) == 10000);
-        assertEquals(10000L, lm.getIslandMaxLevel(world, uuid));
+		assertEquals(10000L, lm.getLevelsData(island).getLevel());
+		// Map<UUID, Long> tt = lm.getTopTen(world, 10);
+		// assertEquals(1, tt.size());
+		// assertTrue(tt.get(uuid) == 10000);
+		assertEquals(10000L, lm.getIslandMaxLevel(world, uuid));
 
-        results.setLevel(5000);
-        lm.calculateLevel(uuid, island);
-        // Complete the pipelined completable future
-        cf.complete(results);
-        assertEquals(5000L, lm.getLevelsData(island).getLevel());
-        // Still should be 10000
-        assertEquals(10000L, lm.getIslandMaxLevel(world, uuid));
+		results.setLevel(5000);
+		lm.calculateLevel(uuid, island);
+		// Complete the pipelined completable future
+		cf.complete(results);
+		assertEquals(5000L, lm.getLevelsData(island).getLevel());
+		// Still should be 10000
+		assertEquals(10000L, lm.getIslandMaxLevel(world, uuid));
 
-    }
+	}
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#getInitialLevel(world.bentobox.bentobox.database.objects.Island)}.
-     */
-    @Test
-    public void testGetInitialLevel() {
-        assertEquals(0,lm.getInitialLevel(island));
-    }
+	/**
+	 * Test method for
+	 * {@link world.bentobox.level.LevelsManager#getInitialLevel(world.bentobox.bentobox.database.objects.Island)}.
+	 */
+	@Test
+	public void testGetInitialLevel() {
+		assertEquals(0, lm.getInitialLevel(island));
+	}
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#getIslandLevel(org.bukkit.World, java.util.UUID)}.
-     */
-    @Test
-    public void testGetIslandLevel() {
-        assertEquals(-5, lm.getIslandLevel(world, uuid));
-    }
+	/**
+	 * Test method for
+	 * {@link world.bentobox.level.LevelsManager#getIslandLevel(org.bukkit.World, java.util.UUID)}.
+	 */
+	@Test
+	public void testGetIslandLevel() {
+		assertEquals(-5, lm.getIslandLevel(world, uuid));
+	}
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#getPointsToNextString(org.bukkit.World, java.util.UUID)}.
-     */
-    @Test
-    public void testGetPointsToNextString() {
-        // No island player
-        assertEquals("", lm.getPointsToNextString(world, UUID.randomUUID()));
-        // Player has island
-        assertEquals("0", lm.getPointsToNextString(world, uuid));
-    }
+	/**
+	 * Test method for
+	 * {@link world.bentobox.level.LevelsManager#getPointsToNextString(org.bukkit.World, java.util.UUID)}.
+	 */
+	@Test
+	public void testGetPointsToNextString() {
+		// No island player
+		assertEquals("", lm.getPointsToNextString(world, UUID.randomUUID()));
+		// Player has island
+		assertEquals("0", lm.getPointsToNextString(world, uuid));
+	}
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#getIslandLevelString(org.bukkit.World, java.util.UUID)}.
-     */
-    @Test
-    public void testGetIslandLevelString() {
-        assertEquals("-5", lm.getIslandLevelString(world, uuid));
-    }
+	/**
+	 * Test method for
+	 * {@link world.bentobox.level.LevelsManager#getIslandLevelString(org.bukkit.World, java.util.UUID)}.
+	 */
+	@Test
+	public void testGetIslandLevelString() {
+		assertEquals("-5", lm.getIslandLevelString(world, uuid));
+	}
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#getLevelsData(java.util.UUID)}.
-     */
-    @Test
-    public void testGetLevelsData() {
-        assertEquals(levelsData, lm.getLevelsData(island));
+	/**
+	 * Test method for
+	 * {@link world.bentobox.level.LevelsManager#getLevelsData(java.util.UUID)}.
+	 */
+	@Test
+	public void testGetLevelsData() {
+		assertEquals(levelsData, lm.getLevelsData(island));
 
-    }
+	}
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#formatLevel(long)}.
-     */
-    @Test
-    public void testFormatLevel() {
-        assertEquals("123456789", lm.formatLevel(123456789L));
-        when(settings.isShorthand()).thenReturn(true);
-        assertEquals("123.5M", lm.formatLevel(123456789L));
-        assertEquals("1.2k", lm.formatLevel(1234L));
-        assertEquals("123.5G", lm.formatLevel(123456789352L));
-        assertEquals("1.2T", lm.formatLevel(1234567893524L));
-        assertEquals("12345.7T", lm.formatLevel(12345678345345349L));
+	/**
+	 * Test method for {@link world.bentobox.level.LevelsManager#formatLevel(long)}.
+	 */
+	@Test
+	public void testFormatLevel() {
+		assertEquals("123456789", lm.formatLevel(123456789L));
+		when(settings.isShorthand()).thenReturn(true);
+		assertEquals("123.5M", lm.formatLevel(123456789L));
+		assertEquals("1.2k", lm.formatLevel(1234L));
+		assertEquals("123.5G", lm.formatLevel(123456789352L));
+		assertEquals("1.2T", lm.formatLevel(1234567893524L));
+		assertEquals("12345.7T", lm.formatLevel(12345678345345349L));
 
-    }
+	}
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#getTopTen(org.bukkit.World, int)}.
-     */
-    @Test
-    public void testGetTopTenEmpty() {
-        Map<UUID, Long> tt = lm.getTopTen(world, Level.TEN);
-        assertTrue(tt.isEmpty());
-    }
+	/**
+	 * Test method for
+	 * {@link world.bentobox.level.LevelsManager#getTopTen(org.bukkit.World, int)}.
+	 */
+	@Test
+	public void testGetTopTenEmpty() {
+		Map<UUID, Long> tt = lm.getTopTen(world, Level.TEN);
+		assertTrue(tt.isEmpty());
+	}
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#getTopTen(org.bukkit.World, int)}.
-     */
-    @Test
-    public void testGetTopTen() {
-        testLoadTopTens();
-        Map<UUID, Long> tt = lm.getTopTen(world, Level.TEN);
-        assertFalse(tt.isEmpty());
-        assertEquals(1, tt.size());
-        assertEquals(1, lm.getTopTen(world, 1).size());
-    }
+	/**
+	 * Test method for
+	 * {@link world.bentobox.level.LevelsManager#getTopTen(org.bukkit.World, int)}.
+	 */
+	@Test
+	public void testGetTopTen() {
+		testLoadTopTens();
+		Map<UUID, Long> tt = lm.getTopTen(world, Level.TEN);
+		assertFalse(tt.isEmpty());
+		assertEquals(1, tt.size());
+		assertEquals(1, lm.getTopTen(world, 1).size());
+	}
 
-    /**
+	/**
      * Test method for {@link world.bentobox.level.LevelsManager#getTopTen(org.bukkit.World, int)}.
      */
     @Test
     public void testGetTopTenNoOwners() {
-        when(im.isOwner(eq(world), any())).thenReturn(false);
+        when(im.hasIsland(eq(world), any(UUID.class))).thenReturn(false);
         testLoadTopTens();
         Map<UUID, Long> tt = lm.getTopTen(world, Level.TEN);
         assertTrue(tt.isEmpty());
     }
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#hasTopTenPerm(org.bukkit.World, java.util.UUID)}.
-     */
-    @Test
-    public void testHasTopTenPerm() {
-        assertTrue(lm.hasTopTenPerm(world, uuid));
-    }
+	/**
+	 * Test method for
+	 * {@link world.bentobox.level.LevelsManager#hasTopTenPerm(org.bukkit.World, java.util.UUID)}.
+	 */
+	@Test
+	public void testHasTopTenPerm() {
+		assertTrue(lm.hasTopTenPerm(world, uuid));
+	}
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#loadTopTens()}.
-     */
-    @Test
-    public void testLoadTopTens() {
-        ArgumentCaptor<Runnable> task = ArgumentCaptor.forClass(Runnable.class);
-        lm.loadTopTens();
-        PowerMockito.verifyStatic(Bukkit.class); // 1
-        Bukkit.getScheduler();
-        verify(scheduler).runTaskAsynchronously(eq(plugin), task.capture());
-        task.getValue().run();
-        verify(addon).log("Generating rankings");
-        verify(addon).log("Generated rankings for bskyblock-world");
+	/**
+	 * Test method for {@link world.bentobox.level.LevelsManager#loadTopTens()}.
+	 */
+	@Test
+	public void testLoadTopTens() {
+		ArgumentCaptor<Runnable> task = ArgumentCaptor.forClass(Runnable.class);
+		lm.loadTopTens();
+		PowerMockito.verifyStatic(Bukkit.class); // 1
+		Bukkit.getScheduler();
+		verify(scheduler).runTaskAsynchronously(eq(plugin), task.capture());
+		task.getValue().run();
+		verify(addon).log("Generating rankings");
+		verify(addon).log("Generated rankings for bskyblock-world");
 
-    }
+	}
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#removeEntry(org.bukkit.World, java.util.UUID)}.
-     */
-    @Test
-    public void testRemoveEntry() {
-        testLoadTopTens();
-        Map<UUID, Long> tt = lm.getTopTen(world, Level.TEN);
-        assertTrue(tt.containsKey(uuid));
-        lm.removeEntry(world, uuid);
-        tt = lm.getTopTen(world, Level.TEN);
-        assertFalse(tt.containsKey(uuid));
-    }
+	/**
+	 * Test method for
+	 * {@link world.bentobox.level.LevelsManager#removeEntry(org.bukkit.World, java.util.UUID)}.
+	 */
+	@Test
+	public void testRemoveEntry() {
+		testLoadTopTens();
+		Map<UUID, Long> tt = lm.getTopTen(world, Level.TEN);
+		assertTrue(tt.containsKey(uuid));
+		lm.removeEntry(world, uuid);
+		tt = lm.getTopTen(world, Level.TEN);
+		assertFalse(tt.containsKey(uuid));
+	}
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#setInitialIslandLevel(world.bentobox.bentobox.database.objects.Island, long)}.
-     */
-    @Test
-    public void testSetInitialIslandLevel() {
-        lm.setInitialIslandLevel(island, Level.TEN);
-        assertEquals(Level.TEN, lm.getInitialLevel(island));
-    }
+	/**
+	 * Test method for
+	 * {@link world.bentobox.level.LevelsManager#setInitialIslandLevel(world.bentobox.bentobox.database.objects.Island, long)}.
+	 */
+	@Test
+	public void testSetInitialIslandLevel() {
+		lm.setInitialIslandLevel(island, Level.TEN);
+		assertEquals(Level.TEN, lm.getInitialLevel(island));
+	}
 
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#setIslandLevel(org.bukkit.World, java.util.UUID, long)}.
-     */
-    @Test
-    public void testSetIslandLevel() {
-        lm.setIslandLevel(world, uuid, 1234);
-        assertEquals(1234, lm.getIslandLevel(world, uuid));
+	/**
+	 * Test method for
+	 * {@link world.bentobox.level.LevelsManager#setIslandLevel(org.bukkit.World, java.util.UUID, long)}.
+	 */
+	@Test
+	public void testSetIslandLevel() {
+		lm.setIslandLevel(world, uuid, 1234);
+		assertEquals(1234, lm.getIslandLevel(world, uuid));
 
-    }
+	}
 
-
-    /**
-     * Test method for {@link world.bentobox.level.LevelsManager#getRank(World, UUID)}
-     */
-    @Test
-    public void testGetRank() {
-        lm.createAndCleanRankings(world);
-        Map<World, TopTenData> ttl = lm.getTopTenLists();
-        Map<UUID, Long> tt = ttl.get(world).getTopTen();
-        for (long i = 100; i < 150; i++) {
-            tt.put(UUID.randomUUID(), i);
-        }
-        // Put player as lowest rank
-        tt.put(uuid, 10L);
-        assertEquals(51, lm.getRank(world, uuid));
-        // Put player as highest rank
-        tt.put(uuid, 1000L);
-        assertEquals(1, lm.getRank(world, uuid));
-        // Unknown UUID - lowest rank + 1
-        assertEquals(52, lm.getRank(world, UUID.randomUUID()));
-    }
+	/**
+	 * Test method for
+	 * {@link world.bentobox.level.LevelsManager#getRank(World, UUID)}
+	 */
+	@Test
+	public void testGetRank() {
+		lm.createAndCleanRankings(world);
+		Map<World, TopTenData> ttl = lm.getTopTenLists();
+		Map<UUID, Long> tt = ttl.get(world).getTopTen();
+		for (long i = 100; i < 150; i++) {
+			tt.put(UUID.randomUUID(), i);
+		}
+		// Put player as lowest rank
+		tt.put(uuid, 10L);
+		assertEquals(51, lm.getRank(world, uuid));
+		// Put player as highest rank
+		tt.put(uuid, 1000L);
+		assertEquals(1, lm.getRank(world, uuid));
+		// Unknown UUID - lowest rank + 1
+		assertEquals(52, lm.getRank(world, UUID.randomUUID()));
+	}
 
 }
