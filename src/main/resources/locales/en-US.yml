@@ -22,8 +22,18 @@ admin:
     remove:
       description: "remove player from Top Ten"
       parameters: "<player>"
-
-
+  stats:
+    description: "show stats on islands on this server"
+    title: "Server Island Stats"
+    world: "&a [name]"
+    no-data: "&c No data to process."
+    average-level: "Average Island Level: [number]"
+    median-level: "Median Island Level: [number]"
+    mode-level: "Mode Island Level: [number]"
+    highest-level: "Highest Island Level: [number]"
+    lowest-level: "Lowest Island Level: [number]"
+    distribution: "Island Level Distribution:"
+    islands: "islands"
 island:
   level: 
     parameters: "[player]"
