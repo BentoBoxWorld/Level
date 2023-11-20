@@ -52,132 +52,132 @@ import world.bentobox.level.objects.TopTenData;
 @PrepareForTest({ Bukkit.class, BentoBox.class })
 public class AdminStatsCommandTest {
 
-	@Mock
-	private CompositeCommand ic;
-	private UUID uuid;
-	@Mock
-	private User user;
-	@Mock
-	private IslandsManager im;
-	@Mock
-	private Island island;
-	@Mock
-	private Level addon;
-	@Mock
-	private World world;
-	@Mock
-	private IslandWorldManager iwm;
-	@Mock
-	private GameModeAddon gameModeAddon;
-	@Mock
-	private Player p;
-	@Mock
-	private LocalesManager lm;
-	@Mock
-	private PlayersManager pm;
+    @Mock
+    private CompositeCommand ic;
+    private UUID uuid;
+    @Mock
+    private User user;
+    @Mock
+    private IslandsManager im;
+    @Mock
+    private Island island;
+    @Mock
+    private Level addon;
+    @Mock
+    private World world;
+    @Mock
+    private IslandWorldManager iwm;
+    @Mock
+    private GameModeAddon gameModeAddon;
+    @Mock
+    private Player p;
+    @Mock
+    private LocalesManager lm;
+    @Mock
+    private PlayersManager pm;
 
-	private AdminStatsCommand asc;
-	private TopTenData ttd;
-	@Mock
-	private LevelsManager manager;
-	@Mock
-	private Server server;
+    private AdminStatsCommand asc;
+    private TopTenData ttd;
+    @Mock
+    private LevelsManager manager;
+    @Mock
+    private Server server;
 
-	@Before
-	public void setUp() {
-		// Set up plugin
-		BentoBox plugin = mock(BentoBox.class);
-		Whitebox.setInternalState(BentoBox.class, "instance", plugin);
-		User.setPlugin(plugin);
-		when(addon.getPlugin()).thenReturn(plugin);
+    @Before
+    public void setUp() {
+	// Set up plugin
+	BentoBox plugin = mock(BentoBox.class);
+	Whitebox.setInternalState(BentoBox.class, "instance", plugin);
+	User.setPlugin(plugin);
+	when(addon.getPlugin()).thenReturn(plugin);
 
-		// Addon
-		when(ic.getAddon()).thenReturn(addon);
-		when(ic.getPermissionPrefix()).thenReturn("bskyblock.");
-		when(ic.getLabel()).thenReturn("island");
-		when(ic.getTopLabel()).thenReturn("island");
-		when(ic.getWorld()).thenReturn(world);
-		when(ic.getTopLabel()).thenReturn("bsb");
+	// Addon
+	when(ic.getAddon()).thenReturn(addon);
+	when(ic.getPermissionPrefix()).thenReturn("bskyblock.");
+	when(ic.getLabel()).thenReturn("island");
+	when(ic.getTopLabel()).thenReturn("island");
+	when(ic.getWorld()).thenReturn(world);
+	when(ic.getTopLabel()).thenReturn("bsb");
 
-		// IWM friendly name
-		when(plugin.getIWM()).thenReturn(iwm);
-		when(iwm.getFriendlyName(any())).thenReturn("BSkyBlock");
+	// IWM friendly name
+	when(plugin.getIWM()).thenReturn(iwm);
+	when(iwm.getFriendlyName(any())).thenReturn("BSkyBlock");
 
-		// World
-		when(world.toString()).thenReturn("world");
-		when(world.getName()).thenReturn("BSkyBlock_world");
+	// World
+	when(world.toString()).thenReturn("world");
+	when(world.getName()).thenReturn("BSkyBlock_world");
 
-		// Player manager
-		when(plugin.getPlayers()).thenReturn(pm);
-		when(pm.getUser(anyString())).thenReturn(user);
-		// topTen
-		when(addon.getManager()).thenReturn(manager);
-		// User
-		uuid = UUID.randomUUID();
-		when(user.getUniqueId()).thenReturn(uuid);
-		when(user.getTranslation(any())).thenAnswer(invocation -> invocation.getArgument(0, String.class));
+	// Player manager
+	when(plugin.getPlayers()).thenReturn(pm);
+	when(pm.getUser(anyString())).thenReturn(user);
+	// topTen
+	when(addon.getManager()).thenReturn(manager);
+	// User
+	uuid = UUID.randomUUID();
+	when(user.getUniqueId()).thenReturn(uuid);
+	when(user.getTranslation(any())).thenAnswer(invocation -> invocation.getArgument(0, String.class));
 
-		// Bukkit
-		PowerMockito.mockStatic(Bukkit.class);
-		when(Bukkit.getServer()).thenReturn(server);
-		// Mock item factory (for itemstacks)
-		ItemFactory itemFactory = mock(ItemFactory.class);
-		ItemMeta itemMeta = mock(ItemMeta.class);
-		when(itemFactory.getItemMeta(any())).thenReturn(itemMeta);
-		when(server.getItemFactory()).thenReturn(itemFactory);
-		when(Bukkit.getItemFactory()).thenReturn(itemFactory);
+	// Bukkit
+	PowerMockito.mockStatic(Bukkit.class);
+	when(Bukkit.getServer()).thenReturn(server);
+	// Mock item factory (for itemstacks)
+	ItemFactory itemFactory = mock(ItemFactory.class);
+	ItemMeta itemMeta = mock(ItemMeta.class);
+	when(itemFactory.getItemMeta(any())).thenReturn(itemMeta);
+	when(server.getItemFactory()).thenReturn(itemFactory);
+	when(Bukkit.getItemFactory()).thenReturn(itemFactory);
 
-		// Top ten
-		ttd = new TopTenData(world);
-		Map<UUID, Long> topten = new HashMap<>();
-		Random r = new Random();
-		for (int i = 0; i < 1000; i++) {
-			topten.put(UUID.randomUUID(), r.nextLong(20000));
-		}
-		ttd.setTopTen(topten);
-		asc = new AdminStatsCommand(addon, ic);
+	// Top ten
+	ttd = new TopTenData(world);
+	Map<String, Long> topten = new HashMap<>();
+	Random r = new Random();
+	for (int i = 0; i < 1000; i++) {
+	    topten.put(UUID.randomUUID().toString(), r.nextLong(20000));
 	}
+	ttd.setTopTen(topten);
+	asc = new AdminStatsCommand(addon, ic);
+    }
 
-	@After
-	public void tearDown() {
-		User.clearUsers();
-	}
+    @After
+    public void tearDown() {
+	User.clearUsers();
+    }
 
-	/**
-	 * Test method for
-	 * {@link world.bentobox.level.commands.AdminStatsCommand#setup()}.
-	 */
-	@Test
-	public void testSetup() {
-		assertEquals("bskyblock.admin.stats", asc.getPermission());
-		assertFalse(asc.isOnlyPlayer());
-		assertEquals("admin.stats.description", asc.getDescription());
+    /**
+     * Test method for
+     * {@link world.bentobox.level.commands.AdminStatsCommand#setup()}.
+     */
+    @Test
+    public void testSetup() {
+	assertEquals("bskyblock.admin.stats", asc.getPermission());
+	assertFalse(asc.isOnlyPlayer());
+	assertEquals("admin.stats.description", asc.getDescription());
 
-	}
+    }
 
-	/**
-	 * Test method for
-	 * {@link world.bentobox.level.commands.AdminStatsCommand#execute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
-	 */
-	@Test
-	public void testExecuteUserStringListOfString() {
-		assertFalse(asc.execute(user, "", List.of()));
-		verify(user).sendMessage("admin.stats.title");
-		verify(user).sendMessage("admin.stats.no-data");
-	}
+    /**
+     * Test method for
+     * {@link world.bentobox.level.commands.AdminStatsCommand#execute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
+     */
+    @Test
+    public void testExecuteUserStringListOfString() {
+	assertFalse(asc.execute(user, "", List.of()));
+	verify(user).sendMessage("admin.stats.title");
+	verify(user).sendMessage("admin.stats.no-data");
+    }
 
-	/**
-	 * Test method for
-	 * {@link world.bentobox.level.commands.AdminStatsCommand#execute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
-	 */
-	@Test
-	public void testExecuteUserStringListOfStringLevels() {
-		Map<World, TopTenData> map = new HashMap<>();
-		map.put(world, ttd);
-		when(manager.getTopTenLists()).thenReturn(map);
-		assertTrue(asc.execute(user, "", List.of()));
-		verify(user).sendMessage("admin.stats.title");
-		verify(user, never()).sendMessage("admin.stats.no-data");
-	}
+    /**
+     * Test method for
+     * {@link world.bentobox.level.commands.AdminStatsCommand#execute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
+     */
+    @Test
+    public void testExecuteUserStringListOfStringLevels() {
+	Map<World, TopTenData> map = new HashMap<>();
+	map.put(world, ttd);
+	when(manager.getTopTenLists()).thenReturn(map);
+	assertTrue(asc.execute(user, "", List.of()));
+	verify(user).sendMessage("admin.stats.title");
+	verify(user, never()).sendMessage("admin.stats.no-data");
+    }
 
 }

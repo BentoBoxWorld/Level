@@ -5,12 +5,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -51,122 +51,130 @@ import world.bentobox.level.objects.TopTenData;
 @PrepareForTest({ Bukkit.class, BentoBox.class })
 public class AdminTopRemoveCommandTest {
 
-	@Mock
-	private CompositeCommand ic;
-	private UUID uuid;
-	@Mock
-	private User user;
-	@Mock
-	private IslandsManager im;
-	@Mock
-	private Island island;
-	@Mock
-	private Level addon;
-	@Mock
-	private World world;
-	@Mock
-	private IslandWorldManager iwm;
-	@Mock
-	private GameModeAddon gameModeAddon;
-	@Mock
-	private Player p;
-	@Mock
-	private LocalesManager lm;
-	@Mock
-	private PlayersManager pm;
+    @Mock
+    private CompositeCommand ic;
+    private UUID uuid;
+    @Mock
+    private User user;
+    @Mock
+    private IslandsManager im;
+    @Mock
+    private Island island;
+    @Mock
+    private Level addon;
+    @Mock
+    private World world;
+    @Mock
+    private IslandWorldManager iwm;
+    @Mock
+    private GameModeAddon gameModeAddon;
+    @Mock
+    private Player p;
+    @Mock
+    private LocalesManager lm;
+    @Mock
+    private PlayersManager pm;
 
-	private AdminTopRemoveCommand atrc;
-	@Mock
-	private TopTenData ttd;
-	@Mock
-	private LevelsManager manager;
-	@Mock
-	private Server server;
+    private AdminTopRemoveCommand atrc;
+    @Mock
+    private TopTenData ttd;
+    @Mock
+    private LevelsManager manager;
+    @Mock
+    private Server server;
 
-	@Before
-	public void setUp() {
-		// Set up plugin
-		BentoBox plugin = mock(BentoBox.class);
-		Whitebox.setInternalState(BentoBox.class, "instance", plugin);
-		User.setPlugin(plugin);
-		// Addon
-		when(ic.getAddon()).thenReturn(addon);
-		when(ic.getPermissionPrefix()).thenReturn("bskyblock.");
-		when(ic.getLabel()).thenReturn("island");
-		when(ic.getTopLabel()).thenReturn("island");
-		when(ic.getWorld()).thenReturn(world);
-		when(ic.getTopLabel()).thenReturn("bsb");
+    @Before
+    public void setUp() {
+	// Set up plugin
+	BentoBox plugin = mock(BentoBox.class);
+	Whitebox.setInternalState(BentoBox.class, "instance", plugin);
+	User.setPlugin(plugin);
 
-		// IWM friendly name
-		when(plugin.getIWM()).thenReturn(iwm);
-		when(iwm.getFriendlyName(any())).thenReturn("BSkyBlock");
+	// Addon
+	when(ic.getAddon()).thenReturn(addon);
+	when(ic.getPermissionPrefix()).thenReturn("bskyblock.");
+	when(ic.getLabel()).thenReturn("island");
+	when(ic.getTopLabel()).thenReturn("island");
+	when(ic.getWorld()).thenReturn(world);
+	when(ic.getTopLabel()).thenReturn("bsb");
 
-		// World
-		when(world.toString()).thenReturn("world");
-		when(world.getName()).thenReturn("BSkyBlock_world");
+	// IWM friendly name
+	when(plugin.getIWM()).thenReturn(iwm);
+	when(iwm.getFriendlyName(any())).thenReturn("BSkyBlock");
 
-		// Player manager
-		when(plugin.getPlayers()).thenReturn(pm);
-		when(pm.getUser(anyString())).thenReturn(user);
-		// topTen
-		when(addon.getManager()).thenReturn(manager);
-		// User
-		uuid = UUID.randomUUID();
-		when(user.getUniqueId()).thenReturn(uuid);
-		when(user.getTranslation(any())).thenAnswer(invocation -> invocation.getArgument(0, String.class));
+	// World
+	when(world.toString()).thenReturn("world");
+	when(world.getName()).thenReturn("BSkyBlock_world");
 
-		// Bukkit
-		PowerMockito.mockStatic(Bukkit.class);
-		when(Bukkit.getServer()).thenReturn(server);
-		// Mock item factory (for itemstacks)
-		ItemFactory itemFactory = mock(ItemFactory.class);
-		ItemMeta itemMeta = mock(ItemMeta.class);
-		when(itemFactory.getItemMeta(any())).thenReturn(itemMeta);
-		when(server.getItemFactory()).thenReturn(itemFactory);
-		when(Bukkit.getItemFactory()).thenReturn(itemFactory);
+	// Player manager
+	when(plugin.getPlayers()).thenReturn(pm);
+	when(pm.getUser(anyString())).thenReturn(user);
+	// topTen
+	when(addon.getManager()).thenReturn(manager);
+	// User
+	uuid = UUID.randomUUID();
+	when(user.getUniqueId()).thenReturn(uuid);
+	when(user.getTranslation(any())).thenAnswer(invocation -> invocation.getArgument(0, String.class));
+	// Island
+	when(island.getUniqueId()).thenReturn(uuid.toString());
+	when(island.getOwner()).thenReturn(uuid);
+	// Island Manager
+	when(plugin.getIslands()).thenReturn(im);
+	when(im.getIslands(any(), any(User.class))).thenReturn(Set.of(island));
+	when(im.getIslands(any(), any(UUID.class))).thenReturn(Set.of(island));
 
-		atrc = new AdminTopRemoveCommand(addon, ic);
-	}
+	// Bukkit
+	PowerMockito.mockStatic(Bukkit.class);
+	when(Bukkit.getServer()).thenReturn(server);
+	// Mock item factory (for itemstacks)
+	ItemFactory itemFactory = mock(ItemFactory.class);
+	ItemMeta itemMeta = mock(ItemMeta.class);
+	when(itemFactory.getItemMeta(any())).thenReturn(itemMeta);
+	when(server.getItemFactory()).thenReturn(itemFactory);
+	when(Bukkit.getItemFactory()).thenReturn(itemFactory);
 
-	@After
-	public void tearDown() {
-		User.clearUsers();
-	}
+	atrc = new AdminTopRemoveCommand(addon, ic);
+    }
 
-	/**
-	 * Test method for
-	 * {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#AdminTopRemoveCommand(world.bentobox.level.Level, world.bentobox.bentobox.api.commands.CompositeCommand)}.
-	 */
-	@Test
-	public void testAdminTopRemoveCommand() {
-		assertEquals("remove", atrc.getLabel());
-		assertEquals("delete", atrc.getAliases().get(0));
-	}
+    @After
+    public void tearDown() {
+	User.clearUsers();
+    }
 
-	/**
-	 * Test method for
-	 * {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#setup()}.
-	 */
-	@Test
-	public void testSetup() {
-		assertEquals("bskyblock.admin.top.remove", atrc.getPermission());
-		assertEquals("admin.top.remove.parameters", atrc.getParameters());
-		assertEquals("admin.top.remove.description", atrc.getDescription());
-		assertFalse(atrc.isOnlyPlayer());
+    /**
+     * Test method for
+     * {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#AdminTopRemoveCommand(world.bentobox.level.Level, world.bentobox.bentobox.api.commands.CompositeCommand)}.
+     */
+    @Test
+    public void testAdminTopRemoveCommand() {
+	assertEquals("remove", atrc.getLabel());
+	assertEquals("delete", atrc.getAliases().get(0));
+    }
 
-	}
+    /**
+     * Test method for
+     * {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#setup()}.
+     */
+    @Test
+    public void testSetup() {
+	assertEquals("bskyblock.admin.top.remove", atrc.getPermission());
+	assertEquals("admin.top.remove.parameters", atrc.getParameters());
+	assertEquals("admin.top.remove.description", atrc.getDescription());
+	assertFalse(atrc.isOnlyPlayer());
 
-	/**
-	 * Test method for
-	 * {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#canExecute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
-	 */
-	@Test
-	public void testCanExecuteWrongArgs() {
-		assertFalse(atrc.canExecute(user, "delete", Collections.emptyList()));
-		verify(user).sendMessage("commands.help.header", TextVariables.LABEL, "BSkyBlock");
-	}
+    }
 
-	/**
+    /**
+     * Test method for
+     * {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#canExecute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
+     */
+    @Test
+    public void testCanExecuteWrongArgs() {
+	assertFalse(atrc.canExecute(user, "delete", Collections.emptyList()));
+	verify(user).sendMessage("commands.help.header", TextVariables.LABEL, "BSkyBlock");
+    }
+
+    /**
      * Test method for {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#canExecute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
      */
     @Test
@@ -176,25 +184,25 @@ public class AdminTopRemoveCommandTest {
         verify(user).sendMessage("general.errors.unknown-player", TextVariables.NAME, "tastybento");
     }
 
-	/**
-	 * Test method for
-	 * {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#canExecute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
-	 */
-	@Test
-	public void testCanExecuteKnown() {
-		assertTrue(atrc.canExecute(user, "delete", Collections.singletonList("tastybento")));
-	}
+    /**
+     * Test method for
+     * {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#canExecute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
+     */
+    @Test
+    public void testCanExecuteKnown() {
+	assertTrue(atrc.canExecute(user, "delete", Collections.singletonList("tastybento")));
+    }
 
-	/**
-	 * Test method for
-	 * {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#execute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
-	 */
-	@Test
-	public void testExecuteUserStringListOfString() {
-		testCanExecuteKnown();
-		assertTrue(atrc.execute(user, "delete", Collections.singletonList("tastybento")));
-		verify(manager).removeEntry(any(World.class), eq(uuid));
-		verify(user).sendMessage("general.success");
-	}
+    /**
+     * Test method for
+     * {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#execute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
+     */
+    @Test
+    public void testExecuteUserStringListOfString() {
+	testCanExecuteKnown();
+	assertTrue(atrc.execute(user, "delete", Collections.singletonList("tastybento")));
+	verify(manager).removeEntry(world, uuid.toString());
+	verify(user).sendMessage("general.success");
+    }
 
 }
