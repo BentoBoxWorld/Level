@@ -83,7 +83,8 @@ public class PlaceholderManagerTest {
 	names.put(UUID.randomUUID(), "vicky");
     }
     private Map<String, Island> islands = new HashMap<>();
-    private Map<String, Long> map = new HashMap<>();
+    private Map<String, Long> map = new LinkedHashMap<>();
+    private Map<Island, Long> map2 = new LinkedHashMap<>();
     private @NonNull IslandLevels data;
     @Mock
     private PlayersManager pm;
@@ -105,13 +106,14 @@ public class PlaceholderManagerTest {
         int i = 0;
         for (Entry<UUID, String> n : names.entrySet()) {
             UUID uuid = UUID.randomUUID(); // Random island ID
-            map.put(uuid.toString(), (long)(100 - i++)); // level
+            Long value = (long)(100 - i++);
+            map.put(uuid.toString(), value); // level
             Island is = new Island();
             is.setUniqueId(uuid.toString());
             is.setOwner(n.getKey());
             is.setName(n.getValue() + "'s island");
             islands.put(uuid.toString(), is);
-            
+            map2.put(is, value);
         }
         // Sort
         map = map.entrySet().stream()
@@ -145,6 +147,7 @@ public class PlaceholderManagerTest {
         when(lm.getPointsToNextString(any(), any())).thenReturn("1234567");
         when(lm.getIslandMaxLevel(any(), any())).thenReturn(987654L);
         when(lm.getTopTen(world, Level.TEN)).thenReturn(map);
+        when(lm.getWeightedTopTen(world, Level.TEN)).thenReturn(map2);
         when(lm.formatLevel(any())).thenAnswer((Answer<String>) invocation -> invocation.getArgument(0, Long.class).toString());
         
         data = new IslandLevels("uniqueId");
@@ -206,12 +209,12 @@ public class PlaceholderManagerTest {
     @Test
     public void testGetRankName() {
 	// Test extremes
-	assertEquals("tasty", phm.getRankName(world, 0));
-	assertEquals("vicky", phm.getRankName(world, 100));
+	assertEquals("tasty", phm.getRankName(world, 0, false));
+	assertEquals("vicky", phm.getRankName(world, 100, false));
 	// Test the ranks
 	int rank = 1;
 	for (String name : names.values()) {
-	    assertEquals(name, phm.getRankName(world, rank++));
+	    assertEquals(name, phm.getRankName(world, rank++, false));
 	}
 
     }
@@ -223,12 +226,12 @@ public class PlaceholderManagerTest {
     @Test
     public void testGetRankIslandName() {
 	// Test extremes
-	assertEquals("tasty's island", phm.getRankIslandName(world, 0));
-	assertEquals("vicky's island", phm.getRankIslandName(world, 100));
+	assertEquals("tasty's island", phm.getRankIslandName(world, 0, false));
+	assertEquals("vicky's island", phm.getRankIslandName(world, 100, false));
 	// Test the ranks
 	int rank = 1;
 	for (String name : names.values()) {
-	    assertEquals(name + "'s island", phm.getRankIslandName(world, rank++));
+	    assertEquals(name + "'s island", phm.getRankIslandName(world, rank++, false));
 	}
 
     }
@@ -240,11 +243,11 @@ public class PlaceholderManagerTest {
     @Test
     public void testGetRankMembers() {
 	// Test extremes
-	check(1, phm.getRankMembers(world, 0));
-	check(2, phm.getRankMembers(world, 100));
+	check(1, phm.getRankMembers(world, 0, false));
+	check(2, phm.getRankMembers(world, 100, false));
 	// Test the ranks
 	for (int rank = 1; rank < 11; rank++) {
-	    check(3, phm.getRankMembers(world, rank));
+	    check(3, phm.getRankMembers(world, rank, false));
 	}
     }
 
@@ -261,11 +264,27 @@ public class PlaceholderManagerTest {
     @Test
     public void testGetRankLevel() {
 	// Test extremes
-	assertEquals("100", phm.getRankLevel(world, 0));
-	assertEquals("91", phm.getRankLevel(world, 100));
+	assertEquals("100", phm.getRankLevel(world, 0, false));
+	assertEquals("91", phm.getRankLevel(world, 100, false));
 	// Test the ranks
 	for (int rank = 1; rank < 11; rank++) {
-	    assertEquals(String.valueOf(101 - rank), phm.getRankLevel(world, rank));
+	    assertEquals(String.valueOf(101 - rank), phm.getRankLevel(world, rank, false));
+	}
+
+    }
+
+    /**
+     * Test method for
+     * {@link world.bentobox.level.PlaceholderManager#getRankLevel(org.bukkit.World, int)}.
+     */
+    @Test
+    public void testGetWeightedRankLevel() {
+	// Test extremes
+	assertEquals("100", phm.getRankLevel(world, 0, true));
+	assertEquals("91", phm.getRankLevel(world, 100, true));
+	// Test the ranks
+	for (int rank = 1; rank < 11; rank++) {
+	    assertEquals(String.valueOf(101 - rank), phm.getRankLevel(world, rank, true));
 	}
 
     }

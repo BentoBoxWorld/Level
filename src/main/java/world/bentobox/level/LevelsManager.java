@@ -2,6 +2,7 @@ package world.bentobox.level;
 
 import java.math.BigInteger;
 import java.text.DecimalFormat;
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -291,6 +292,40 @@ public class LevelsManager {
 	    return "";
 	Island island = addon.getIslands().getIsland(world, targetPlayer);
 	return island == null ? "" : String.valueOf(getLevelsData(island).getPointsToNextLevel());
+    }
+
+    /**
+     * Get the weighted top ten for this world. Weighting is based on number of
+     * players per team.
+     * 
+     * @param world - world requested
+     * @param size  - size of the top ten
+     * @return sorted top ten map. The key is the island unique ID
+     */
+    @NonNull
+    public Map<Island, Long> getWeightedTopTen(@NonNull World world, int size) {
+	createAndCleanRankings(world);
+	Map<Island, Long> weightedTopTen = topTenLists.get(world).getTopTen().entrySet().stream()
+		.map(en -> addon.getIslands().getIslandById(en.getKey()).map(island -> {
+
+		    long value = (long) (en.getValue() / (double) Math.max(1, island.getMemberSet().size())); // Calculate
+													      // weighted
+													      // value
+		    return new AbstractMap.SimpleEntry<>(island, value);
+		}).orElse(null)) // Handle islands that do not exist according to this ID - old deleted ones
+		.filter(Objects::nonNull) // Filter out null entries
+		.filter(en -> en.getValue() > 0) // Filter out entries with non-positive values
+		.sorted(Collections.reverseOrder(Map.Entry.comparingByValue())) // Sort in descending order of values
+		.limit(size) // Limit to the top 'size' entries
+		.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, // In case of key
+												  // collision, choose
+												  // the first one
+			LinkedHashMap::new // Preserves the order of entries
+		));
+
+	// Return the unmodifiable map
+	return Collections.unmodifiableMap(weightedTopTen);
+
     }
 
     /**

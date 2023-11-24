@@ -2,7 +2,6 @@ package world.bentobox.level;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -66,19 +65,29 @@ public class PlaceholderManager {
 	    final int rank = i;
 	    // Name
 	    bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_name_" + i,
-		    u -> getRankName(gm.getOverWorld(), rank));
+		    u -> getRankName(gm.getOverWorld(), rank, false));
 	    // Island Name
 	    bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_island_name_" + i,
-		    u -> getRankIslandName(gm.getOverWorld(), rank));
+		    u -> getRankIslandName(gm.getOverWorld(), rank, false));
 	    // Members
 	    bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_members_" + i,
-		    u -> getRankMembers(gm.getOverWorld(), rank));
+		    u -> getRankMembers(gm.getOverWorld(), rank, false));
 	    // Level
 	    bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_value_" + i,
-		    u -> getRankLevel(gm.getOverWorld(), rank));
+		    u -> getRankLevel(gm.getOverWorld(), rank, false));
+	    // Weighted Level Name (Level / number of members)
+	    bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_weighted_name_" + i,
+		    u -> getRankName(gm.getOverWorld(), rank, true));
+	    // Weighted Island Name
+	    bpm.registerPlaceholder(addon,
+		    gm.getDescription().getName().toLowerCase() + "_top_weighted_island_name_" + i,
+		    u -> getRankIslandName(gm.getOverWorld(), rank, true));
+	    // Weighted Members
+	    bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_weighted_members_" + i,
+		    u -> getRankMembers(gm.getOverWorld(), rank, true));
 	    // Weighted Level (Level / number of members)
 	    bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_weighted_value_" + i,
-		    u -> getWeightedRankLevel(gm.getOverWorld(), rank));
+		    u -> getRankLevel(gm.getOverWorld(), rank, true));
 	}
 
 	// Personal rank
@@ -89,13 +98,18 @@ public class PlaceholderManager {
     /**
      * Get the name of the owner of the island who holds the rank in this world.
      * 
-     * @param world world
-     * @param rank  rank 1 to 10
+     * @param world    world
+     * @param rank     rank 1 to 10
+     * @param weighted if true, then the weighted rank name is returned
      * @return rank name
      */
-    String getRankName(World world, int rank) {
+    String getRankName(World world, int rank, boolean weighted) {
 	// Ensure rank is within bounds
 	rank = Math.max(1, Math.min(rank, Level.TEN));
+	if (weighted) {
+	    return addon.getManager().getWeightedTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L)
+		    .findFirst().map(Island::getOwner).map(addon.getPlayers()::getName).orElse("");
+	}
 	@Nullable
 	UUID owner = addon.getManager().getTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L)
 		.findFirst().flatMap(addon.getIslands()::getIslandById).map(Island::getOwner).orElse(null);
@@ -106,13 +120,18 @@ public class PlaceholderManager {
     /**
      * Get the island name for this rank
      * 
-     * @param world world
-     * @param rank  rank 1 to 10
+     * @param world    world
+     * @param rank     rank 1 to 10
+     * @param weighted if true, then the weighted rank name is returned
      * @return name of island or nothing if there isn't one
      */
-    String getRankIslandName(World world, int rank) {
+    String getRankIslandName(World world, int rank, boolean weighted) {
 	// Ensure rank is within bounds
 	rank = Math.max(1, Math.min(rank, Level.TEN));
+	if (weighted) {
+	    return addon.getManager().getWeightedTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L)
+		    .findFirst().map(Island::getName).orElse("");
+	}
 	return addon.getManager().getTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L).findFirst()
 		.flatMap(addon.getIslands()::getIslandById).map(Island::getName).orElse("");
     }
@@ -120,13 +139,23 @@ public class PlaceholderManager {
     /**
      * Gets a comma separated string of island member names
      * 
-     * @param world world
-     * @param rank  rank to request
+     * @param world    world
+     * @param rank     rank to request
+     * @param weighted if true, then the weighted rank name is returned
      * @return comma separated string of island member names
      */
-    String getRankMembers(World world, int rank) {
+    String getRankMembers(World world, int rank, boolean weighted) {
 	// Ensure rank is within bounds
 	rank = Math.max(1, Math.min(rank, Level.TEN));
+	if (weighted) {
+	    return addon.getManager().getWeightedTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L)
+		    .findFirst()
+		    .map(is -> is.getMembers().entrySet().stream().filter(e -> e.getValue() >= RanksManager.MEMBER_RANK)
+			    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).map(Map.Entry::getKey)
+			    .map(addon.getPlayers()::getName).collect(Collectors.joining(",")))
+		    .orElse("");
+	}
+
 	Optional<Island> island = addon.getManager().getTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L)
 		.limit(1L).findFirst().flatMap(addon.getIslands()::getIslandById);
 
@@ -140,44 +169,20 @@ public class PlaceholderManager {
     }
 
     /**
-     * Gets the weighted level, which is the level / number of players
+     * Get the level for the rank requested
      * 
-     * @param world world
-     * @param rank  level
-     * @return weighted level
+     * @param world    world
+     * @param rank     rank wanted
+     * @param weighted true if weighted (level/number of team members)
+     * @return level for the rank requested
      */
-    String getWeightedRankLevel(World world, int rank) {
+    String getRankLevel(World world, int rank, boolean weighted) {
 	// Ensure rank is within bounds
 	rank = Math.max(1, Math.min(rank, Level.TEN));
-
-	// Retrieve the top ten entries
-	Map<String, Long> topTen = addon.getManager().getTopTen(world, Level.TEN);
-	if (topTen.isEmpty()) {
-	    return "";
+	if (weighted) {
+	    return addon.getManager().formatLevel(addon.getManager().getWeightedTopTen(world, Level.TEN).values()
+		    .stream().skip(rank - 1L).limit(1L).findFirst().orElse(null));
 	}
-
-	// Find the entry corresponding to the rank
-	Entry<String, Long> entry = topTen.entrySet().stream().skip(rank - 1).findFirst().orElse(null);
-	if (entry == null) {
-	    return "";
-	}
-
-	// Calculate the score
-	Island island = addon.getIslands().getIslandById(entry.getKey()).orElse(null);
-	if (island == null || island.getMemberSet().isEmpty()) {
-	    return "";
-	}
-
-	double score = (double) entry.getValue() / island.getMemberSet().size();
-
-	// Format and return the level
-	return addon.getManager().formatLevel((long) score);
-
-    }
-
-    String getRankLevel(World world, int rank) {
-	// Ensure rank is within bounds
-	rank = Math.max(1, Math.min(rank, Level.TEN));
 	return addon.getManager().formatLevel(addon.getManager().getTopTen(world, Level.TEN).values().stream()
 		.skip(rank - 1L).limit(1L).findFirst().orElse(null));
     }

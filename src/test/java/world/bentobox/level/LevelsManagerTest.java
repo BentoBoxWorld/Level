@@ -366,6 +366,19 @@ public class LevelsManagerTest {
 
     /**
      * Test method for
+     * {@link world.bentobox.level.LevelsManager#getWeightedTopTen(org.bukkit.World, int)}.
+     */
+    @Test
+    public void testGetWeightedTopTen() {
+	testLoadTopTens();
+	Map<Island, Long> tt = lm.getWeightedTopTen(world, Level.TEN);
+	assertFalse(tt.isEmpty());
+	assertEquals(1, tt.size());
+	assertEquals(1, lm.getTopTen(world, 1).size());
+    }
+
+    /**
+     * Test method for
      * {@link world.bentobox.level.LevelsManager#hasTopTenPerm(org.bukkit.World, java.util.UUID)}.
      */
     @Test
