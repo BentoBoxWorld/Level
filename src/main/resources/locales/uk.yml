@@ -1,0 +1,184 @@
+---
+admin:
+  level:
+    parameters: "<player>"
+    description: розрахувати рівень острова для гравця
+    sethandicap:
+      parameters: "<player> <handicap>"
+      description: встановити гандикап острова, як правило, рівень острова стартера
+      changed: "&a Початковий гандикап острова змінено з [number] на [new_number]."
+      invalid-level: "&c Недійсний гандикап. Використовуйте ціле число."
+  levelstatus:
+    description: показати, скільки островів у черзі на сканування
+    islands-in-queue: "&a Острови в черзі: [number]"
+  top:
+    description: показати першу десятку списку
+    unknown-world: "&c Невідомий світ!"
+    display: "&f[rank]. &a[name] &7- &b[level]"
+    remove:
+      description: видалити гравця з першої десятки
+      parameters: "<player>"
+  stats:
+    description: показати статистику островів на цьому сервері
+    title: Статистика острова сервера
+    world: "&a [name]"
+    no-data: "&c Немає даних для обробки."
+    average-level: 'Середній рівень острова: [number]'
+    median-level: 'Середній рівень острова: [number]'
+    mode-level: 'Рівень острова режиму: [number]'
+    highest-level: 'Найвищий рівень острова: [number]'
+    lowest-level: 'Найнижчий рівень острова: [number]'
+    distribution: 'Розподіл на рівні острова:'
+    islands: острови
+island:
+  level:
+    parameters: "[player]"
+    description: обчисліть свій рівень острова або покажіть рівень [player]
+    calculating: "&a Розрахунок рівня..."
+    estimated-wait: "&a Приблизне очікування: [number] секунд"
+    in-queue: "&a Ви номер [number] у черзі"
+    island-level-is: "&a Рівень острова &b[level]"
+    required-points-to-next-level: "&a [points] потрібні бали до наступного рівня"
+    deaths: "&c([number] смерті)"
+    cooldown: "&c Ви повинні зачекати &b[time] &c секунд, поки ви зможете зробити
+      це знову"
+    in-progress: "&6 Розрахунок рівня острова триває..."
+    time-out: "&c Розрахунок рівня тривав занадто довго. Будь-ласка спробуйте пізніше."
+  top:
+    description: показати першу десятку
+    gui-title: "& Десятка Кращих"
+    gui-heading: "&6[name]: &B[rank]"
+    island-level: "&b Рівень [level]"
+    warp-to: "&A Варп на острів [name]."
+  level-details:
+    above-sea-level-blocks: Блоки над рівнем моря
+    spawners: Спавера
+    underwater-blocks: Підводні блоки
+    all-blocks: Всі блоки
+    no-island: "&c Немає острова!"
+    names-island: острів [name].
+    syntax: "[name] x [number]"
+    hint: "&c Запустіть рівень, щоб переглянути звіт про блокування"
+level:
+  commands:
+    value:
+      parameters: "[hand|<material>]"
+      description: показує значення блоків. Додайте 'hand' в кінці, щоб відобразити
+        значення предмета в руках.
+  gui:
+    titles:
+      top: "&0&l Топ островів"
+      detail-panel: "&0&l острів [name]."
+      value-panel: "&0&l Значення блоку"
+    buttons:
+      island:
+        empty: "&f&l [name]. місце"
+        name: "&f&l [name]"
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: Острів [player].
+        owner: "&7&l Власник: &r&b [player]"
+        members-title: "&7&l Члени:"
+        member: "&b - [player]"
+        unknown: невідомий
+        place: "&7&o [number]. &r&7 місце"
+        level: "&7 Рівень: &o [number]"
+      material:
+        name: "&f&l [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "&7 Ідентифікатор блоку: &e [id]"
+        value: "&7 Значення блоку: &e [number]"
+        limit: "&7 Обмеження блоку: &e [number]"
+        count: "&7 Кількість блоків: &e [number]"
+        calculated: "&7 Розраховане значення: &e [number]"
+      all_blocks:
+        name: "&f&l Усі блоки"
+        description: |-
+          &7 Показати всі блоки
+          &7 на острові.
+      above_sea_level:
+        name: "&f&l Блоки над рівнем моря"
+        description: |-
+          &7 Показувати лише блоки
+          &7, які знаходяться над морем
+          &7 рівень.
+      underwater:
+        name: "&f&l Блоки під рівнем моря"
+        description: |-
+          &7 Показувати лише блоки
+          &7, які знаходяться нижче моря
+          &7 рівень.
+      spawner:
+        name: "&f&l Спанера"
+        description: "&7 Відображати лише спавнери."
+      filters:
+        name:
+          name: "&f&l Сортувати за назвою"
+          description: "&7 Сортувати всі блоки за назвою."
+        value:
+          name: "&f&l Сортувати за значенням"
+          description: "&7 Сортувати всі блоки за їх значенням."
+        count:
+          name: "&f&l Сортувати за кількістю"
+          description: "&7 Відсортуйте всі блоки за їх кількістю."
+      value:
+        name: "&f&l [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "&7 Ідентифікатор блоку: &e [id]"
+        value: "&7 Значення блоку: &e [number]"
+        underwater: "&7 Нижче рівня моря: &e [number]"
+        limit: "&7 Обмеження блоку: &e [number]"
+      previous:
+        name: "&f&l Попередня сторінка"
+        description: "&7 Перейти на сторінку [number]."
+      next:
+        name: "&f&l Наступна сторінка"
+        description: "&7 Перейти на сторінку [number]."
+      search:
+        name: "&f&l Пошук"
+        description: |-
+          &7 Пошук конкретного
+          &7 значення.
+        search: "&b Значення: [value]"
+    tips:
+      click-to-view: "&e Натисніть &7, щоб переглянути."
+      click-to-previous: "&e Натисніть &7, щоб переглянути попередню сторінку."
+      click-to-next: "&e Натисніть &7, щоб переглянути наступну сторінку."
+      click-to-select: "&e Натисніть &7, щоб вибрати."
+      left-click-to-cycle-up: "&e Клацніть лівою кнопкою миші &7, щоб перейти вгору."
+      right-click-to-cycle-down: "&e Клацніть правою кнопкою миші &7, щоб перейти
+        вниз."
+      left-click-to-change: "&e Клацніть лівою кнопкою миші &7 для редагування."
+      right-click-to-clear: "&e Клацніть правою кнопкою миші &7, щоб очистити."
+      click-to-asc: "&e Клацніть &7, щоб відсортувати в порядку збільшення."
+      click-to-desc: "&e Клацніть &7, щоб відсортувати в порядку зменшення."
+      click-to-warp: "&e Натисніть &7, щоб деформувати."
+      click-to-visit: "&e Натисніть &7, щоб відвідати."
+      right-click-to-visit: "&e Клацніть правою кнопкою миші &7, щоб відвідати."
+  conversations:
+    prefix: "&l&6 [BentoBox]: &r"
+    no-data: "&c Запустіть рівень, щоб переглянути звіт про блокування."
+    cancel-string: cancel
+    exit-string: cancel, exit, quit
+    write-search: "&e Введіть пошукове значення. (Напишіть 'cancel', щоб вийти)"
+    search-updated: "&a Значення пошуку оновлено."
+    cancelled: "&c Розмова скасована!"
+    no-value: "&c Цей предмет не має цінності."
+    unknown-item: "&c '[material]' не існує в грі."
+    value: "&7 Значення '[material]' таке: &e[value]"
+    value-underwater: "&7 Значення '[material]' нижче рівня моря: &e[value]"
+    empty-hand: "&c У вашій руці немає блоків"
