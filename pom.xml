@@ -58,7 +58,7 @@
         <!-- Non-minecraft related dependencies -->
         <powermock.version>2.0.9</powermock.version>
         <!-- More visible way how to change dependency versions -->
-        <spigot.version>1.19.4-R0.1-SNAPSHOT</spigot.version>
+        <spigot.version>1.20.4-R0.1-SNAPSHOT</spigot.version>
         <bentobox.version>2.0.0-SNAPSHOT</bentobox.version>
         <!-- Warps addon version -->
         <warps.version>1.12.0</warps.version>
@@ -410,6 +410,8 @@
                         <!-- This is required to prevent Jacoco from adding 
                             synthetic fields to a JavaBean class (causes errors in testing) -->
                         <exclude>**/*Names*</exclude>
+                        <!-- Prevents the Material is too large to mock error -->
+                        <exclude>org/bukkit/Material*</exclude>
                     </excludes>
                 </configuration>
                 <executions>
