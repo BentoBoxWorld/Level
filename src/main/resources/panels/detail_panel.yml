@@ -1,25 +1,49 @@
+# Name of panel used for indentification in the code
 detail_panel:
+  # Title of the panel shown to the user. This is a reference and the reference will be translatable in the locale file
   title: level.gui.titles.detail-panel
+  # The type of panel to show. Options are INVENTORY, HOPPER, DROPPER. INVENTORY is that standard chest inventory and
+  # the others refer to the inventories shown for those items.
   type: INVENTORY
+  # The background of the panel. These items will be shown if other items are not there. STAINED_GLASS_PANEs give a good effect.
   background:
     icon: BLACK_STAINED_GLASS_PANE
-    title: "&b&r" # Empty text
+    # Each item may have text applied to it, but usually for background items, nothing is shown.
+    title: "&b&r" # Empty text. This is using the Bukkit chat color coding with &'s. 
   border:
+    # The border of each panel may be shown as a different item.
+    # It can be used to provide a contrast to items in the panel.
     icon: BLACK_STAINED_GLASS_PANE
     title: "&b&r"  # Empty text
+  # This tag indicates which rows in the panel must be shown. The panel will be sized vertically accordingly. This does not include the borders.
+  # This can be a list and rows must be between 1 and 6, if used.
   force-shown: []
+  # The content section contains details of each item/button in the panel. The numbers indicate the rows and then then columns of each item.
   content:
+    # Row number
     1:
+      # Column number
       2:
+        # Icon is a Bukkit Material. 
         icon: STONE
+        # Title of the button shown to the user. This is a reference and the reference will be translatable in the locale file
         title: level.gui.buttons.all_blocks.name
+        # Description of the button shown to the user in the lore. This is a reference and the reference will be translatable in the locale file
         description: level.gui.buttons.all_blocks.description
+        # The data section is a key-value list of data relavent for this button. It is interpreted by the code implemented the panel.
+        # The convention is to specify the type and the panel tab that will open if pressed. These are Enums in the code.
         data:
+          # Type button will go to the ALL_BLOCKS tab when clicked. 
           type: TAB
           tab: ALL_BLOCKS
+        # Actions cover what happens if the button is clicked or the mouse is moved over it. There can be multiple actions possible for different
+        # click-types.
         actions:
+          # Each action has an arbitrary descriptive name to define it. 
           view:
+            # The click-type is the same as the bukkit {@link org.bukkit.event.inventory.ClickType}. UNKNOWN is the default.
             click-type: unknown
+            # tooltip is a locale reference that will be translated for the user and shown when they hover over the button.
             tooltip: level.gui.tips.click-to-view
       3:
         icon: GRASS_BLOCK
@@ -57,12 +81,12 @@ detail_panel:
       9:
         # You can create multiple buttons. By default it is one.
         icon: IRON_TRAPDOOR
-        # [filter] is placeholder for different filter types. It will be replaced with name, value, count.
+        # [filter] is a placeholder for different filter types. It will be replaced with name, value, count.
         title: level.gui.buttons.filters.[filter].name
         description: level.gui.buttons.filters.[filter].description
         data:
           type: FILTER
-          # the value of filter button. Suggestion is to leave fist value to name if you use single button.
+          # the value of filter button. Suggestion is to leave first value to name if you use single button.
           filter: NAME
         actions:
           up:
@@ -76,6 +100,7 @@ detail_panel:
           #   click-type: unknown
           #   tooltip: level.gui.tips.click-to-select
     2:
+      # If a button is used repeatedly then it can be mentioned by name and then defined in the 'reusable' section
       2: material_button
       3: material_button
       4: material_button
@@ -85,6 +110,17 @@ detail_panel:
       8: material_button
     3:
       1:
+        # In this case, the icon is defined as a TIPPED_ARROW with and enchantment applied. The format for the enchantment is
+        # define in {@link world.bentobox.bentobox.util.ItemParser} and available for POTIONS or TIPPED_ARROWs.
+        # Format TIPPED_ARROW:NAME:<LEVEL>:<EXTENDED>:<SPLASH/LINGER>:QTY
+        # LEVEL, EXTENDED, SPLASH, LINGER are optional.
+        # LEVEL is a number, 1 or 2
+        # LINGER is for V1.9 servers and later
+        # Examples:
+        # TIPPED_ARROW:STRENGTH:1:EXTENDED:SPLASH:1
+        # TIPPED_ARROW:INSTANT_DAMAGE:2::LINGER:2
+        # TIPPED_ARROW:JUMP:2:NOTEXTENDED:NOSPLASH:1
+        # TIPPED_ARROW:WEAKNESS::::1   -  any weakness enchantment
         icon: TIPPED_ARROW:INSTANT_HEAL::::1
         title: level.gui.buttons.previous.name
         description: level.gui.buttons.previous.description
@@ -121,8 +157,12 @@ detail_panel:
       6: material_button
       7: material_button
       8: material_button
+  # This is where reuable buttons are defined.
   reusable:
+    # This is the name of the button that is referenced
     material_button:
+      # If the icon for a button is not defined, it defaults to AIR and so effectively will not be shown.
+      # icons are usually not defined if the icon is going to be dynamically set in the panel, e.g. in this case the material will vary
       #icon: STONE
       title: level.gui.buttons.material.name
       description: level.gui.buttons.material.description
