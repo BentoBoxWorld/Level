@@ -177,7 +177,7 @@ public class TopLevelPanel {
 	    }
 	    case "VISIT" -> {
 		return island.getOwner() == null || this.addon.getVisitHook() == null
-			|| !this.addon.getVisitHook().getAddonManager().preprocessTeleportation(this.user, island);
+                    || !this.addon.getVisitHook().getAddonManager().preprocessTeleportation(this.user, island, true);
 	    }
 	    case "VIEW" -> {
 		return island.getOwner() == null
