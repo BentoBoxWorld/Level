@@ -60,10 +60,16 @@ public class BlockConfig {
             if (bWorld != null) {
                 ConfigurationSection worldValues = worlds.getConfigurationSection(world);
                 for (String material : Objects.requireNonNull(worldValues).getKeys(false)) {
-                    Material mat = Material.valueOf(material);
-                    Map<Material, Integer> values = worldBlockValues.getOrDefault(bWorld, new EnumMap<>(Material.class));
-                    values.put(mat, worldValues.getInt(material));
-                    worldBlockValues.put(bWorld, values);
+                    try {
+                        Material mat = Material.valueOf(material);
+                        Map<Material, Integer> values = worldBlockValues.getOrDefault(bWorld,
+                                new EnumMap<>(Material.class));
+                        values.put(mat, worldValues.getInt(material));
+                        worldBlockValues.put(bWorld, values);
+                    } catch (Exception e) {
+                        addon.logError(
+                                "Unknown material (" + material + ") in blockconfig.yml worlds section. Skipping...");
+                    }
                 }
             } else {
                 addon.logWarning("Level Addon: No such world in blockconfig.yml : " + world);
@@ -97,7 +103,7 @@ public class BlockConfig {
                 Material mat = Material.valueOf(material);
                 bl.put(mat, limits.getInt(material, 0));
             } catch (Exception e) {
-                addon.logWarning("Unknown material (" + material + ") in blockconfig.yml Limits section. Skipping...");
+                addon.logError("Unknown material (" + material + ") in blockconfig.yml Limits section. Skipping...");
             }
         }
         return bl;
