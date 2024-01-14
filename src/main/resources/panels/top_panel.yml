@@ -1,15 +1,28 @@
+# Name of panel used for indentification in the code
 top_panel:
+  # Title of the panel shown to the user. This is a reference and the reference will be translatable in the locale file
   title: level.gui.titles.top
+  # The type of panel to show. Options are INVENTORY, HOPPER, DROPPER. INVENTORY is that standard chest inventory and
+  # the others refer to the inventories shown for those items.
   type: INVENTORY
+  # The background of the panel. These items will be shown if other items are not there. STAINED_GLASS_PANEs give a good effect.
   background:
     icon: BLACK_STAINED_GLASS_PANE
+    # Each item may have text applied to it, but usually for background items, nothing is shown.
     title: "&b&r" # Empty text
   border:
+    # The border of each panel may be shown as a different item.
+    # It can be used to provide a contrast to items in the panel.
     icon: BLACK_STAINED_GLASS_PANE
     title: "&b&r"  # Empty text
+  # This tag indicates which rows in the panel must be shown. The panel will be sized vertically accordingly. This does not include the borders.
+  # This can be a list and rows must be between 1 and 6, if used.
   force-shown: [2,3,4,5]
+  # The content section contains details of each item/button in the panel. The numbers indicate the rows and then then columns of each item.
   content:
+    # Row number
     2:
+      # Column number
       5:
         #icon: PLAYER_HEAD
         title: level.gui.buttons.island.name

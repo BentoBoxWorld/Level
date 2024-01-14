@@ -58,12 +58,12 @@
         <!-- Non-minecraft related dependencies -->
         <powermock.version>2.0.9</powermock.version>
         <!-- More visible way how to change dependency versions -->
-        <spigot.version>1.19.4-R0.1-SNAPSHOT</spigot.version>
-        <bentobox.version>1.23.0</bentobox.version>
+        <spigot.version>1.20.4-R0.1-SNAPSHOT</spigot.version>
+        <bentobox.version>2.0.0-SNAPSHOT</bentobox.version>
         <!-- Warps addon version -->
         <warps.version>1.12.0</warps.version>
         <!-- Visit addon version -->
-        <visit.version>1.4.0</visit.version>
+        <visit.version>1.6.0</visit.version>
         <!-- Panel Utils version -->
         <panelutils.version>1.1.0</panelutils.version>
         <!-- Revision variable removes warning about dynamic version -->
@@ -71,7 +71,7 @@
         <!-- Do not change unless you want different name for local builds. -->
         <build.number>-LOCAL</build.number>
         <!-- This allows to change between versions. -->
-        <build.version>2.11.0</build.version>
+        <build.version>2.12.0</build.version>
         <sonar.projectKey>BentoBoxWorld_Level</sonar.projectKey>
         <sonar.organization>bentobox-world</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -237,7 +237,7 @@
         <dependency>
             <groupId>com.songoda</groupId>
             <artifactId>UltimateStacker</artifactId>
-            <version>2.3.3</version>
+            <version>2.4.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -403,13 +403,15 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.7</version>
+                <version>0.8.10</version>
                 <configuration>
                     <append>true</append>
                     <excludes>
                         <!-- This is required to prevent Jacoco from adding 
                             synthetic fields to a JavaBean class (causes errors in testing) -->
                         <exclude>**/*Names*</exclude>
+                        <!-- Prevents the Material is too large to mock error -->
+                        <exclude>org/bukkit/Material*</exclude>
                     </excludes>
                 </configuration>
                 <executions>
