@@ -64,7 +64,7 @@ value_panel:
       8: material_button
     3:
       1:
-        icon: TIPPED_ARROW:INSTANT_HEAL::::1
+        icon: tipped_arrow{CustomPotionColor:11546150}
         title: level.gui.buttons.previous.name
         description: level.gui.buttons.previous.description
         data:
@@ -82,7 +82,7 @@ value_panel:
       7: material_button
       8: material_button
       9:
-        icon: TIPPED_ARROW:JUMP::::1
+        icon: tipped_arrow{CustomPotionColor:8439583}
         title: level.gui.buttons.next.name
         description: level.gui.buttons.next.description
         data:
