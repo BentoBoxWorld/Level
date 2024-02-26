@@ -111,7 +111,11 @@ public class IslandLevelCommand extends CompositeCommand {
             }
             // Send player how many points are required to reach next island level
             if (results.getPointsToNextLevel() >= 0) {
-                user.sendMessage("island.level.required-points-to-next-level", "[points]", String.valueOf(results.getPointsToNextLevel()));
+                user.sendMessage("island.level.required-points-to-next-level",
+                        "[points]", String.valueOf(results.getPointsToNextLevel()),
+                        "[progress]", String.valueOf(this.addon.getSettings().getLevelCost()-results.getPointsToNextLevel()),
+                        "[levelcost]", String.valueOf(this.addon.getSettings().getLevelCost())
+                );
             }
             // Tell other team members
             if (results.getLevel() != oldLevel) {
