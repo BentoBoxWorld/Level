@@ -42,7 +42,7 @@ island:
     estimated-wait: "&a Estimated wait: [number] seconds"
     in-queue: "&a You are number [number] in the queue"
     island-level-is: "&a Island level is &b[level]"
-    required-points-to-next-level: "&a [points] points required until the next level"
+    required-points-to-next-level: "&aLevel progress: &6[progress]&b/&e[levelcost]&a points"
     deaths: "&c([number] deaths)"
     cooldown: "&c You must wait &b[time] &c seconds until you can do that again"
     in-progress: "&6 Island level calculation is in progress..."
