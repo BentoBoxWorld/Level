@@ -16,7 +16,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import com.craftaro.ultimatestacker.api.utils.Stackable;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
@@ -42,7 +41,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
 import com.craftaro.ultimatestacker.api.UltimateStackerApi;
-import com.craftaro.ultimatestacker.api.stack.block.BlockStack;
+import com.craftaro.ultimatestacker.api.utils.Stackable;
 
 import dev.rosewood.rosestacker.api.RoseStackerAPI;
 import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsAPI;
