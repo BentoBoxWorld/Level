@@ -40,9 +40,8 @@ import com.bgsoftware.wildstacker.api.objects.StackedBarrel;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
-import com.songoda.ultimatestacker.UltimateStacker;
-import com.songoda.ultimatestacker.core.compatibility.CompatibleMaterial;
-import com.songoda.ultimatestacker.stackable.block.BlockStack;
+import com.craftaro.ultimatestacker.api.UltimateStackerApi;
+import com.craftaro.ultimatestacker.api.utils.Stackable;
 
 import dev.rosewood.rosestacker.api.RoseStackerAPI;
 import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsAPI;
@@ -469,8 +468,7 @@ public class IslandLevelCalculator {
 
 		    if (addon.isUltimateStackerEnabled()) {
 			if (!blockData.getMaterial().equals(Material.AIR)) {
-			    BlockStack stack = UltimateStacker.getInstance().getBlockStackManager().getBlock(block,
-				    CompatibleMaterial.getMaterial(block));
+			    Stackable stack = UltimateStackerApi.getBlockStackManager().getBlock(block.getLocation());
 			    if (stack != null) {
 				int value = limitCount(blockData.getMaterial());
 				if (belowSeaLevel) {
