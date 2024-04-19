@@ -16,6 +16,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.craftaro.ultimatestacker.api.utils.Stackable;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
@@ -468,7 +469,7 @@ public class IslandLevelCalculator {
 
 		    if (addon.isUltimateStackerEnabled()) {
 			if (!blockData.getMaterial().equals(Material.AIR)) {
-			    BlockStack stack = UltimateStackerApi.getBlockStackManager().getBlock(block.getLocation());
+			    Stackable stack = UltimateStackerApi.getBlockStackManager().getBlock(block.getLocation());
 			    if (stack != null) {
 				int value = limitCount(blockData.getMaterial());
 				if (belowSeaLevel) {
