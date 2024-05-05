@@ -2,6 +2,7 @@ package world.bentobox.level;
 
 import java.math.BigInteger;
 import java.text.DecimalFormat;
+import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ import world.bentobox.level.events.IslandPreLevelEvent;
 import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.objects.TopTenData;
+import world.bentobox.level.util.CachedData;
 
 public class LevelsManager {
     private static final String INTOPTEN = "intopten";
@@ -52,6 +54,8 @@ public class LevelsManager {
     private final Map<String, IslandLevels> levelsCache;
     // Top ten lists
     private final Map<World, TopTenData> topTenLists;
+    // Cache for top tens
+    private Map<World, CachedData> cache = new HashMap<>();
 
     public LevelsManager(Level addon) {
 	this.addon = addon;
@@ -66,35 +70,35 @@ public class LevelsManager {
     }
 
     public void migrate() {
-	Database<LevelsData> oldDb = new Database<>(addon, LevelsData.class);
-	oldDb.loadObjects().forEach(ld -> {
-	    try {
-		UUID owner = UUID.fromString(ld.getUniqueId());
-		// Step through each world
-		ld.getLevels().keySet().stream()
-			// World
-			.map(Bukkit::getWorld).filter(Objects::nonNull)
-			// Island
-			.map(w -> addon.getIslands().getIsland(w, owner)).filter(Objects::nonNull).forEach(i -> {
-			    // Make new database entry
-			    World w = i.getWorld();
-			    IslandLevels il = new IslandLevels(i.getUniqueId());
-			    il.setInitialLevel(ld.getInitialLevel(w));
-			    il.setLevel(ld.getLevel(w));
-			    il.setMdCount(ld.getMdCount(w));
-			    il.setPointsToNextLevel(ld.getPointsToNextLevel(w));
-			    il.setUwCount(ld.getUwCount(w));
-			    // Save it
-			    handler.saveObjectAsync(il);
-			});
-		// Now delete the old database entry
-		oldDb.deleteID(ld.getUniqueId());
-	    } catch (Exception e) {
-		addon.logError("Could not migrate level data database! " + e.getMessage());
-		e.printStackTrace();
-		return;
-	    }
-	});
+        Database<LevelsData> oldDb = new Database<>(addon, LevelsData.class);
+        oldDb.loadObjects().forEach(ld -> {
+            try {
+                UUID owner = UUID.fromString(ld.getUniqueId());
+                // Step through each world
+                ld.getLevels().keySet().stream()
+                        // World
+                        .map(Bukkit::getWorld).filter(Objects::nonNull)
+                        // Island
+                        .map(w -> addon.getIslands().getIsland(w, owner)).filter(Objects::nonNull).forEach(i -> {
+                            // Make new database entry
+                            World w = i.getWorld();
+                            IslandLevels il = new IslandLevels(i.getUniqueId());
+                            il.setInitialLevel(ld.getInitialLevel(w));
+                            il.setLevel(ld.getLevel(w));
+                            il.setMdCount(ld.getMdCount(w));
+                            il.setPointsToNextLevel(ld.getPointsToNextLevel(w));
+                            il.setUwCount(ld.getUwCount(w));
+                            // Save it
+                            handler.saveObjectAsync(il);
+                        });
+                // Now delete the old database entry
+                oldDb.deleteID(ld.getUniqueId());
+            } catch (Exception e) {
+                addon.logError("Could not migrate level data database! " + e.getMessage());
+                e.printStackTrace();
+                return;
+            }
+        });
     }
 
     /**
@@ -105,12 +109,12 @@ public class LevelsManager {
      * @return true if successful, false if not added
      */
     private boolean addToTopTen(Island island, long lv) {
-	if (island != null && island.getOwner() != null && hasTopTenPerm(island.getWorld(), island.getOwner())) {
-	    topTenLists.computeIfAbsent(island.getWorld(), k -> new TopTenData(island.getWorld())).getTopTen()
-		    .put(island.getUniqueId(), lv);
-	    return true;
-	}
-	return false;
+        if (island != null && island.getOwner() != null && hasTopTenPerm(island.getWorld(), island.getOwner())) {
+            topTenLists.computeIfAbsent(island.getWorld(), k -> new TopTenData(island.getWorld())).getTopTen()
+                    .put(island.getUniqueId(), lv);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -122,26 +126,26 @@ public class LevelsManager {
      * @return completable future with the results of the calculation
      */
     public CompletableFuture<Results> calculateLevel(UUID targetPlayer, Island island) {
-	CompletableFuture<Results> result = new CompletableFuture<>();
-	// Fire pre-level calc event
-	IslandPreLevelEvent e = new IslandPreLevelEvent(targetPlayer, island);
-	Bukkit.getPluginManager().callEvent(e);
-	if (e.isCancelled()) {
-	    return CompletableFuture.completedFuture(null);
-	}
-	// Add island to the pipeline
-	addon.getPipeliner().addIsland(island).thenAccept(r -> {
-	    // Results are irrelevant because the island is unowned or deleted, or
-	    // IslandLevelCalcEvent is cancelled
-	    if (r == null || fireIslandLevelCalcEvent(targetPlayer, island, r)) {
-		result.complete(null);
-	    }
-	    // Save result
-	    setIslandResults(island, r);
-	    // Save the island scan details
-	    result.complete(r);
-	});
-	return result;
+        CompletableFuture<Results> result = new CompletableFuture<>();
+        // Fire pre-level calc event
+        IslandPreLevelEvent e = new IslandPreLevelEvent(targetPlayer, island);
+        Bukkit.getPluginManager().callEvent(e);
+        if (e.isCancelled()) {
+            return CompletableFuture.completedFuture(null);
+        }
+        // Add island to the pipeline
+        addon.getPipeliner().addIsland(island).thenAccept(r -> {
+            // Results are irrelevant because the island is unowned or deleted, or
+            // IslandLevelCalcEvent is cancelled
+            if (r == null || fireIslandLevelCalcEvent(targetPlayer, island, r)) {
+                result.complete(null);
+            }
+            // Save result
+            setIslandResults(island, r);
+            // Save the island scan details
+            result.complete(r);
+        });
+        return result;
     }
 
     /**
@@ -153,19 +157,19 @@ public class LevelsManager {
      * @return true if canceled
      */
     private boolean fireIslandLevelCalcEvent(UUID targetPlayer, Island island, Results results) {
-	// Fire post calculation event
-	IslandLevelCalculatedEvent ilce = new IslandLevelCalculatedEvent(targetPlayer, island, results);
-	Bukkit.getPluginManager().callEvent(ilce);
-	if (ilce.isCancelled())
-	    return true;
-	// Set the values if they were altered
-	results.setLevel((Long) ilce.getKeyValues().getOrDefault("level", results.getLevel()));
-	results.setInitialLevel((Long) ilce.getKeyValues().getOrDefault("initialLevel", results.getInitialLevel()));
-	results.setDeathHandicap((int) ilce.getKeyValues().getOrDefault("deathHandicap", results.getDeathHandicap()));
-	results.setPointsToNextLevel(
-		(Long) ilce.getKeyValues().getOrDefault("pointsToNextLevel", results.getPointsToNextLevel()));
-	results.setTotalPoints((Long) ilce.getKeyValues().getOrDefault("totalPoints", results.getTotalPoints()));
-	return ((Boolean) ilce.getKeyValues().getOrDefault("isCancelled", false));
+        // Fire post calculation event
+        IslandLevelCalculatedEvent ilce = new IslandLevelCalculatedEvent(targetPlayer, island, results);
+        Bukkit.getPluginManager().callEvent(ilce);
+        if (ilce.isCancelled())
+            return true;
+        // Set the values if they were altered
+        results.setLevel((Long) ilce.getKeyValues().getOrDefault("level", results.getLevel()));
+        results.setInitialLevel((Long) ilce.getKeyValues().getOrDefault("initialLevel", results.getInitialLevel()));
+        results.setDeathHandicap((int) ilce.getKeyValues().getOrDefault("deathHandicap", results.getDeathHandicap()));
+        results.setPointsToNextLevel(
+                (Long) ilce.getKeyValues().getOrDefault("pointsToNextLevel", results.getPointsToNextLevel()));
+        results.setTotalPoints((Long) ilce.getKeyValues().getOrDefault("totalPoints", results.getTotalPoints()));
+        return ((Boolean) ilce.getKeyValues().getOrDefault("isCancelled", false));
     }
 
     /**
@@ -176,25 +180,25 @@ public class LevelsManager {
      * @return string of the level.
      */
     public String formatLevel(@Nullable Long lvl) {
-	if (lvl == null)
-	    return "";
-	String level = String.valueOf(lvl);
-	// Asking for the level of another player
-	if (addon.getSettings().isShorthand()) {
-	    BigInteger levelValue = BigInteger.valueOf(lvl);
+        if (lvl == null)
+            return "";
+        String level = String.valueOf(lvl);
+        // Asking for the level of another player
+        if (addon.getSettings().isShorthand()) {
+            BigInteger levelValue = BigInteger.valueOf(lvl);
 
-	    Map.Entry<BigInteger, String> stage = LEVELS.floorEntry(levelValue);
+            Map.Entry<BigInteger, String> stage = LEVELS.floorEntry(levelValue);
 
-	    if (stage != null) { // level > 1000
-		// 1 052 -> 1.0k
-		// 1 527 314 -> 1.5M
-		// 3 874 130 021 -> 3.8G
-		// 4 002 317 889 -> 4.0T
-		level = new DecimalFormat("#.#").format(
-			levelValue.divide(stage.getKey().divide(THOUSAND)).doubleValue() / 1000.0) + stage.getValue();
-	    }
-	}
-	return level;
+            if (stage != null) { // level > 1000
+                // 1 052 -> 1.0k
+                // 1 527 314 -> 1.5M
+                // 3 874 130 021 -> 3.8G
+                // 4 002 317 889 -> 4.0T
+                level = new DecimalFormat("#.#").format(
+                        levelValue.divide(stage.getKey().divide(THOUSAND)).doubleValue() / 1000.0) + stage.getValue();
+            }
+        }
+        return level;
     }
 
     /**
@@ -216,11 +220,11 @@ public class LevelsManager {
      *         null
      */
     public long getIslandLevel(@NonNull World world, @Nullable UUID targetPlayer) {
-	if (targetPlayer == null)
-	    return 0L;
-	// Get the island
-	Island island = addon.getIslands().getIsland(world, targetPlayer);
-	return island == null ? 0L : getLevelsData(island).getLevel();
+        if (targetPlayer == null)
+            return 0L;
+        // Get the island
+        Island island = addon.getIslands().getIsland(world, targetPlayer);
+        return island == null ? 0L : getLevelsData(island).getLevel();
     }
 
     /**
@@ -232,11 +236,11 @@ public class LevelsManager {
      *         is null
      */
     public long getIslandMaxLevel(@NonNull World world, @Nullable UUID targetPlayer) {
-	if (targetPlayer == null)
-	    return 0L;
-	// Get the island
-	Island island = addon.getIslands().getIsland(world, targetPlayer);
-	return island == null ? 0L : getLevelsData(island).getMaxLevel();
+        if (targetPlayer == null)
+            return 0L;
+        // Get the island
+        Island island = addon.getIslands().getIsland(world, targetPlayer);
+        return island == null ? 0L : getLevelsData(island).getMaxLevel();
     }
 
     /**
@@ -288,10 +292,10 @@ public class LevelsManager {
      * @return string with the number required or blank if the player is unknown
      */
     public String getPointsToNextString(@NonNull World world, @Nullable UUID targetPlayer) {
-	if (targetPlayer == null)
-	    return "";
-	Island island = addon.getIslands().getIsland(world, targetPlayer);
-	return island == null ? "" : String.valueOf(getLevelsData(island).getPointsToNextLevel());
+        if (targetPlayer == null)
+            return "";
+        Island island = addon.getIslands().getIsland(world, targetPlayer);
+        return island == null ? "" : String.valueOf(getLevelsData(island).getPointsToNextLevel());
     }
 
     /**
@@ -304,28 +308,27 @@ public class LevelsManager {
      */
     @NonNull
     public Map<Island, Long> getWeightedTopTen(@NonNull World world, int size) {
-	createAndCleanRankings(world);
-	Map<Island, Long> weightedTopTen = topTenLists.get(world).getTopTen().entrySet().stream()
-		.map(en -> addon.getIslands().getIslandById(en.getKey()).map(island -> {
+        createAndCleanRankings(world);
+        Map<Island, Long> weightedTopTen = topTenLists.get(world).getTopTen().entrySet().stream()
+                .map(en -> addon.getIslands().getIslandById(en.getKey()).map(island -> {
 
-		    long value = (long) (en.getValue() / (double) Math.max(1, island.getMemberSet().size())); // Calculate
-													      // weighted
-													      // value
-		    return new AbstractMap.SimpleEntry<>(island, value);
-		}).orElse(null)) // Handle islands that do not exist according to this ID - old deleted ones
-		.filter(Objects::nonNull) // Filter out null entries
-		.filter(en -> en.getValue() > 0) // Filter out entries with non-positive values
-		.sorted(Collections.reverseOrder(Map.Entry.comparingByValue())) // Sort in descending order of values
-		.limit(size) // Limit to the top 'size' entries
-		.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, // In case of key
-												  // collision, choose
-												  // the first one
-			LinkedHashMap::new // Preserves the order of entries
-		));
+                    long value = (long) (en.getValue() / (double) Math.max(1, island.getMemberSet().size())); // Calculate
+                    // weighted
+                    // value
+                    return new AbstractMap.SimpleEntry<>(island, value);
+                }).orElse(null)) // Handle islands that do not exist according to this ID - old deleted ones
+                .filter(Objects::nonNull) // Filter out null entries
+                .filter(en -> en.getValue() > 0) // Filter out entries with non-positive values
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue())) // Sort in descending order of values
+                .limit(size) // Limit to the top 'size' entries
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, // In case of key
+                        // collision, choose
+                        // the first one
+                        LinkedHashMap::new // Preserves the order of entries
+                ));
 
-	// Return the unmodifiable map
-	return Collections.unmodifiableMap(weightedTopTen);
-
+        // Return the unmodifiable map
+        return Collections.unmodifiableMap(weightedTopTen);
     }
 
     /**
@@ -338,26 +341,38 @@ public class LevelsManager {
      */
     @NonNull
     public Map<String, Long> getTopTen(@NonNull World world, int size) {
-	createAndCleanRankings(world);
-	// Return the sorted map
-	return Collections.unmodifiableMap(topTenLists.get(world).getTopTen().entrySet().stream()
-		.filter(l -> l.getValue() > 0).sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-		.limit(size)
-		.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new)));
+        createAndCleanRankings(world);
+        CachedData cachedData = cache.get(world);
+        Instant now = Instant.now();
+
+        if (cachedData != null && cachedData.getLastUpdated().plusSeconds(1).isAfter(now)) {
+            return cachedData.getCachedMap();
+        } else {
+            Map<String, Long> newTopTen = calculateTopTen(world, size);
+            cache.put(world, new CachedData(newTopTen, now));
+            return newTopTen;
+        }
+    }
+
+    private Map<String, Long> calculateTopTen(@NonNull World world, int size) {
+        return Collections.unmodifiableMap(topTenLists.get(world).getTopTen().entrySet().stream()
+                .filter(l -> l.getValue() > 0).sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .limit(size)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new)));
     }
 
     void createAndCleanRankings(@NonNull World world) {
-	topTenLists.computeIfAbsent(world, TopTenData::new);
-	// Remove player from top ten if they are online and do not have the perm
-	topTenLists.get(world).getTopTen().keySet().removeIf(u -> addon.getIslands().getIslandById(u)
-		.filter(i -> i.getOwner() == null || !hasTopTenPerm(world, i.getOwner())).isPresent());
+        topTenLists.computeIfAbsent(world, TopTenData::new);
+        // Remove player from top ten if they are online and do not have the perm
+        topTenLists.get(world).getTopTen().keySet().removeIf(u -> addon.getIslands().getIslandById(u)
+                .filter(i -> i.getOwner() == null || !hasTopTenPerm(world, i.getOwner())).isPresent());
     }
 
     /**
      * @return the topTenLists
      */
     public Map<World, TopTenData> getTopTenLists() {
-	return topTenLists;
+        return topTenLists;
     }
 
     /**
@@ -368,13 +383,13 @@ public class LevelsManager {
      * @return rank placing - note - placing of 1 means top ranked
      */
     public int getRank(@NonNull World world, UUID uuid) {
-	createAndCleanRankings(world);
-	Stream<Entry<String, Long>> stream = topTenLists.get(world).getTopTen().entrySet().stream()
-		.filter(l -> l.getValue() > 0).sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
-	// Get player's current island
-	Island island = addon.getIslands().getIsland(world, uuid);
-	String id = island == null ? null : island.getUniqueId();
-	return (int) (stream.takeWhile(x -> !x.getKey().equals(id)).map(Map.Entry::getKey).count() + 1);
+        createAndCleanRankings(world);
+        Stream<Entry<String, Long>> stream = topTenLists.get(world).getTopTen().entrySet().stream()
+                .filter(l -> l.getValue() > 0).sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
+        // Get player's current island
+        Island island = addon.getIslands().getIsland(world, uuid);
+        String id = island == null ? null : island.getUniqueId();
+        return (int) (stream.takeWhile(x -> !x.getKey().equals(id)).map(Map.Entry::getKey).count() + 1);
     }
 
     /**
@@ -385,26 +400,26 @@ public class LevelsManager {
      * @return true if player has the perm or the player is offline
      */
     boolean hasTopTenPerm(@NonNull World world, @NonNull UUID targetPlayer) {
-	String permPrefix = addon.getPlugin().getIWM().getPermissionPrefix(world);
-	return Bukkit.getPlayer(targetPlayer) == null
-		|| Bukkit.getPlayer(targetPlayer).hasPermission(permPrefix + INTOPTEN);
+        String permPrefix = addon.getPlugin().getIWM().getPermissionPrefix(world);
+        return Bukkit.getPlayer(targetPlayer) == null
+                || Bukkit.getPlayer(targetPlayer).hasPermission(permPrefix + INTOPTEN);
     }
 
     /**
      * Loads all the top tens from the database
      */
     public void loadTopTens() {
-	topTenLists.clear();
-	Bukkit.getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
-	    addon.log("Generating rankings");
-	    handler.loadObjects().forEach(il -> {
-		if (il.getLevel() > 0) {
-		    addon.getIslands().getIslandById(il.getUniqueId())
-			    .ifPresent(i -> this.addToTopTen(i, il.getLevel()));
-		}
-	    });
-	    topTenLists.keySet().forEach(w -> addon.log("Generated rankings for " + w.getName()));
-	});
+        topTenLists.clear();
+        Bukkit.getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
+            addon.log("Generating rankings");
+            handler.loadObjects().forEach(il -> {
+                if (il.getLevel() > 0) {
+                    addon.getIslands().getIslandById(il.getUniqueId())
+                            .ifPresent(i -> this.addToTopTen(i, il.getLevel()));
+                }
+            });
+            topTenLists.keySet().forEach(w -> addon.log("Generated rankings for " + w.getName()));
+        });
     }
 
     /**
@@ -414,10 +429,11 @@ public class LevelsManager {
      * @param uuid  - the island's uuid
      */
     public void removeEntry(World world, String uuid) {
-	if (topTenLists.containsKey(world)) {
-	    topTenLists.get(world).getTopTen().remove(uuid);
-	}
-
+       if (topTenLists.containsKey(world)) {
+            topTenLists.get(world).getTopTen().remove(uuid);
+            // Invalidate the cache because of this deletion
+            cache.remove(world);
+        }
     }
 
     /**
@@ -427,10 +443,10 @@ public class LevelsManager {
      * @param lv     - initial island level
      */
     public void setInitialIslandLevel(@NonNull Island island, long lv) {
-	if (island.getWorld() == null)
-	    return;
-	levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new).setInitialLevel(lv);
-	handler.saveObjectAsync(levelsCache.get(island.getUniqueId()));
+        if (island.getWorld() == null)
+            return;
+        levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new).setInitialLevel(lv);
+        handler.saveObjectAsync(levelsCache.get(island.getUniqueId()));
     }
 
     /**
@@ -442,21 +458,21 @@ public class LevelsManager {
      * @param lv     - level
      */
     public void setIslandLevel(@NonNull World world, @NonNull UUID targetPlayer, long lv) {
-	// Get the island
-	Island island = addon.getIslands().getIsland(world, targetPlayer);
-	if (island != null) {
-	    String id = island.getUniqueId();
-	    IslandLevels il = levelsCache.computeIfAbsent(id, IslandLevels::new);
-	    // Remove the initial level
-	    if (addon.getSettings().isZeroNewIslandLevels()) {
-		il.setLevel(lv - il.getInitialLevel());
-	    } else {
-		il.setLevel(lv);
-	    }
-	    handler.saveObjectAsync(levelsCache.get(id));
-	    // Update TopTen
-	    addToTopTen(island, levelsCache.get(id).getLevel());
-	}
+        // Get the island
+        Island island = addon.getIslands().getIsland(world, targetPlayer);
+        if (island != null) {
+            String id = island.getUniqueId();
+            IslandLevels il = levelsCache.computeIfAbsent(id, IslandLevels::new);
+            // Remove the initial level
+            if (addon.getSettings().isZeroNewIslandLevels()) {
+                il.setLevel(lv - il.getInitialLevel());
+            } else {
+                il.setLevel(lv);
+            }
+            handler.saveObjectAsync(levelsCache.get(id));
+            // Update TopTen
+            addToTopTen(island, levelsCache.get(id).getLevel());
+        }
     }
 
     /**
@@ -468,18 +484,18 @@ public class LevelsManager {
      * @param r     - results of the calculation
      */
     private void setIslandResults(Island island, Results r) {
-	if (island == null)
-	    return;
-	IslandLevels ld = levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new);
-	ld.setLevel(r.getLevel());
-	ld.setUwCount(Maps.asMap(r.getUwCount().elementSet(), elem -> r.getUwCount().count(elem)));
-	ld.setMdCount(Maps.asMap(r.getMdCount().elementSet(), elem -> r.getMdCount().count(elem)));
-	ld.setPointsToNextLevel(r.getPointsToNextLevel());
-	ld.setTotalPoints(r.getTotalPoints());
-	levelsCache.put(island.getUniqueId(), ld);
-	handler.saveObjectAsync(ld);
-	// Update TopTen
-	addToTopTen(island, ld.getLevel());
+        if (island == null)
+            return;
+        IslandLevels ld = levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new);
+        ld.setLevel(r.getLevel());
+        ld.setUwCount(Maps.asMap(r.getUwCount().elementSet(), elem -> r.getUwCount().count(elem)));
+        ld.setMdCount(Maps.asMap(r.getMdCount().elementSet(), elem -> r.getMdCount().count(elem)));
+        ld.setPointsToNextLevel(r.getPointsToNextLevel());
+        ld.setTotalPoints(r.getTotalPoints());
+        levelsCache.put(island.getUniqueId(), ld);
+        handler.saveObjectAsync(ld);
+        // Update TopTen
+        addToTopTen(island, ld.getLevel());
     }
 
     /**
