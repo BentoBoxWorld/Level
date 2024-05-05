@@ -40,6 +40,9 @@ import com.bgsoftware.wildstacker.api.objects.StackedBarrel;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
+import com.songoda.ultimatestacker.UltimateStacker;
+import com.songoda.ultimatestacker.core.compatibility.CompatibleMaterial;
+import com.songoda.ultimatestacker.stackable.block.BlockStack;
 
 import dev.rosewood.rosestacker.api.RoseStackerAPI;
 import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsAPI;
@@ -89,34 +92,34 @@ public class IslandLevelCalculator {
      * @param zeroIsland - true if the calculation is due to an island zeroing
      */
     public IslandLevelCalculator(Level addon, Island island, CompletableFuture<Results> r, boolean zeroIsland) {
-        this.addon = addon;
-        this.island = island;
-        this.r = r;
-        this.zeroIsland = zeroIsland;
-        results = new Results();
-        duration = System.currentTimeMillis();
-        chunksToCheck = getChunksToScan(island);
-        this.limitCount = new EnumMap<>(addon.getBlockConfig().getBlockLimits());
-        // Get the initial island level
-        results.initialLevel.set(addon.getInitialIslandLevel(island));
-        // Set up the worlds
-        worlds.put(Environment.NORMAL, Util.getWorld(island.getWorld()));
-        // Nether
-        if (addon.getSettings().isNether()) {
-            World nether = addon.getPlugin().getIWM().getNetherWorld(island.getWorld());
-            if (nether != null) {
-                worlds.put(Environment.NETHER, nether);
-            }
-        }
-        // End
-        if (addon.getSettings().isEnd()) {
-            World end = addon.getPlugin().getIWM().getEndWorld(island.getWorld());
-            if (end != null) {
-                worlds.put(Environment.THE_END, end);
-            }
-        }
-        // Sea Height
-        seaHeight = addon.getPlugin().getIWM().getSeaHeight(island.getWorld());
+	this.addon = addon;
+	this.island = island;
+	this.r = r;
+	this.zeroIsland = zeroIsland;
+	results = new Results();
+	duration = System.currentTimeMillis();
+	chunksToCheck = getChunksToScan(island);
+	this.limitCount = new EnumMap<>(addon.getBlockConfig().getBlockLimits());
+	// Get the initial island level
+	results.initialLevel.set(addon.getInitialIslandLevel(island));
+	// Set up the worlds
+	worlds.put(Environment.NORMAL, Util.getWorld(island.getWorld()));
+	// Nether
+	if (addon.getSettings().isNether()) {
+	    World nether = addon.getPlugin().getIWM().getNetherWorld(island.getWorld());
+	    if (nether != null) {
+		worlds.put(Environment.NETHER, nether);
+	    }
+	}
+	// End
+	if (addon.getSettings().isEnd()) {
+	    World end = addon.getPlugin().getIWM().getEndWorld(island.getWorld());
+	    if (end != null) {
+		worlds.put(Environment.THE_END, end);
+	    }
+	}
+	// Sea Height
+	seaHeight = addon.getPlugin().getIWM().getSeaHeight(island.getWorld());
     }
 
     /**
@@ -148,14 +151,14 @@ public class IslandLevelCalculator {
      * @param belowSeaLevel - true if below sea level
      */
     private void checkBlock(Material mat, boolean belowSeaLevel) {
-        int count = limitCount(mat);
-        if (belowSeaLevel) {
-            results.underWaterBlockCount.addAndGet(count);
-            results.uwCount.add(mat);
-        } else {
-            results.rawBlockCount.addAndGet(count);
-            results.mdCount.add(mat);
-        }
+	int count = limitCount(mat);
+	if (belowSeaLevel) {
+	    results.underWaterBlockCount.addAndGet(count);
+	    results.uwCount.add(mat);
+	} else {
+	    results.rawBlockCount.addAndGet(count);
+	    results.mdCount.add(mat);
+	}
     }
 
     /**
@@ -180,7 +183,7 @@ public class IslandLevelCalculator {
      * @return the island
      */
     public Island getIsland() {
-        return island;
+	return island;
     }
 
     /**
@@ -189,7 +192,7 @@ public class IslandLevelCalculator {
      * @return the r
      */
     public CompletableFuture<Results> getR() {
-        return r;
+	return r;
     }
 
     /**
@@ -258,7 +261,7 @@ public class IslandLevelCalculator {
      * @return the results
      */
     public Results getResults() {
-        return results;
+	return results;
     }
 
     /**
@@ -268,13 +271,13 @@ public class IslandLevelCalculator {
      * @return value of a material
      */
     private int getValue(Material md) {
-        Integer value = addon.getBlockConfig().getValue(island.getWorld(), md);
-        if (value == null) {
-            // Not in config
-            results.ncCount.add(md);
-            return 0;
-        }
-        return value;
+	Integer value = addon.getBlockConfig().getValue(island.getWorld(), md);
+	if (value == null) {
+	    // Not in config
+	    results.ncCount.add(md);
+	    return 0;
+	}
+	return value;
     }
 
     /**
@@ -286,44 +289,44 @@ public class IslandLevelCalculator {
      *         there is no island nether
      */
     private CompletableFuture<List<Chunk>> getWorldChunk(Environment env, Queue<Pair<Integer, Integer>> pairList) {
-        if (worlds.containsKey(env)) {
-            CompletableFuture<List<Chunk>> r2 = new CompletableFuture<>();
-            List<Chunk> chunkList = new ArrayList<>();
-            World world = worlds.get(env);
-            // Get the chunk, and then coincidentally check the RoseStacker
-            loadChunks(r2, world, pairList, chunkList);
-            return r2;
-        }
-        return CompletableFuture.completedFuture(Collections.emptyList());
+	if (worlds.containsKey(env)) {
+	    CompletableFuture<List<Chunk>> r2 = new CompletableFuture<>();
+	    List<Chunk> chunkList = new ArrayList<>();
+	    World world = worlds.get(env);
+	    // Get the chunk, and then coincidentally check the RoseStacker
+	    loadChunks(r2, world, pairList, chunkList);
+	    return r2;
+	}
+	return CompletableFuture.completedFuture(Collections.emptyList());
     }
 
     private void loadChunks(CompletableFuture<List<Chunk>> r2, World world, Queue<Pair<Integer, Integer>> pairList,
-            List<Chunk> chunkList) {
-        if (pairList.isEmpty()) {
-            r2.complete(chunkList);
-            return;
-        }
-        Pair<Integer, Integer> p = pairList.poll();
-        Util.getChunkAtAsync(world, p.x, p.z, world.getEnvironment().equals(Environment.NETHER)).thenAccept(chunk -> {
-            if (chunk != null) {
-                chunkList.add(chunk);
-                roseStackerCheck(chunk);
-            }
-            loadChunks(r2, world, pairList, chunkList); // Iteration
-        });
+	    List<Chunk> chunkList) {
+	if (pairList.isEmpty()) {
+	    r2.complete(chunkList);
+	    return;
+	}
+	Pair<Integer, Integer> p = pairList.poll();
+	Util.getChunkAtAsync(world, p.x, p.z, world.getEnvironment().equals(Environment.NETHER)).thenAccept(chunk -> {
+	    if (chunk != null) {
+		chunkList.add(chunk);
+		roseStackerCheck(chunk);
+	    }
+	    loadChunks(r2, world, pairList, chunkList); // Iteration
+	});
     }
 
     private void roseStackerCheck(Chunk chunk) {
-        if (addon.isRoseStackersEnabled()) {
-            RoseStackerAPI.getInstance().getStackedBlocks(Collections.singletonList(chunk)).forEach(e -> {
-                // Blocks below sea level can be scored differently
-                boolean belowSeaLevel = seaHeight > 0 && e.getLocation().getY() <= seaHeight;
-                // Check block once because the base block will be counted in the chunk snapshot
-                for (int _x = 0; _x < e.getStackSize() - 1; _x++) {
-                    checkBlock(e.getBlock().getType(), belowSeaLevel);
-                }
-            });
-        }
+	if (addon.isRoseStackersEnabled()) {
+	    RoseStackerAPI.getInstance().getStackedBlocks(Collections.singletonList(chunk)).forEach(e -> {
+		// Blocks below sea level can be scored differently
+		boolean belowSeaLevel = seaHeight > 0 && e.getLocation().getY() <= seaHeight;
+		// Check block once because the base block will be counted in the chunk snapshot
+		for (int _x = 0; _x < e.getStackSize() - 1; _x++) {
+		    checkBlock(e.getBlock().getType(), belowSeaLevel);
+		}
+	    });
+	}
     }
 
     /**
@@ -334,17 +337,17 @@ public class IslandLevelCalculator {
      * @return value of the block if can be counted
      */
     private int limitCount(Material md) {
-        if (limitCount.containsKey(md)) {
-            int count = limitCount.get(md);
-            if (count > 0) {
-                limitCount.put(md, --count);
-                return getValue(md);
-            } else {
-                results.ofCount.add(md);
-                return 0;
-            }
-        }
-        return getValue(md);
+	if (limitCount.containsKey(md)) {
+	    int count = limitCount.get(md);
+	    if (count > 0) {
+		limitCount.put(md, --count);
+		return getValue(md);
+	    } else {
+		results.ofCount.add(md);
+		return 0;
+	    }
+	}
+	return getValue(md);
     }
 
     /**
@@ -579,7 +582,7 @@ public class IslandLevelCalculator {
      * @return the zeroIsland
      */
     boolean isNotZeroIsland() {
-        return !zeroIsland;
+	return !zeroIsland;
     }
 
     public void scanIsland(Pipeliner pipeliner) {
@@ -638,27 +641,27 @@ public class IslandLevelCalculator {
     }
 
     private void handleStackedBlocks() {
-        // Deal with any stacked blocks
-        Iterator<Location> it = stackedBlocks.iterator();
-        while (it.hasNext()) {
-            Location v = it.next();
-            Util.getChunkAtAsync(v).thenAccept(c -> {
-                Block stackedBlock = v.getBlock();
-                boolean belowSeaLevel = seaHeight > 0 && v.getBlockY() <= seaHeight;
-                if (WildStackerAPI.getWildStacker().getSystemManager().isStackedBarrel(stackedBlock)) {
-                    StackedBarrel barrel = WildStackerAPI.getStackedBarrel(stackedBlock);
-                    int barrelAmt = WildStackerAPI.getBarrelAmount(stackedBlock);
-                    for (int _x = 0; _x < barrelAmt; _x++) {
-                        checkBlock(barrel.getType(), belowSeaLevel);
-                    }
-                } else if (WildStackerAPI.getWildStacker().getSystemManager().isStackedSpawner(stackedBlock)) {
-                    int spawnerAmt = WildStackerAPI.getSpawnersAmount((CreatureSpawner) stackedBlock.getState());
-                    for (int _x = 0; _x < spawnerAmt; _x++) {
-                        checkBlock(stackedBlock.getType(), belowSeaLevel);
-                    }
-                }
-                it.remove();
-            });
-        }
+	// Deal with any stacked blocks
+	Iterator<Location> it = stackedBlocks.iterator();
+	while (it.hasNext()) {
+	    Location v = it.next();
+	    Util.getChunkAtAsync(v).thenAccept(c -> {
+		Block stackedBlock = v.getBlock();
+		boolean belowSeaLevel = seaHeight > 0 && v.getBlockY() <= seaHeight;
+		if (WildStackerAPI.getWildStacker().getSystemManager().isStackedBarrel(stackedBlock)) {
+		    StackedBarrel barrel = WildStackerAPI.getStackedBarrel(stackedBlock);
+		    int barrelAmt = WildStackerAPI.getBarrelAmount(stackedBlock);
+		    for (int _x = 0; _x < barrelAmt; _x++) {
+			checkBlock(barrel.getType(), belowSeaLevel);
+		    }
+		} else if (WildStackerAPI.getWildStacker().getSystemManager().isStackedSpawner(stackedBlock)) {
+		    int spawnerAmt = WildStackerAPI.getSpawnersAmount((CreatureSpawner) stackedBlock.getState());
+		    for (int _x = 0; _x < spawnerAmt; _x++) {
+			checkBlock(stackedBlock.getType(), belowSeaLevel);
+		    }
+		}
+		it.remove();
+	    });
+	}
     }
 }
