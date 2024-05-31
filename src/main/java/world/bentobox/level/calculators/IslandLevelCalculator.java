@@ -638,27 +638,37 @@ public class IslandLevelCalculator {
     }
 
     private void handleStackedBlocks() {
-	// Deal with any stacked blocks
-	Iterator<Location> it = stackedBlocks.iterator();
-	while (it.hasNext()) {
-	    Location v = it.next();
-	    Util.getChunkAtAsync(v).thenAccept(c -> {
-		Block stackedBlock = v.getBlock();
-		boolean belowSeaLevel = seaHeight > 0 && v.getBlockY() <= seaHeight;
-		if (WildStackerAPI.getWildStacker().getSystemManager().isStackedBarrel(stackedBlock)) {
-		    StackedBarrel barrel = WildStackerAPI.getStackedBarrel(stackedBlock);
-		    int barrelAmt = WildStackerAPI.getBarrelAmount(stackedBlock);
-		    for (int _x = 0; _x < barrelAmt; _x++) {
-			checkBlock(barrel.getType(), belowSeaLevel);
-		    }
-		} else if (WildStackerAPI.getWildStacker().getSystemManager().isStackedSpawner(stackedBlock)) {
-		    int spawnerAmt = WildStackerAPI.getSpawnersAmount((CreatureSpawner) stackedBlock.getState());
-		    for (int _x = 0; _x < spawnerAmt; _x++) {
-			checkBlock(stackedBlock.getType(), belowSeaLevel);
-		    }
-		}
-		it.remove();
-	    });
-	}
+    // Deal with any stacked blocks
+    List<Location> toRemove = new ArrayList<>();
+    Iterator<Location> it = stackedBlocks.iterator();
+    while (it.hasNext()) {
+        Location v = it.next();
+        Util.getChunkAtAsync(v).thenAccept(c -> {
+            Block stackedBlock = v.getBlock();
+            boolean belowSeaLevel = seaHeight > 0 && v.getBlockY() <= seaHeight;
+            if (WildStackerAPI.getWildStacker().getSystemManager().isStackedBarrel(stackedBlock)) {
+                StackedBarrel barrel = WildStackerAPI.getStackedBarrel(stackedBlock);
+                int barrelAmt = WildStackerAPI.getBarrelAmount(stackedBlock);
+                for (int _x = 0; _x < barrelAmt; _x++) {
+                    checkBlock(barrel.getType(), belowSeaLevel);
+                }
+            } else if (WildStackerAPI.getWildStacker().getSystemManager().isStackedSpawner(stackedBlock)) {
+                int spawnerAmt = WildStackerAPI.getSpawnersAmount((CreatureSpawner) stackedBlock.getState());
+                for (int _x = 0; _x < spawnerAmt; _x++) {
+                    checkBlock(stackedBlock.getType(), belowSeaLevel);
+                }
+            }
+            synchronized (toRemove) {
+                toRemove.add(v);
+            }
+        });
     }
+
+    // Wait for all asynchronous tasks to complete before removing elements
+    // Remove the elements collected in toRemove
+    synchronized (toRemove) {
+        stackedBlocks.removeAll(toRemove);
+    }
+}
+
 }
