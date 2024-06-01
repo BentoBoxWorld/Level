@@ -2,7 +2,9 @@ package world.bentobox.level;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -19,6 +21,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Logger;
@@ -30,7 +33,9 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.eclipse.jdt.annotation.NonNull;
 import org.junit.After;
@@ -46,6 +51,8 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
+
+import com.github.puregero.multilib.MultiLib;
 
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.Settings;
@@ -72,7 +79,7 @@ import world.bentobox.level.listeners.JoinLeaveListener;
  */
 @SuppressWarnings("deprecation")
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ Bukkit.class, BentoBox.class, User.class })
+@PrepareForTest({ Bukkit.class, BentoBox.class, User.class, MultiLib.class })
 public class LevelTest {
 
 	private static File jFile;
@@ -144,8 +151,15 @@ public class LevelTest {
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@Before
+    @SuppressWarnings("unchecked")
+    @Before
 	public void setUp() throws Exception {
+        // Mock MultiLib
+        PowerMockito.mockStatic(MultiLib.class);
+        // Mock the behavior of the onString method
+        PowerMockito.doNothing().when(MultiLib.class);
+        MultiLib.onString(any(Plugin.class), anyString(), (Consumer<String>) any(Consumer.class));
+
 		// Set up plugin
 		Whitebox.setInternalState(BentoBox.class, "instance", plugin);
 		when(plugin.getLogger()).thenReturn(Logger.getAnonymousLogger());

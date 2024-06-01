@@ -10,7 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -120,8 +120,8 @@ public class AdminTopRemoveCommandTest {
 	when(island.getOwner()).thenReturn(uuid);
 	// Island Manager
 	when(plugin.getIslands()).thenReturn(im);
-	when(im.getIslands(any(), any(User.class))).thenReturn(Set.of(island));
-	when(im.getIslands(any(), any(UUID.class))).thenReturn(Set.of(island));
+    when(im.getIslands(any(), any(User.class))).thenReturn(List.of(island));
+    when(im.getIslands(any(), any(UUID.class))).thenReturn(List.of(island));
 
 	// Bukkit
 	PowerMockito.mockStatic(Bukkit.class);
