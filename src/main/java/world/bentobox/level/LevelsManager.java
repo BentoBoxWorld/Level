@@ -39,12 +39,12 @@ public class LevelsManager {
     private static final TreeMap<BigInteger, String> LEVELS;
     private static final BigInteger THOUSAND = BigInteger.valueOf(1000);
     static {
-	LEVELS = new TreeMap<>();
+        LEVELS = new TreeMap<>();
 
-	LEVELS.put(THOUSAND, "k");
-	LEVELS.put(THOUSAND.pow(2), "M");
-	LEVELS.put(THOUSAND.pow(3), "G");
-	LEVELS.put(THOUSAND.pow(4), "T");
+        LEVELS.put(THOUSAND, "k");
+        LEVELS.put(THOUSAND.pow(2), "M");
+        LEVELS.put(THOUSAND.pow(3), "G");
+        LEVELS.put(THOUSAND.pow(4), "T");
     }
     private final Level addon;
 
@@ -58,15 +58,15 @@ public class LevelsManager {
     private Map<World, CachedData> cache = new HashMap<>();
 
     public LevelsManager(Level addon) {
-	this.addon = addon;
-	// Get the BentoBox database
-	// Set up the database handler to store and retrieve data
-	// Note that these are saved by the BentoBox database
-	handler = new Database<>(addon, IslandLevels.class);
-	// Initialize the cache
-	levelsCache = new HashMap<>();
-	// Initialize top ten lists
-	topTenLists = new ConcurrentHashMap<>();
+        this.addon = addon;
+        // Get the BentoBox database
+        // Set up the database handler to store and retrieve data
+        // Note that these are saved by the BentoBox database
+        handler = new Database<>(addon, IslandLevels.class);
+        // Initialize the cache
+        levelsCache = new HashMap<>();
+        // Initialize top ten lists
+        topTenLists = new ConcurrentHashMap<>();
     }
 
     public void migrate() {
@@ -208,7 +208,7 @@ public class LevelsManager {
      * @return initial level of island
      */
     public long getInitialLevel(Island island) {
-	return getLevelsData(island).getInitialLevel();
+        return getLevelsData(island).getInitialLevel();
     }
 
     /**
@@ -252,7 +252,7 @@ public class LevelsManager {
      *         null
      */
     public String getIslandLevelString(@NonNull World world, @Nullable UUID targetPlayer) {
-	return formatLevel(getIslandLevel(world, targetPlayer));
+        return formatLevel(getIslandLevel(world, targetPlayer));
     }
 
     /**
@@ -263,24 +263,24 @@ public class LevelsManager {
      */
     @NonNull
     public IslandLevels getLevelsData(@NonNull Island island) {
-	String id = island.getUniqueId();
-	if (levelsCache.containsKey(id)) {
-	    return levelsCache.get(id);
-	}
-	// Get from database if not in cache
-	if (handler.objectExists(id)) {
-	    IslandLevels ld = handler.loadObject(id);
-	    if (ld != null) {
-		levelsCache.put(id, ld);
-	    } else {
-		handler.deleteID(id);
-		levelsCache.put(id, new IslandLevels(id));
-	    }
-	} else {
-	    levelsCache.put(id, new IslandLevels(id));
-	}
-	// Return cached value
-	return levelsCache.get(id);
+        String id = island.getUniqueId();
+        if (levelsCache.containsKey(id)) {
+            return levelsCache.get(id);
+        }
+        // Get from database if not in cache
+        if (handler.objectExists(id)) {
+            IslandLevels ld = handler.loadObject(id);
+            if (ld != null) {
+                levelsCache.put(id, ld);
+            } else {
+                handler.deleteID(id);
+                levelsCache.put(id, new IslandLevels(id));
+            }
+        } else {
+            levelsCache.put(id, new IslandLevels(id));
+        }
+        // Return cached value
+        return levelsCache.get(id);
     }
 
     /**
@@ -414,7 +414,8 @@ public class LevelsManager {
             addon.log("Generating rankings");
             handler.loadObjects().forEach(il -> {
                 if (il.getLevel() > 0) {
-                    addon.getIslands().getIslandById(il.getUniqueId())
+                    // Load islands, but don't cache them
+                    addon.getIslands().getIslandById(il.getUniqueId(), false)
                             .ifPresent(i -> this.addToTopTen(i, il.getLevel()));
                 }
             });
@@ -429,7 +430,7 @@ public class LevelsManager {
      * @param uuid  - the island's uuid
      */
     public void removeEntry(World world, String uuid) {
-       if (topTenLists.containsKey(world)) {
+        if (topTenLists.containsKey(world)) {
             topTenLists.get(world).getTopTen().remove(uuid);
             // Invalidate the cache because of this deletion
             cache.remove(world);
@@ -504,8 +505,8 @@ public class LevelsManager {
      * @param uniqueId - id of island
      */
     public void deleteIsland(String uniqueId) {
-	levelsCache.remove(uniqueId);
-	handler.deleteID(uniqueId);
+        levelsCache.remove(uniqueId);
+        handler.deleteID(uniqueId);
     }
 
 }
