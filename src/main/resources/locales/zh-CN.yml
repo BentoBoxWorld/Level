@@ -1,0 +1,173 @@
+admin:
+  level:
+    parameters: <player>
+    description: 计算指定玩家的岛屿等级
+    sethandicap:
+      parameters: <player> <handicap>
+      description: 设置偏差值, 通常用于抵消初始岛屿等级, 来保证岛屿等级从零开始. 实际岛屿等级 - <handicap> = 最终的岛屿等级
+      changed: '&a岛屿的偏差值从[number]更改为[new_number]'
+      invalid-level: '&c偏差值无效, 请使用整数'
+  levelstatus:
+    description: 显示等级计算队列中的岛屿
+    islands-in-queue: '&a列队中的岛屿: [number]'
+  top:
+    description: 显示前十名
+    unknown-world: '&c未知的世界!'
+    display: '&f[rank]. &a[name] &7- &b[level]'
+    remove:
+      description: 将玩家移出前十名
+      parameters: <player>
+  stats:
+    description: 显示该服务器上岛屿的统计数据
+    title: 服务器岛屿数据
+    world: '&a[name]'
+    no-data: '&c没有数据.'
+    average-level: '平均岛屿等级: [number]'
+    median-level: '中位数岛屿等级: [number]'
+    mode-level: '众数岛屿等级: [number]'
+    highest-level: '最高岛屿等级: [number]'
+    lowest-level: '最低岛屿等级: [number]'
+    distribution: '岛屿等级分布:'
+    islands: 个岛屿
+island:
+  level:
+    parameters: '[player]'
+    description: 计算你或指定玩家[player]的岛屿等级
+    calculating: '&a等级计算中...'
+    estimated-wait: '&a预计等待时间: [number]秒'
+    in-queue: '&a你处于队列中第[number]个'
+    island-level-is: '&a岛屿等级为: &b[level]'
+    required-points-to-next-level: '&a还需[points]点数才能到达下一级'
+    deaths: '&c([number]次死亡)'
+    cooldown: '&c还需等待&b[time]&c秒才能再次使用该指令'
+    in-progress: '&6岛屿等级正在计算中...'
+    time-out: '&c等级计算超时, 请稍后再试'
+  
+  top:
+    description: 显示前十名
+    gui-title: '&a前十'
+    gui-heading: '&6[name]: &B[rank]'
+    island-level: '&b等级: [level]'
+    warp-to: '&a正在传送到[name]的岛屿'
+  
+  level-details:
+    above-sea-level-blocks: 海平面以上的方块
+    spawners: 刷怪笼
+    underwater-blocks: 水下的方块
+    all-blocks: 所有方块
+    no-island: '&c没有岛屿!'
+    names-island: '[name]的岛屿'
+    syntax: '[name] x [number]'
+    hint: '&c运行level指令查看方块报告'
+
+level:
+  commands:
+    value:
+      parameters: '[hand|<material>]'
+      description: 显示方块的价值. 在末尾添加'hand'可显示手中方块的价值
+  gui:
+    titles:
+      top: '&0&l岛屿排行榜'
+      detail-panel: '&0&l[name]的岛屿'
+      value-panel: '&0&l方块价值'
+    buttons:
+      island:
+        empty: '&f&l第[name]名'
+        name: '&f&l[name]'
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: '[player]的岛屿'
+        owner: '&7&l岛主: &r&b[player]'
+        members-title: '&7&l成员: '
+        member: '&b- [player]'
+        unknown: 未知
+        place: '&7第&7&o[number]&r&7名'
+        level: '&7等级: &o[number]'
+      material:
+        name: '&f&l [number] x [material]'
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: '&7方块ID: &e[id]'
+        value: '&7方块价值: &e[number]'
+        limit: '&7方块限制: &e[number]'
+        count: '&7方块数量: &e[number]'
+        calculated: '&7计算值: &e[number]'
+      all_blocks:
+        name: '&f&l所有方块'
+        description: '&7显示岛屿上所有的方块'
+      above_sea_level:
+        name: '&f&l海平面以上的方块'
+        description: '&7只显示所有海平面以上的方块'
+      underwater:
+        name: '&f&l海平面以下的方块'
+        description: 只显示所有海平面以下的方块
+      spawner:
+        name: '&f&l刷怪笼'
+        description: '&7只显示刷怪笼'
+      filters:
+        name:
+          name: '&f&l按名称排序'
+          description: '&7通过名称排序所有的方块'
+        value:
+          name: '&f&l按价值排序'
+          description: '&7通过价值排序所有的方块'
+        count:
+          name: '&f&l按数量排序'
+          description: '&7通过数量排序所有方块'
+      value:
+        name: '&f&l[material]'
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: '&7方块ID: &e[id]'
+        value: '&7方块价值: &e[number]'
+        underwater: '&7海平面以下方块的价值: &e[number]'
+        limit: '&7方块限制: &e[number]'
+      previous:
+        name: '&f&l上一页'
+        description: '&7切换到第[number]页'
+      next:
+        name: '&f&l下一页'
+        description: '&7切换到第[number]页'
+      search:
+        name: '&f&l搜索'
+        description: '&7搜索特定的内容'
+        search: '&b搜索值: [value]'
+    tips:
+      click-to-view: '&e点击 &7查看'
+      click-to-previous: '&e点击 &7查看上一页'
+      click-to-next: '&e点击 &7查看下一页'
+      click-to-select: '&e点击 &7选择'
+      left-click-to-cycle-up: '&e左键 &7向上循环'
+      right-click-to-cycle-down: '&e右键 &7向下循环'
+      left-click-to-change: '&e左键 &7编辑'
+      right-click-to-clear: '&e右键 &7清除'
+      click-to-asc: '&e点击 &7以升序排序'
+      click-to-desc: '&e点击 &7以降序排序'
+      click-to-warp: '&e点击 &7去岛屿传送点'
+      click-to-visit: '&e点击 &7参观'
+      right-click-to-visit: '&e右键 &7查看'
+  conversations:
+    prefix: '&l&6[BentoBox]: &r'
+    no-data: '&c运行level指令查看方块报告'
+    cancel-string: cancel
+    exit-string: cancel, exit, quit
+    write-search: '&e请输入要搜索的值. (输入''cancel''退出)'
+    search-updated: '&a搜索值已更新'
+    cancelled: '&c对话已取消'
+    no-value: '&c这件物品一文不值'
+    unknown-item: '&c物品''[material]''在游戏中不存在'
+    value: '&7物品''[material]''的价值: &e[value]'
+    value-underwater: '&7物品''[material]''在海平面以下的价值: &e[value]'
+    empty-hand: '&c你的手中没有拿着方块'
