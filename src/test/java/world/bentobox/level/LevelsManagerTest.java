@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -165,6 +166,7 @@ public class LevelsManagerTest {
         when(im.hasIsland(eq(world), any(UUID.class))).thenReturn(true);
         when(im.getIsland(world, uuid)).thenReturn(island);
         when(im.getIslandById(anyString())).thenReturn(Optional.of(island));
+        when(im.getIslandById(anyString(), eq(false))).thenReturn(Optional.of(island));
 
         // Player
         when(player.getUniqueId()).thenReturn(uuid);
@@ -395,8 +397,8 @@ public class LevelsManagerTest {
 	lm.loadTopTens();
 	PowerMockito.verifyStatic(Bukkit.class); // 1
 	Bukkit.getScheduler();
-	verify(scheduler).runTaskAsynchronously(eq(plugin), task.capture());
-	task.getValue().run();
+    verify(scheduler).runTaskAsynchronously(eq(plugin), task.capture()); // Capture the task in the scheduler
+    task.getValue().run(); // run it
 	verify(addon).log("Generating rankings");
 	verify(addon).log("Generated rankings for bskyblock-world");
 

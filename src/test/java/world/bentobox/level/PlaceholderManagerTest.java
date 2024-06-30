@@ -9,9 +9,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -138,7 +138,7 @@ public class PlaceholderManagerTest {
         when(im.getIsland(any(World.class), any(User.class))).thenReturn(island);
         when(im.getIslandAt(any(Location.class))).thenReturn(Optional.of(island));
         when(im.getIslandById(anyString())).thenAnswer((Answer<Optional<Island>>) invocation -> Optional.of(islands.get(invocation.getArgument(0, String.class))));
-        when(im.getIslands(any(), any(UUID.class))).thenReturn(new HashSet<>(islands.values()));
+        when(im.getIslands(any(), any(UUID.class))).thenReturn(new ArrayList<>(islands.values()));
         when(addon.getIslands()).thenReturn(im);
         
         // Levels Manager

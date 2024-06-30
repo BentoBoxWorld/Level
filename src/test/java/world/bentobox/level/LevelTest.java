@@ -61,6 +61,7 @@ import world.bentobox.bentobox.managers.FlagsManager;
 import world.bentobox.bentobox.managers.IslandWorldManager;
 import world.bentobox.bentobox.managers.IslandsManager;
 import world.bentobox.bentobox.managers.PlaceholdersManager;
+import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.config.BlockConfig;
 import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
@@ -72,7 +73,7 @@ import world.bentobox.level.listeners.JoinLeaveListener;
  */
 @SuppressWarnings("deprecation")
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ Bukkit.class, BentoBox.class, User.class })
+@PrepareForTest({ Bukkit.class, BentoBox.class, User.class, Util.class })
 public class LevelTest {
 
 	private static File jFile;
@@ -144,7 +145,7 @@ public class LevelTest {
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@Before
+    @Before
 	public void setUp() throws Exception {
 		// Set up plugin
 		Whitebox.setInternalState(BentoBox.class, "instance", plugin);
@@ -189,6 +190,11 @@ public class LevelTest {
 		when(Bukkit.getServer()).thenReturn(server);
 		when(Bukkit.getLogger()).thenReturn(Logger.getAnonymousLogger());
 		when(Bukkit.getPluginManager()).thenReturn(mock(PluginManager.class));
+        when(Bukkit.getBukkitVersion()).thenReturn("");
+
+        // Util
+        PowerMockito.mockStatic(Util.class, Mockito.RETURNS_MOCKS);
+        when(Util.inTest()).thenReturn(true);
 
 		// Addon
 		addon = new Level();
@@ -221,7 +227,6 @@ public class LevelTest {
 		when(fm.getFlags()).thenReturn(Collections.emptyList());
 
 		// Bukkit
-		PowerMockito.mockStatic(Bukkit.class);
 		when(Bukkit.getScheduler()).thenReturn(scheduler);
 		ItemMeta meta = mock(ItemMeta.class);
 		ItemFactory itemFactory = mock(ItemFactory.class);
