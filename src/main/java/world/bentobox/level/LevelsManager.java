@@ -414,7 +414,7 @@ public class LevelsManager {
             addon.log("Generating rankings");
             handler.loadObjects().forEach(il -> {
                 if (il.getLevel() > 0) {
-                    // Load islands, but don't cache them
+\                    // Load islands, but don't cache them
                     addon.getIslands().getIslandById(il.getUniqueId(), false)
                             .ifPresent(i -> this.addToTopTen(i, il.getLevel()));
                 }
