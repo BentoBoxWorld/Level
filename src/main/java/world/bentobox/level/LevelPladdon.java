@@ -9,8 +9,14 @@ import world.bentobox.bentobox.api.addons.Pladdon;
  *
  */
 public class LevelPladdon extends Pladdon {
+
+    private Addon addon;
+
     @Override
     public Addon getAddon() {
-        return new Level();
+        if (addon == null) {
+            addon = new Level();
+        }
+        return addon;
     }
 }
