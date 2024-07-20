@@ -59,7 +59,7 @@ public class DetailsPanel {
 		}
 
 		// By default no-filters are active.
-		this.activeTab = Tab.ALL_BLOCKS;
+        this.activeTab = Tab.VALUE_BLOCKS;
 		this.activeFilter = Filter.NAME;
 		this.materialCountList = new ArrayList<>(Material.values().length);
 
@@ -111,6 +111,28 @@ public class DetailsPanel {
 		this.materialCountList.clear();
 
 		switch (this.activeTab) {
+        case VALUE_BLOCKS -> {
+            Map<Material, Integer> materialCountMap = new EnumMap<>(Material.class);
+
+            materialCountMap.putAll(this.levelsData.getMdCount());
+
+            // Add underwater blocks.
+            this.levelsData.getUwCount().forEach((material, count) -> materialCountMap.put(material,
+                    materialCountMap.computeIfAbsent(material, key -> 0) + count));
+
+            // Remove zero value blocks
+            materialCountMap.entrySet().removeIf(en -> {
+                Integer value = this.addon.getBlockConfig().getValue(world, en.getKey());
+                return value == null || value == 0;
+            });
+
+            materialCountMap.entrySet().stream().sorted((Map.Entry.comparingByKey())).forEachOrdered(entry -> {
+                if (entry.getValue() > 0) {
+                    this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue()));
+                }
+            });
+
+        }
 		case ALL_BLOCKS -> {
 			Map<Material, Integer> materialCountMap = new EnumMap<>(Material.class);
 
@@ -220,7 +242,7 @@ public class DetailsPanel {
 			builder.description(this.user.getTranslation(this.world, template.description()));
 		}
 
-		Tab tab = Enums.getIfPresent(Tab.class, String.valueOf(template.dataMap().get("tab"))).or(Tab.ALL_BLOCKS);
+        Tab tab = Enums.getIfPresent(Tab.class, String.valueOf(template.dataMap().get("tab"))).or(Tab.VALUE_BLOCKS);
 
 		// Get only possible actions, by removing all inactive ones.
 		List<ItemTemplateRecord.ActionRecords> activeActions = new ArrayList<>(template.actions());
@@ -605,8 +627,12 @@ public class DetailsPanel {
 		 */
 		ALL_BLOCKS,
 		/**
-		 * Above Sea level Tab.
-		 */
+         * Blocks that have value
+         */
+        VALUE_BLOCKS,
+        /**
+         * Above Sea level Tab.
+         */
 		ABOVE_SEA_LEVEL,
 		/**
 		 * Underwater Tab.

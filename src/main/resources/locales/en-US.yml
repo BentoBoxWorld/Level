@@ -112,6 +112,11 @@ level:
         limit: "&7 Block limit: &e [number]"
         count: "&7 Number of blocks: &e [number]"
         calculated: "&7 Calculated value: &e [number]"
+      value_blocks:
+        name: "&f&l All Blocks With Value"
+        description: |-
+          &7 Display all blocks
+          &7 with value on island.
       all_blocks:
         name: "&f&l All Blocks"
         description: |-
