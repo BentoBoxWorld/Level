@@ -216,3 +216,7 @@ level:
     value-underwater: "&7 The value of '[material]' below sea-level: &e[value]"
     # Message that is sent to user when he does not hold any items in hand.
     empty-hand: "&c There are no blocks in your hand"
+    # Message when showing how many have been placed of a block
+    you-have: "&7 You have [number] at last count."
+    # Message about the limit
+    you-can-place: "&7 You can place up to [number] and have them count"

@@ -62,7 +62,7 @@ public class IslandLevels implements DataObject {
     private Map<Material, Integer> uwCount;
 
     /**
-     * MaterialData count - count of all blocks
+     * MaterialData count - count of all blocks excluding under water
      */
     @Expose
     private Map<Material, Integer> mdCount;
@@ -162,6 +162,7 @@ public class IslandLevels implements DataObject {
     }
 
     /**
+     * The count of underwater blocks
      * @return the uwCount
      */
     public Map<Material, Integer> getUwCount() {
@@ -169,6 +170,7 @@ public class IslandLevels implements DataObject {
     }
 
     /**
+     * Underwater blocks
      * @param uwCount the uwCount to set
      */
     public void setUwCount(Map<Material, Integer> uwCount) {
@@ -176,6 +178,7 @@ public class IslandLevels implements DataObject {
     }
 
     /**
+     * All blocks count except for underwater blocks
      * @return the mdCount
      */
     public Map<Material, Integer> getMdCount() {
@@ -183,6 +186,7 @@ public class IslandLevels implements DataObject {
     }
 
     /**
+     * All blocks except for underwater blocks
      * @param mdCount the mdCount to set
      */
     public void setMdCount(Map<Material, Integer> mdCount) {
