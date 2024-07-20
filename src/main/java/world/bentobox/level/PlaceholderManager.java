@@ -30,69 +30,72 @@ public class PlaceholderManager {
     private final BentoBox plugin;
 
     public PlaceholderManager(Level addon) {
-	this.addon = addon;
-	this.plugin = addon.getPlugin();
+        this.addon = addon;
+        this.plugin = addon.getPlugin();
     }
 
     protected void registerPlaceholders(GameModeAddon gm) {
-	if (plugin.getPlaceholdersManager() == null)
-	    return;
-	PlaceholdersManager bpm = plugin.getPlaceholdersManager();
-	// Island Level
-	bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_island_level",
-		user -> addon.getManager().getIslandLevelString(gm.getOverWorld(), user.getUniqueId()));
-	// Unformatted island level
-	bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_island_level_raw",
-		user -> String.valueOf(addon.getManager().getIslandLevel(gm.getOverWorld(), user.getUniqueId())));
-	// Total number of points counted before applying level formula
-	bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_island_total_points", user -> {
-	    IslandLevels data = addon.getManager().getLevelsData(addon.getIslands().getIsland(gm.getOverWorld(), user));
-	    return data.getTotalPoints() + "";
-	});
-	// Points to the next level for player
-	bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_points_to_next_level",
-		user -> addon.getManager().getPointsToNextString(gm.getOverWorld(), user.getUniqueId()));
-	// Maximum level this island has ever been. Current level maybe lower.
-	bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_island_level_max",
-		user -> String.valueOf(addon.getManager().getIslandMaxLevel(gm.getOverWorld(), user.getUniqueId())));
+        if (plugin.getPlaceholdersManager() == null)
+            return;
+        PlaceholdersManager bpm = plugin.getPlaceholdersManager();
+        // Island Level
+        bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_island_level",
+                user -> addon.getManager().getIslandLevelString(gm.getOverWorld(), user.getUniqueId()));
+        // Island Level owner only
+        bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_island_level_owner",
+                user -> String.valueOf(addon.getManager().getIslandLevel(gm.getOverWorld(), user.getUniqueId(), true)));
+        // Unformatted island level
+        bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_island_level_raw",
+                user -> String.valueOf(addon.getManager().getIslandLevel(gm.getOverWorld(), user.getUniqueId())));
+        // Total number of points counted before applying level formula
+        bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_island_total_points", user -> {
+            IslandLevels data = addon.getManager().getLevelsData(addon.getIslands().getIsland(gm.getOverWorld(), user));
+            return data.getTotalPoints() + "";
+        });
+        // Points to the next level for player
+        bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_points_to_next_level",
+                user -> addon.getManager().getPointsToNextString(gm.getOverWorld(), user.getUniqueId()));
+        // Maximum level this island has ever been. Current level maybe lower.
+        bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_island_level_max",
+                user -> String.valueOf(addon.getManager().getIslandMaxLevel(gm.getOverWorld(), user.getUniqueId())));
 
-	// Visited Island Level
-	bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_visited_island_level",
-		user -> getVisitedIslandLevel(gm, user));
+        // Visited Island Level
+        bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_visited_island_level",
+                user -> getVisitedIslandLevel(gm, user));
 
-	// Register Top Ten Placeholders
-	for (int i = 1; i < 11; i++) {
-	    final int rank = i;
-	    // Name
-	    bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_name_" + i,
-		    u -> getRankName(gm.getOverWorld(), rank, false));
-	    // Island Name
-	    bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_island_name_" + i,
-		    u -> getRankIslandName(gm.getOverWorld(), rank, false));
-	    // Members
-	    bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_members_" + i,
-		    u -> getRankMembers(gm.getOverWorld(), rank, false));
-	    // Level
-	    bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_value_" + i,
-		    u -> getRankLevel(gm.getOverWorld(), rank, false));
-	    // Weighted Level Name (Level / number of members)
-	    bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_weighted_name_" + i,
-		    u -> getRankName(gm.getOverWorld(), rank, true));
-	    // Weighted Island Name
-	    bpm.registerPlaceholder(addon,
-		    gm.getDescription().getName().toLowerCase() + "_top_weighted_island_name_" + i,
-		    u -> getRankIslandName(gm.getOverWorld(), rank, true));
-	    // Weighted Members
-	    bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_weighted_members_" + i,
-		    u -> getRankMembers(gm.getOverWorld(), rank, true));
-	    // Weighted Level (Level / number of members)
-	    bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_weighted_value_" + i,
-		    u -> getRankLevel(gm.getOverWorld(), rank, true));
-	}
+        // Register Top Ten Placeholders
+        for (int i = 1; i < 11; i++) {
+            final int rank = i;
+            // Name
+            bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_name_" + i,
+                    u -> getRankName(gm.getOverWorld(), rank, false));
+            // Island Name
+            bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_island_name_" + i,
+                    u -> getRankIslandName(gm.getOverWorld(), rank, false));
+            // Members
+            bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_members_" + i,
+                    u -> getRankMembers(gm.getOverWorld(), rank, false));
+            // Level
+            bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_value_" + i,
+                    u -> getRankLevel(gm.getOverWorld(), rank, false));
+            // Weighted Level Name (Level / number of members)
+            bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_weighted_name_" + i,
+                    u -> getRankName(gm.getOverWorld(), rank, true));
+            // Weighted Island Name
+            bpm.registerPlaceholder(addon,
+                    gm.getDescription().getName().toLowerCase() + "_top_weighted_island_name_" + i,
+                    u -> getRankIslandName(gm.getOverWorld(), rank, true));
+            // Weighted Members
+            bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_weighted_members_" + i,
+                    u -> getRankMembers(gm.getOverWorld(), rank, true));
+            // Weighted Level (Level / number of members)
+            bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_top_weighted_value_" + i,
+                    u -> getRankLevel(gm.getOverWorld(), rank, true));
+        }
 
-	// Personal rank
-	bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_rank_value",
-		u -> getRankValue(gm.getOverWorld(), u));
+        // Personal rank
+        bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_rank_value",
+                u -> getRankValue(gm.getOverWorld(), u));
     }
 
     /**
@@ -104,17 +107,17 @@ public class PlaceholderManager {
      * @return rank name
      */
     String getRankName(World world, int rank, boolean weighted) {
-	// Ensure rank is within bounds
-	rank = Math.max(1, Math.min(rank, Level.TEN));
-	if (weighted) {
-	    return addon.getManager().getWeightedTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L)
-		    .findFirst().map(Island::getOwner).map(addon.getPlayers()::getName).orElse("");
-	}
-	@Nullable
-	UUID owner = addon.getManager().getTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L)
-		.findFirst().flatMap(addon.getIslands()::getIslandById).map(Island::getOwner).orElse(null);
+        // Ensure rank is within bounds
+        rank = Math.max(1, Math.min(rank, Level.TEN));
+        if (weighted) {
+            return addon.getManager().getWeightedTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L)
+                    .findFirst().map(Island::getOwner).map(addon.getPlayers()::getName).orElse("");
+        }
+        @Nullable
+        UUID owner = addon.getManager().getTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L)
+                .findFirst().flatMap(addon.getIslands()::getIslandById).map(Island::getOwner).orElse(null);
 
-	return addon.getPlayers().getName(owner);
+        return addon.getPlayers().getName(owner);
     }
 
     /**
@@ -126,14 +129,14 @@ public class PlaceholderManager {
      * @return name of island or nothing if there isn't one
      */
     String getRankIslandName(World world, int rank, boolean weighted) {
-	// Ensure rank is within bounds
-	rank = Math.max(1, Math.min(rank, Level.TEN));
-	if (weighted) {
-	    return addon.getManager().getWeightedTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L)
-		    .findFirst().map(Island::getName).orElse("");
-	}
-	return addon.getManager().getTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L).findFirst()
-		.flatMap(addon.getIslands()::getIslandById).map(Island::getName).orElse("");
+        // Ensure rank is within bounds
+        rank = Math.max(1, Math.min(rank, Level.TEN));
+        if (weighted) {
+            return addon.getManager().getWeightedTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L)
+                    .findFirst().map(Island::getName).orElse("");
+        }
+        return addon.getManager().getTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L).findFirst()
+                .flatMap(addon.getIslands()::getIslandById).map(Island::getName).orElse("");
     }
 
     /**
@@ -145,27 +148,27 @@ public class PlaceholderManager {
      * @return comma separated string of island member names
      */
     String getRankMembers(World world, int rank, boolean weighted) {
-	// Ensure rank is within bounds
-	rank = Math.max(1, Math.min(rank, Level.TEN));
-	if (weighted) {
-	    return addon.getManager().getWeightedTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L)
-		    .findFirst()
-		    .map(is -> is.getMembers().entrySet().stream().filter(e -> e.getValue() >= RanksManager.MEMBER_RANK)
-			    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).map(Map.Entry::getKey)
-			    .map(addon.getPlayers()::getName).collect(Collectors.joining(",")))
-		    .orElse("");
-	}
+        // Ensure rank is within bounds
+        rank = Math.max(1, Math.min(rank, Level.TEN));
+        if (weighted) {
+            return addon.getManager().getWeightedTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L)
+                    .findFirst()
+                    .map(is -> is.getMembers().entrySet().stream().filter(e -> e.getValue() >= RanksManager.MEMBER_RANK)
+                            .sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).map(Map.Entry::getKey)
+                            .map(addon.getPlayers()::getName).collect(Collectors.joining(",")))
+                    .orElse("");
+        }
 
-	Optional<Island> island = addon.getManager().getTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L)
-		.limit(1L).findFirst().flatMap(addon.getIslands()::getIslandById);
+        Optional<Island> island = addon.getManager().getTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L)
+                .limit(1L).findFirst().flatMap(addon.getIslands()::getIslandById);
 
-	if (island.isPresent()) {
-	    // Sort members by rank
-	    return island.get().getMembers().entrySet().stream().filter(e -> e.getValue() >= RanksManager.MEMBER_RANK)
-		    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).map(Map.Entry::getKey)
-		    .map(addon.getPlayers()::getName).collect(Collectors.joining(","));
-	}
-	return "";
+        if (island.isPresent()) {
+            // Sort members by rank
+            return island.get().getMembers().entrySet().stream().filter(e -> e.getValue() >= RanksManager.MEMBER_RANK)
+                    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).map(Map.Entry::getKey)
+                    .map(addon.getPlayers()::getName).collect(Collectors.joining(","));
+        }
+        return "";
     }
 
     /**
@@ -177,14 +180,14 @@ public class PlaceholderManager {
      * @return level for the rank requested
      */
     String getRankLevel(World world, int rank, boolean weighted) {
-	// Ensure rank is within bounds
-	rank = Math.max(1, Math.min(rank, Level.TEN));
-	if (weighted) {
-	    return addon.getManager().formatLevel(addon.getManager().getWeightedTopTen(world, Level.TEN).values()
-		    .stream().skip(rank - 1L).limit(1L).findFirst().orElse(null));
-	}
-	return addon.getManager().formatLevel(addon.getManager().getTopTen(world, Level.TEN).values().stream()
-		.skip(rank - 1L).limit(1L).findFirst().orElse(null));
+        // Ensure rank is within bounds
+        rank = Math.max(1, Math.min(rank, Level.TEN));
+        if (weighted) {
+            return addon.getManager().formatLevel(addon.getManager().getWeightedTopTen(world, Level.TEN).values()
+                    .stream().skip(rank - 1L).limit(1L).findFirst().orElse(null));
+        }
+        return addon.getManager().formatLevel(addon.getManager().getTopTen(world, Level.TEN).values().stream()
+                .skip(rank - 1L).limit(1L).findFirst().orElse(null));
     }
 
     /**
@@ -195,21 +198,21 @@ public class PlaceholderManager {
      * @return rank where 1 is the top rank.
      */
     private String getRankValue(World world, User user) {
-	if (user == null) {
-	    return "";
-	}
-	// Get the island level for this user
-	long level = addon.getManager().getIslandLevel(world, user.getUniqueId());
-	return String.valueOf(addon.getManager().getTopTenLists().getOrDefault(world, new TopTenData(world)).getTopTen()
-		.values().stream().filter(l -> l > level).count() + 1);
+        if (user == null) {
+            return "";
+        }
+        // Get the island level for this user
+        long level = addon.getManager().getIslandLevel(world, user.getUniqueId());
+        return String.valueOf(addon.getManager().getTopTenLists().getOrDefault(world, new TopTenData(world)).getTopTen()
+                .values().stream().filter(l -> l > level).count() + 1);
     }
 
     String getVisitedIslandLevel(GameModeAddon gm, User user) {
-	if (user == null || !gm.inWorld(user.getWorld()))
-	    return "";
-	return addon.getIslands().getIslandAt(user.getLocation())
-		.map(island -> addon.getManager().getIslandLevelString(gm.getOverWorld(), island.getOwner()))
-		.orElse("0");
+        if (user == null || !gm.inWorld(user.getWorld()))
+            return "";
+        return addon.getIslands().getIslandAt(user.getLocation())
+                .map(island -> addon.getManager().getIslandLevelString(gm.getOverWorld(), island.getOwner()))
+                .orElse("0");
     }
 
 }

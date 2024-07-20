@@ -216,15 +216,32 @@ public class LevelsManager {
      * 
      * @param world        - world where the island is
      * @param targetPlayer - target player UUID
+     * @param ownerOnly    - return level only if the target player is the owner
      * @return Level of the player's island or zero if player is unknown or UUID is
      *         null
      */
     public long getIslandLevel(@NonNull World world, @Nullable UUID targetPlayer) {
+        return getIslandLevel(world, targetPlayer, false);
+    }
+
+    /**
+     * Get level of island from cache for a player.
+     * 
+     * @param world        - world where the island is
+     * @param targetPlayer - target player UUID
+     * @param ownerOnly    - return level only if the target player is the owner
+     * @return Level of the player's island or zero if player is unknown or UUID is
+     *         null
+     */
+    public long getIslandLevel(@NonNull World world, @Nullable UUID targetPlayer, boolean ownerOnly) {
         if (targetPlayer == null)
             return 0L;
         // Get the island
         Island island = addon.getIslands().getIsland(world, targetPlayer);
-        return island == null ? 0L : getLevelsData(island).getLevel();
+        if (island == null || island.getOwner() == null || (ownerOnly && !island.getOwner().equals(targetPlayer))) {
+            return 0L;
+        }
+        return getLevelsData(island).getLevel();
     }
 
     /**
