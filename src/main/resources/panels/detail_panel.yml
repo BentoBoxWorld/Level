@@ -25,6 +25,28 @@ detail_panel:
       # Column number
       2:
         # Icon is a Bukkit Material. 
+        icon: ICE
+        # Title of the button shown to the user. This is a reference and the reference will be translatable in the locale file
+        title: level.gui.buttons.value_blocks.name
+        # Description of the button shown to the user in the lore. This is a reference and the reference will be translatable in the locale file
+        description: level.gui.buttons.value_blocks.description
+        # The data section is a key-value list of data relavent for this button. It is interpreted by the code implemented the panel.
+        # The convention is to specify the type and the panel tab that will open if pressed. These are Enums in the code.
+        data:
+          # Type button will go to the ALL_BLOCKS tab when clicked. 
+          type: TAB
+          tab: VALUE_BLOCKS
+        # Actions cover what happens if the button is clicked or the mouse is moved over it. There can be multiple actions possible for different
+        # click-types.
+        actions:
+          # Each action has an arbitrary descriptive name to define it. 
+          view:
+            # The click-type is the same as the bukkit {@link org.bukkit.event.inventory.ClickType}. UNKNOWN is the default.
+            click-type: unknown
+            # tooltip is a locale reference that will be translated for the user and shown when they hover over the button.
+            tooltip: level.gui.tips.click-to-view
+      3:
+        # Icon is a Bukkit Material. 
         icon: STONE
         # Title of the button shown to the user. This is a reference and the reference will be translatable in the locale file
         title: level.gui.buttons.all_blocks.name
@@ -45,7 +67,7 @@ detail_panel:
             click-type: unknown
             # tooltip is a locale reference that will be translated for the user and shown when they hover over the button.
             tooltip: level.gui.tips.click-to-view
-      3:
+      4:
         icon: GRASS_BLOCK
         title: level.gui.buttons.above_sea_level.name
         description: level.gui.buttons.above_sea_level.description
@@ -56,7 +78,7 @@ detail_panel:
           view:
             click-type: unknown
             tooltip: level.gui.tips.click-to-view
-      4:
+      5:
         icon: WATER_BUCKET
         title: level.gui.buttons.underwater.name
         description: level.gui.buttons.underwater.description
@@ -67,7 +89,7 @@ detail_panel:
           view:
             click-type: unknown
             tooltip: level.gui.tips.click-to-view
-      5:
+      6:
         icon: SPAWNER
         title: level.gui.buttons.spawner.name
         description: level.gui.buttons.spawner.description

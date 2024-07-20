@@ -8,11 +8,14 @@ import java.util.Optional;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.PlayerInventory;
+import org.eclipse.jdt.annotation.NonNull;
 
 import world.bentobox.bentobox.api.commands.CompositeCommand;
+import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
+import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.panels.ValuePanel;
 import world.bentobox.level.util.Utils;
 
@@ -111,6 +114,19 @@ public class IslandValueCommand extends CompositeCommand
                         user.getTranslation(this.getWorld(),"level.conversations.success-underwater",
                                 "[value]", (underWater * value) + ""),
                         MATERIAL, Utils.prettifyObject(material, user));
+            }
+
+            // Show how many have been placed and how many are allowed
+            @NonNull
+            IslandLevels lvData = this.addon.getManager()
+                    .getLevelsData(getIslands().getPrimaryIsland(getWorld(), user.getUniqueId()));
+            int count = lvData.getMdCount().getOrDefault(material, 0) + lvData.getUwCount().getOrDefault(material, 0);
+            user.sendMessage("level.conversations.you-have", TextVariables.NUMBER,
+                    String.valueOf(count));
+            int limit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(material, -1);
+            if (limit > 0) {
+                user.sendMessage("level.conversations.you-can-place", TextVariables.NUMBER,
+                        String.valueOf(limit));
             }
         }
         else
