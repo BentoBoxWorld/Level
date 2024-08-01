@@ -2,9 +2,12 @@ package world.bentobox.level.config;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -26,6 +29,7 @@ public class BlockConfig {
     private Map<Material, Integer> blockLimits = new EnumMap<>(Material.class);
     private Map<Material, Integer> blockValues = new EnumMap<>(Material.class);
     private final Map<World, Map<Material, Integer>> worldBlockValues = new HashMap<>();
+    private final List<Material> hiddenBlocks;
     private Level addon;
 
     /**
@@ -49,6 +53,16 @@ public class BlockConfig {
         if (blockValues.isConfigurationSection("worlds")) {
             loadWorlds(blockValues);
         }
+        // Hidden
+        hiddenBlocks = blockValues.getStringList("hidden-blocks").stream().map(name -> {
+            try {
+                return Material.valueOf(name.toUpperCase(Locale.ENGLISH));
+                
+            } catch (Exception e) {
+                return null;
+            }
+        }).filter(Objects::nonNull).toList();
+        
         // All done
         blockValues.save(file);
     }
@@ -159,5 +173,22 @@ public class BlockConfig {
         return null;
     }
 
+    /**
+     * Return true if the block should be hidden
+     * @param m block material
+     * @return true if hidden
+     */
+    public boolean isHiddenBlock(Material m) {
+        return hiddenBlocks.contains(m);
+    }
+    
+    /**
+     * Return true if the block should not be hidden
+     * @param m block material
+     * @return false if hidden
+     */
+    public boolean isNotHiddenBlock(Material m) {
+        return !hiddenBlocks.contains(m);
+    }
 
 }
