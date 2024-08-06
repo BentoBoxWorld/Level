@@ -59,6 +59,7 @@ public class ValuePanel
         this.materialRecordList = Arrays.stream(Material.values()).
                 filter(Material::isBlock).
                 filter(m -> !m.name().startsWith("LEGACY_")).
+                filter(this.addon.getBlockConfig()::isNotHiddenBlock).
                 map(material ->
                 {
                     Integer value = this.addon.getBlockConfig().getValue(this.world, material);
