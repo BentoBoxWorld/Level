@@ -10,6 +10,10 @@
 limits:
   COBBLESTONE: 10000
   NETHERRACK: 1000
+# These blocks will never be shown in the GUI even if they have value
+hidden-blocks:
+  - BEDROCK
+  - AIR
 blocks:
   ACACIA_BUTTON: 1
   ACACIA_DOOR: 2
