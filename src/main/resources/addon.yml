@@ -2,7 +2,7 @@ name: Level
 main: world.bentobox.level.Level
 version: ${version}${build.number}
 icon: DIAMOND
-api-version: 2.4.0
+api-version: 2.5.1
 
 authors: tastybento
 
