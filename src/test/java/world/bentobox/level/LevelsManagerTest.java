@@ -95,7 +95,7 @@ public class LevelsManagerTest {
     private World world;
     @Mock
     private Player player;
-    @Mock
+
     private ConfigSettings settings;
     @Mock
     private User user;
@@ -176,6 +176,7 @@ public class LevelsManagerTest {
         when(world.getName()).thenReturn("bskyblock-world");
 
         // Settings
+        settings = new ConfigSettings();
         when(addon.getSettings()).thenReturn(settings);
 
         // User
@@ -334,7 +335,7 @@ public class LevelsManagerTest {
     @Test
     public void testFormatLevel() {
 	assertEquals("123456789", lm.formatLevel(123456789L));
-	when(settings.isShorthand()).thenReturn(true);
+    settings.setShorthand(true);
 	assertEquals("123.5M", lm.formatLevel(123456789L));
 	assertEquals("1.2k", lm.formatLevel(1234L));
 	assertEquals("123.5G", lm.formatLevel(123456789352L));
