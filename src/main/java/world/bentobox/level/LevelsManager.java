@@ -36,16 +36,8 @@ import world.bentobox.level.util.CachedData;
 
 public class LevelsManager {
     private static final String INTOPTEN = "intopten";
-    private static final TreeMap<BigInteger, String> LEVELS;
+    private static final TreeMap<BigInteger, String> LEVELS = new TreeMap<>();
     private static final BigInteger THOUSAND = BigInteger.valueOf(1000);
-    static {
-        LEVELS = new TreeMap<>();
-
-        LEVELS.put(THOUSAND, "k");
-        LEVELS.put(THOUSAND.pow(2), "M");
-        LEVELS.put(THOUSAND.pow(3), "G");
-        LEVELS.put(THOUSAND.pow(4), "T");
-    }
     private final Level addon;
 
     // Database handler for level data
@@ -67,6 +59,12 @@ public class LevelsManager {
         levelsCache = new HashMap<>();
         // Initialize top ten lists
         topTenLists = new ConcurrentHashMap<>();
+        // Units
+        LEVELS.put(THOUSAND, addon.getSettings().getKilo());
+        LEVELS.put(THOUSAND.pow(2), addon.getSettings().getMega());
+        LEVELS.put(THOUSAND.pow(3), addon.getSettings().getGiga());
+        LEVELS.put(THOUSAND.pow(4), addon.getSettings().getTera());
+
     }
 
     public void migrate() {

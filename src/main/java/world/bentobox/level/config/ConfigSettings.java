@@ -3,6 +3,7 @@ package world.bentobox.level.config;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.configuration.ConfigComment;
@@ -120,6 +121,17 @@ public class ConfigSettings implements ConfigObject {
     @ConfigComment("Shows large level values rounded down, e.g., 10,345 -> 10k")
     @ConfigEntry(path = "shorthand")
     private boolean shorthand = false;
+
+    @ConfigComment("Shorthand units")
+    @ConfigEntry(path = "units.kilo")
+    private String kilo = "k";
+    @ConfigEntry(path = "units.mega")
+    private String mega = "M";
+    @ConfigEntry(path = "units.giga")
+    private String giga = "G";
+    @ConfigEntry(path = "units.tera")
+    private String tera = "T";
+
     @ConfigComment("")
     @ConfigComment("Include Shulker Box content in chests in level calculations.")
     @ConfigComment("Will count blocks in Shulker Boxes inside of chests.")
@@ -418,5 +430,61 @@ public class ConfigSettings implements ConfigObject {
 
     public void setDisabledPluginHooks(List<String> disabledPluginHooks) {
         this.disabledPluginHooks = disabledPluginHooks;
+    }
+
+    /**
+     * @return the kilo
+     */
+    public String getKilo() {
+        return Objects.requireNonNullElse(kilo, "k");
+    }
+
+    /**
+     * @param kilo the kilo to set
+     */
+    public void setKilo(String kilo) {
+        this.kilo = kilo;
+    }
+
+    /**
+     * @return the mega
+     */
+    public String getMega() {
+        return Objects.requireNonNullElse(mega, "M");
+    }
+
+    /**
+     * @param mega the mega to set
+     */
+    public void setMega(String mega) {
+        this.mega = mega;
+    }
+
+    /**
+     * @return the giga
+     */
+    public String getGiga() {
+        return Objects.requireNonNullElse(giga, "G");
+    }
+
+    /**
+     * @param giga the giga to set
+     */
+    public void setGiga(String giga) {
+        this.giga = giga;
+    }
+
+    /**
+     * @return the tera
+     */
+    public String getTera() {
+        return Objects.requireNonNullElse(tera, "T");
+    }
+
+    /**
+     * @param tera the tera to set
+     */
+    public void setTera(String tera) {
+        this.tera = tera;
     }
 }
