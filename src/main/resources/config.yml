@@ -4,22 +4,22 @@
 # Disabled Game Mode Addons
 # Level will NOT hook into these game mode addons.
 disabled-game-modes: []
-#
+# 
 # When executing level command from console, should a report be shown?
 log-report-to-console: true
-#
+# 
 # Number of concurrent island calculations
 # If your CPU can handle it, you can run parallel island calcs if there are more than one in the queue
 concurrent-island-calcs: 1
-#
+# 
 # Island level calculation timeout in minutes.
 # If an island takes longer that this time to calculate, then the calculation will abort.
 # Generally, calculation should only take a few seconds, so if this ever triggers then something is not right.
 calculation-timeout: 5
-#
+# 
 # Zero island levels on new island or island reset
 # If true, Level will calculate the starter island's level and remove it from any future level calculations.
-# If this is false, the player's starter island blocks will count towards their level.
+# If false, the player's starter island blocks will count towards their level.
 # This will reduce CPU if false.
 zero-new-island-levels: true
 # 
@@ -72,3 +72,18 @@ sumteamdeaths: false
 # Shorthand island level
 # Shows large level values rounded down, e.g., 10,345 -> 10k
 shorthand: false
+units:
+  # Shorthand units
+  kilo: k
+  mega: M
+  giga: G
+  tera: T
+# 
+# Include Shulker Box content in chests in level calculations.
+# Will count blocks in Shulker Boxes inside of chests.
+# NOTE: include-chests needs to be enabled for this to work!.
+include-shulkers-in-chest: false
+# 
+# Disables hooking with other plugins.
+# Example: disabled-plugin-hooks: [UltimateStacker, RoseStacker]
+disabled-plugin-hooks: []

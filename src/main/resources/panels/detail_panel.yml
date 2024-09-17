@@ -132,17 +132,10 @@ detail_panel:
       8: material_button
     3:
       1:
-        # In this case, the icon is defined as a TIPPED_ARROW with and enchantment applied. The format for the enchantment is
-        # define in {@link world.bentobox.bentobox.util.ItemParser} and available for POTIONS or TIPPED_ARROWs.
-        # Format TIPPED_ARROW:NAME:<LEVEL>:<EXTENDED>:<SPLASH/LINGER>:QTY
-        # LEVEL, EXTENDED, SPLASH, LINGER are optional.
-        # LEVEL is a number, 1 or 2
-        # LINGER is for V1.9 servers and later
-        # Examples:
-        # TIPPED_ARROW:STRENGTH:1:EXTENDED:SPLASH:1
-        # TIPPED_ARROW:INSTANT_DAMAGE:2::LINGER:2
-        # TIPPED_ARROW:JUMP:2:NOTEXTENDED:NOSPLASH:1
-        # TIPPED_ARROW:WEAKNESS::::1   -  any weakness enchantment
+        # In this case, the icon is defined as a TIPPED_ARROW with a color.
+        # CustomPotionColor uses the Decimal description of a Color, just as leather armor does.
+        # All you need to do is take a hex code of a color (like #ff00aa) which represents red, 
+        # green, blue as 2 hex digits each and convert that number into a decimal, using a hex to decimal calculator. 
         icon: tipped_arrow{CustomPotionColor:11546150}
         title: level.gui.buttons.previous.name
         description: level.gui.buttons.previous.description

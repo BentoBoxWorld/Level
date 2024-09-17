@@ -46,10 +46,20 @@ public class AdminSetInitialLevelCommand extends CompositeCommand {
 
     @Override
     public boolean execute(User user, String label, List<String> args) {
-        String initialLevel = String.valueOf(addon.getManager().getInitialLevel(island));
-        long lv = Long.parseLong(args.get(1));
+        long initialLevel = addon.getManager().getInitialLevel(island);
+        long lv = 0;
+        if (args.get(1).startsWith("+")) {
+            String change = args.get(1).substring(1);
+            lv = initialLevel + Long.parseLong(change);
+        } else if (args.get(1).startsWith("-")) {
+            String change = args.get(1).substring(1);
+            lv = initialLevel - Long.parseLong(change);
+        } else {
+            lv = Long.parseLong(args.get(1));
+        }
         addon.getManager().setInitialIslandLevel(island, lv);
-        user.sendMessage("admin.level.sethandicap.changed", TextVariables.NUMBER, initialLevel, "[new_number]", String.valueOf(lv));
+        user.sendMessage("admin.level.sethandicap.changed", TextVariables.NUMBER, String.valueOf(initialLevel),
+                "[new_number]", String.valueOf(lv));
         return true;
     }
 
@@ -64,10 +74,20 @@ public class AdminSetInitialLevelCommand extends CompositeCommand {
             user.sendMessage("general.errors.unknown-player", TextVariables.NAME, args.get(0));
             return false;
         }
-        // Check value
-        if (!Util.isInteger(args.get(1), true)) {
-            user.sendMessage("admin.level.sethandicap.invalid-level");
-            return false;
+        // Check if this is a add or remove
+        if (args.get(1).startsWith("+") || args.get(1).startsWith("-")) {
+            String change = args.get(1).substring(1);
+            if (!Util.isInteger(change, true)) {
+                user.sendMessage("admin.level.sethandicap.invalid-level");
+                return false;
+            }
+            // Value is okay
+        } else {
+            // Check value
+            if (!Util.isInteger(args.get(1), true)) {
+                user.sendMessage("admin.level.sethandicap.invalid-level");
+                return false;
+            }
         }
         // Check island
         island = getAddon().getIslands().getIsland(getWorld(), targetUUID);
