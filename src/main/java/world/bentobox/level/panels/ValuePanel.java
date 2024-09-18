@@ -58,6 +58,7 @@ public class ValuePanel
         this.activeFilter = Filter.NAME_ASC;
         this.materialRecordList = Arrays.stream(Material.values()).
                 filter(Material::isBlock).
+                filter(Material::isItem). // Remove things like PITCHER_CROP
                 filter(m -> !m.name().startsWith("LEGACY_")).
                 filter(this.addon.getBlockConfig()::isNotHiddenBlock).
                 map(material ->
@@ -584,6 +585,7 @@ public class ValuePanel
             return null;
         }
 
+        @SuppressWarnings("deprecation")
         int index = this.pageIndex * slot.amountMap().getOrDefault(BLOCK, 1) + slot.slot();
 
         if (index >= this.elementList.size())
