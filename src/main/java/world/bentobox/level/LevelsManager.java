@@ -107,7 +107,8 @@ public class LevelsManager {
      * @return true if successful, false if not added
      */
     private boolean addToTopTen(Island island, long lv) {
-        if (island != null && island.getOwner() != null && hasTopTenPerm(island.getWorld(), island.getOwner())) {
+        if (island != null && island.getOwner() != null && island.getWorld() != null
+                && hasTopTenPerm(island.getWorld(), island.getOwner())) {
             topTenLists.computeIfAbsent(island.getWorld(), k -> new TopTenData(island.getWorld())).getTopTen()
                     .put(island.getUniqueId(), lv);
             return true;
