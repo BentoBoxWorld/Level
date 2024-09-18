@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
@@ -58,6 +60,7 @@ public class ValuePanel
         this.activeFilter = Filter.NAME_ASC;
         this.materialRecordList = Arrays.stream(Material.values()).
                 filter(Material::isBlock).
+                filter(Material::isItem). // Remove things like PITCHER_CROP
                 filter(m -> !m.name().startsWith("LEGACY_")).
                 filter(this.addon.getBlockConfig()::isNotHiddenBlock).
                 map(material ->
@@ -584,6 +587,7 @@ public class ValuePanel
             return null;
         }
 
+        @SuppressWarnings("deprecation")
         int index = this.pageIndex * slot.amountMap().getOrDefault(BLOCK, 1) + slot.slot();
 
         if (index >= this.elementList.size())
