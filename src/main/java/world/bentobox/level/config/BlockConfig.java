@@ -13,6 +13,7 @@ import java.util.Objects;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Registry;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -96,7 +97,7 @@ public class BlockConfig {
         ConfigurationSection blocks = Objects.requireNonNull(blockValues2.getConfigurationSection("blocks"));
         Map<Material, Integer> bv = new EnumMap<>(Material.class);
         // Update blockvalues to latest settings
-        Arrays.stream(Material.values()).filter(Material::isBlock)
+        Registry.MATERIAL.stream().filter(Material::isBlock)
         .filter(m -> !m.name().startsWith("LEGACY_"))
         .filter(m -> !m.isAir())
         .filter(m -> !m.equals(Material.WATER))
