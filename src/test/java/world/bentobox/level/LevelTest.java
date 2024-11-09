@@ -66,6 +66,7 @@ import world.bentobox.level.config.BlockConfig;
 import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
+import world.bentobox.level.mocks.ServerMocks;
 
 /**
  * @author tastybento
@@ -147,6 +148,7 @@ public class LevelTest {
 	 */
     @Before
 	public void setUp() throws Exception {
+        Server server = ServerMocks.newServer();
 		// Set up plugin
 		Whitebox.setInternalState(BentoBox.class, "instance", plugin);
 		when(plugin.getLogger()).thenReturn(Logger.getAnonymousLogger());
@@ -186,7 +188,6 @@ public class LevelTest {
 
 		// Server
 		PowerMockito.mockStatic(Bukkit.class);
-		Server server = mock(Server.class);
 		when(Bukkit.getServer()).thenReturn(server);
 		when(Bukkit.getLogger()).thenReturn(Logger.getAnonymousLogger());
 		when(Bukkit.getPluginManager()).thenReturn(mock(PluginManager.class));
@@ -252,6 +253,7 @@ public class LevelTest {
 	 */
 	@After
 	public void tearDown() throws Exception {
+        ServerMocks.unsetBukkitServer();
 		deleteAll(new File("database"));
 	}
 

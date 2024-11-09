@@ -62,7 +62,12 @@ public class IslandLevelCalculator {
             Material.LIME_SHULKER_BOX, Material.MAGENTA_SHULKER_BOX, Material.ORANGE_SHULKER_BOX,
             Material.PINK_SHULKER_BOX, Material.PURPLE_SHULKER_BOX, Material.RED_SHULKER_BOX, Material.RED_SHULKER_BOX,
             Material.WHITE_SHULKER_BOX, Material.YELLOW_SHULKER_BOX, Material.COMPOSTER, Material.BARREL,
-            Material.DISPENSER, Material.DROPPER, Material.SMOKER, Material.BLAST_FURNACE);
+            Material.DISPENSER, Material.DROPPER, Material.SMOKER, Material.BLAST_FURNACE, Material.BUNDLE,
+            Material.RED_BUNDLE, Material.BLACK_BUNDLE, Material.BLUE_BUNDLE, Material.BROWN_BUNDLE,
+            Material.CYAN_BUNDLE, Material.GRAY_BUNDLE, Material.GREEN_BUNDLE, Material.LIGHT_BLUE_BUNDLE,
+            Material.LIGHT_GRAY_BUNDLE, Material.LIME_BUNDLE, Material.MAGENTA_BUNDLE, Material.ORANGE_BUNDLE,
+            Material.PINK_BUNDLE, Material.PURPLE_BUNDLE, Material.RED_BUNDLE, Material.WHITE_BUNDLE,
+            Material.YELLOW_BUNDLE);
     private static final int CHUNKS_TO_SCAN = 100;
     private final Level addon;
     private final Queue<Pair<Integer, Integer>> chunksToCheck;
@@ -469,6 +474,7 @@ public class IslandLevelCalculator {
 
                     // Scan chests
                     if (addon.getSettings().isIncludeChests() && CHESTS.contains(m)) {
+
                         chestBlocks.add(cp.chunk);
                     }
                     // Add the value of the block's material
