@@ -2,6 +2,7 @@ package world.bentobox.level;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -111,7 +112,8 @@ public class PlaceholderManager {
         rank = Math.max(1, Math.min(rank, Level.TEN));
         if (weighted) {
             return addon.getManager().getWeightedTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L)
-                    .findFirst().map(Island::getOwner).map(addon.getPlayers()::getName).orElse("");
+                    .findFirst().map(Island::getOwner).filter(Objects::nonNull).map(addon.getPlayers()::getName)
+                    .orElse("");
         }
         @Nullable
         UUID owner = addon.getManager().getTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L)
