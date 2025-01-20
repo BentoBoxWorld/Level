@@ -117,7 +117,8 @@ public class PlaceholderManager {
         }
         @Nullable
         UUID owner = addon.getManager().getTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L)
-                .findFirst().flatMap(addon.getIslands()::getIslandById).map(Island::getOwner).orElse(null);
+                .findFirst().flatMap(addon.getIslands()::getIslandById).filter(island -> island.getOwner() != null) // Filter out null owners
+                .map(Island::getOwner).orElse(null);
 
         return addon.getPlayers().getName(owner);
     }
@@ -135,10 +136,12 @@ public class PlaceholderManager {
         rank = Math.max(1, Math.min(rank, Level.TEN));
         if (weighted) {
             return addon.getManager().getWeightedTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L)
-                    .findFirst().map(Island::getName).orElse("");
+                    .findFirst().filter(island -> island.getName() != null) // Filter out null names
+                    .map(Island::getName).orElse("");
         }
         return addon.getManager().getTopTen(world, Level.TEN).keySet().stream().skip(rank - 1L).limit(1L).findFirst()
-                .flatMap(addon.getIslands()::getIslandById).map(Island::getName).orElse("");
+                .flatMap(addon.getIslands()::getIslandById).filter(island -> island.getName() != null) // Filter out null names
+                .map(Island::getName).orElse("");
     }
 
     /**
