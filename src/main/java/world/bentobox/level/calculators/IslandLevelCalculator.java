@@ -309,7 +309,8 @@ public class IslandLevelCalculator {
             return;
         }
         Pair<Integer, Integer> p = pairList.poll();
-        Util.getChunkAtAsync(world, p.x, p.z, world.getEnvironment().equals(Environment.NETHER)).thenAccept(chunk -> {
+        // We need to generate now all the time because some game modes are not voids
+        Util.getChunkAtAsync(world, p.x, p.z, true).thenAccept(chunk -> {
             if (chunk != null) {
                 chunkList.add(chunk);
                 roseStackerCheck(chunk);
@@ -613,6 +614,7 @@ public class IslandLevelCalculator {
             } else {
                 // Done
                 pipeliner.getInProcessQueue().remove(this);
+                BentoBox.getInstance().log("Completed Level scan.");
                 // Chunk finished
                 // This was the last chunk. Handle stacked blocks, then chests and exit
                 handleStackedBlocks().thenCompose(v -> handleChests()).thenRun(() -> {

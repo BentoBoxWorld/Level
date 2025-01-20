@@ -47,6 +47,7 @@ blocks:
   BARREL: 2
   BARRIER: 0
   BASALT: 1
+  BEACON: 300
   BEDROCK: 0
   BEETROOTS: 1
   BELL: 100

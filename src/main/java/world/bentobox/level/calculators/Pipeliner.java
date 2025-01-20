@@ -46,9 +46,10 @@ public class Pipeliner {
             if (!inProcessQueue.isEmpty() || toProcessQueue.isEmpty()) return;
             for (int j = 0; j < addon.getSettings().getConcurrentIslandCalcs() && !toProcessQueue.isEmpty(); j++) {
                 IslandLevelCalculator iD = toProcessQueue.poll();
-                // Ignore deleted or unonwed islands
+                // Ignore deleted or unowned islands
                 if (!iD.getIsland().isDeleted() && !iD.getIsland().isUnowned()) {
                     inProcessQueue.put(iD, System.currentTimeMillis());
+                    BentoBox.getInstance().log("Starting to scan island level at " + iD.getIsland().getCenter());
                     // Start the scanning of a island with the first chunk
                     scanIsland(iD);
                 }
@@ -95,6 +96,7 @@ public class Pipeliner {
                 .map(IslandLevelCalculator::getIsland).anyMatch(island::equals)) {
             return CompletableFuture.completedFuture(new Results(Result.IN_PROGRESS));
         }
+        BentoBox.getInstance().log("Added island to Level queue: " + island.getCenter());
         return addToQueue(island, false);
     }
 
@@ -104,6 +106,7 @@ public class Pipeliner {
      * @return CompletableFuture of the results
      */
     public CompletableFuture<Results> zeroIsland(Island island) {
+        BentoBox.getInstance().log("Zeroing island level for island at " + island.getCenter());
         return addToQueue(island, true);
     }
 
