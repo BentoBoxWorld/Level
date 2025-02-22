@@ -60,7 +60,7 @@ public class IslandLevelCalculator {
     private final Level addon;
     private final Queue<Pair<Integer, Integer>> chunksToCheck;
     private final Island island;
-    private final Map<Material, Integer> limitCount;
+    private final Map<Object, Integer> limitCount;
     private final CompletableFuture<Results> r;
 
     private final Results results;
@@ -89,7 +89,7 @@ public class IslandLevelCalculator {
         results = new Results();
         duration = System.currentTimeMillis();
         chunksToCheck = getChunksToScan(island);
-        this.limitCount = new EnumMap<>(addon.getBlockConfig().getBlockLimits());
+        this.limitCount = new HashMap<>();
         // Get the initial island level
         results.initialLevel.set(addon.getInitialIslandLevel(island));
         // Set up the worlds
@@ -159,10 +159,7 @@ public class IslandLevelCalculator {
      * @param belowSeaLevel - true if below sea level
      */
     private void checkSpawner(EntityType et, boolean belowSeaLevel) {
-        if (limitCount(Material.SPAWNER) == 0) {
-            return;
-        }
-        Integer count = addon.getBlockConfig().getValue(island.getWorld(), et);
+        Integer count = limitCount(et);
         if (count != null) {
             if (belowSeaLevel) {
                 results.underWaterBlockCount.addAndGet(count);
@@ -247,14 +244,9 @@ public class IslandLevelCalculator {
         while (it.hasNext()) {
 
             Entry<Object> type = it.next();
-            Material m = type.getElement() instanceof Material mat ? mat : Material.SPAWNER;
-            Integer limit = addon.getBlockConfig().getBlockLimits().get(m);
+            Integer limit = addon.getBlockConfig().getLimit(type);
             String explain = ")";
-            if (limit == null) {
-                limit = addon.getBlockConfig().getBlockLimits().get(m);
-                explain = " - All types)";
-            }
-            reportLines.add(Util.prettifyText(m.name()) + ": " + String.format("%,d", type.getCount())
+            reportLines.add(Util.prettifyText(type.toString()) + ": " + String.format("%,d", type.getCount())
                     + " blocks (max " + limit + explain);
         }
         reportLines.add(LINE_BREAK);
@@ -271,10 +263,10 @@ public class IslandLevelCalculator {
     /**
      * Get value of a material World blocks trump regular block values
      * 
-     * @param md - Material to check
-     * @return value of a material
+     * @param md - Material or EntityType to check
+     * @return value
      */
-    private int getValue(Material md) {
+    private int getValue(Object md) {
         Integer value = addon.getBlockConfig().getValue(island.getWorld(), md);
         if (value == null) {
             // Not in config
@@ -335,24 +327,28 @@ public class IslandLevelCalculator {
     }
 
     /**
-     * Checks if a block has been limited or not and whether a block has any value
-     * or not
-     * 
-     * @param md Material
-     * @return value of the block if can be counted
+     * Checks if the given object (Material or EntityType) has reached its limit.
+     * If it hasn't, the object's value is returned and its count is incremented.
+     * If the object is not a Material or EntityType, or if it has exceeded its limit, 0 is returned.
+     *
+     * @param obj A Material or EntityType
+     * @return The object's value if within limit, otherwise 0.
      */
-    private int limitCount(Material md) {
-        if (limitCount.containsKey(md)) {
-            int count = limitCount.get(md);
-            if (count > 0) {
-                limitCount.put(md, --count);
-                return getValue(md);
-            } else {
-                results.ofCount.add(md);
-                return 0;
-            }
-        }
-        return getValue(md);
+    private int limitCount(Object obj) {
+        // Only process if obj is a Material or EntityType
+        if (!(obj instanceof Material) && !(obj instanceof EntityType))
+            return 0;
+
+        Integer limit = addon.getBlockConfig().getLimit(obj);
+        if (limit == null)
+            return getValue(obj);
+
+        int count = limitCount.getOrDefault(obj, 0);
+        if (count > limit)
+            return 0;
+
+        limitCount.put(obj, count + 1);
+        return getValue(obj);
     }
 
     /**

@@ -27,7 +27,7 @@ import world.bentobox.level.Level;
 public class BlockConfig {
 
     private static final String SPAWNER = "_SPAWNER";
-    private Map<Material, Integer> blockLimits = new EnumMap<>(Material.class);
+    private Map<String, Integer> blockLimits = new HashMap<>();
     private Map<Material, Integer> blockValues = new EnumMap<>(Material.class);
     private final Map<World, Map<Material, Integer>> worldBlockValues = new HashMap<>();
     private final Map<World, Map<EntityType, Integer>> worldSpawnerValues = new HashMap<>();
@@ -45,7 +45,9 @@ public class BlockConfig {
     public BlockConfig(Level addon, YamlConfiguration blockValues, File file) throws IOException {
         this.addon = addon;
         if (blockValues.isConfigurationSection("limits")) {
-            setBlockLimits(loadBlockLimits(blockValues));
+            for (String key : blockValues.getConfigurationSection("limits").getKeys(false)) {
+                blockLimits.put(key, blockValues.getConfigurationSection("limits").getInt(key));
+            }
         }
         if (blockValues.isConfigurationSection("blocks")) {
             setBlockValues(loadBlockValues(blockValues));
@@ -144,31 +146,19 @@ public class BlockConfig {
         return bv;
     }
 
-    private Map<Material, Integer> loadBlockLimits(YamlConfiguration blockValues2) {
-        Map<Material, Integer> bl = new EnumMap<>(Material.class);
-        ConfigurationSection limits = Objects.requireNonNull(blockValues2.getConfigurationSection("limits"));
-        for (String material : limits.getKeys(false)) {
-            try {
-                Material mat = Material.valueOf(material);
-                bl.put(mat, limits.getInt(material, 0));
-            } catch (Exception e) {
-                addon.logError("Unknown material (" + material + ") in blockconfig.yml Limits section. Skipping...");
-            }
+    /**
+     * Return the limits for any particular material or entity type
+     * @param obj material or entity type
+     * @return the limit or null if there isn't one
+     */
+    public Integer getLimit(Object obj) {
+        if (obj instanceof Material m) {
+            return blockLimits.get(m.name());
         }
-        return bl;
-    }
-
-    /**
-     * @return the blockLimits
-     */
-    public final Map<Material, Integer> getBlockLimits() {
-        return blockLimits;
-    }
-    /**
-     * @param bl the blockLimits to set
-     */
-    private void setBlockLimits(Map<Material, Integer> bl) {
-        this.blockLimits = bl;
+        if (obj instanceof EntityType et) {
+            return blockLimits.get(et.name().concat(SPAWNER));
+        }
+        return null;
     }
     /**
      * @return the blockValues

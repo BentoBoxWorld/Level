@@ -123,8 +123,8 @@ public class IslandValueCommand extends CompositeCommand
             int count = lvData.getMdCount().getOrDefault(material, 0) + lvData.getUwCount().getOrDefault(material, 0);
             user.sendMessage("level.conversations.you-have", TextVariables.NUMBER,
                     String.valueOf(count));
-            int limit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(material, -1);
-            if (limit > 0) {
+            Integer limit = this.addon.getBlockConfig().getLimit(material);
+            if (limit != null) {
                 user.sendMessage("level.conversations.you-can-place", TextVariables.NUMBER,
                         String.valueOf(limit));
             }
