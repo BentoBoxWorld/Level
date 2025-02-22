@@ -6,8 +6,6 @@ import org.bukkit.Material;
 import com.craftaro.ultimatestacker.api.UltimateStackerApi;
 import com.craftaro.ultimatestacker.api.utils.Stackable;
 
-import world.bentobox.bentobox.BentoBox;
-
 /**
  * Isolates UltimateStacker imports so that they are only loaded if the plugin exists
  */

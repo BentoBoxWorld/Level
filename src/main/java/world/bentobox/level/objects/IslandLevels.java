@@ -1,7 +1,11 @@
 package world.bentobox.level.objects;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+
+import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 
 import com.google.gson.annotations.Expose;
 
@@ -172,6 +176,9 @@ public class IslandLevels implements DataObject {
      * @param map the uwCount to set
      */
     public void setUwCount(Map<Object, Integer> map) {
+        // Loaded objects come in as strings, so need to be converted to Material Or EntityTypes
+        uwCount = convertMap(uwCount);
+
         this.uwCount = map;
     }
 
@@ -180,7 +187,40 @@ public class IslandLevels implements DataObject {
      * @return the mdCount
      */
     public Map<Object, Integer> getMdCount() {
+        // Loaded objects come in as strings, so need to be converted to Material Or EntityTypes
+        mdCount = convertMap(mdCount);
         return mdCount;
+    }
+
+    private Map<Object, Integer> convertMap(Map<Object, Integer> mdCount) {
+        Map<Object, Integer> convertedMap = new HashMap<>();
+
+        for (Map.Entry<Object, Integer> entry : mdCount.entrySet()) {
+            Object key = entry.getKey();
+            Integer value = entry.getValue();
+
+            if (key instanceof String) {
+                String keyStr = (String) key;
+                // First, try converting to Material
+                Material material = Material.matchMaterial(keyStr);
+                if (material != null) {
+                    convertedMap.put(material, value);
+                } else {
+                    // Fallback to converting to EntityType (using uppercase as enum constants are uppercase)
+                    try {
+                        EntityType entityType = EntityType.valueOf(keyStr.toUpperCase(Locale.ENGLISH));
+                        convertedMap.put(entityType, value);
+                    } catch (IllegalArgumentException ex) {
+                        // No valid Material or EntityType found.
+                        convertedMap.put(key, value); // Leave the key unchanged.
+                    }
+                }
+            } else {
+                // If the key is not a String, add it directly.
+                convertedMap.put(key, value);
+            }
+        }
+        return convertedMap;
     }
 
     /**

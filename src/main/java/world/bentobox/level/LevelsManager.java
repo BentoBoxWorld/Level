@@ -256,6 +256,7 @@ public class LevelsManager {
             if (ld != null) {
                 levelsCache.put(id, ld);
             } else {
+                // Clean up just in case 
                 handler.deleteID(id);
                 levelsCache.put(id, new IslandLevels(id));
             }

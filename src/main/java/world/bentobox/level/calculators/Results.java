@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.bukkit.Material;
-
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 

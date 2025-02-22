@@ -61,7 +61,7 @@ public class DetailsPanel {
             this.levelsData = null;
         }
 
-        // By default no-filters are active.
+        // Default Filters
         this.activeTab = Tab.VALUE_BLOCKS;
         this.activeFilter = Filter.NAME;
         this.materialCountList = new ArrayList<>(Material.values().length);
@@ -139,12 +139,12 @@ public class DetailsPanel {
             }
             // Remove any hidden blocks
             materialCountMap.keySet().removeIf(this.addon.getBlockConfig()::isHiddenBlock);
-
             // Remove any zero amount items
             materialCountMap.values().removeIf(i -> i < 1);
 
             if (this.activeTab == Tab.VALUE_BLOCKS) {
                 // Remove zero-value blocks
+                // TODO BUG IS HERE - ALL REMOVED
                 materialCountMap.entrySet().removeIf(en -> Optional
                         .ofNullable(this.addon.getBlockConfig().getValue(world, en.getKey())).orElse(0) == 0);
             }
@@ -155,7 +155,7 @@ public class DetailsPanel {
                             .collect(Collectors.toList()));
 
         }
-
+        // Sort and filter
         Comparator<Pair<Object, Integer>> sorter;
 
         switch (this.activeFilter) {
@@ -205,7 +205,6 @@ public class DetailsPanel {
         }
 
         this.materialCountList.sort(sorter);
-
         this.pageIndex = 0;
     }
 
@@ -519,7 +518,7 @@ public class DetailsPanel {
      */
     private PanelItem createMaterialButton(ItemTemplateRecord template, TemplatedPanel.ItemSlot slot) {
         if (this.materialCountList.isEmpty()) {
-            // Does not contain any generators.
+            // Nothing to show
             return null;
         }
 
@@ -546,45 +545,49 @@ public class DetailsPanel {
         if (template.icon() != null) {
             builder.icon(template.icon().clone());
         }
-        // Show amount, if < 64
+        // Show amount if less than 64.
         if (materialCount.getValue() < 64) {
             builder.amount(materialCount.getValue());
         }
 
         final String reference = "level.gui.buttons.material.";
-        String description = "";
+        Object key = materialCount.getKey();
+        String description = Utils.prettifyDescription(key, this.user);
         String blockId = "";
-        Object key = materialCount.getKey(); // Can be a Material or EntityType
-        if (key instanceof Material m) {
-            builder.icon(PanelUtils.getMaterialItem(m));
-            if (template.title() != null) {
-                builder.name(this.user.getTranslation(this.world, template.title(), TextVariables.NUMBER,
-                        String.valueOf(materialCount.getValue()), "[material]", Utils.prettifyObject(m, this.user)));
-            }
-            description = Utils.prettifyDescription(m, this.user);
-            blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", m.name());
+        int blockValue = 0;
+        int blockLimit = 0;
+        String value = "";
+        String limit = "";
+        String displayMaterial = Utils.prettifyObject(key, this.user);
 
+        if (key instanceof Material m) {
+            // Material-specific settings.
+            builder.icon(PanelUtils.getMaterialItem(m));
+            blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", m.name());
+            blockValue = this.addon.getBlockConfig().getBlockValues().getOrDefault(m, 0);
+            blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(m, 0);
         } else if (key instanceof EntityType e) {
+            // EntityType-specific settings.
             builder.icon(PanelUtils.getEntityEgg(e));
-            if (template.title() != null) {
-                builder.name(this.user.getTranslation(this.world, template.title(), TextVariables.NUMBER,
-                        String.valueOf(materialCount.getValue()), "[material]", Utils.prettifyObject(e, this.user)));
-            }
-            description = Utils.prettifyDescription(e, this.user);
-            blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", e.name());
+            description += this.user.getTranslation(this.world, "level.gui.buttons.spawner.block-name"); // Put spawner on the end
+            blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", e.name() + "_SPAWNER");
+            blockValue = this.addon.getBlockConfig().getSpawnerValues().getOrDefault(e, 0);
+            blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(Material.SPAWNER, 0);
         }
 
-        int blockValue = this.addon.getBlockConfig().getBlockValues().getOrDefault(key, 0);
-        String value = blockValue > 0
+        if (template.title() != null) {
+            builder.name(this.user.getTranslation(this.world, template.title(), TextVariables.NUMBER,
+                    String.valueOf(materialCount.getValue()), "[material]", displayMaterial));
+        }
+
+        value = blockValue > 0
                 ? this.user.getTranslationOrNothing(reference + "value", TextVariables.NUMBER,
                         String.valueOf(blockValue))
-                        : "";
-
-        int blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(key, 0);
-        String limit = blockLimit > 0
+                : "";
+        limit = blockLimit > 0
                 ? this.user.getTranslationOrNothing(reference + "limit", TextVariables.NUMBER,
                         String.valueOf(blockLimit))
-                        : "";
+                : "";
 
         String count = this.user.getTranslationOrNothing(reference + "count", TextVariables.NUMBER,
                 String.valueOf(materialCount.getValue()));
@@ -594,6 +597,10 @@ public class DetailsPanel {
         String valueText = calculatedValue > 0 ? this.user.getTranslationOrNothing(reference + "calculated",
                 TextVariables.NUMBER, String.valueOf(calculatedValue)) : "";
 
+        // Hide block ID unless user is an operator.
+        if (!user.isOp()) {
+            blockId = "";
+        }
         if (template.description() != null) {
             builder.description(this.user
                     .getTranslation(this.world, template.description(), "[description]", description, "[id]", blockId,
