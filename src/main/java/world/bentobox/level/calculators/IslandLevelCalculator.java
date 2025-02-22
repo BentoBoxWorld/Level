@@ -646,8 +646,13 @@ public class IslandLevelCalculator {
         for (Map.Entry<Location, Boolean> en : this.spawners.entrySet()) {
             CompletableFuture<Void> future = Util.getChunkAtAsync(en.getKey()).thenAccept(c -> {
                 if (en.getKey().getBlock().getType() == Material.SPAWNER) {
-                    CreatureSpawner cs = (CreatureSpawner) en.getKey().getBlock().getState();
-                    checkSpawner(cs.getSpawnedType(), en.getValue());
+                    EntityType et = ((CreatureSpawner) en.getKey().getBlock().getState()).getSpawnedType();
+                    if (et != null) {
+                        checkSpawner(et, en.getValue());
+                    } else {
+                        // This spawner has no spawning capability. Just list it as a spawner block
+                        checkBlock(Material.SPAWNER, en.getValue());
+                    }
                 }
             });
             futures.add(future);
