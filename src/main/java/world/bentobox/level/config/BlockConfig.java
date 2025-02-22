@@ -2,8 +2,6 @@ package world.bentobox.level.config;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +15,7 @@ import org.bukkit.Registry;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EntityType;
 
 import world.bentobox.level.Level;
 
@@ -27,10 +26,13 @@ import world.bentobox.level.Level;
  */
 public class BlockConfig {
 
+    private static final String SPAWNER = "_SPAWNER";
     private Map<Material, Integer> blockLimits = new EnumMap<>(Material.class);
     private Map<Material, Integer> blockValues = new EnumMap<>(Material.class);
     private final Map<World, Map<Material, Integer>> worldBlockValues = new HashMap<>();
+    private final Map<World, Map<EntityType, Integer>> worldSpawnerValues = new HashMap<>();
     private final List<Material> hiddenBlocks;
+    private Map<EntityType, Integer> spawnerValues = new EnumMap<>(EntityType.class);
     private Level addon;
 
     /**
@@ -47,6 +49,7 @@ public class BlockConfig {
         }
         if (blockValues.isConfigurationSection("blocks")) {
             setBlockValues(loadBlockValues(blockValues));
+            setSpawnerValues(loadSpawnerValues(blockValues));
         } else {
             addon.logWarning("No block values in blockconfig.yml! All island levels will be zero!");
         }
@@ -58,12 +61,12 @@ public class BlockConfig {
         hiddenBlocks = blockValues.getStringList("hidden-blocks").stream().map(name -> {
             try {
                 return Material.valueOf(name.toUpperCase(Locale.ENGLISH));
-                
+
             } catch (Exception e) {
                 return null;
             }
         }).filter(Objects::nonNull).toList();
-        
+
         // All done
         blockValues.save(file);
     }
@@ -106,6 +109,37 @@ public class BlockConfig {
                 blocks.set(m.name(), 1);
             }
             bv.put(m, blocks.getInt(m.name(), 1));
+        });
+        return bv;
+    }
+
+    /**
+     * Loads the spawner values from the blocks in the config
+     * Format is entityname + _SPANWER, so for example ALLAY_SPAWNER
+     * If they are missing, then they will score 1
+     * @param blockValues config section
+     * @return map of entity types and their score
+     */
+    private Map<EntityType, Integer> loadSpawnerValues(YamlConfiguration blockValues) {
+        ConfigurationSection blocks = Objects.requireNonNull(blockValues.getConfigurationSection("blocks"));
+        Map<EntityType, Integer> bv = new HashMap<>();
+
+
+        // Update spawners
+        Registry.MATERIAL.stream().filter(Material::isItem)
+                .filter(m -> m.name().endsWith("_SPAWN_EGG")).map(m -> m.name().substring(0, m.name().length() - 10))
+        .forEach(m -> {
+            // Populate missing spawners
+                    if (!blocks.contains(m + SPAWNER, true)) {
+                        blocks.set(m + SPAWNER, 1);
+                    }
+                    // Load value
+                    try {
+                        EntityType et = EntityType.valueOf(m);
+                        bv.put(et, blocks.getInt(m + SPAWNER));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+            }
         });
         return bv;
     }
@@ -157,39 +191,78 @@ public class BlockConfig {
     }
 
     /**
-     * Get the value of material in world
+     * @return the worldSpawnerValues
+     */
+    public Map<World, Map<EntityType, Integer>> getWorldSpawnerValues() {
+        return worldSpawnerValues;
+    }
+
+    /**
+     * Get the value of of a spawner in world
      * @param world - world
-     * @param md - material
+     * @param obj - entity type that will spawn from this spawner or material
      * @return value or null if not configured with a value
      */
-    public Integer getValue(World world, Material md) {
-        // Check world settings
-        if (getWorldBlockValues().containsKey(world) && getWorldBlockValues().get(world).containsKey(md)) {
-            return getWorldBlockValues().get(world).get(md);
-        }
-        // Check baseline
-        if (getBlockValues().containsKey(md)) {
-            return getBlockValues().get(md);
+    public Integer getValue(World world, Object obj) {
+        if (obj instanceof EntityType et) {
+            // Check world settings
+            if (getWorldSpawnerValues().containsKey(world) && getWorldSpawnerValues().get(world).containsKey(et)) {
+                return getWorldSpawnerValues().get(world).get(et);
+            }
+            // Check baseline
+            if (getSpawnerValues().containsKey(et)) {
+                return getSpawnerValues().get(et);
+            }
+        } else if (obj instanceof Material md) {
+            // Check world settings
+            if (getWorldBlockValues().containsKey(world) && getWorldBlockValues().get(world).containsKey(md)) {
+                return getWorldBlockValues().get(world).get(md);
+            }
+            // Check baseline
+            if (getBlockValues().containsKey(md)) {
+                return getBlockValues().get(md);
+            }
         }
         return null;
     }
 
     /**
      * Return true if the block should be hidden
-     * @param m block material
+     * @param m block material or entity type of spanwer
      * @return true if hidden
      */
-    public boolean isHiddenBlock(Material m) {
-        return hiddenBlocks.contains(m);
+    public boolean isHiddenBlock(Object obj) {
+        if (obj instanceof Material m) {
+            return hiddenBlocks.contains(m);
+        }
+        return hiddenBlocks.contains(Material.SPAWNER);
     }
-    
+
     /**
      * Return true if the block should not be hidden
      * @param m block material
      * @return false if hidden
      */
-    public boolean isNotHiddenBlock(Material m) {
-        return !hiddenBlocks.contains(m);
+    public boolean isNotHiddenBlock(Object obj) {
+        if (obj instanceof Material m) {
+            return !hiddenBlocks.contains(m);
+        } else {
+            return !hiddenBlocks.contains(Material.SPAWNER);
+        }
+    }
+
+    /**
+     * @return the spawnerValues
+     */
+    public Map<EntityType, Integer> getSpawnerValues() {
+        return spawnerValues;
+    }
+
+    /**
+     * @param spawnerValues the spawnerValues to set
+     */
+    public void setSpawnerValues(Map<EntityType, Integer> spawnerValues) {
+        this.spawnerValues = spawnerValues;
     }
 
 }

@@ -25,10 +25,10 @@ public class Results {
         TIMEOUT
     }
     List<String> report;
-    final Multiset<Material> mdCount = HashMultiset.create();
-    final Multiset<Material> uwCount = HashMultiset.create();
-    final Multiset<Material> ncCount = HashMultiset.create();
-    final Multiset<Material> ofCount = HashMultiset.create();
+    final Multiset<Object> mdCount = HashMultiset.create();
+    final Multiset<Object> uwCount = HashMultiset.create();
+    final Multiset<Object> ncCount = HashMultiset.create();
+    final Multiset<Object> ofCount = HashMultiset.create();
     // AtomicLong and AtomicInteger must be used because they are changed by multiple concurrent threads
     AtomicLong rawBlockCount = new AtomicLong(0);
     AtomicLong underWaterBlockCount = new AtomicLong(0);
@@ -130,13 +130,13 @@ public class Results {
     /**
      * @return the mdCount
      */
-    public Multiset<Material> getMdCount() {
+    public Multiset<Object> getMdCount() {
         return mdCount;
     }
     /**
      * @return the uwCount
      */
-    public Multiset<Material> getUwCount() {
+    public Multiset<Object> getUwCount() {
         return uwCount;
     }
     /**

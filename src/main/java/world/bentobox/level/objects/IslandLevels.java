@@ -1,9 +1,7 @@
 package world.bentobox.level.objects;
 
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
-
-import org.bukkit.Material;
 
 import com.google.gson.annotations.Expose;
 
@@ -59,13 +57,13 @@ public class IslandLevels implements DataObject {
      * Underwater count
      */
     @Expose
-    private Map<Material, Integer> uwCount;
+    private Map<Object, Integer> uwCount;
 
     /**
      * MaterialData count - count of all blocks excluding under water
      */
     @Expose
-    private Map<Material, Integer> mdCount;
+    private Map<Object, Integer> mdCount;
 
     /**
      * Constructor for new island
@@ -73,8 +71,8 @@ public class IslandLevels implements DataObject {
      */
     public IslandLevels(String islandUUID) {
         uniqueId = islandUUID;
-        uwCount = new EnumMap<>(Material.class);
-        mdCount = new EnumMap<>(Material.class);
+        uwCount = new HashMap<>();
+        mdCount = new HashMap<>();
     }
 
     /**
@@ -165,23 +163,23 @@ public class IslandLevels implements DataObject {
      * The count of underwater blocks
      * @return the uwCount
      */
-    public Map<Material, Integer> getUwCount() {
+    public Map<Object, Integer> getUwCount() {
         return uwCount;
     }
 
     /**
      * Underwater blocks
-     * @param uwCount the uwCount to set
+     * @param map the uwCount to set
      */
-    public void setUwCount(Map<Material, Integer> uwCount) {
-        this.uwCount = uwCount;
+    public void setUwCount(Map<Object, Integer> map) {
+        this.uwCount = map;
     }
 
     /**
      * All blocks count except for underwater blocks
      * @return the mdCount
      */
-    public Map<Material, Integer> getMdCount() {
+    public Map<Object, Integer> getMdCount() {
         return mdCount;
     }
 
@@ -189,7 +187,7 @@ public class IslandLevels implements DataObject {
      * All blocks except for underwater blocks
      * @param mdCount the mdCount to set
      */
-    public void setMdCount(Map<Material, Integer> mdCount) {
+    public void setMdCount(Map<Object, Integer> mdCount) {
         this.mdCount = mdCount;
     }
 

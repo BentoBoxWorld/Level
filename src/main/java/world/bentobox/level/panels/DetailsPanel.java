@@ -4,12 +4,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.entity.EntityType;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
@@ -110,69 +113,50 @@ public class DetailsPanel {
     private void updateFilters() {
         this.materialCountList.clear();
 
-        switch (this.activeTab) {
-        case VALUE_BLOCKS -> {
-            Map<Material, Integer> materialCountMap = new EnumMap<>(Material.class);
-
-            materialCountMap.putAll(this.levelsData.getMdCount());
-
-            // Add underwater blocks.
-            this.levelsData.getUwCount().forEach((material, count) -> materialCountMap.put(material,
-                    materialCountMap.computeIfAbsent(material, key -> 0) + count));
-
-            // Remove zero value blocks
-            materialCountMap.entrySet().removeIf(en -> {
-                Integer value = this.addon.getBlockConfig().getValue(world, en.getKey());
-                return value == null || value == 0;
-            });
-
-            // Remove any hidden blocks
-            materialCountMap.keySet().removeIf(this.addon.getBlockConfig()::isHiddenBlock);
-
-            materialCountMap.entrySet().stream().sorted((Map.Entry.comparingByKey())).forEachOrdered(entry -> {
-                if (entry.getValue() > 0) {
-                    this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue()));
-                }
-            });
-
-        }
-        case ALL_BLOCKS -> {
-            Map<Material, Integer> materialCountMap = new EnumMap<>(Material.class);
-
-            materialCountMap.putAll(this.levelsData.getMdCount());
-
-            // Add underwater blocks.
-            this.levelsData.getUwCount().forEach((material, count) -> materialCountMap.put(material,
-                    materialCountMap.computeIfAbsent(material, key -> 0) + count));
-
-            // Remove any hidden blocks
-            materialCountMap.keySet().removeIf(this.addon.getBlockConfig()::isHiddenBlock);
-
-            materialCountMap.entrySet().stream().sorted((Map.Entry.comparingByKey()))
-            .forEachOrdered(entry -> this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue())));
-        }
-        case ABOVE_SEA_LEVEL -> this.levelsData.getMdCount().entrySet().stream()
-        .filter(en -> this.addon.getBlockConfig().isNotHiddenBlock(en.getKey()))
-        .sorted((Map.Entry.comparingByKey()))
-        .forEachOrdered(entry -> this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue())));
-
-        case UNDERWATER -> this.levelsData.getUwCount().entrySet().stream()
-        .filter(en -> this.addon.getBlockConfig().isNotHiddenBlock(en.getKey()))
-        .sorted((Map.Entry.comparingByKey()))
-        .forEachOrdered(entry -> this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue())));
-
-        case SPAWNER -> {
+        if (this.activeTab == Tab.SPAWNER) {
             if (this.addon.getBlockConfig().isNotHiddenBlock(Material.SPAWNER)) {
-                int aboveWater = this.levelsData.getMdCount().getOrDefault(Material.SPAWNER, 0);
-                int underWater = this.levelsData.getUwCount().getOrDefault(Material.SPAWNER, 0);
+                Map<EntityType, Integer> spawnerCountMap = new EnumMap<>(EntityType.class);
+                spawnerCountMap = this.levelsData.getMdCount().entrySet().stream()
+                        .filter(en -> en.getKey() instanceof EntityType)
+                        .collect(Collectors.toMap(en -> (EntityType) en.getKey(), Map.Entry::getValue));
 
-                // TODO: spawners need some touch...
-                this.materialCountList.add(new Pair<>(Material.SPAWNER, underWater + aboveWater));
+                spawnerCountMap.entrySet().stream().sorted((Map.Entry.comparingByKey())).forEachOrdered(entry -> {
+                    if (entry.getValue() > 0) {
+                        this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue()));
+                    }
+                });
             }
-        }
+        } else {
+            Map<Object, Integer> materialCountMap = new HashMap<>();
+
+            if (this.activeTab != Tab.UNDERWATER) {
+                // All above water blocks
+                materialCountMap.putAll(this.levelsData.getMdCount());
+            }
+            if (this.activeTab != Tab.ABOVE_SEA_LEVEL) {
+                // All underwater blocks.
+                materialCountMap.putAll(this.levelsData.getUwCount());
+            }
+            // Remove any hidden blocks
+            materialCountMap.keySet().removeIf(this.addon.getBlockConfig()::isHiddenBlock);
+
+            // Remove any zero amount items
+            materialCountMap.values().removeIf(i -> i < 1);
+
+            if (this.activeTab == Tab.VALUE_BLOCKS) {
+                // Remove zero-value blocks
+                materialCountMap.entrySet().removeIf(en -> Optional
+                        .ofNullable(this.addon.getBlockConfig().getValue(world, en.getKey())).orElse(0) == 0);
+            }
+            // All done filtering, add the left overs
+            materialCountList.addAll(
+                    materialCountMap.entrySet().stream().map(entry -> new Pair<>(entry.getKey(), entry.getValue()))
+                            //.sorted(Comparator.comparing(pair -> ((Enum<?>) pair.getKey()).name()))
+                            .collect(Collectors.toList()));
+
         }
 
-        Comparator<Pair<Material, Integer>> sorter;
+        Comparator<Pair<Object, Integer>> sorter;
 
         switch (this.activeFilter) {
         case COUNT -> {
@@ -556,37 +540,47 @@ public class DetailsPanel {
      * @param materialCount materialCount which button must be created.
      * @return PanelItem for generator tier.
      */
-    private PanelItem createMaterialButton(ItemTemplateRecord template, Pair<Material, Integer> materialCount) {
+    private PanelItem createMaterialButton(ItemTemplateRecord template, Pair<Object, Integer> materialCount) {
         PanelItemBuilder builder = new PanelItemBuilder();
 
         if (template.icon() != null) {
             builder.icon(template.icon().clone());
-        } else {
-            builder.icon(PanelUtils.getMaterialItem(materialCount.getKey()));
         }
-
+        // Show amount, if < 64
         if (materialCount.getValue() < 64) {
             builder.amount(materialCount.getValue());
         }
 
-        if (template.title() != null) {
-            builder.name(this.user.getTranslation(this.world, template.title(), TextVariables.NUMBER,
-                    String.valueOf(materialCount.getValue()), "[material]",
-                    Utils.prettifyObject(materialCount.getKey(), this.user)));
+        final String reference = "level.gui.buttons.material.";
+        String description = "";
+        String blockId = "";
+        Object key = materialCount.getKey(); // Can be a Material or EntityType
+        if (key instanceof Material m) {
+            builder.icon(PanelUtils.getMaterialItem(m));
+            if (template.title() != null) {
+                builder.name(this.user.getTranslation(this.world, template.title(), TextVariables.NUMBER,
+                        String.valueOf(materialCount.getValue()), "[material]", Utils.prettifyObject(m, this.user)));
+            }
+            description = Utils.prettifyDescription(m, this.user);
+            blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", m.name());
+
+        } else if (key instanceof EntityType e) {
+            builder.icon(PanelUtils.getEntityEgg(e));
+            if (template.title() != null) {
+                builder.name(this.user.getTranslation(this.world, template.title(), TextVariables.NUMBER,
+                        String.valueOf(materialCount.getValue()), "[material]", Utils.prettifyObject(e, this.user)));
+            }
+            description = Utils.prettifyDescription(e, this.user);
+            blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", e.name());
         }
 
-        String description = Utils.prettifyDescription(materialCount.getKey(), this.user);
-
-        final String reference = "level.gui.buttons.material.";
-        String blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", materialCount.getKey().name());
-
-        int blockValue = this.addon.getBlockConfig().getBlockValues().getOrDefault(materialCount.getKey(), 0);
+        int blockValue = this.addon.getBlockConfig().getBlockValues().getOrDefault(key, 0);
         String value = blockValue > 0
                 ? this.user.getTranslationOrNothing(reference + "value", TextVariables.NUMBER,
                         String.valueOf(blockValue))
                         : "";
 
-        int blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(materialCount.getKey(), 0);
+        int blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(key, 0);
         String limit = blockLimit > 0
                 ? this.user.getTranslationOrNothing(reference + "limit", TextVariables.NUMBER,
                         String.valueOf(blockLimit))
@@ -706,7 +700,7 @@ public class DetailsPanel {
     /**
      * This variable stores the list of elements to display.
      */
-    private final List<Pair<Material, Integer>> materialCountList;
+    private final List<Pair<Object, Integer>> materialCountList;
 
     /**
      * This variable holds current pageIndex for multi-page generator choosing.
