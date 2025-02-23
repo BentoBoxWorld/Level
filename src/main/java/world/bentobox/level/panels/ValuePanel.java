@@ -6,11 +6,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.entity.EntityType;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
@@ -34,11 +36,86 @@ import world.bentobox.level.util.Utils;
  */
 public class ValuePanel
 {
+    // ---------------------------------------------------------------------
+    // Section: Enums
+    // ---------------------------------------------------------------------
+
+    /**
+     * Sorting order of blocks.
+     */
+    private enum Filter {
+        /**
+         * By name asc
+         */
+        NAME_ASC,
+        /**
+         * By name desc
+         */
+        NAME_DESC,
+        /**
+         * By value asc
+         */
+        VALUE_ASC,
+        /**
+         * By value desc
+         */
+        VALUE_DESC,
+    }
+
+    private record BlockRecord(Object keyl, Integer value, Integer limit) {
+    }
 
     // ---------------------------------------------------------------------
-    // Section: Internal Constructor
+    // Section: Constants
     // ---------------------------------------------------------------------
 
+    private static final String BLOCK = "BLOCK";
+
+    private static final String SPAWNER = "_SPAWNER";
+
+    // ---------------------------------------------------------------------
+    // Section: Variables
+    // ---------------------------------------------------------------------
+
+    /**
+     * This variable allows to access addon object.
+     */
+    private final Level addon;
+
+    /**
+     * This variable holds user who opens panel. Without it panel cannot be opened.
+     */
+    private final User user;
+
+    /**
+     * This variable holds a world to which gui referee.
+     */
+    private final World world;
+
+    /**
+     * This variable stores the list of elements to display.
+     */
+    private final List<BlockRecord> blockRecordList;
+
+    /**
+     * This variable stores the list of elements to display.
+     */
+    private List<BlockRecord> elementList;
+
+    /**
+     * This variable holds current pageIndex for multi-page generator choosing.
+     */
+    private int pageIndex;
+
+    /**
+     * This variable stores which tab currently is active.
+     */
+    private String searchText;
+
+    /**
+     * This variable stores active filter for items.
+     */
+    private Filter activeFilter;
 
     /**
      * This is internal constructor. It is used internally in current class to avoid creating objects everywhere.
@@ -56,7 +133,8 @@ public class ValuePanel
         this.user = user;
 
         this.activeFilter = Filter.NAME_ASC;
-        this.materialRecordList = Arrays.stream(Material.values()).
+
+        this.blockRecordList = Arrays.stream(Material.values()).
                 filter(Material::isBlock).
                 filter(Material::isItem). // Remove things like PITCHER_CROP
                 filter(m -> !m.name().startsWith("LEGACY_")).
@@ -64,13 +142,22 @@ public class ValuePanel
                 map(material ->
                 {
                     Integer value = this.addon.getBlockConfig().getValue(this.world, material);
-                    Integer limit = this.addon.getBlockConfig().getBlockLimits().get(material);
+                    Integer limit = this.addon.getBlockConfig().getLimit(material);
 
-                    return new MaterialRecord(material,
+                    return new BlockRecord(material,
                             value != null ? value : 0,
                                     limit != null ? limit : 0);
                 }).
                 collect(Collectors.toList());
+        // Add spawn eggs
+        this.blockRecordList.addAll(Arrays.stream(EntityType.values()).filter(EntityType::isSpawnable)
+                .filter(EntityType::isAlive)
+                .filter(this.addon.getBlockConfig()::isNotHiddenBlock).map(et -> {
+                    Integer value = this.addon.getBlockConfig().getValue(this.world, et);
+                    Integer limit = this.addon.getBlockConfig().getLimit(et);
+
+                    return new BlockRecord(et, value != null ? value : 0, limit != null ? limit : 0);
+                }).collect(Collectors.toList()));
 
         this.elementList = new ArrayList<>(Material.values().length);
         this.searchText = "";
@@ -108,7 +195,7 @@ public class ValuePanel
      */
     private void updateFilters()
     {
-        Comparator<MaterialRecord> sorter;
+        Comparator<BlockRecord> sorter;
 
         switch (this.activeFilter)
         {
@@ -118,8 +205,8 @@ public class ValuePanel
         {
             if (o1.value().equals(o2.value()))
             {
-                String o1Name = Utils.prettifyObject(o1.material(), this.user);
-                String o2Name = Utils.prettifyObject(o2.material(), this.user);
+                String o1Name = Utils.prettifyObject(o1.keyl(), this.user);
+                String o2Name = Utils.prettifyObject(o2.keyl(), this.user);
 
                 return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
             }
@@ -135,8 +222,8 @@ public class ValuePanel
         {
             if (o1.value().equals(o2.value()))
             {
-                String o1Name = Utils.prettifyObject(o1.material(), this.user);
-                String o2Name = Utils.prettifyObject(o2.material(), this.user);
+                String o1Name = Utils.prettifyObject(o1.keyl(), this.user);
+                String o2Name = Utils.prettifyObject(o2.keyl(), this.user);
 
                 return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
             }
@@ -150,8 +237,8 @@ public class ValuePanel
 
         sorter = (o1, o2) ->
         {
-            String o1Name = Utils.prettifyObject(o1.material(), this.user);
-            String o2Name = Utils.prettifyObject(o2.material(), this.user);
+            String o1Name = Utils.prettifyObject(o1.keyl(), this.user);
+            String o2Name = Utils.prettifyObject(o2.keyl(), this.user);
 
             return String.CASE_INSENSITIVE_ORDER.compare(o2Name, o1Name);
         };
@@ -160,25 +247,26 @@ public class ValuePanel
 
         sorter = (o1, o2) ->
         {
-            String o1Name = Utils.prettifyObject(o1.material(), this.user);
-            String o2Name = Utils.prettifyObject(o2.material(), this.user);
+            String o1Name = Utils.prettifyObject(o1.keyl(), this.user);
+            String o2Name = Utils.prettifyObject(o2.keyl(), this.user);
 
             return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
         };
 
         }
 
-        this.materialRecordList.sort(sorter);
+        this.blockRecordList.sort(sorter);
 
         if (!this.searchText.isBlank())
         {
-            this.elementList = new ArrayList<>(this.materialRecordList.size());
+            this.elementList = new ArrayList<>(this.blockRecordList.size());
             final String text = this.searchText.toLowerCase();
 
-            this.materialRecordList.forEach(rec ->
+            this.blockRecordList.forEach(rec ->
             {
-                if (rec.material.name().toLowerCase().contains(text) ||
-                        Utils.prettifyObject(rec.material(), this.user).toLowerCase().contains(text))
+                if (rec.keyl.toString().toLowerCase().contains(text)
+                        ||
+                        Utils.prettifyObject(rec.keyl(), this.user).toLowerCase().contains(text))
                 {
                     this.elementList.add(rec);
                 }
@@ -186,7 +274,7 @@ public class ValuePanel
         }
         else
         {
-            this.elementList = this.materialRecordList;
+            this.elementList = this.blockRecordList;
         }
 
         this.pageIndex = 0;
@@ -585,7 +673,6 @@ public class ValuePanel
             return null;
         }
 
-        @SuppressWarnings("deprecation")
         int index = this.pageIndex * slot.amountMap().getOrDefault(BLOCK, 1) + slot.slot();
 
         if (index >= this.elementList.size())
@@ -597,6 +684,84 @@ public class ValuePanel
         return this.createMaterialButton(template, this.elementList.get(index));
     }
 
+    /**
+     * This method creates button for block.
+     *
+     * @param template      the template of the button
+     * @param blockCount  count
+     * @return PanelItem button
+     */
+    private PanelItem createMaterialButton(ItemTemplateRecord template, BlockRecord blockCount) {
+        PanelItemBuilder builder = new PanelItemBuilder();
+
+        if (template.icon() != null) {
+            builder.icon(template.icon().clone());
+        }
+        // Show amount if less than 64.
+        if (blockCount.value() < 64) {
+            builder.amount(blockCount.value());
+        }
+
+        final String reference = "level.gui.buttons.material.";
+        Object key = blockCount.keyl();
+        String description = Utils.prettifyDescription(key, this.user);
+        String blockId = "";
+        int blockValue = 0;
+        int blockLimit = 0;
+        String value = "";
+        String limit = "";
+        String displayMaterial = Utils.prettifyObject(key, this.user);
+
+        if (key instanceof Material m) {
+            // Material-specific settings.
+            builder.icon(PanelUtils.getMaterialItem(m));
+            blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", m.name());
+            blockValue = this.addon.getBlockConfig().getBlockValues().getOrDefault(m, 0);
+            blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(m), 0);
+        } else if (key instanceof EntityType e) {
+            // EntityType-specific settings.
+            builder.icon(PanelUtils.getEntityEgg(e));
+            description += this.user.getTranslation(this.world, "level.gui.buttons.spawner.block-name"); // Put spawner on the end
+            blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", e.name().concat(SPAWNER));
+            blockValue = this.addon.getBlockConfig().getSpawnerValues().getOrDefault(e, 0);
+            blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(e), 0);
+        }
+
+        if (template.title() != null) {
+            builder.name(this.user.getTranslation(this.world, template.title(), TextVariables.NUMBER,
+                    String.valueOf(blockCount.value()), "[material]", displayMaterial));
+        }
+
+        value = blockValue > 0
+                ? this.user.getTranslationOrNothing(reference + "value", TextVariables.NUMBER,
+                        String.valueOf(blockValue))
+                : "";
+        limit = blockLimit > 0
+                ? this.user.getTranslationOrNothing(reference + "limit", TextVariables.NUMBER,
+                        String.valueOf(blockLimit))
+                : "";
+
+        // Hide block ID unless user is an operator.
+        if (!user.isOp()) {
+            blockId = "";
+        }
+        String underWater;
+
+        if (this.addon.getSettings().getUnderWaterMultiplier() > 1.0) {
+            underWater = this.user.getTranslationOrNothing(reference + "underwater", TextVariables.NUMBER,
+                    String.valueOf(blockCount.value() * this.addon.getSettings().getUnderWaterMultiplier()));
+        } else {
+            underWater = "";
+        }
+        if (template.description() != null) {
+            builder.description(this.user
+                    .getTranslation(this.world, template.description(), "[description]", description, "[id]", blockId,
+                            "[value]", value, "[underwater]", underWater, "[limit]", limit)
+                    .replaceAll("(?m)^[ \\t]*\\r?\\n", "").replaceAll("(?<!\\\\)\\|", "\n").replace("\\\\\\|", "|")); // Non regex
+        }
+
+        return builder.build();
+    }
 
     /**
      * This method creates button for material.
@@ -605,11 +770,12 @@ public class ValuePanel
      * @param materialRecord materialRecord which button must be created.
      * @return PanelItem for generator tier.
      */
+    /*
     private PanelItem createMaterialButton(ItemTemplateRecord template,
             MaterialRecord materialRecord)
     {
         PanelItemBuilder builder = new PanelItemBuilder();
-
+    
         if (template.icon() != null)
         {
             builder.icon(template.icon().clone());
@@ -618,29 +784,29 @@ public class ValuePanel
         {
             builder.icon(PanelUtils.getMaterialItem(materialRecord.material()));
         }
-
+    
         if (materialRecord.value() <= 64 && materialRecord.value() > 0)
         {
             builder.amount(materialRecord.value());
         }
-
+    
         if (template.title() != null)
         {
             builder.name(this.user.getTranslation(this.world, template.title(),
                     "[material]", Utils.prettifyObject(materialRecord.material(), this.user)));
         }
-
+    
         String description = Utils.prettifyDescription(materialRecord.material(), this.user);
-
+    
         final String reference = "level.gui.buttons.material.";
         String blockId = this.user.getTranslationOrNothing(reference + "id",
                 "[id]", materialRecord.material().name());
-
+    
         String value = this.user.getTranslationOrNothing(reference + "value",
                 TextVariables.NUMBER, String.valueOf(materialRecord.value()));
-
+    
         String underWater;
-
+    
         if (this.addon.getSettings().getUnderWaterMultiplier() > 1.0)
         {
             underWater = this.user.getTranslationOrNothing(reference + "underwater",
@@ -650,10 +816,10 @@ public class ValuePanel
         {
             underWater = "";
         }
-
+    
         String limit = materialRecord.limit() > 0 ? this.user.getTranslationOrNothing(reference + "limit",
                 TextVariables.NUMBER,  String.valueOf(materialRecord.limit())) : "";
-
+    
         if (template.description() != null)
         {
             builder.description(this.user.getTranslation(this.world, template.description(),
@@ -666,14 +832,14 @@ public class ValuePanel
                     replaceAll("(?<!\\\\)\\|", "\n").
                     replace("\\\\\\|", "|")); // Non regex
         }
-
+    
         builder.clickHandler((panel, user1, clickType, i) -> {
             addon.log("Material: " + materialRecord.material());
             return true;
         });
-
+    
         return builder.build();
-    }
+    }*/
 
 
     // ---------------------------------------------------------------------
@@ -696,87 +862,4 @@ public class ValuePanel
         new ValuePanel(addon, world, user).build();
     }
 
-
-    // ---------------------------------------------------------------------
-    // Section: Enums
-    // ---------------------------------------------------------------------
-
-
-    /**
-     * Sorting order of blocks.
-     */
-    private enum Filter
-    {
-        /**
-         * By name asc
-         */
-        NAME_ASC,
-        /**
-         * By name desc
-         */
-        NAME_DESC,
-        /**
-         * By value asc
-         */
-        VALUE_ASC,
-        /**
-         * By value desc
-         */
-        VALUE_DESC,
-    }
-
-
-    private record MaterialRecord(Material material, Integer value, Integer limit)
-    {
-    }
-
-    // ---------------------------------------------------------------------
-    // Section: Constants
-    // ---------------------------------------------------------------------
-
-    private static final String BLOCK = "BLOCK";
-
-    // ---------------------------------------------------------------------
-    // Section: Variables
-    // ---------------------------------------------------------------------
-
-    /**
-     * This variable allows to access addon object.
-     */
-    private final Level addon;
-
-    /**
-     * This variable holds user who opens panel. Without it panel cannot be opened.
-     */
-    private final User user;
-
-    /**
-     * This variable holds a world to which gui referee.
-     */
-    private final World world;
-
-    /**
-     * This variable stores the list of elements to display.
-     */
-    private final List<MaterialRecord> materialRecordList;
-
-    /**
-     * This variable stores the list of elements to display.
-     */
-    private List<MaterialRecord> elementList;
-
-    /**
-     * This variable holds current pageIndex for multi-page generator choosing.
-     */
-    private int pageIndex;
-
-    /**
-     * This variable stores which tab currently is active.
-     */
-    private String searchText;
-
-    /**
-     * This variable stores active filter for items.
-     */
-    private Filter activeFilter;
 }

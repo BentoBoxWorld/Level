@@ -142,6 +142,7 @@ level:
         name: "&f&l Spawners"
         description: |-
           &7 Display only spawners.
+        block-name: "&b Spawner"
       filters:
         name:
           name: "&f&l Sort by Name"

@@ -30,7 +30,6 @@ import world.bentobox.level.calculators.Results;
 import world.bentobox.level.events.IslandLevelCalculatedEvent;
 import world.bentobox.level.events.IslandPreLevelEvent;
 import world.bentobox.level.objects.IslandLevels;
-import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.objects.TopTenData;
 import world.bentobox.level.util.CachedData;
 
@@ -65,38 +64,6 @@ public class LevelsManager {
         LEVELS.put(THOUSAND.pow(3), addon.getSettings().getGiga());
         LEVELS.put(THOUSAND.pow(4), addon.getSettings().getTera());
 
-    }
-
-    public void migrate() {
-        Database<LevelsData> oldDb = new Database<>(addon, LevelsData.class);
-        oldDb.loadObjects().forEach(ld -> {
-            try {
-                UUID owner = UUID.fromString(ld.getUniqueId());
-                // Step through each world
-                ld.getLevels().keySet().stream()
-                        // World
-                        .map(Bukkit::getWorld).filter(Objects::nonNull)
-                        // Island
-                        .map(w -> addon.getIslands().getIsland(w, owner)).filter(Objects::nonNull).forEach(i -> {
-                            // Make new database entry
-                            World w = i.getWorld();
-                            IslandLevels il = new IslandLevels(i.getUniqueId());
-                            il.setInitialLevel(ld.getInitialLevel(w));
-                            il.setLevel(ld.getLevel(w));
-                            il.setMdCount(ld.getMdCount(w));
-                            il.setPointsToNextLevel(ld.getPointsToNextLevel(w));
-                            il.setUwCount(ld.getUwCount(w));
-                            // Save it
-                            handler.saveObjectAsync(il);
-                        });
-                // Now delete the old database entry
-                oldDb.deleteID(ld.getUniqueId());
-            } catch (Exception e) {
-                addon.logError("Could not migrate level data database! " + e.getMessage());
-                e.printStackTrace();
-                return;
-            }
-        });
     }
 
     /**
@@ -289,6 +256,7 @@ public class LevelsManager {
             if (ld != null) {
                 levelsCache.put(id, ld);
             } else {
+                // Clean up just in case 
                 handler.deleteID(id);
                 levelsCache.put(id, new IslandLevels(id));
             }

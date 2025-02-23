@@ -4,12 +4,16 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.entity.EntityType;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
@@ -24,7 +28,6 @@ import world.bentobox.bentobox.api.panels.builders.TemplatedPanelBuilder;
 import world.bentobox.bentobox.api.panels.reader.ItemTemplateRecord;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
-import world.bentobox.bentobox.util.Pair;
 import world.bentobox.level.Level;
 import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.util.Utils;
@@ -33,9 +36,111 @@ import world.bentobox.level.util.Utils;
  * This class opens GUI that shows generator view for user.
  */
 public class DetailsPanel {
+
+    private static final String SPAWNER = "_SPAWNER";
+
     // ---------------------------------------------------------------------
-    // Section: Internal Constructor
+    // Section: Enums
     // ---------------------------------------------------------------------
+
+    /**
+     * This enum holds possible tabs for current gui.
+     */
+    private enum Tab {
+        /**
+         * All block Tab
+         */
+        ALL_BLOCKS,
+        /**
+         * Blocks that have value
+         */
+        VALUE_BLOCKS,
+        /**
+         * Above Sea level Tab.
+         */
+        ABOVE_SEA_LEVEL,
+        /**
+         * Underwater Tab.
+         */
+        UNDERWATER,
+        /**
+         * Spawner Tab.
+         */
+        SPAWNER
+    }
+
+    /**
+     * Sorting order of blocks.
+     */
+    private enum Filter {
+        /**
+         * By name
+         */
+        NAME,
+        /**
+         * By value
+         */
+        VALUE,
+        /**
+         * By number
+         */
+        COUNT
+    }
+
+    // ---------------------------------------------------------------------
+    // Section: Variables
+    // ---------------------------------------------------------------------
+
+    /**
+     * This variable holds targeted island.
+     */
+    private final Island island;
+
+    /**
+     * This variable holds targeted island level data.
+     */
+    private final IslandLevels levelsData;
+
+    /**
+     * This variable allows to access addon object.
+     */
+    private final Level addon;
+
+    /**
+     * This variable holds user who opens panel. Without it panel cannot be opened.
+     */
+    private final User user;
+
+    /**
+     * This variable holds a world to which gui referee.
+     */
+    private final World world;
+
+    /**
+     * Record that stores a Material or EntityType as a key and a value
+     */
+    private record BlockRec(Object key, Integer value, Integer limit) {
+    }
+
+    /**
+     * This variable stores the list of elements to display.
+     */
+    private final List<BlockRec> blockCountList;
+
+    /**
+     * This variable holds current pageIndex for multi-page generator choosing.
+     */
+    private int pageIndex;
+
+    /**
+     * This variable stores which tab currently is active.
+     */
+    private Tab activeTab;
+
+    /**
+     * This variable stores active filter for items.
+     */
+    private Filter activeFilter;
 
     /**
      * This is internal constructor. It is used internally in current class to avoid
@@ -58,10 +163,10 @@ public class DetailsPanel {
             this.levelsData = null;
         }
 
-        // By default no-filters are active.
+        // Default Filters
         this.activeTab = Tab.VALUE_BLOCKS;
         this.activeFilter = Filter.NAME;
-        this.materialCountList = new ArrayList<>(Material.values().length);
+        this.blockCountList = new ArrayList<>();
 
         this.updateFilters();
     }
@@ -93,7 +198,7 @@ public class DetailsPanel {
 
         panelBuilder.registerTypeBuilder("NEXT", this::createNextButton);
         panelBuilder.registerTypeBuilder("PREVIOUS", this::createPreviousButton);
-        panelBuilder.registerTypeBuilder("BLOCK", this::createMaterialButton);
+        panelBuilder.registerTypeBuilder("BLOCK", this::createBlockButton);
 
         panelBuilder.registerTypeBuilder("FILTER", this::createFilterButton);
 
@@ -108,101 +213,81 @@ public class DetailsPanel {
      * This method updates filter of elements based on tabs.
      */
     private void updateFilters() {
-        this.materialCountList.clear();
+        this.blockCountList.clear();
 
-        switch (this.activeTab) {
-        case VALUE_BLOCKS -> {
-            Map<Material, Integer> materialCountMap = new EnumMap<>(Material.class);
-
-            materialCountMap.putAll(this.levelsData.getMdCount());
-
-            // Add underwater blocks.
-            this.levelsData.getUwCount().forEach((material, count) -> materialCountMap.put(material,
-                    materialCountMap.computeIfAbsent(material, key -> 0) + count));
-
-            // Remove zero value blocks
-            materialCountMap.entrySet().removeIf(en -> {
-                Integer value = this.addon.getBlockConfig().getValue(world, en.getKey());
-                return value == null || value == 0;
-            });
-
-            // Remove any hidden blocks
-            materialCountMap.keySet().removeIf(this.addon.getBlockConfig()::isHiddenBlock);
-
-            materialCountMap.entrySet().stream().sorted((Map.Entry.comparingByKey())).forEachOrdered(entry -> {
-                if (entry.getValue() > 0) {
-                    this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue()));
-                }
-            });
-
-        }
-        case ALL_BLOCKS -> {
-            Map<Material, Integer> materialCountMap = new EnumMap<>(Material.class);
-
-            materialCountMap.putAll(this.levelsData.getMdCount());
-
-            // Add underwater blocks.
-            this.levelsData.getUwCount().forEach((material, count) -> materialCountMap.put(material,
-                    materialCountMap.computeIfAbsent(material, key -> 0) + count));
-
-            // Remove any hidden blocks
-            materialCountMap.keySet().removeIf(this.addon.getBlockConfig()::isHiddenBlock);
-
-            materialCountMap.entrySet().stream().sorted((Map.Entry.comparingByKey()))
-            .forEachOrdered(entry -> this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue())));
-        }
-        case ABOVE_SEA_LEVEL -> this.levelsData.getMdCount().entrySet().stream()
-        .filter(en -> this.addon.getBlockConfig().isNotHiddenBlock(en.getKey()))
-        .sorted((Map.Entry.comparingByKey()))
-        .forEachOrdered(entry -> this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue())));
-
-        case UNDERWATER -> this.levelsData.getUwCount().entrySet().stream()
-        .filter(en -> this.addon.getBlockConfig().isNotHiddenBlock(en.getKey()))
-        .sorted((Map.Entry.comparingByKey()))
-        .forEachOrdered(entry -> this.materialCountList.add(new Pair<>(entry.getKey(), entry.getValue())));
-
-        case SPAWNER -> {
+        if (this.activeTab == Tab.SPAWNER) {
             if (this.addon.getBlockConfig().isNotHiddenBlock(Material.SPAWNER)) {
-                int aboveWater = this.levelsData.getMdCount().getOrDefault(Material.SPAWNER, 0);
-                int underWater = this.levelsData.getUwCount().getOrDefault(Material.SPAWNER, 0);
+                Map<EntityType, Integer> spawnerCountMap = new EnumMap<>(EntityType.class);
+                spawnerCountMap = this.levelsData.getMdCount().entrySet().stream()
+                        .filter(en -> en.getKey() instanceof EntityType)
+                        .collect(Collectors.toMap(en -> (EntityType) en.getKey(), Map.Entry::getValue));
 
-                // TODO: spawners need some touch...
-                this.materialCountList.add(new Pair<>(Material.SPAWNER, underWater + aboveWater));
+                spawnerCountMap.entrySet().stream().sorted((Map.Entry.comparingByKey())).forEachOrdered(entry -> {
+                    if (entry.getValue() > 0) {
+                        this.blockCountList.add(new BlockRec(entry.getKey(), entry.getValue(), 0));
+                    }
+                });
             }
-        }
-        }
+        } else {
+            Map<Object, Integer> materialCountMap = new HashMap<>();
 
-        Comparator<Pair<Material, Integer>> sorter;
+            if (this.activeTab != Tab.UNDERWATER) {
+                // All above water blocks
+                materialCountMap.putAll(this.levelsData.getMdCount());
+            }
+            if (this.activeTab != Tab.ABOVE_SEA_LEVEL) {
+                // All underwater blocks.
+                materialCountMap.putAll(this.levelsData.getUwCount());
+            }
+            // Remove any hidden blocks
+            materialCountMap.keySet().removeIf(this.addon.getBlockConfig()::isHiddenBlock);
+            // Remove any zero amount items
+            materialCountMap.values().removeIf(i -> i < 1);
+
+            if (this.activeTab == Tab.VALUE_BLOCKS) {
+                // Remove zero-value blocks
+                materialCountMap.entrySet().removeIf(en -> Optional
+                        .ofNullable(this.addon.getBlockConfig().getValue(world, en.getKey())).orElse(0) == 0);
+            }
+            // All done filtering, add the left overs
+            blockCountList.addAll(
+                    materialCountMap.entrySet().stream()
+                            .map(entry -> new BlockRec(entry.getKey(), entry.getValue(), 0))
+                            .collect(Collectors.toList()));
+
+        }
+        // Sort and filter
+        Comparator<BlockRec> sorter;
 
         switch (this.activeFilter) {
         case COUNT -> {
             sorter = (o1, o2) -> {
-                if (o1.getValue().equals(o2.getValue())) {
-                    String o1Name = Utils.prettifyObject(o1.getKey(), this.user);
-                    String o2Name = Utils.prettifyObject(o2.getKey(), this.user);
+                if (o1.value().equals(o2.value())) {
+                    String o1Name = Utils.prettifyObject(o1.key(), this.user);
+                    String o2Name = Utils.prettifyObject(o2.key(), this.user);
 
                     return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
                 } else {
-                    return Integer.compare(o2.getValue(), o1.getValue());
+                    return Integer.compare(o2.value(), o1.value());
                 }
             };
         }
         case VALUE -> {
             sorter = (o1, o2) -> {
-                int blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(o1.getKey(), 0);
-                int o1Count = blockLimit > 0 ? Math.min(o1.getValue(), blockLimit) : o1.getValue();
+                int blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(o1.key()), 0);
+                int o1Count = blockLimit > 0 ? Math.min(o1.value(), blockLimit) : o1.value();
 
-                blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(o2.getKey(), 0);
-                int o2Count = blockLimit > 0 ? Math.min(o2.getValue(), blockLimit) : o2.getValue();
+                blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(o2.key()), 0);
+                int o2Count = blockLimit > 0 ? Math.min(o2.value(), blockLimit) : o2.value();
 
                 long o1Value = (long) o1Count
-                        * this.addon.getBlockConfig().getBlockValues().getOrDefault(o1.getKey(), 0);
+                        * this.addon.getBlockConfig().getBlockValues().getOrDefault(o1.key(), 0);
                 long o2Value = (long) o2Count
-                        * this.addon.getBlockConfig().getBlockValues().getOrDefault(o2.getKey(), 0);
+                        * this.addon.getBlockConfig().getBlockValues().getOrDefault(o2.key(), 0);
 
                 if (o1Value == o2Value) {
-                    String o1Name = Utils.prettifyObject(o1.getKey(), this.user);
-                    String o2Name = Utils.prettifyObject(o2.getKey(), this.user);
+                    String o1Name = Utils.prettifyObject(o1.key(), this.user);
+                    String o2Name = Utils.prettifyObject(o2.key(), this.user);
 
                     return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
                 } else {
@@ -212,16 +297,15 @@ public class DetailsPanel {
         }
         default -> {
             sorter = (o1, o2) -> {
-                String o1Name = Utils.prettifyObject(o1.getKey(), this.user);
-                String o2Name = Utils.prettifyObject(o2.getKey(), this.user);
+                String o1Name = Utils.prettifyObject(o1.key(), this.user);
+                String o2Name = Utils.prettifyObject(o2.key(), this.user);
 
                 return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
             };
         }
         }
 
-        this.materialCountList.sort(sorter);
-
+        this.blockCountList.sort(sorter);
         this.pageIndex = 0;
     }
 
@@ -397,7 +481,7 @@ public class DetailsPanel {
      * @return the panel item
      */
     private PanelItem createNextButton(ItemTemplateRecord template, TemplatedPanel.ItemSlot slot) {
-        long size = this.materialCountList.size();
+        long size = this.blockCountList.size();
 
         if (size <= slot.amountMap().getOrDefault("BLOCK", 1)
                 || 1.0 * size / slot.amountMap().getOrDefault("BLOCK", 1) <= this.pageIndex + 1) {
@@ -533,73 +617,91 @@ public class DetailsPanel {
      * @param slot     the slot
      * @return the panel item
      */
-    private PanelItem createMaterialButton(ItemTemplateRecord template, TemplatedPanel.ItemSlot slot) {
-        if (this.materialCountList.isEmpty()) {
-            // Does not contain any generators.
+    private PanelItem createBlockButton(ItemTemplateRecord template, TemplatedPanel.ItemSlot slot) {
+        if (this.blockCountList.isEmpty()) {
+            // Nothing to show
             return null;
         }
 
         int index = this.pageIndex * slot.amountMap().getOrDefault("BLOCK", 1) + slot.slot();
 
-        if (index >= this.materialCountList.size()) {
+        if (index >= this.blockCountList.size()) {
             // Out of index.
             return null;
         }
 
-        return this.createMaterialButton(template, this.materialCountList.get(index));
+        return this.createMaterialButton(template, this.blockCountList.get(index));
     }
 
     /**
-     * This method creates button for material.
+     * This method creates button for block.
      *
      * @param template      the template of the button
-     * @param materialCount materialCount which button must be created.
-     * @return PanelItem for generator tier.
+     * @param blockCount  count
+     * @return PanelItem button
      */
-    private PanelItem createMaterialButton(ItemTemplateRecord template, Pair<Material, Integer> materialCount) {
+    private PanelItem createMaterialButton(ItemTemplateRecord template, BlockRec blockCount) {
         PanelItemBuilder builder = new PanelItemBuilder();
 
         if (template.icon() != null) {
             builder.icon(template.icon().clone());
-        } else {
-            builder.icon(PanelUtils.getMaterialItem(materialCount.getKey()));
+        }
+        // Show amount if less than 64.
+        if (blockCount.value() < 64) {
+            builder.amount(blockCount.value());
         }
 
-        if (materialCount.getValue() < 64) {
-            builder.amount(materialCount.getValue());
+        final String reference = "level.gui.buttons.material.";
+        Object key = blockCount.key();
+        String description = Utils.prettifyDescription(key, this.user);
+        String blockId = "";
+        int blockValue = 0;
+        int blockLimit = 0;
+        String value = "";
+        String limit = "";
+        String displayMaterial = Utils.prettifyObject(key, this.user);
+
+        if (key instanceof Material m) {
+            // Material-specific settings.
+            builder.icon(PanelUtils.getMaterialItem(m));
+            blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", m.name());
+            blockValue = this.addon.getBlockConfig().getBlockValues().getOrDefault(m, 0);
+            blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(m), 0);
+        } else if (key instanceof EntityType e) {
+            // EntityType-specific settings.
+            builder.icon(PanelUtils.getEntityEgg(e));
+            description += this.user.getTranslation(this.world, "level.gui.buttons.spawner.block-name"); // Put spawner on the end
+            blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", e.name().concat(SPAWNER));
+            blockValue = this.addon.getBlockConfig().getSpawnerValues().getOrDefault(e, 0);
+            blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(e), 0);
         }
 
         if (template.title() != null) {
             builder.name(this.user.getTranslation(this.world, template.title(), TextVariables.NUMBER,
-                    String.valueOf(materialCount.getValue()), "[material]",
-                    Utils.prettifyObject(materialCount.getKey(), this.user)));
+                    String.valueOf(blockCount.value()), "[material]", displayMaterial));
         }
 
-        String description = Utils.prettifyDescription(materialCount.getKey(), this.user);
-
-        final String reference = "level.gui.buttons.material.";
-        String blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", materialCount.getKey().name());
-
-        int blockValue = this.addon.getBlockConfig().getBlockValues().getOrDefault(materialCount.getKey(), 0);
-        String value = blockValue > 0
+        value = blockValue > 0
                 ? this.user.getTranslationOrNothing(reference + "value", TextVariables.NUMBER,
                         String.valueOf(blockValue))
-                        : "";
-
-        int blockLimit = this.addon.getBlockConfig().getBlockLimits().getOrDefault(materialCount.getKey(), 0);
-        String limit = blockLimit > 0
+                : "";
+        limit = blockLimit > 0
                 ? this.user.getTranslationOrNothing(reference + "limit", TextVariables.NUMBER,
                         String.valueOf(blockLimit))
-                        : "";
+                : "";
 
         String count = this.user.getTranslationOrNothing(reference + "count", TextVariables.NUMBER,
-                String.valueOf(materialCount.getValue()));
+                String.valueOf(blockCount.value()));
 
         long calculatedValue = (long) Math.min(blockLimit > 0 ? blockLimit : Integer.MAX_VALUE,
-                materialCount.getValue()) * blockValue;
+                blockCount.value()) * blockValue;
         String valueText = calculatedValue > 0 ? this.user.getTranslationOrNothing(reference + "calculated",
                 TextVariables.NUMBER, String.valueOf(calculatedValue)) : "";
 
+        // Hide block ID unless user is an operator.
+        if (!user.isOp()) {
+            blockId = "";
+        }
         if (template.description() != null) {
             builder.description(this.user
                     .getTranslation(this.world, template.description(), "[description]", description, "[id]", blockId,
@@ -626,100 +728,5 @@ public class DetailsPanel {
         new DetailsPanel(addon, world, user).build();
     }
 
-    // ---------------------------------------------------------------------
-    // Section: Enums
-    // ---------------------------------------------------------------------
 
-    /**
-     * This enum holds possible tabs for current gui.
-     */
-    private enum Tab {
-        /**
-         * All block Tab
-         */
-        ALL_BLOCKS,
-        /**
-         * Blocks that have value
-         */
-        VALUE_BLOCKS,
-        /**
-         * Above Sea level Tab.
-         */
-        ABOVE_SEA_LEVEL,
-        /**
-         * Underwater Tab.
-         */
-        UNDERWATER,
-        /**
-         * Spawner Tab.
-         */
-        SPAWNER
-    }
-
-    /**
-     * Sorting order of blocks.
-     */
-    private enum Filter {
-        /**
-         * By name
-         */
-        NAME,
-        /**
-         * By value
-         */
-        VALUE,
-        /**
-         * By number
-         */
-        COUNT
-    }
-
-    // ---------------------------------------------------------------------
-    // Section: Variables
-    // ---------------------------------------------------------------------
-
-    /**
-     * This variable holds targeted island.
-     */
-    private final Island island;
-
-    /**
-     * This variable holds targeted island level data.
-     */
-    private final IslandLevels levelsData;
-
-    /**
-     * This variable allows to access addon object.
-     */
-    private final Level addon;
-
-    /**
-     * This variable holds user who opens panel. Without it panel cannot be opened.
-     */
-    private final User user;
-
-    /**
-     * This variable holds a world to which gui referee.
-     */
-    private final World world;
-
-    /**
-     * This variable stores the list of elements to display.
-     */
-    private final List<Pair<Material, Integer>> materialCountList;
-
-    /**
-     * This variable holds current pageIndex for multi-page generator choosing.
-     */
-    private int pageIndex;
-
-    /**
-     * This variable stores which tab currently is active.
-     */
-    private Tab activeTab;
-
-    /**
-     * This variable stores active filter for items.
-     */
-    private Filter activeFilter;
 }

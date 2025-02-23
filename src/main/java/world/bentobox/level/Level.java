@@ -106,7 +106,7 @@ public class Level extends Addon {
 		// Register listeners
 		this.registerListener(new IslandActivitiesListeners(this));
 		this.registerListener(new JoinLeaveListener(this));
-		this.registerListener(new MigrationListener(this));
+        this.registerListener(new MigrationListener(this));
 
 		// Register commands for GameModes
 		registeredGameModes.clear();

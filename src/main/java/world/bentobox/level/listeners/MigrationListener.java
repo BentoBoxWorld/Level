@@ -26,8 +26,6 @@ public class MigrationListener implements Listener
 
     @EventHandler
     public void onBentoBoxReady(BentoBoxReadyEvent e) {
-        // Perform upgrade check
-        this.addon.getManager().migrate();
         // Load TopTens
         this.addon.getManager().loadTopTens();
         /*

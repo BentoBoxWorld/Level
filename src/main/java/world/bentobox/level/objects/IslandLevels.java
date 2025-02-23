@@ -1,9 +1,11 @@
 package world.bentobox.level.objects;
 
-import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 
 import com.google.gson.annotations.Expose;
 
@@ -59,13 +61,13 @@ public class IslandLevels implements DataObject {
      * Underwater count
      */
     @Expose
-    private Map<Material, Integer> uwCount;
+    private Map<Object, Integer> uwCount;
 
     /**
      * MaterialData count - count of all blocks excluding under water
      */
     @Expose
-    private Map<Material, Integer> mdCount;
+    private Map<Object, Integer> mdCount;
 
     /**
      * Constructor for new island
@@ -73,8 +75,8 @@ public class IslandLevels implements DataObject {
      */
     public IslandLevels(String islandUUID) {
         uniqueId = islandUUID;
-        uwCount = new EnumMap<>(Material.class);
-        mdCount = new EnumMap<>(Material.class);
+        uwCount = new HashMap<>();
+        mdCount = new HashMap<>();
     }
 
     /**
@@ -165,31 +167,67 @@ public class IslandLevels implements DataObject {
      * The count of underwater blocks
      * @return the uwCount
      */
-    public Map<Material, Integer> getUwCount() {
+    public Map<Object, Integer> getUwCount() {
         return uwCount;
     }
 
     /**
      * Underwater blocks
-     * @param uwCount the uwCount to set
+     * @param map the uwCount to set
      */
-    public void setUwCount(Map<Material, Integer> uwCount) {
-        this.uwCount = uwCount;
+    public void setUwCount(Map<Object, Integer> map) {
+        // Loaded objects come in as strings, so need to be converted to Material Or EntityTypes
+        uwCount = convertMap(uwCount);
+
+        this.uwCount = map;
     }
 
     /**
      * All blocks count except for underwater blocks
      * @return the mdCount
      */
-    public Map<Material, Integer> getMdCount() {
+    public Map<Object, Integer> getMdCount() {
+        // Loaded objects come in as strings, so need to be converted to Material Or EntityTypes
+        mdCount = convertMap(mdCount);
         return mdCount;
+    }
+
+    private Map<Object, Integer> convertMap(Map<Object, Integer> mdCount) {
+        Map<Object, Integer> convertedMap = new HashMap<>();
+
+        for (Map.Entry<Object, Integer> entry : mdCount.entrySet()) {
+            Object key = entry.getKey();
+            Integer value = entry.getValue();
+
+            if (key instanceof String) {
+                String keyStr = (String) key;
+                // First, try converting to Material
+                Material material = Material.matchMaterial(keyStr);
+                if (material != null) {
+                    convertedMap.put(material, value);
+                } else {
+                    // Fallback to converting to EntityType (using uppercase as enum constants are uppercase)
+                    try {
+                        EntityType entityType = EntityType.valueOf(keyStr.toUpperCase(Locale.ENGLISH));
+                        convertedMap.put(entityType, value);
+                    } catch (IllegalArgumentException ex) {
+                        // No valid Material or EntityType found.
+                        convertedMap.put(key, value); // Leave the key unchanged.
+                    }
+                }
+            } else {
+                // If the key is not a String, add it directly.
+                convertedMap.put(key, value);
+            }
+        }
+        return convertedMap;
     }
 
     /**
      * All blocks except for underwater blocks
      * @param mdCount the mdCount to set
      */
-    public void setMdCount(Map<Material, Integer> mdCount) {
+    public void setMdCount(Map<Object, Integer> mdCount) {
         this.mdCount = mdCount;
     }
 
