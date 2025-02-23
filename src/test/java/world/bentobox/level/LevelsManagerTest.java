@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -216,7 +215,7 @@ public class LevelsManagerTest {
             islands.add(il);
         }
         // Supply no island levels first (for migrate), then islands
-        when(handler.loadObjects()).thenReturn(Collections.emptyList(), islands);
+        when(handler.loadObjects()).thenReturn(islands);
         when(handler.objectExists(anyString())).thenReturn(true);
         when(levelsData.getLevel()).thenReturn(-5L, -4L, -3L, -2L, -1L, 0L, 1L, 2L, 3L, 4L, 5L, 45678L);
         when(levelsData.getUniqueId()).thenReturn(uuid.toString());
@@ -231,7 +230,7 @@ public class LevelsManagerTest {
         when(iwm.getPermissionPrefix(any())).thenReturn("bskyblock.");
 
         lm = new LevelsManager(addon);
-        lm.migrate();
+
     }
 
     /**

@@ -50,12 +50,12 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <!-- Non-minecraft related dependencies -->
         <powermock.version>2.0.9</powermock.version>
         <!-- More visible way how to change dependency versions -->
         <spigot.version>1.21.3-R0.1-SNAPSHOT</spigot.version>
-        <bentobox.version>2.7.1-SNAPSHOT</bentobox.version>
+        <bentobox.version>3.2.4-SNAPSHOT</bentobox.version>
         <!-- Warps addon version -->
         <warps.version>1.12.0</warps.version>
         <!-- Visit addon version -->
@@ -67,7 +67,7 @@
         <!-- Do not change unless you want different name for local builds. -->
         <build.number>-LOCAL</build.number>
         <!-- This allows to change between versions. -->
-        <build.version>2.17.1</build.version>
+        <build.version>2.18.0</build.version>
         <sonar.projectKey>BentoBoxWorld_Level</sonar.projectKey>
         <sonar.organization>bentobox-world</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>

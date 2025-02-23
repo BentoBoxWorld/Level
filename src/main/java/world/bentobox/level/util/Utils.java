@@ -10,6 +10,7 @@ package world.bentobox.level.util;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import world.bentobox.bentobox.api.user.User;
@@ -18,7 +19,6 @@ import world.bentobox.bentobox.hooks.LangUtilsHook;
 
 public class Utils
 {
-    private static final String LEVEL_MATERIALS = "level.materials.";
 
     private Utils() {} // Private constructor as this is a utility class only with static methods
 
@@ -138,92 +138,72 @@ public class Utils
         return currentValue;
     }
 
-
     /**
-     * Prettify Material object for user.
-     * @param object Object that must be pretty.
-     * @param user User who will see the object.
-     * @return Prettified string for Material.
+     * Reference string in translations.
      */
-    public static String prettifyObject(Material object, User user)
-    {
-        // Nothing to translate
-        if (object == null)
-        {
+    public static final String ENTITIES = "level.entities.";
+    private static final String LEVEL_MATERIALS = "level.materials.";
+
+    public static String prettifyObject(Object object, User user) {
+        if (object == null || !(object instanceof Enum<?>)) {
             return "";
         }
+        // All supported objects are enums so we can use name() safely.
+        String key = ((Enum<?>) object).name().toLowerCase();
+        String translation = "";
 
-        // Find addon structure with:
-        // [addon]:
-        //   materials:
-        //     [material]:
-        //       name: [name]
-        String translation = user.getTranslationOrNothing(LEVEL_MATERIALS + object.name().toLowerCase() + ".name");
+        if (object instanceof Material) {
+            // Try our translations for Material.
+            translation = user.getTranslationOrNothing(LEVEL_MATERIALS + key + ".name");
+            if (!translation.isEmpty())
+                return translation;
 
-        if (!translation.isEmpty())
-        {
-            // We found our translation.
-            return translation;
+            translation = user.getTranslationOrNothing(LEVEL_MATERIALS + key);
+            if (!translation.isEmpty())
+                return translation;
+
+            translation = user.getTranslationOrNothing("materials." + key);
+            if (!translation.isEmpty())
+                return translation;
+
+            // Fallback to our hook for Material.
+            return LangUtilsHook.getMaterialName((Material) object, user);
+        } else if (object instanceof EntityType) {
+            // Try our translations for EntityType.
+            translation = user.getTranslationOrNothing(ENTITIES + key + ".name");
+            if (!translation.isEmpty())
+                return translation;
+
+            translation = user.getTranslationOrNothing(ENTITIES + key);
+            if (!translation.isEmpty())
+                return translation;
+
+            translation = user.getTranslationOrNothing("entities." + key);
+            if (!translation.isEmpty())
+                return translation;
+
+            // Fallback to our hook for EntityType.
+            return LangUtilsHook.getEntityName((EntityType) object, user);
         }
 
-        // Find addon structure with:
-        // [addon]:
-        //   materials:
-        //     [material]: [name]
-
-        translation = user.getTranslationOrNothing(LEVEL_MATERIALS + object.name().toLowerCase());
-
-        if (!translation.isEmpty())
-        {
-            // We found our translation.
-            return translation;
-        }
-
-        // Find general structure with:
-        // materials:
-        //   [material]: [name]
-
-        translation = user.getTranslationOrNothing("materials." + object.name().toLowerCase());
-
-        if (!translation.isEmpty())
-        {
-            // We found our translation.
-            return translation;
-        }
-
-        // Use Lang Utils Hook to translate material
-        return LangUtilsHook.getMaterialName(object, user);
+        // In case of an unexpected type, return an empty string.
+        return "";
     }
 
-
-    /**
-     * Prettify Material object description for user.
-     * @param object Object that must be pretty.
-     * @param user User who will see the object.
-     * @return Prettified description string for Material.
-     */
-    public static String prettifyDescription(Material object, User user)
-    {
-        // Nothing to translate
-        if (object == null)
-        {
+    public static String prettifyDescription(Object object, User user) {
+        if (object == null || !(object instanceof Enum<?>)) {
             return "";
         }
+        String key = ((Enum<?>) object).name().toLowerCase();
 
-        // Find addon structure with:
-        // [addon]:
-        //   materials:
-        //     [material]:
-        //       description: [text]
-        String translation = user.getTranslationOrNothing(LEVEL_MATERIALS + object.name().toLowerCase() + ".description");
-
-        if (!translation.isEmpty())
-        {
-            // We found our translation.
-            return translation;
+        if (object instanceof Material) {
+            String translation = user.getTranslationOrNothing(LEVEL_MATERIALS + key + ".description");
+            return translation != null ? translation : "";
+        } else if (object instanceof EntityType) {
+            String translation = user.getTranslationOrNothing(ENTITIES + key + ".description");
+            return translation != null ? translation : "";
         }
 
-        // No text to return.
         return "";
     }
 }

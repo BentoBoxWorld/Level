@@ -2,14 +2,15 @@ package world.bentobox.level.calculators;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
@@ -31,9 +32,9 @@ import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Slab;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
-import org.bukkit.scheduler.BukkitTask;
 
 import com.bgsoftware.wildstacker.api.WildStackerAPI;
 import com.bgsoftware.wildstacker.api.objects.StackedBarrel;
@@ -55,24 +56,11 @@ import world.bentobox.level.calculators.Results.Result;
 public class IslandLevelCalculator {
     private static final String LINE_BREAK = "==================================";
     public static final long MAX_AMOUNT = 10000000;
-    private static final List<Material> CHESTS = Arrays.asList(Material.CHEST, Material.CHEST_MINECART,
-            Material.TRAPPED_CHEST, Material.SHULKER_BOX, Material.BLACK_SHULKER_BOX, Material.BLUE_SHULKER_BOX,
-            Material.BROWN_SHULKER_BOX, Material.CYAN_SHULKER_BOX, Material.GRAY_SHULKER_BOX,
-            Material.GREEN_SHULKER_BOX, Material.LIGHT_BLUE_SHULKER_BOX, Material.LIGHT_GRAY_SHULKER_BOX,
-            Material.LIME_SHULKER_BOX, Material.MAGENTA_SHULKER_BOX, Material.ORANGE_SHULKER_BOX,
-            Material.PINK_SHULKER_BOX, Material.PURPLE_SHULKER_BOX, Material.RED_SHULKER_BOX, Material.RED_SHULKER_BOX,
-            Material.WHITE_SHULKER_BOX, Material.YELLOW_SHULKER_BOX, Material.COMPOSTER, Material.BARREL,
-            Material.DISPENSER, Material.DROPPER, Material.SMOKER, Material.BLAST_FURNACE, Material.BUNDLE,
-            Material.RED_BUNDLE, Material.BLACK_BUNDLE, Material.BLUE_BUNDLE, Material.BROWN_BUNDLE,
-            Material.CYAN_BUNDLE, Material.GRAY_BUNDLE, Material.GREEN_BUNDLE, Material.LIGHT_BLUE_BUNDLE,
-            Material.LIGHT_GRAY_BUNDLE, Material.LIME_BUNDLE, Material.MAGENTA_BUNDLE, Material.ORANGE_BUNDLE,
-            Material.PINK_BUNDLE, Material.PURPLE_BUNDLE, Material.RED_BUNDLE, Material.WHITE_BUNDLE,
-            Material.YELLOW_BUNDLE);
     private static final int CHUNKS_TO_SCAN = 100;
     private final Level addon;
     private final Queue<Pair<Integer, Integer>> chunksToCheck;
     private final Island island;
-    private final Map<Material, Integer> limitCount;
+    private final Map<Object, Integer> limitCount;
     private final CompletableFuture<Results> r;
 
     private final Results results;
@@ -82,7 +70,7 @@ public class IslandLevelCalculator {
     private final int seaHeight;
     private final List<Location> stackedBlocks = new ArrayList<>();
     private final Set<Chunk> chestBlocks = new HashSet<>();
-    private BukkitTask finishTask;
+    private final Map<Location, Boolean> spawners = new HashMap<>();
 
     /**
      * Constructor to get the level for an island
@@ -101,7 +89,7 @@ public class IslandLevelCalculator {
         results = new Results();
         duration = System.currentTimeMillis();
         chunksToCheck = getChunksToScan(island);
-        this.limitCount = new EnumMap<>(addon.getBlockConfig().getBlockLimits());
+        this.limitCount = new HashMap<>();
         // Get the initial island level
         results.initialLevel.set(addon.getInitialIslandLevel(island));
         // Set up the worlds
@@ -160,6 +148,26 @@ public class IslandLevelCalculator {
         } else {
             results.rawBlockCount.addAndGet(count);
             results.mdCount.add(mat);
+        }
+    }
+
+    /**
+     * Adds value to the results based on the material and whether the block is
+     * below sea level or not
+     * 
+     * @param mat           - material of the block
+     * @param belowSeaLevel - true if below sea level
+     */
+    private void checkSpawner(EntityType et, boolean belowSeaLevel) {
+        Integer count = limitCount(et);
+        if (count != null) {
+            if (belowSeaLevel) {
+                results.underWaterBlockCount.addAndGet(count);
+                results.uwCount.add(et);
+            } else {
+                results.rawBlockCount.addAndGet(count);
+                results.mdCount.add(et);
+            }
         }
     }
 
@@ -231,31 +239,17 @@ public class IslandLevelCalculator {
 
         reportLines.add(
                 "Blocks not counted because they exceeded limits: " + String.format("%,d", results.ofCount.size()));
-        Iterable<Multiset.Entry<Material>> entriesSortedByCount = results.ofCount.entrySet();
-        Iterator<Entry<Material>> it = entriesSortedByCount.iterator();
+        Iterable<Multiset.Entry<Object>> entriesSortedByCount = results.ofCount.entrySet();
+        Iterator<Entry<Object>> it = entriesSortedByCount.iterator();
         while (it.hasNext()) {
-            Entry<Material> type = it.next();
-            Integer limit = addon.getBlockConfig().getBlockLimits().get(type.getElement());
+
+            Entry<Object> type = it.next();
+            Integer limit = addon.getBlockConfig().getLimit(type);
             String explain = ")";
-            if (limit == null) {
-                Material generic = type.getElement();
-                limit = addon.getBlockConfig().getBlockLimits().get(generic);
-                explain = " - All types)";
-            }
-            reportLines.add(type.getElement().toString() + ": " + String.format("%,d", type.getCount())
+            reportLines.add(Util.prettifyText(type.toString()) + ": " + String.format("%,d", type.getCount())
                     + " blocks (max " + limit + explain);
         }
         reportLines.add(LINE_BREAK);
-        reportLines.add("Blocks on island that are not in config.yml");
-        reportLines.add("Total number = " + String.format("%,d", results.ncCount.size()));
-        entriesSortedByCount = results.ncCount.entrySet();
-        it = entriesSortedByCount.iterator();
-        while (it.hasNext()) {
-            Entry<Material> type = it.next();
-            reportLines.add(type.getElement().toString() + ": " + String.format("%,d", type.getCount()) + " blocks");
-        }
-        reportLines.add(LINE_BREAK);
-
         return reportLines;
     }
 
@@ -269,10 +263,10 @@ public class IslandLevelCalculator {
     /**
      * Get value of a material World blocks trump regular block values
      * 
-     * @param md - Material to check
-     * @return value of a material
+     * @param md - Material or EntityType to check
+     * @return value
      */
-    private int getValue(Material md) {
+    private int getValue(Object md) {
         Integer value = addon.getBlockConfig().getValue(island.getWorld(), md);
         if (value == null) {
             // Not in config
@@ -333,24 +327,28 @@ public class IslandLevelCalculator {
     }
 
     /**
-     * Checks if a block has been limited or not and whether a block has any value
-     * or not
-     * 
-     * @param md Material
-     * @return value of the block if can be counted
+     * Checks if the given object (Material or EntityType) has reached its limit.
+     * If it hasn't, the object's value is returned and its count is incremented.
+     * If the object is not a Material or EntityType, or if it has exceeded its limit, 0 is returned.
+     *
+     * @param obj A Material or EntityType
+     * @return The object's value if within limit, otherwise 0.
      */
-    private int limitCount(Material md) {
-        if (limitCount.containsKey(md)) {
-            int count = limitCount.get(md);
-            if (count > 0) {
-                limitCount.put(md, --count);
-                return getValue(md);
-            } else {
-                results.ofCount.add(md);
-                return 0;
-            }
-        }
-        return getValue(md);
+    private int limitCount(Object obj) {
+        // Only process if obj is a Material or EntityType
+        if (!(obj instanceof Material) && !(obj instanceof EntityType))
+            return 0;
+
+        Integer limit = addon.getBlockConfig().getLimit(obj);
+        if (limit == null)
+            return getValue(obj);
+
+        int count = limitCount.getOrDefault(obj, 0);
+        if (count > limit)
+            return 0;
+
+        limitCount.put(obj, count + 1);
+        return getValue(obj);
     }
 
     /**
@@ -454,6 +452,8 @@ public class IslandLevelCalculator {
                     BlockData blockData = cp.chunkSnapshot.getBlockData(x, y, z);
                     Material m = blockData.getMaterial();
                     boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
+                    Location loc = new Location(cp.world, (double) x + cp.chunkSnapshot.getX() * 16, y,
+                            (double) z + cp.chunkSnapshot.getZ() * 16);
                     // Slabs can be doubled, so check them twice
                     if (Tag.SLABS.isTagged(m)) {
                         Slab slab = (Slab) blockData;
@@ -464,22 +464,26 @@ public class IslandLevelCalculator {
                     // Hook for Wild Stackers (Blocks and Spawners Only) - this has to use the real
                     // chunk
                     if (addon.isStackersEnabled() && (m.equals(Material.CAULDRON) || m.equals(Material.SPAWNER))) {
-                        stackedBlocks.add(new Location(cp.world, (double) x + cp.chunkSnapshot.getX() * 16, y,
-                                (double) z + cp.chunkSnapshot.getZ() * 16));
+                        stackedBlocks.add(loc);
                     }
 
                     if (addon.isUltimateStackerEnabled() && !m.isAir()) {
-                        Location l = new Location(cp.chunk.getWorld(), x, y, z);
-                        UltimateStackerCalc.addStackers(m, l, results, belowSeaLevel, limitCount(m));
+                        UltimateStackerCalc.addStackers(m, loc, results, belowSeaLevel, limitCount(m));
                     }
 
                     // Scan chests
-                    if (addon.getSettings().isIncludeChests() && CHESTS.contains(m)) {
-
+                    if (addon.getSettings().isIncludeChests() && blockData instanceof Container) {
                         chestBlocks.add(cp.chunk);
                     }
-                    // Add the value of the block's material
-                    checkBlock(m, belowSeaLevel);
+
+                    // Spawners
+                    if (m == Material.SPAWNER) {
+                        // Stash the spawner because the type cannot be obtained from the chunk snapshot
+                        this.spawners.put(loc, belowSeaLevel);
+                    } else {
+                        // Add the value of the block's material
+                        checkBlock(m, belowSeaLevel);
+                    }
                 }
             }
         }
@@ -520,16 +524,23 @@ public class IslandLevelCalculator {
         return result;
     }
 
-    private Collection<String> sortedReport(int total, Multiset<Material> materialCount) {
+    private Collection<String> sortedReport(int total, Multiset<Object> uwCount) {
         Collection<String> result = new ArrayList<>();
-        Iterable<Multiset.Entry<Material>> entriesSortedByCount = Multisets.copyHighestCountFirst(materialCount)
+        Iterable<Multiset.Entry<Object>> entriesSortedByCount = Multisets.copyHighestCountFirst(uwCount)
                 .entrySet();
-        for (Entry<Material> en : entriesSortedByCount) {
-            Material type = en.getElement();
+        for (Entry<Object> en : entriesSortedByCount) {
 
-            int value = getValue(type);
+            int value = 0;
+            String name = "";
+            if (en.getElement() instanceof Material md) {
+                value = Objects.requireNonNullElse(addon.getBlockConfig().getValue(island.getWorld(), md), 0);
+                name = Util.prettifyText(md.name());
+            } else if (en.getElement() instanceof EntityType et) {
+                name = Util.prettifyText(et.name());
+                value = Objects.requireNonNullElse(addon.getBlockConfig().getValue(island.getWorld(), et), 0);
+            }
 
-            result.add(type.toString() + ":" + String.format("%,d", en.getCount()) + " blocks x " + value + " = "
+            result.add(name + " :" + String.format("%,d", en.getCount()) + " blocks x " + value + " = "
                     + (value * en.getCount()));
             total += (value * en.getCount());
 
@@ -616,13 +627,35 @@ public class IslandLevelCalculator {
                 pipeliner.getInProcessQueue().remove(this);
                 BentoBox.getInstance().log("Completed Level scan.");
                 // Chunk finished
-                // This was the last chunk. Handle stacked blocks, then chests and exit
-                handleStackedBlocks().thenCompose(v -> handleChests()).thenRun(() -> {
+                // This was the last chunk. Handle stacked blocks, spawners, chests and exit
+                handleStackedBlocks().thenCompose(v -> handleSpawners()).thenCompose(v -> handleChests())
+                        .thenRun(() -> {
                     this.tidyUp();
                     this.getR().complete(getResults());
                 });
             }
         });
+    }
+
+    private CompletableFuture<Void> handleSpawners() {
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        for (Map.Entry<Location, Boolean> en : this.spawners.entrySet()) {
+            CompletableFuture<Void> future = Util.getChunkAtAsync(en.getKey()).thenAccept(c -> {
+                if (en.getKey().getBlock().getType() == Material.SPAWNER) {
+                    EntityType et = ((CreatureSpawner) en.getKey().getBlock().getState()).getSpawnedType();
+                    if (et != null) {
+                        checkSpawner(et, en.getValue());
+                    } else {
+                        // This spawner has no spawning capability. Just list it as a spawner block
+                        checkBlock(Material.SPAWNER, en.getValue());
+                    }
+                }
+            });
+            futures.add(future);
+        }
+        // Return a CompletableFuture that completes when all futures are done
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+
     }
 
     private CompletableFuture<Void> handleChests() {
