@@ -1,5 +1,6 @@
 package world.bentobox.level.listeners;
 
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -40,7 +41,8 @@ public class IslandActivitiesListeners implements Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onNewIsland(IslandCreatedEvent e) {
 	if (addon.getSettings().isZeroNewIslandLevels()) {
-	    zeroIsland(e.getIsland());
+        // Wait a few seconds before performing the zero
+        Bukkit.getScheduler().runTaskLater(addon.getPlugin(), () -> zeroIsland(e.getIsland()), 150L);
 	}
     }
 
