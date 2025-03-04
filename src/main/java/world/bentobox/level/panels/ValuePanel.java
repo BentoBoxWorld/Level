@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,7 @@ import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;
 import world.bentobox.bentobox.api.panels.builders.TemplatedPanelBuilder;
 import world.bentobox.bentobox.api.panels.reader.ItemTemplateRecord;
 import world.bentobox.bentobox.api.user.User;
+import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.level.Level;
 import world.bentobox.level.util.ConversationUtils;
 import world.bentobox.level.util.Utils;
@@ -158,7 +160,14 @@ public class ValuePanel
 
                     return new BlockRecord(et, value != null ? value : 0, limit != null ? limit : 0);
                 }).collect(Collectors.toList()));
-
+        // Add Custom blocks
+        if (addon.isItemsAdder()) {
+            for (String id : ItemsAdderHook.getAllBlocks()) {
+                Integer value = this.addon.getBlockConfig().getValue(this.world, id);
+                Integer limit = this.addon.getBlockConfig().getLimit(id);
+                blockRecordList.add(new BlockRecord(id, value != null ? value : 0, limit != null ? limit : 0));
+            }
+        }
         this.elementList = new ArrayList<>(Material.values().length);
         this.searchText = "";
 
@@ -725,6 +734,22 @@ public class ValuePanel
             blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", e.name().concat(SPAWNER));
             blockValue = this.addon.getBlockConfig().getSpawnerValues().getOrDefault(e, 0);
             blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(e), 0);
+        } else if (key instanceof String s) {
+            // Something else
+            if (addon.isItemsAdder()) {
+                Optional<ItemStack> optItemStack = ItemsAdderHook.getItemStack(s);
+                if (optItemStack.isPresent()) {
+                    ItemStack is = optItemStack.get();
+                    builder.icon(is);
+                    if (is.getItemMeta().hasDisplayName()) {
+                        displayMaterial = is.getItemMeta().getDisplayName();
+                    }
+                }
+                blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", s);
+                blockValue = this.addon.getBlockConfig().getBlockValues().getOrDefault(s, 0);
+                blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(s), 0);
+
+            }
         }
 
         if (template.title() != null) {
@@ -762,85 +787,6 @@ public class ValuePanel
 
         return builder.build();
     }
-
-    /**
-     * This method creates button for material.
-     *
-     * @param template the template of the button
-     * @param materialRecord materialRecord which button must be created.
-     * @return PanelItem for generator tier.
-     */
-    /*
-    private PanelItem createMaterialButton(ItemTemplateRecord template,
-            MaterialRecord materialRecord)
-    {
-        PanelItemBuilder builder = new PanelItemBuilder();
-    
-        if (template.icon() != null)
-        {
-            builder.icon(template.icon().clone());
-        }
-        else
-        {
-            builder.icon(PanelUtils.getMaterialItem(materialRecord.material()));
-        }
-    
-        if (materialRecord.value() <= 64 && materialRecord.value() > 0)
-        {
-            builder.amount(materialRecord.value());
-        }
-    
-        if (template.title() != null)
-        {
-            builder.name(this.user.getTranslation(this.world, template.title(),
-                    "[material]", Utils.prettifyObject(materialRecord.material(), this.user)));
-        }
-    
-        String description = Utils.prettifyDescription(materialRecord.material(), this.user);
-    
-        final String reference = "level.gui.buttons.material.";
-        String blockId = this.user.getTranslationOrNothing(reference + "id",
-                "[id]", materialRecord.material().name());
-    
-        String value = this.user.getTranslationOrNothing(reference + "value",
-                TextVariables.NUMBER, String.valueOf(materialRecord.value()));
-    
-        String underWater;
-    
-        if (this.addon.getSettings().getUnderWaterMultiplier() > 1.0)
-        {
-            underWater = this.user.getTranslationOrNothing(reference + "underwater",
-                    TextVariables.NUMBER, String.valueOf(materialRecord.value() * this.addon.getSettings().getUnderWaterMultiplier()));
-        }
-        else
-        {
-            underWater = "";
-        }
-    
-        String limit = materialRecord.limit() > 0 ? this.user.getTranslationOrNothing(reference + "limit",
-                TextVariables.NUMBER,  String.valueOf(materialRecord.limit())) : "";
-    
-        if (template.description() != null)
-        {
-            builder.description(this.user.getTranslation(this.world, template.description(),
-                    "[description]", description,
-                    "[id]", blockId,
-                    "[value]", value,
-                    "[underwater]", underWater,
-                    "[limit]", limit).
-                    replaceAll("(?m)^[ \\t]*\\r?\\n", "").
-                    replaceAll("(?<!\\\\)\\|", "\n").
-                    replace("\\\\\\|", "|")); // Non regex
-        }
-    
-        builder.clickHandler((panel, user1, clickType, i) -> {
-            addon.log("Material: " + materialRecord.material());
-            return true;
-        });
-    
-        return builder.build();
-    }*/
-
 
     // ---------------------------------------------------------------------
     // Section: Other Methods

@@ -13,6 +13,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.user.User;
+import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
 import world.bentobox.level.objects.IslandLevels;
@@ -63,25 +64,28 @@ public class IslandValueCommand extends CompositeCommand
 
             if (!inventory.getItemInMainHand().getType().equals(Material.AIR))
             {
+                // The user has something in their hand
+                if (addon.isItemsAdder()) {
+                    Optional<String> id = ItemsAdderHook.getNamespacedId(inventory.getItemInMainHand());
+                    if (id.isPresent()) {
+                        this.printValue(user, id.get());
+                        return true;
+                    }
+                }
+                // Not ItemsAdder item
                 this.printValue(user, inventory.getItemInMainHand().getType());
             }
             else
             {
                 Utils.sendMessage(user, user.getTranslation("level.conversations.empty-hand"));
             }
-        }
-        else
-        {
+        } else {
             Material material = Material.matchMaterial(args.get(0));
 
-            if (material == null)
-            {
-                Utils.sendMessage(user,
-                        user.getTranslation(this.getWorld(), "level.conversations.unknown-item",
-                                MATERIAL, args.get(0)));
-            }
-            else
-            {
+            if (material == null) {
+                Utils.sendMessage(user, user.getTranslation(this.getWorld(), "level.conversations.unknown-item",
+                        MATERIAL, args.get(0)));
+            } else {
                 this.printValue(user, material);
             }
         }
@@ -89,31 +93,25 @@ public class IslandValueCommand extends CompositeCommand
         return true;
     }
 
-
     /**
      * This method prints value of the given material in chat.
      * @param user User who receives the message.
      * @param material Material value.
      */
-    private void printValue(User user, Material material)
+    private void printValue(User user, Object material)
     {
         Integer value = this.addon.getBlockConfig().getValue(getWorld(), material);
 
         if (value != null)
         {
-            Utils.sendMessage(user,
-                    user.getTranslation(this.getWorld(), "level.conversations.value",
-                            "[value]", String.valueOf(value),
-                            MATERIAL, Utils.prettifyObject(material, user)));
+            Utils.sendMessage(user, user.getTranslation(this.getWorld(), "level.conversations.value", "[value]",
+                    String.valueOf(value), MATERIAL, Utils.prettifyObject(material, user)));
 
             double underWater = this.addon.getSettings().getUnderWaterMultiplier();
 
-            if (underWater > 1.0)
-            {
-                Utils.sendMessage(user,
-                        user.getTranslation(this.getWorld(),"level.conversations.success-underwater",
-                                "[value]", (underWater * value) + ""),
-                        MATERIAL, Utils.prettifyObject(material, user));
+            if (underWater > 1.0) {
+                Utils.sendMessage(user, user.getTranslation(this.getWorld(), "level.conversations.success-underwater",
+                        "[value]", (underWater * value) + ""), MATERIAL, Utils.prettifyObject(material, user));
             }
 
             // Show how many have been placed and how many are allowed
@@ -121,25 +119,19 @@ public class IslandValueCommand extends CompositeCommand
             IslandLevels lvData = this.addon.getManager()
                     .getLevelsData(getIslands().getPrimaryIsland(getWorld(), user.getUniqueId()));
             int count = lvData.getMdCount().getOrDefault(material, 0) + lvData.getUwCount().getOrDefault(material, 0);
-            user.sendMessage("level.conversations.you-have", TextVariables.NUMBER,
-                    String.valueOf(count));
+            user.sendMessage("level.conversations.you-have", TextVariables.NUMBER, String.valueOf(count));
             Integer limit = this.addon.getBlockConfig().getLimit(material);
             if (limit != null) {
-                user.sendMessage("level.conversations.you-can-place", TextVariables.NUMBER,
-                        String.valueOf(limit));
+                user.sendMessage("level.conversations.you-can-place", TextVariables.NUMBER, String.valueOf(limit));
             }
         }
-        else
-        {
-            Utils.sendMessage(user,
-                    user.getTranslation(this.getWorld(),"level.conversations.no-value"));
+        else {
+            Utils.sendMessage(user, user.getTranslation(this.getWorld(), "level.conversations.no-value"));
         }
     }
 
-
     @Override
-    public Optional<List<String>> tabComplete(User user, String alias, List<String> args)
-    {
+    public Optional<List<String>> tabComplete(User user, String alias, List<String> args) {
         String lastArg = !args.isEmpty() ? args.get(args.size() - 1) : "";
 
         if (args.isEmpty())
@@ -148,9 +140,8 @@ public class IslandValueCommand extends CompositeCommand
             return Optional.empty();
         }
 
-        List<String> options = new ArrayList<>(Arrays.stream(Material.values()).
-                filter(Material::isBlock).
-                map(Material::name).toList());
+        List<String> options = new ArrayList<>(
+                Arrays.stream(Material.values()).filter(Material::isBlock).map(Material::name).toList());
 
         options.add("HAND");
 
