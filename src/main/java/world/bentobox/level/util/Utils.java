@@ -145,14 +145,23 @@ public class Utils
     private static final String LEVEL_MATERIALS = "level.materials.";
 
     public static String prettifyObject(Object object, User user) {
-        if (object == null || !(object instanceof Enum<?>)) {
+        if (object instanceof String key) {
+
+        }
+        if (object == null) {
             return "";
         }
         // All supported objects are enums so we can use name() safely.
-        String key = ((Enum<?>) object).name().toLowerCase();
         String translation = "";
 
-        if (object instanceof Material) {
+        if (object instanceof Material || object instanceof String) {
+            String key = "";
+            if (object instanceof Material) {
+                key = ((Enum<?>) object).name().toLowerCase();
+            } else {
+                key = (String) object;
+            }
+
             // Try our translations for Material.
             translation = user.getTranslationOrNothing(LEVEL_MATERIALS + key + ".name");
             if (!translation.isEmpty())
@@ -166,9 +175,14 @@ public class Utils
             if (!translation.isEmpty())
                 return translation;
 
-            // Fallback to our hook for Material.
-            return LangUtilsHook.getMaterialName((Material) object, user);
+            if (object instanceof Material) {
+                // Fallback to our hook for Material.
+                return LangUtilsHook.getMaterialName((Material) object, user);
+            } else {
+                return key;
+            }
         } else if (object instanceof EntityType) {
+            String key = ((Enum<?>) object).name().toLowerCase();
             // Try our translations for EntityType.
             translation = user.getTranslationOrNothing(ENTITIES + key + ".name");
             if (!translation.isEmpty())
@@ -191,6 +205,10 @@ public class Utils
     }
 
     public static String prettifyDescription(Object object, User user) {
+        if (object instanceof String key) {
+            String translation = user.getTranslationOrNothing(LEVEL_MATERIALS + key + ".description");
+            return translation != null ? translation : "";
+        }
         if (object == null || !(object instanceof Enum<?>)) {
             return "";
         }

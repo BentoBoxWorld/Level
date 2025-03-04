@@ -28,6 +28,8 @@ import world.bentobox.bentobox.api.panels.builders.TemplatedPanelBuilder;
 import world.bentobox.bentobox.api.panels.reader.ItemTemplateRecord;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.bentobox.hooks.ItemsAdderHook;
+import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
 import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.util.Utils;
@@ -674,6 +676,22 @@ public class DetailsPanel {
             blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", e.name().concat(SPAWNER));
             blockValue = this.addon.getBlockConfig().getSpawnerValues().getOrDefault(e, 0);
             blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(e), 0);
+        } else if (key instanceof String s) {
+            // Something else
+            if (addon.isItemsAdder()) {
+                Optional<ItemStack> optItemStack = ItemsAdderHook.getItemStack(s);
+                if (optItemStack.isPresent()) {
+                    ItemStack is = optItemStack.get();
+                    builder.icon(is);
+                    if (is.getItemMeta().hasDisplayName()) {
+                        displayMaterial = is.getItemMeta().getDisplayName();
+                    }
+                }
+                blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", s);
+                blockValue = this.addon.getBlockConfig().getBlockValues().getOrDefault(s, 0);
+                blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(s), 0);
+
+            }
         }
 
         if (template.title() != null) {
