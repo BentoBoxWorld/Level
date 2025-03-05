@@ -89,13 +89,14 @@ public class BlockConfig {
     private void addMissing(ConfigurationSection blocks) {
         // Add missing materials
         Registry.MATERIAL.stream()
+                .filter(m -> m.isBlock()).filter(m -> !m.isAir())
                 .filter(m -> !blockValues.containsKey(m.getKey().getKey()))
                 .forEach(m -> blocks.set(m.getKey().getKey(), 1)); // Add a default value of 1
         // Add missing spawners
         Registry.MATERIAL.stream().filter(Material::isItem).filter(m -> m.name().endsWith("_SPAWN_EGG")) // Get potential spawners by looking up spawn eggs, which are how a spawner can be set
                 .map(m -> m.getKey().getKey().substring(0, m.name().length() - 10) + SPAWNER) // Change the name of the egg to "entity-type_spawner"
                 .filter(s -> !this.blockValues.containsKey(s)) // Check if the blockValues map contains this spawner
-                .forEach(m -> blocks.set(m + SPAWNER, 1)); // Add a default value of 1
+                .forEach(m -> blocks.set(m, 1)); // Add a default value of 1
     }
 
     private boolean isOther(String key) {
