@@ -19,7 +19,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 
-import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.level.Level;
 
@@ -164,6 +163,8 @@ public class BlockConfig {
                     }
                 }
                 worldBlockValues.put(bWorld, values);
+            } else {
+                addon.log("Level Addon: No such world in blockconfig.yml : " + world);
             }
         }
 

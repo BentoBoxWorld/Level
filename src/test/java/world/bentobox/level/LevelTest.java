@@ -2,6 +2,7 @@ package world.bentobox.level;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -55,6 +56,7 @@ import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.DatabaseSetup.DatabaseType;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.bentobox.managers.AddonsManager;
 import world.bentobox.bentobox.managers.CommandsManager;
 import world.bentobox.bentobox.managers.FlagsManager;
@@ -74,7 +76,7 @@ import world.bentobox.level.mocks.ServerMocks;
  */
 @SuppressWarnings("deprecation")
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ Bukkit.class, BentoBox.class, User.class, Util.class })
+@PrepareForTest({ Bukkit.class, BentoBox.class, User.class, Util.class, ItemsAdderHook.class })
 public class LevelTest {
 
 	private static File jFile;
@@ -158,7 +160,9 @@ public class LevelTest {
 		when(plugin.getSettings()).thenReturn(pluginSettings);
 		when(pluginSettings.getDatabaseType()).thenReturn(value);
 
-		// when(plugin.isEnabled()).thenReturn(true);
+        // ItemsAdderHook
+        PowerMockito.mockStatic(ItemsAdderHook.class, Mockito.RETURNS_MOCKS);
+        when(ItemsAdderHook.isInRegistry(anyString())).thenReturn(true);
 		// Command manager
 		CommandsManager cm = mock(CommandsManager.class);
 		when(plugin.getCommandsManager()).thenReturn(cm);
@@ -272,12 +276,11 @@ public class LevelTest {
 	}
 
 	/**
-	 * Test method for {@link world.bentobox.level.Level#onEnable()}.
-	 */
+     * Test method for {@link world.bentobox.level.Level#allLoaded()
+     */
 	@Test
-	public void testOnEnable() {
-		addon.onEnable();
-		verify(plugin).logWarning("[Level] Level Addon: No such world in blockconfig.yml : acidisland_world");
+    public void testAllLoaded() {
+        addon.allLoaded();
 		verify(plugin).log("[Level] Level hooking into BSkyBlock");
 		verify(cmd, times(3)).getAddon(); // 3 commands
 		verify(adminCmd, times(5)).getAddon(); // Five commands
@@ -292,6 +295,9 @@ public class LevelTest {
 		// Commands
 		verify(am).registerListener(eq(addon), any(IslandActivitiesListeners.class));
 		verify(am).registerListener(eq(addon), any(JoinLeaveListener.class));
+
+        verify(plugin).log("[Level] Level Addon: No such world in blockconfig.yml : acidisland_world");
+
 	}
 
 	/**

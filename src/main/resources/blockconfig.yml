@@ -17,7 +17,7 @@ hidden-blocks:
 - bedrock
 - air
 blocks:
-  iasurvival:modern_stone: 1
+  #iasurvival:modern_stone: 1
   acacia_button: 1
   acacia_door: 2
   acacia_fence: 2

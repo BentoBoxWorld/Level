@@ -158,6 +158,11 @@
             <id>songoda-plugins</id>
             <url>https://repo.songoda.com/repository/minecraft-plugins/</url>
         </repository>
+        <!-- ItemsAdder API repo-->
+        <repository>
+            <id>matteodev</id>
+            <url>https://maven.devs.beer/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -243,6 +248,13 @@
             <groupId>com.craftaro</groupId>
             <artifactId>UltimateStacker-API</artifactId>
             <version>1.0.0-20240329.173606-35</version>
+            <scope>provided</scope>
+        </dependency>
+       <!-- ItemsAdder -->
+        <dependency>
+            <groupId>dev.lone</groupId>
+            <artifactId>api-itemsadder</artifactId>
+            <version>4.0.2-beta-release-11</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
