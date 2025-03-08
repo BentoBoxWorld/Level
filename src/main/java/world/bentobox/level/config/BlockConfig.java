@@ -205,19 +205,16 @@ public class BlockConfig {
      */
     public Integer getValue(World world, Object obj) {
         // Extract the key based on the type of obj
-        String key;
-        if (obj instanceof Keyed keyed) {
-            key = keyed.getKey().getKey();
-        } else if (obj instanceof String str) {
-            key = str;
-        } else {
-            key = "";
-        }
+        String key = switch (obj) {
+        case Keyed keyed -> keyed.getKey().getKey();
+        case String str -> str;
+        default -> "";
+        };
 
         if (key.isEmpty()) {
             return null;
         }
-        // Convert entity types to spawners
+
         if (obj instanceof EntityType) {
             key = key.concat(SPAWNER);
         }

@@ -478,36 +478,57 @@ public class IslandLevelCalculator {
         if (m.isAir()) {
             return;
         }
+
         boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
         Location loc = new Location(cp.world, globalX, y, globalZ);
 
-        if (addon.isItemsAdder() && ItemsAdderHook.getInCustomRegion(loc) != null) {
-            String namespacedId = ItemsAdderHook.getInCustomRegion(loc);
-            checkBlock(namespacedId, belowSeaLevel);
-        } else {
-            if (Tag.SLABS.isTagged(m)) {
-                Slab slab = (Slab) blockData;
-                if (slab.getType().equals(Slab.Type.DOUBLE)) {
-                    checkBlock(m, belowSeaLevel);
-                }
-            }
-            if (addon.isStackersEnabled() && (m.equals(Material.CAULDRON) || m.equals(Material.SPAWNER))) {
-                stackedBlocks.add(loc);
-            }
-            if (addon.isUltimateStackerEnabled() && !m.isAir()) {
-                UltimateStackerCalc.addStackers(m, loc, results, belowSeaLevel, limitCountAndValue(m));
-            }
-            if (addon.getSettings().isIncludeChests() && blockData instanceof Container) {
-                chestBlocks.add(cp.chunk);
-            }
-            if (m == Material.SPAWNER) {
-                spawners.put(loc, belowSeaLevel);
-            } else {
+        String customRegionId = addon.isItemsAdder() ? ItemsAdderHook.getInCustomRegion(loc) : null;
+        if (customRegionId != null) {
+            checkBlock(customRegionId, belowSeaLevel);
+            return;
+        }
+
+        processSlabs(blockData, m, belowSeaLevel);
+        processStackers(loc, m);
+        processUltimateStacker(m, loc, belowSeaLevel);
+        processChests(cp, blockData);
+        processSpawnerOrBlock(m, loc, belowSeaLevel);
+    }
+
+    private void processSlabs(BlockData blockData, Material m, boolean belowSeaLevel) {
+        if (Tag.SLABS.isTagged(m)) {
+            Slab slab = (Slab) blockData;
+            if (slab.getType().equals(Slab.Type.DOUBLE)) {
                 checkBlock(m, belowSeaLevel);
             }
         }
     }
 
+    private void processStackers(Location loc, Material m) {
+        if (addon.isStackersEnabled() && (m.equals(Material.CAULDRON) || m.equals(Material.SPAWNER))) {
+            stackedBlocks.add(loc);
+        }
+    }
+
+    private void processUltimateStacker(Material m, Location loc, boolean belowSeaLevel) {
+        if (addon.isUltimateStackerEnabled() && !m.isAir()) {
+            UltimateStackerCalc.addStackers(m, loc, results, belowSeaLevel, limitCountAndValue(m));
+        }
+    }
+
+    private void processChests(ChunkPair cp, BlockData blockData) {
+        if (addon.getSettings().isIncludeChests() && blockData instanceof Container) {
+            chestBlocks.add(cp.chunk);
+        }
+    }
+
+    private void processSpawnerOrBlock(Material m, Location loc, boolean belowSeaLevel) {
+        if (m == Material.SPAWNER) {
+            spawners.put(loc, belowSeaLevel);
+        } else {
+            checkBlock(m, belowSeaLevel);
+        }
+    }
 
     /**
      * Scan the next chunk on the island

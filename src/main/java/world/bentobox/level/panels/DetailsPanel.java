@@ -637,54 +637,66 @@ public class DetailsPanel {
         return this.createMaterialButton(template, this.blockCountList.get(index));
     }
 
-    /**
-     * This method creates button for block.
-     *
-     * @param template      the template of the button
-     * @param blockCount  count
-     * @return PanelItem button
-     */
     private PanelItem createMaterialButton(ItemTemplateRecord template, BlockRec blockCount) {
         PanelItemBuilder builder = new PanelItemBuilder();
-        if (template.icon() != null)
+
+        // Set icon and amount based on the template and block count.
+        if (template.icon() != null) {
             builder.icon(template.icon().clone());
-        if (blockCount.value() < 64)
+        }
+        if (blockCount.value() < 64) {
             builder.amount(blockCount.value());
+        }
+
         final String ref = "level.gui.buttons.material.";
         BlockDataRec d = getBlockData(blockCount.key());
-        if (d.icon() != null)
+
+        // Override icon from block data if available.
+        if (d.icon() != null) {
             builder.icon(d.icon());
+        }
+
+        // Set name using the title translation if provided.
         if (template.title() != null) {
             builder.name(this.user.getTranslation(this.world, template.title(), TextVariables.NUMBER,
                     String.valueOf(blockCount.value()), "[material]", d.displayMaterial()));
         }
+
+        // Build and set description if provided.
         if (template.description() != null) {
-            builder.description(this.user
-                    .getTranslation(this.world, template.description(), "[description]",
-                            Utils.prettifyDescription(blockCount.key(), this.user) + d.extraDesc(), "[id]",
-                            this.user.isOp() ? d.blockId() : "", "[value]",
-                            d.blockValue() > 0
-                                    ? this.user.getTranslationOrNothing(
-                                            ref + "value", TextVariables.NUMBER, String.valueOf(d.blockValue()))
-                                    : "",
-                            "[calculated]",
-                            ((long) Math.min(d.blockLimit() > 0 ? d.blockLimit() : Integer.MAX_VALUE,
-                                    blockCount.value()) * d.blockValue()) > 0
-                                            ? this.user.getTranslationOrNothing(ref + "calculated",
-                                                    TextVariables.NUMBER,
-                                                    String.valueOf((long) Math.min(
-                                                            d.blockLimit() > 0 ? d.blockLimit() : Integer.MAX_VALUE,
-                                                            blockCount.value()) * d.blockValue()))
-                                            : "",
-                            "[limit]",
-                            d.blockLimit() > 0 ? this.user.getTranslationOrNothing(
-                                    ref + "limit", TextVariables.NUMBER, String.valueOf(d.blockLimit())) : "",
-                            "[count]",
-                            this.user.getTranslationOrNothing(ref + "count", TextVariables.NUMBER,
-                                    String.valueOf(blockCount.value())))
-                    .replaceAll("(?m)^[ \\t]*\\r?\\n", "").replaceAll("(?<!\\\\)\\|", "\n").replace("\\\\\\|", "|"));
+            String description = buildDescription(template.description(), blockCount, d, ref);
+            builder.description(description);
         }
+
         return builder.build();
+    }
+
+    private String buildDescription(String descriptionTemplate, BlockRec blockCount, BlockDataRec d, String ref) {
+        String desc = Utils.prettifyDescription(blockCount.key(), this.user) + d.extraDesc();
+        String id = this.user.isOp() ? d.blockId() : "";
+        String value = d.blockValue() > 0
+                ? this.user.getTranslationOrNothing(ref + "value", TextVariables.NUMBER, String.valueOf(d.blockValue()))
+                : "";
+
+        long calculatedRaw = (long) Math.min(d.blockLimit() > 0 ? d.blockLimit() : Integer.MAX_VALUE,
+                blockCount.value()) * d.blockValue();
+        String calculated = calculatedRaw > 0
+                ? this.user.getTranslationOrNothing(ref + "calculated", TextVariables.NUMBER,
+                        String.valueOf(calculatedRaw))
+                : "";
+
+        String limit = d.blockLimit() > 0
+                ? this.user.getTranslationOrNothing(ref + "limit", TextVariables.NUMBER, String.valueOf(d.blockLimit()))
+                : "";
+
+        String count = this.user.getTranslationOrNothing(ref + "count", TextVariables.NUMBER,
+                String.valueOf(blockCount.value()));
+
+        String translated = this.user.getTranslation(this.world, descriptionTemplate, "[description]", desc, "[id]", id,
+                "[value]", value, "[calculated]", calculated, "[limit]", limit, "[count]", count);
+
+        return translated.replaceAll("(?m)^[ \\t]*\\r?\\n", "").replaceAll("(?<!\\\\)\\|", "\n").replace("\\\\\\|",
+                "|");
     }
 
     private record BlockDataRec(ItemStack icon, String blockId, int blockValue, int blockLimit, String displayMaterial,

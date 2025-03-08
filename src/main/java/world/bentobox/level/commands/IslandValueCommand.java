@@ -59,33 +59,33 @@ public class IslandValueCommand extends CompositeCommand
 
         String arg = args.get(0);
         if ("HAND".equalsIgnoreCase(arg)) {
-            return executeHandCommand(user);
+            executeHandCommand(user);
+            return true;
         }
 
         executeMaterialCommand(user, arg);
         return true;
     }
 
-    private boolean executeHandCommand(User user) {
+    private void executeHandCommand(User user) {
         Player player = user.getPlayer();
         PlayerInventory inventory = player.getInventory();
         ItemStack mainHandItem = inventory.getItemInMainHand();
 
-        if (mainHandItem.getType().equals(Material.AIR)) {
+        if (mainHandItem.getType() == Material.AIR) {
             Utils.sendMessage(user, user.getTranslation("level.conversations.empty-hand"));
-            return true;
+            return;
         }
 
         if (addon.isItemsAdder()) {
             Optional<String> id = ItemsAdderHook.getNamespacedId(mainHandItem);
             if (id.isPresent()) {
                 printValue(user, id.get());
-                return true;
+                return;
             }
         }
 
         printValue(user, mainHandItem.getType());
-        return true;
     }
 
     private void executeMaterialCommand(User user, String arg) {
