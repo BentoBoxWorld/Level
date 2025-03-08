@@ -667,14 +667,14 @@ public class DetailsPanel {
             // Material-specific settings.
             builder.icon(PanelUtils.getMaterialItem(m));
             blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", m.name());
-            blockValue = this.addon.getBlockConfig().getBlockValues().getOrDefault(m, 0);
+            blockValue = Objects.requireNonNullElse(this.addon.getBlockConfig().getValue(world, m), 0);
             blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(m), 0);
         } else if (key instanceof EntityType e) {
             // EntityType-specific settings.
             builder.icon(PanelUtils.getEntityEgg(e));
             description += this.user.getTranslation(this.world, "level.gui.buttons.spawner.block-name"); // Put spawner on the end
             blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", e.name().concat(SPAWNER));
-            blockValue = this.addon.getBlockConfig().getSpawnerValues().getOrDefault(e, 0);
+            blockValue = Objects.requireNonNullElse(this.addon.getBlockConfig().getValue(world, e), 0);
             blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(e), 0);
         } else if (key instanceof String s) {
             // Something else

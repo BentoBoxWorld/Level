@@ -684,57 +684,58 @@ public class ValuePanel
     }
 
     /**
-     * This method creates button for block.
+     * Creates a material button based on the provided template and block record.
      *
-     * @param template      the template of the button
-     * @param blockCount  count
-     * @return PanelItem button
+     * @param template  The button template.
+     * @param blockCount  The block record containing count details.
+     * @return The created PanelItem button.
      */
     private PanelItem createMaterialButton(ItemTemplateRecord template, BlockRecord blockCount) {
         PanelItemBuilder builder = new PanelItemBuilder();
-        final String reference = "level.gui.buttons.material.";
+        final String baseKey = "level.gui.buttons.material.";
+
+        // Extract values from blockCount
         String key = blockCount.keyl();
-        String blockId = user.isOp() ? this.user.getTranslationOrNothing(reference + "id", "[id]", key) : "";
-        String description = Utils.prettifyDescription(key, this.user);
         int blockValue = blockCount.value();
         int blockLimit = blockCount.limit();
-        String value = this.user.getTranslationOrNothing(reference + "value", TextVariables.NUMBER,
+        double underwaterMultiplier = this.addon.getSettings().getUnderWaterMultiplier();
+
+        // Build translation strings
+        String blockId = user.isOp() ? this.user.getTranslationOrNothing(baseKey + "id", "[id]", key) : "";
+        String description = Utils.prettifyDescription(key, this.user);
+        String valueTranslation = this.user.getTranslationOrNothing(baseKey + "value", TextVariables.NUMBER,
                 String.valueOf(blockValue));
-        String limit = blockLimit > 0
-                ? this.user.getTranslationOrNothing(reference + "limit", TextVariables.NUMBER,
-                        String.valueOf(blockLimit))
+        String limitTranslation = blockLimit > 0
+                ? this.user.getTranslationOrNothing(baseKey + "limit", TextVariables.NUMBER, String.valueOf(blockLimit))
                 : "";
+
+        // Determine icon and display material text
         Material icon = getIcon(key);
-        if (icon == null || icon == Material.AIR) {
-            builder.icon(Material.PAPER);
-        } else {
-            builder.icon(icon);
-        }
-        String displayMaterial = icon == null ? Util.prettifyText(key) : Utils.prettifyObject(icon, user);
-        // Spawners
-        if (icon.name().endsWith("_SPAWN_EGG")) {
+        builder.icon((icon == null || icon == Material.AIR) ? Material.PAPER : icon);
+
+        String displayMaterial = (icon == null) ? Util.prettifyText(key) : Utils.prettifyObject(icon, user);
+        // Special handling for spawn eggs
+        if (icon != null && icon.name().endsWith("_SPAWN_EGG")) {
             displayMaterial = Util.prettifyText(key);
         }
 
+        // Set button title if available
         if (template.title() != null) {
             builder.name(this.user.getTranslation(this.world, template.title(), TextVariables.NUMBER,
-                    String.valueOf(blockCount.value()), "[material]", displayMaterial));
+                    String.valueOf(blockValue), "[material]", displayMaterial));
         }
 
-        String underWater;
+        // Calculate underwater value if applicable
+        String underWater = underwaterMultiplier != 1.0 ? this.user.getTranslationOrNothing(baseKey + "underwater",
+                TextVariables.NUMBER, String.valueOf(blockValue * underwaterMultiplier)) : "";
 
-        if (this.addon.getSettings().getUnderWaterMultiplier() != 1.0) {
-            underWater = this.user.getTranslationOrNothing(reference + "underwater", TextVariables.NUMBER,
-                    String.valueOf(blockCount.value() * this.addon.getSettings().getUnderWaterMultiplier()));
-        } else {
-            underWater = "";
-        }
-
+        // Set button description if provided
         if (template.description() != null) {
-            builder.description(this.user
+            String translatedDescription = this.user
                     .getTranslation(this.world, template.description(), "[description]", description, "[id]", blockId,
-                            "[value]", value, "[underwater]", underWater, "[limit]", limit)
-                    .replaceAll("(?m)^[ \\t]*\\r?\\n", "").replaceAll("(?<!\\\\)\\|", "\n").replace("\\\\\\|", "|")); // Non regex
+                            "[value]", valueTranslation, "[underwater]", underWater, "[limit]", limitTranslation)
+                    .replaceAll("(?m)^[ \\t]*\\r?\\n", "").replaceAll("(?<!\\\\)\\|", "\n").replace("\\\\\\|", "|");
+            builder.description(translatedDescription);
         }
 
         return builder.build();

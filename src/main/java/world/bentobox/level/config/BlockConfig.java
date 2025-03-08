@@ -210,6 +210,10 @@ public class BlockConfig {
         if (key.isEmpty()) {
             return null;
         }
+        // Convert entity types to spawners
+        if (obj instanceof EntityType) {
+            key.concat(SPAWNER);
+        }
 
         // Try to get the world-specific value first
         Map<String, Integer> worldValues = getWorldBlockValues().get(world);
