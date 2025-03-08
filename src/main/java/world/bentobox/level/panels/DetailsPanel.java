@@ -29,7 +29,6 @@ import world.bentobox.bentobox.api.panels.reader.ItemTemplateRecord;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.hooks.ItemsAdderHook;
-import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
 import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.util.Utils;
@@ -220,10 +219,13 @@ public class DetailsPanel {
         if (this.activeTab == Tab.SPAWNER) {
             if (this.addon.getBlockConfig().isNotHiddenBlock(Material.SPAWNER)) {
                 Map<EntityType, Integer> spawnerCountMap = new EnumMap<>(EntityType.class);
+
                 spawnerCountMap = this.levelsData.getMdCount().entrySet().stream()
                         .filter(en -> en.getKey() instanceof EntityType)
                         .collect(Collectors.toMap(en -> (EntityType) en.getKey(), Map.Entry::getValue));
-
+                spawnerCountMap.putAll(
+                        this.levelsData.getUwCount().entrySet().stream().filter(en -> en.getKey() instanceof EntityType)
+                                .collect(Collectors.toMap(en -> (EntityType) en.getKey(), Map.Entry::getValue)));
                 spawnerCountMap.entrySet().stream().sorted((Map.Entry.comparingByKey())).forEachOrdered(entry -> {
                     if (entry.getValue() > 0) {
                         this.blockCountList.add(new BlockRec(entry.getKey(), entry.getValue(), 0));
