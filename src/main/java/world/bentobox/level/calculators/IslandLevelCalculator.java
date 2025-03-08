@@ -48,10 +48,12 @@ import us.lynuxcraft.deadsilenceiv.advancedchests.chest.AdvancedChest;
 import us.lynuxcraft.deadsilenceiv.advancedchests.chest.gui.page.ChestPage;
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.bentobox.util.Pair;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
 import world.bentobox.level.calculators.Results.Result;
+import world.bentobox.level.config.BlockConfig;
 
 public class IslandLevelCalculator {
     private static final String LINE_BREAK = "==================================";
@@ -134,6 +136,24 @@ public class IslandLevelCalculator {
     }
 
     /**
+     * Adds value to the results based on the namespacedId and whether the block is
+     * below sea level or not
+     * 
+     * @param namespacedId   - namespacedId of the block
+     * @param belowSeaLevel - true if below sea level
+     */
+    private void checkBlock(String namespacedId, boolean belowSeaLevel) {
+        int count = limitCountAndValue(namespacedId);
+        if (belowSeaLevel) {
+            results.underWaterBlockCount.addAndGet(count);
+            results.uwCount.add(namespacedId);
+        } else {
+            results.rawBlockCount.addAndGet(count);
+            results.mdCount.add(namespacedId);
+        }
+    }
+
+    /**
      * Adds value to the results based on the material and whether the block is
      * below sea level or not
      * 
@@ -141,7 +161,7 @@ public class IslandLevelCalculator {
      * @param belowSeaLevel - true if below sea level
      */
     private void checkBlock(Material mat, boolean belowSeaLevel) {
-        int count = limitCount(mat);
+        int count = limitCountAndValue(mat);
         if (belowSeaLevel) {
             results.underWaterBlockCount.addAndGet(count);
             results.uwCount.add(mat);
@@ -159,7 +179,7 @@ public class IslandLevelCalculator {
      * @param belowSeaLevel - true if below sea level
      */
     private void checkSpawner(EntityType et, boolean belowSeaLevel) {
-        Integer count = limitCount(et);
+        Integer count = limitCountAndValue(et);
         if (count != null) {
             if (belowSeaLevel) {
                 results.underWaterBlockCount.addAndGet(count);
@@ -263,14 +283,14 @@ public class IslandLevelCalculator {
     /**
      * Get value of a material World blocks trump regular block values
      * 
-     * @param md - Material or EntityType to check
+     * @param obj - Material, EntityType, or NamespacedId to check
      * @return value
      */
-    private int getValue(Object md) {
-        Integer value = addon.getBlockConfig().getValue(island.getWorld(), md);
+    private int getValue(Object obj) {
+        Integer value = addon.getBlockConfig().getValue(island.getWorld(), obj);
         if (value == null) {
             // Not in config
-            results.ncCount.add(md);
+            results.ncCount.add(obj);
             return 0;
         }
         return value;
@@ -334,19 +354,21 @@ public class IslandLevelCalculator {
      * @param obj A Material or EntityType
      * @return The object's value if within limit, otherwise 0.
      */
-    private int limitCount(Object obj) {
+    private int limitCountAndValue(Object obj) {
         // Only process if obj is a Material or EntityType
-        if (!(obj instanceof Material) && !(obj instanceof EntityType))
+        if (!(obj instanceof Material) && !(obj instanceof EntityType) && !(obj instanceof String)) {
             return 0;
+        }
 
         Integer limit = addon.getBlockConfig().getLimit(obj);
-        if (limit == null)
+        if (limit == null) {
             return getValue(obj);
+        }
 
         int count = limitCount.getOrDefault(obj, 0);
-        if (count > limit)
+        if (count > limit) {
             return 0;
-
+        }
         limitCount.put(obj, count + 1);
         return getValue(obj);
     }
@@ -427,65 +449,84 @@ public class IslandLevelCalculator {
     record ChunkPair(World world, Chunk chunk, ChunkSnapshot chunkSnapshot) {
     }
 
-    /**
-     * Count the blocks on the island
-     * 
-     * @param cp chunk to scan
-     */
     private void scanAsync(ChunkPair cp) {
+        int chunkX = cp.chunkSnapshot.getX() * 16;
+        int chunkZ = cp.chunkSnapshot.getZ() * 16;
+        int minX = island.getMinProtectedX();
+        int maxX = minX + island.getProtectionRange() * 2;
+        int minZ = island.getMinProtectedZ();
+        int maxZ = minZ + island.getProtectionRange() * 2;
+
         for (int x = 0; x < 16; x++) {
-            // Check if the block coordinate is inside the protection zone and if not, don't
-            // count it
-            if (cp.chunkSnapshot.getX() * 16 + x < island.getMinProtectedX() || cp.chunkSnapshot.getX() * 16
-                    + x >= island.getMinProtectedX() + island.getProtectionRange() * 2) {
-                continue;
-            }
-            for (int z = 0; z < 16; z++) {
-                // Check if the block coordinate is inside the protection zone and if not, don't
-                // count it
-                if (cp.chunkSnapshot.getZ() * 16 + z < island.getMinProtectedZ() || cp.chunkSnapshot.getZ() * 16
-                        + z >= island.getMinProtectedZ() + island.getProtectionRange() * 2) {
-                    continue;
-                }
-                // Only count to the highest block in the world for some optimization
-                for (int y = cp.world.getMinHeight(); y < cp.world.getMaxHeight(); y++) {
-                    BlockData blockData = cp.chunkSnapshot.getBlockData(x, y, z);
-                    Material m = blockData.getMaterial();
-                    boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
-                    Location loc = new Location(cp.world, (double) x + cp.chunkSnapshot.getX() * 16, y,
-                            (double) z + cp.chunkSnapshot.getZ() * 16);
-                    // Slabs can be doubled, so check them twice
-                    if (Tag.SLABS.isTagged(m)) {
-                        Slab slab = (Slab) blockData;
-                        if (slab.getType().equals(Slab.Type.DOUBLE)) {
-                            checkBlock(m, belowSeaLevel);
+            int globalX = chunkX + x;
+            if (globalX >= minX && globalX < maxX) {
+                for (int z = 0; z < 16; z++) {
+                    int globalZ = chunkZ + z;
+                    if (globalZ >= minZ && globalZ < maxZ) {
+                        for (int y = cp.world.getMinHeight(); y < cp.world.getMaxHeight(); y++) {
+                            processBlock(cp, x, y, z, globalX, globalZ);
                         }
                     }
-                    // Hook for Wild Stackers (Blocks and Spawners Only) - this has to use the real
-                    // chunk
-                    if (addon.isStackersEnabled() && (m.equals(Material.CAULDRON) || m.equals(Material.SPAWNER))) {
-                        stackedBlocks.add(loc);
-                    }
-
-                    if (addon.isUltimateStackerEnabled() && !m.isAir()) {
-                        UltimateStackerCalc.addStackers(m, loc, results, belowSeaLevel, limitCount(m));
-                    }
-
-                    // Scan chests
-                    if (addon.getSettings().isIncludeChests() && blockData instanceof Container) {
-                        chestBlocks.add(cp.chunk);
-                    }
-
-                    // Spawners
-                    if (m == Material.SPAWNER) {
-                        // Stash the spawner because the type cannot be obtained from the chunk snapshot
-                        this.spawners.put(loc, belowSeaLevel);
-                    } else {
-                        // Add the value of the block's material
-                        checkBlock(m, belowSeaLevel);
-                    }
                 }
             }
+        }
+    }
+
+    private void processBlock(ChunkPair cp, int x, int y, int z, int globalX, int globalZ) {
+        BlockData blockData = cp.chunkSnapshot.getBlockData(x, y, z);
+        Material m = blockData.getMaterial();
+        if (m.isAir()) {
+            return;
+        }
+
+        boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
+        Location loc = new Location(cp.world, globalX, y, globalZ);
+
+        String customRegionId = addon.isItemsAdder() ? ItemsAdderHook.getInCustomRegion(loc) : null;
+        if (customRegionId != null) {
+            checkBlock(customRegionId, belowSeaLevel);
+            return;
+        }
+
+        processSlabs(blockData, m, belowSeaLevel);
+        processStackers(loc, m);
+        processUltimateStacker(m, loc, belowSeaLevel);
+        processChests(cp, blockData);
+        processSpawnerOrBlock(m, loc, belowSeaLevel);
+    }
+
+    private void processSlabs(BlockData blockData, Material m, boolean belowSeaLevel) {
+        if (Tag.SLABS.isTagged(m)) {
+            Slab slab = (Slab) blockData;
+            if (slab.getType().equals(Slab.Type.DOUBLE)) {
+                checkBlock(m, belowSeaLevel);
+            }
+        }
+    }
+
+    private void processStackers(Location loc, Material m) {
+        if (addon.isStackersEnabled() && (m.equals(Material.CAULDRON) || m.equals(Material.SPAWNER))) {
+            stackedBlocks.add(loc);
+        }
+    }
+
+    private void processUltimateStacker(Material m, Location loc, boolean belowSeaLevel) {
+        if (addon.isUltimateStackerEnabled() && !m.isAir()) {
+            UltimateStackerCalc.addStackers(m, loc, results, belowSeaLevel, limitCountAndValue(m));
+        }
+    }
+
+    private void processChests(ChunkPair cp, BlockData blockData) {
+        if (addon.getSettings().isIncludeChests() && blockData instanceof Container) {
+            chestBlocks.add(cp.chunk);
+        }
+    }
+
+    private void processSpawnerOrBlock(Material m, Location loc, boolean belowSeaLevel) {
+        if (m == Material.SPAWNER) {
+            spawners.put(loc, belowSeaLevel);
+        } else {
+            checkBlock(m, belowSeaLevel);
         }
     }
 
@@ -536,11 +577,14 @@ public class IslandLevelCalculator {
                 value = Objects.requireNonNullElse(addon.getBlockConfig().getValue(island.getWorld(), md), 0);
                 name = Util.prettifyText(md.name());
             } else if (en.getElement() instanceof EntityType et) {
-                name = Util.prettifyText(et.name());
+                name = Util.prettifyText(et.name() + BlockConfig.SPAWNER);
                 value = Objects.requireNonNullElse(addon.getBlockConfig().getValue(island.getWorld(), et), 0);
+            } else if (en.getElement() instanceof String str) {
+                name = str;
+                value = Objects.requireNonNullElse(addon.getBlockConfig().getValue(island.getWorld(), str), 0);
             }
 
-            result.add(name + " :" + String.format("%,d", en.getCount()) + " blocks x " + value + " = "
+            result.add(name + ": " + String.format("%,d", en.getCount()) + " blocks x " + value + " = "
                     + (value * en.getCount()));
             total += (value * en.getCount());
 
