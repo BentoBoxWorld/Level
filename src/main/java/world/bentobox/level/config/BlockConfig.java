@@ -205,7 +205,14 @@ public class BlockConfig {
      */
     public Integer getValue(World world, Object obj) {
         // Extract the key based on the type of obj
-        String key = (obj instanceof Keyed keyed) ? keyed.getKey().getKey() : (obj instanceof String str ? str : "");
+        String key;
+        if (obj instanceof Keyed keyed) {
+            key = keyed.getKey().getKey();
+        } else if (obj instanceof String str) {
+            key = str;
+        } else {
+            key = "";
+        }
 
         if (key.isEmpty()) {
             return null;

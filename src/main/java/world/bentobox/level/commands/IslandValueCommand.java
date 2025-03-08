@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.eclipse.jdt.annotation.NonNull;
 
@@ -45,52 +46,55 @@ public class IslandValueCommand extends CompositeCommand
 
 
     @Override
-    public boolean execute(User user, String label, List<String> args)
-    {
-        if (args.size() > 1)
-        {
-            this.showHelp(this, user);
+    public boolean execute(User user, String label, List<String> args) {
+        if (args.size() > 1) {
+            showHelp(this, user);
             return false;
         }
 
-        if (args.isEmpty())
-        {
-            ValuePanel.openPanel(this.addon, this.getWorld(), user);
-        }
-        else if (args.get(0).equalsIgnoreCase("HAND"))
-        {
-            Player player = user.getPlayer();
-            PlayerInventory inventory = player.getInventory();
-
-            if (!inventory.getItemInMainHand().getType().equals(Material.AIR))
-            {
-                // The user has something in their hand
-                if (addon.isItemsAdder()) {
-                    Optional<String> id = ItemsAdderHook.getNamespacedId(inventory.getItemInMainHand());
-                    if (id.isPresent()) {
-                        this.printValue(user, id.get());
-                        return true;
-                    }
-                }
-                // Not ItemsAdder item
-                this.printValue(user, inventory.getItemInMainHand().getType());
-            }
-            else
-            {
-                Utils.sendMessage(user, user.getTranslation("level.conversations.empty-hand"));
-            }
-        } else {
-            Material material = Material.matchMaterial(args.get(0));
-
-            if (material == null) {
-                Utils.sendMessage(user, user.getTranslation(this.getWorld(), "level.conversations.unknown-item",
-                        MATERIAL, args.get(0)));
-            } else {
-                this.printValue(user, material);
-            }
+        if (args.isEmpty()) {
+            ValuePanel.openPanel(addon, getWorld(), user);
+            return true;
         }
 
+        String arg = args.get(0);
+        if ("HAND".equalsIgnoreCase(arg)) {
+            return executeHandCommand(user);
+        }
+
+        executeMaterialCommand(user, arg);
         return true;
+    }
+
+    private boolean executeHandCommand(User user) {
+        Player player = user.getPlayer();
+        PlayerInventory inventory = player.getInventory();
+        ItemStack mainHandItem = inventory.getItemInMainHand();
+
+        if (mainHandItem.getType().equals(Material.AIR)) {
+            Utils.sendMessage(user, user.getTranslation("level.conversations.empty-hand"));
+            return true;
+        }
+
+        if (addon.isItemsAdder()) {
+            Optional<String> id = ItemsAdderHook.getNamespacedId(mainHandItem);
+            if (id.isPresent()) {
+                printValue(user, id.get());
+                return true;
+            }
+        }
+
+        printValue(user, mainHandItem.getType());
+        return true;
+    }
+
+    private void executeMaterialCommand(User user, String arg) {
+        Material material = Material.matchMaterial(arg);
+        if (material == null) {
+            Utils.sendMessage(user, user.getTranslation(getWorld(), "level.conversations.unknown-item", MATERIAL, arg));
+        } else {
+            printValue(user, material);
+        }
     }
 
     /**

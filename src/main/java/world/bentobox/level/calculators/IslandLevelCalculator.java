@@ -449,76 +449,65 @@ public class IslandLevelCalculator {
     record ChunkPair(World world, Chunk chunk, ChunkSnapshot chunkSnapshot) {
     }
 
-    /**
-     * Count the blocks on the island. This method is run async.
-     * 
-     * @param cp chunk to scan
-     */
     private void scanAsync(ChunkPair cp) {
+        int chunkX = cp.chunkSnapshot.getX() * 16;
+        int chunkZ = cp.chunkSnapshot.getZ() * 16;
+        int minX = island.getMinProtectedX();
+        int maxX = minX + island.getProtectionRange() * 2;
+        int minZ = island.getMinProtectedZ();
+        int maxZ = minZ + island.getProtectionRange() * 2;
+
         for (int x = 0; x < 16; x++) {
-            // Check if the block coordinate is inside the protection zone and if not, don't
-            // count it
-            if (cp.chunkSnapshot.getX() * 16 + x < island.getMinProtectedX() || cp.chunkSnapshot.getX() * 16
-                    + x >= island.getMinProtectedX() + island.getProtectionRange() * 2) {
-                continue;
-            }
-            for (int z = 0; z < 16; z++) {
-                // Check if the block coordinate is inside the protection zone and if not, don't
-                // count it
-                if (cp.chunkSnapshot.getZ() * 16 + z < island.getMinProtectedZ() || cp.chunkSnapshot.getZ() * 16
-                        + z >= island.getMinProtectedZ() + island.getProtectionRange() * 2) {
-                    continue;
-                }
-                // Only count to the highest block in the world for some optimization
-                for (int y = cp.world.getMinHeight(); y < cp.world.getMaxHeight(); y++) {
-                    BlockData blockData = cp.chunkSnapshot.getBlockData(x, y, z);
-                    Material m = blockData.getMaterial();
-                    if (m.isAir())
-                        continue;
-                    boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
-                    Location loc = new Location(cp.world, (double) x + cp.chunkSnapshot.getX() * 16, y,
-                            (double) z + cp.chunkSnapshot.getZ() * 16);
-                    // Hook for ItemsAdder
-                    if (addon.isItemsAdder() && ItemsAdderHook.getInCustomRegion(loc) != null) {
-                        String namespacedId = ItemsAdderHook.getInCustomRegion(loc);
-                        checkBlock(namespacedId, belowSeaLevel);
-                        continue;
-                    }
-
-                    // Slabs can be doubled, so check them twice
-                    if (Tag.SLABS.isTagged(m)) {
-                        Slab slab = (Slab) blockData;
-                        if (slab.getType().equals(Slab.Type.DOUBLE)) {
-                            checkBlock(m, belowSeaLevel);
+            int globalX = chunkX + x;
+            if (globalX >= minX && globalX < maxX) {
+                for (int z = 0; z < 16; z++) {
+                    int globalZ = chunkZ + z;
+                    if (globalZ >= minZ && globalZ < maxZ) {
+                        for (int y = cp.world.getMinHeight(); y < cp.world.getMaxHeight(); y++) {
+                            processBlock(cp, x, y, z, globalX, globalZ);
                         }
-                    }
-                    // Hook for Wild Stackers (Blocks and Spawners Only) - this has to use the real
-                    // chunk
-                    if (addon.isStackersEnabled() && (m.equals(Material.CAULDRON) || m.equals(Material.SPAWNER))) {
-                        stackedBlocks.add(loc);
-                    }
-                    // Hook for UltimateStacker
-                    if (addon.isUltimateStackerEnabled() && !m.isAir()) {
-                        UltimateStackerCalc.addStackers(m, loc, results, belowSeaLevel, limitCountAndValue(m));
-                    }
-
-                    // Scan chests
-                    if (addon.getSettings().isIncludeChests() && blockData instanceof Container) {
-                        chestBlocks.add(cp.chunk);
-                    }
-
-                    // Spawners
-                    if (m == Material.SPAWNER) {
-                        // Stash the spawner because the type cannot be obtained from the chunk snapshot
-                        this.spawners.put(loc, belowSeaLevel);
-                    } else {
-                        // Add the value of the block's material
-                        checkBlock(m, belowSeaLevel);
                     }
                 }
             }
         }
     }
+
+    private void processBlock(ChunkPair cp, int x, int y, int z, int globalX, int globalZ) {
+        BlockData blockData = cp.chunkSnapshot.getBlockData(x, y, z);
+        Material m = blockData.getMaterial();
+        if (m.isAir()) {
+            return;
+        }
+        boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
+        Location loc = new Location(cp.world, globalX, y, globalZ);
+
+        if (addon.isItemsAdder() && ItemsAdderHook.getInCustomRegion(loc) != null) {
+            String namespacedId = ItemsAdderHook.getInCustomRegion(loc);
+            checkBlock(namespacedId, belowSeaLevel);
+        } else {
+            if (Tag.SLABS.isTagged(m)) {
+                Slab slab = (Slab) blockData;
+                if (slab.getType().equals(Slab.Type.DOUBLE)) {
+                    checkBlock(m, belowSeaLevel);
+                }
+            }
+            if (addon.isStackersEnabled() && (m.equals(Material.CAULDRON) || m.equals(Material.SPAWNER))) {
+                stackedBlocks.add(loc);
+            }
+            if (addon.isUltimateStackerEnabled() && !m.isAir()) {
+                UltimateStackerCalc.addStackers(m, loc, results, belowSeaLevel, limitCountAndValue(m));
+            }
+            if (addon.getSettings().isIncludeChests() && blockData instanceof Container) {
+                chestBlocks.add(cp.chunk);
+            }
+            if (m == Material.SPAWNER) {
+                spawners.put(loc, belowSeaLevel);
+            } else {
+                checkBlock(m, belowSeaLevel);
+            }
+        }
+    }
+
 
     /**
      * Scan the next chunk on the island

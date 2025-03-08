@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -72,8 +73,6 @@ public class ValuePanel
 
     private static final String BLOCK = "BLOCK";
 
-    private static final String SPAWNER = "_SPAWNER";
-
     // ---------------------------------------------------------------------
     // Section: Variables
     // ---------------------------------------------------------------------
@@ -136,11 +135,9 @@ public class ValuePanel
         this.activeFilter = Filter.NAME_ASC;
 
         addon.getBlockConfig().getBlockValues().entrySet().stream().filter(en -> this.getIcon(en.getKey()) != null)
-                .forEach(en -> {
-            blockRecordList
-                            .add(new BlockRecord(en.getKey(), Objects.requireNonNullElse(en.getValue(), 0),
-                                    Objects.requireNonNullElse(addon.getBlockConfig().getLimit(en.getKey()), 0)));
-        });
+                .forEach(en -> blockRecordList
+                        .add(new BlockRecord(en.getKey(), Objects.requireNonNullElse(en.getValue(), 0),
+                                Objects.requireNonNullElse(addon.getBlockConfig().getLimit(en.getKey()), 0))));
 
         this.elementList = new ArrayList<>();
         this.searchText = "";
@@ -247,9 +244,8 @@ public class ValuePanel
 
             this.blockRecordList.forEach(rec ->
             {
-                if (rec.keyl.toString().toLowerCase().contains(text)
-                        ||
-                        Utils.prettifyObject(rec.keyl(), this.user).toLowerCase().contains(text))
+                if (rec.keyl.toLowerCase(Locale.ENGLISH).contains(text)
+                        || Utils.prettifyObject(rec.keyl(), this.user).toLowerCase().contains(text))
                 {
                     this.elementList.add(rec);
                 }

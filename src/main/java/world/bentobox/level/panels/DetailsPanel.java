@@ -646,91 +646,78 @@ public class DetailsPanel {
      */
     private PanelItem createMaterialButton(ItemTemplateRecord template, BlockRec blockCount) {
         PanelItemBuilder builder = new PanelItemBuilder();
-
-        if (template.icon() != null) {
+        if (template.icon() != null)
             builder.icon(template.icon().clone());
-        }
-        // Show amount if less than 64.
-        if (blockCount.value() < 64) {
+        if (blockCount.value() < 64)
             builder.amount(blockCount.value());
-        }
-
-        final String reference = "level.gui.buttons.material.";
-        Object key = blockCount.key();
-        String description = Utils.prettifyDescription(key, this.user);
-        String blockId = "";
-        int blockValue = 0;
-        int blockLimit = 0;
-        String value = "";
-        String limit = "";
-        String displayMaterial = Utils.prettifyObject(key, this.user);
-
-        if (key instanceof Material m) {
-            // Material-specific settings.
-            builder.icon(PanelUtils.getMaterialItem(m));
-            blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", m.name());
-            blockValue = Objects.requireNonNullElse(this.addon.getBlockConfig().getValue(world, m), 0);
-            blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(m), 0);
-        } else if (key instanceof EntityType e) {
-            // EntityType-specific settings.
-            builder.icon(PanelUtils.getEntityEgg(e));
-            description += this.user.getTranslation(this.world, "level.gui.buttons.spawner.block-name"); // Put spawner on the end
-            blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", e.name().concat(SPAWNER));
-            blockValue = Objects.requireNonNullElse(this.addon.getBlockConfig().getValue(world, e), 0);
-            blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(e), 0);
-        } else if (key instanceof String s) {
-            // Something else
-            if (addon.isItemsAdder()) {
-                Optional<ItemStack> optItemStack = ItemsAdderHook.getItemStack(s);
-                if (optItemStack.isPresent()) {
-                    ItemStack is = optItemStack.get();
-                    builder.icon(is);
-                    if (is.getItemMeta().hasDisplayName()) {
-                        displayMaterial = is.getItemMeta().getDisplayName();
-                    }
-                }
-                blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", s);
-                blockValue = this.addon.getBlockConfig().getBlockValues().getOrDefault(s, 0);
-                blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(s), 0);
-
-            }
-        }
-
+        final String ref = "level.gui.buttons.material.";
+        BlockDataRec d = getBlockData(blockCount.key());
+        if (d.icon() != null)
+            builder.icon(d.icon());
         if (template.title() != null) {
             builder.name(this.user.getTranslation(this.world, template.title(), TextVariables.NUMBER,
-                    String.valueOf(blockCount.value()), "[material]", displayMaterial));
-        }
-
-        value = blockValue > 0
-                ? this.user.getTranslationOrNothing(reference + "value", TextVariables.NUMBER,
-                        String.valueOf(blockValue))
-                : "";
-        limit = blockLimit > 0
-                ? this.user.getTranslationOrNothing(reference + "limit", TextVariables.NUMBER,
-                        String.valueOf(blockLimit))
-                : "";
-
-        String count = this.user.getTranslationOrNothing(reference + "count", TextVariables.NUMBER,
-                String.valueOf(blockCount.value()));
-
-        long calculatedValue = (long) Math.min(blockLimit > 0 ? blockLimit : Integer.MAX_VALUE,
-                blockCount.value()) * blockValue;
-        String valueText = calculatedValue > 0 ? this.user.getTranslationOrNothing(reference + "calculated",
-                TextVariables.NUMBER, String.valueOf(calculatedValue)) : "";
-
-        // Hide block ID unless user is an operator.
-        if (!user.isOp()) {
-            blockId = "";
+                    String.valueOf(blockCount.value()), "[material]", d.displayMaterial()));
         }
         if (template.description() != null) {
             builder.description(this.user
-                    .getTranslation(this.world, template.description(), "[description]", description, "[id]", blockId,
-                            "[value]", value, "[calculated]", valueText, "[limit]", limit, "[count]", count)
+                    .getTranslation(this.world, template.description(), "[description]",
+                            Utils.prettifyDescription(blockCount.key(), this.user) + d.extraDesc(), "[id]",
+                            this.user.isOp() ? d.blockId() : "", "[value]",
+                            d.blockValue() > 0
+                                    ? this.user.getTranslationOrNothing(
+                                            ref + "value", TextVariables.NUMBER, String.valueOf(d.blockValue()))
+                                    : "",
+                            "[calculated]",
+                            ((long) Math.min(d.blockLimit() > 0 ? d.blockLimit() : Integer.MAX_VALUE,
+                                    blockCount.value()) * d.blockValue()) > 0
+                                            ? this.user.getTranslationOrNothing(ref + "calculated",
+                                                    TextVariables.NUMBER,
+                                                    String.valueOf((long) Math.min(
+                                                            d.blockLimit() > 0 ? d.blockLimit() : Integer.MAX_VALUE,
+                                                            blockCount.value()) * d.blockValue()))
+                                            : "",
+                            "[limit]",
+                            d.blockLimit() > 0 ? this.user.getTranslationOrNothing(
+                                    ref + "limit", TextVariables.NUMBER, String.valueOf(d.blockLimit())) : "",
+                            "[count]",
+                            this.user.getTranslationOrNothing(ref + "count", TextVariables.NUMBER,
+                                    String.valueOf(blockCount.value())))
                     .replaceAll("(?m)^[ \\t]*\\r?\\n", "").replaceAll("(?<!\\\\)\\|", "\n").replace("\\\\\\|", "|"));
         }
-
         return builder.build();
     }
+
+    private record BlockDataRec(ItemStack icon, String blockId, int blockValue, int blockLimit, String displayMaterial,
+            String extraDesc) {
+    }
+
+    private BlockDataRec getBlockData(Object key) {
+        final String ref = "level.gui.buttons.material.";
+        if (key instanceof Material m) {
+            return new BlockDataRec(PanelUtils.getMaterialItem(m),
+                    this.user.getTranslationOrNothing(ref + "id", "[id]", m.name()),
+                    Objects.requireNonNullElse(this.addon.getBlockConfig().getValue(world, m), 0),
+                    Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(m), 0),
+                    Utils.prettifyObject(key, this.user), "");
+        } else if (key instanceof EntityType e) {
+            return new BlockDataRec(PanelUtils.getEntityEgg(e),
+                    this.user.getTranslationOrNothing(ref + "id", "[id]", e.name().concat(SPAWNER)),
+                    Objects.requireNonNullElse(this.addon.getBlockConfig().getValue(world, e), 0),
+                    Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(e), 0),
+                    Utils.prettifyObject(key, this.user),
+                    this.user.getTranslation(this.world, "level.gui.buttons.spawner.block-name"));
+        } else if (key instanceof String s && addon.isItemsAdder()) {
+            Optional<ItemStack> opt = ItemsAdderHook.getItemStack(s);
+            ItemStack icon = opt.orElse(new ItemStack(Material.PAPER));
+            String disp = opt.filter(is -> is.getItemMeta().hasDisplayName())
+                    .map(is -> is.getItemMeta().getDisplayName()).orElse(Utils.prettifyObject(key, this.user));
+            return new BlockDataRec(icon, this.user.getTranslationOrNothing(ref + "id", "[id]", s),
+                    this.addon.getBlockConfig().getBlockValues().getOrDefault(s, 0),
+                    Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(s), 0), disp, "");
+        }
+        return new BlockDataRec(null, "", 0, 0, Utils.prettifyObject(key, this.user), "");
+    }
+
 
     // ---------------------------------------------------------------------
     // Section: Other Methods

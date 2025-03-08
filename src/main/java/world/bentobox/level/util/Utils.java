@@ -143,11 +143,9 @@ public class Utils
      */
     public static final String ENTITIES = "level.entities.";
     private static final String LEVEL_MATERIALS = "level.materials.";
+    private static final String DESCRIPTION = ".description";
 
     public static String prettifyObject(Object object, User user) {
-        if (object instanceof String key) {
-
-        }
         if (object == null) {
             return "";
         }
@@ -206,7 +204,7 @@ public class Utils
 
     public static String prettifyDescription(Object object, User user) {
         if (object instanceof String key) {
-            String translation = user.getTranslationOrNothing(LEVEL_MATERIALS + key + ".description");
+            String translation = user.getTranslationOrNothing(LEVEL_MATERIALS + key + DESCRIPTION);
             return translation != null ? translation : "";
         }
         if (object == null || !(object instanceof Enum<?>)) {
@@ -215,10 +213,10 @@ public class Utils
         String key = ((Enum<?>) object).name().toLowerCase();
 
         if (object instanceof Material) {
-            String translation = user.getTranslationOrNothing(LEVEL_MATERIALS + key + ".description");
+            String translation = user.getTranslationOrNothing(LEVEL_MATERIALS + key + DESCRIPTION);
             return translation != null ? translation : "";
         } else if (object instanceof EntityType) {
-            String translation = user.getTranslationOrNothing(ENTITIES + key + ".description");
+            String translation = user.getTranslationOrNothing(ENTITIES + key + DESCRIPTION);
             return translation != null ? translation : "";
         }
 

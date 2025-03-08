@@ -104,18 +104,33 @@ public class Level extends Addon {
     @Override
     public void allLoaded() {
         super.allLoaded();
-
         loadBlockSettings();
-        // Start pipeline
-        pipeliner = new Pipeliner(this);
-        // Start Manager
-        manager = new LevelsManager(this);
-        // Register listeners
-        this.registerListener(new IslandActivitiesListeners(this));
-        this.registerListener(new JoinLeaveListener(this));
-        this.registerListener(new MigrationListener(this));
+        initializePipelineAndManager();
+        registerAllListeners();
+        registerGameModeCommands();
+        registerRequestHandlers();
+        hookPlugin("WildStacker", this::hookWildStackers);
+        hookAdvancedChests();
+        hookPlugin("RoseStacker", this::hookRoseStackers);
+        hookPlugin("UltimateStacker", this::hookUltimateStacker);
 
-        // Register commands for GameModes
+        if (this.isEnabled()) {
+            hookExtensions();
+        }
+    }
+
+    private void initializePipelineAndManager() {
+        pipeliner = new Pipeliner(this);
+        manager = new LevelsManager(this);
+    }
+
+    private void registerAllListeners() {
+        registerListener(new IslandActivitiesListeners(this));
+        registerListener(new JoinLeaveListener(this));
+        registerListener(new MigrationListener(this));
+    }
+
+    private void registerGameModeCommands() {
         registeredGameModes.clear();
         getPlugin().getAddonsManager().getGameModeAddons().stream()
                 .filter(gm -> !settings.getGameModes().contains(gm.getDescription().getName())).forEach(gm -> {
@@ -124,26 +139,34 @@ public class Level extends Addon {
                     new PlaceholderManager(this).registerPlaceholders(gm);
                     registeredGameModes.add(gm);
                 });
-        // Register request handlers
+    }
+
+    private void registerRequestHandlers() {
         registerRequestHandler(new LevelRequestHandler(this));
         registerRequestHandler(new TopTenRequestHandler(this));
+    }
 
-        // Check if WildStackers is enabled on the server
-        // I only added support for counting blocks into the island level
-        // Someone else can PR if they want spawners added to the Leveling system :)
-        if (!settings.getDisabledPluginHooks().contains("WildStacker")) {
-            stackersEnabled = Bukkit.getPluginManager().isPluginEnabled("WildStacker");
-            if (stackersEnabled) {
-                log("Hooked into WildStackers.");
-            }
+    /**
+     * A helper that only executes the provided hookAction if the plugin is not disabled.
+     */
+    private void hookPlugin(String pluginName, Runnable hookAction) {
+        if (!settings.getDisabledPluginHooks().contains(pluginName)) {
+            hookAction.run();
         }
+    }
 
-        // Check if AdvancedChests is enabled on the server
+    private void hookWildStackers() {
+        stackersEnabled = Bukkit.getPluginManager().isPluginEnabled("WildStacker");
+        if (stackersEnabled) {
+            log("Hooked into WildStackers.");
+        }
+    }
+
+    private void hookAdvancedChests() {
         if (!settings.getDisabledPluginHooks().contains("AdvancedChests")) {
             Plugin advChest = Bukkit.getPluginManager().getPlugin("AdvancedChests");
             advChestEnabled = advChest != null;
             if (advChestEnabled) {
-                // Check version
                 if (compareVersions(advChest.getDescription().getVersion(), "23.0") > 0) {
                     log("Hooked into AdvancedChests.");
                 } else {
@@ -153,26 +176,20 @@ public class Level extends Addon {
                 }
             }
         }
+    }
 
-        // Check if RoseStackers is enabled
-        if (!settings.getDisabledPluginHooks().contains("RoseStacker")) {
-            roseStackersEnabled = Bukkit.getPluginManager().isPluginEnabled("RoseStacker");
-            if (roseStackersEnabled) {
-                log("Hooked into RoseStackers.");
-            }
+    private void hookRoseStackers() {
+        roseStackersEnabled = Bukkit.getPluginManager().isPluginEnabled("RoseStacker");
+        if (roseStackersEnabled) {
+            log("Hooked into RoseStackers.");
         }
+    }
 
-        // Check if UltimateStacker is enabled
-        if (!settings.getDisabledPluginHooks().contains("UltimateStacker")) {
-            ultimateStackerEnabled = Bukkit.getPluginManager().isPluginEnabled("UltimateStacker");
-            if (ultimateStackerEnabled) {
-                log("Hooked into UltimateStacker.");
-            }
+    private void hookUltimateStacker() {
+        ultimateStackerEnabled = Bukkit.getPluginManager().isPluginEnabled("UltimateStacker");
+        if (ultimateStackerEnabled) {
+            log("Hooked into UltimateStacker.");
         }
-
-		if (this.isEnabled()) {
-			this.hookExtensions();
-		}
 	}
 
 	/**
