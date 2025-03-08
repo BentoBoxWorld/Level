@@ -54,6 +54,7 @@ import world.bentobox.bentobox.util.Pair;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
 import world.bentobox.level.calculators.Results.Result;
+import world.bentobox.level.config.BlockConfig;
 
 public class IslandLevelCalculator {
     private static final String LINE_BREAK = "==================================";
@@ -567,7 +568,7 @@ public class IslandLevelCalculator {
                 value = Objects.requireNonNullElse(addon.getBlockConfig().getValue(island.getWorld(), md), 0);
                 name = Util.prettifyText(md.name());
             } else if (en.getElement() instanceof EntityType et) {
-                name = Util.prettifyText(et.name());
+                name = Util.prettifyText(et.name() + BlockConfig.SPAWNER);
                 value = Objects.requireNonNullElse(addon.getBlockConfig().getValue(island.getWorld(), et), 0);
             } else if (en.getElement() instanceof String str) {
                 name = str;

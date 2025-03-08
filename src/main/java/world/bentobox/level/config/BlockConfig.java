@@ -29,7 +29,7 @@ import world.bentobox.level.Level;
  */
 public class BlockConfig {
 
-    private static final String SPAWNER = "_spawner";
+    public static final String SPAWNER = "_spawner";
     private Map<String, Integer> blockLimits = new HashMap<>();
     private Map<String, Integer> blockValues = new HashMap<>();
     private final Map<World, Map<String, Integer>> worldBlockValues = new HashMap<>();
@@ -212,7 +212,7 @@ public class BlockConfig {
         }
         // Convert entity types to spawners
         if (obj instanceof EntityType) {
-            key.concat(SPAWNER);
+            key = key.concat(SPAWNER);
         }
 
         // Try to get the world-specific value first
