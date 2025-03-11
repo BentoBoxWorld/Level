@@ -3,22 +3,22 @@ package world.bentobox.level.panels;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.World;
-import org.bukkit.entity.EntityType;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.common.base.Enums;
 
-import lv.id.bonne.panelutils.PanelUtils;
 import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.TemplatedPanel;
@@ -26,6 +26,8 @@ import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;
 import world.bentobox.bentobox.api.panels.builders.TemplatedPanelBuilder;
 import world.bentobox.bentobox.api.panels.reader.ItemTemplateRecord;
 import world.bentobox.bentobox.api.user.User;
+import world.bentobox.bentobox.hooks.ItemsAdderHook;
+import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
 import world.bentobox.level.util.ConversationUtils;
 import world.bentobox.level.util.Utils;
@@ -62,7 +64,7 @@ public class ValuePanel
         VALUE_DESC,
     }
 
-    private record BlockRecord(Object keyl, Integer value, Integer limit) {
+    private record BlockRecord(String keyl, Integer value, Integer limit) {
     }
 
     // ---------------------------------------------------------------------
@@ -70,8 +72,6 @@ public class ValuePanel
     // ---------------------------------------------------------------------
 
     private static final String BLOCK = "BLOCK";
-
-    private static final String SPAWNER = "_SPAWNER";
 
     // ---------------------------------------------------------------------
     // Section: Variables
@@ -95,7 +95,7 @@ public class ValuePanel
     /**
      * This variable stores the list of elements to display.
      */
-    private final List<BlockRecord> blockRecordList;
+    private final List<BlockRecord> blockRecordList = new ArrayList<>();
 
     /**
      * This variable stores the list of elements to display.
@@ -134,32 +134,12 @@ public class ValuePanel
 
         this.activeFilter = Filter.NAME_ASC;
 
-        this.blockRecordList = Arrays.stream(Material.values()).
-                filter(Material::isBlock).
-                filter(Material::isItem). // Remove things like PITCHER_CROP
-                filter(m -> !m.name().startsWith("LEGACY_")).
-                filter(this.addon.getBlockConfig()::isNotHiddenBlock).
-                map(material ->
-                {
-                    Integer value = this.addon.getBlockConfig().getValue(this.world, material);
-                    Integer limit = this.addon.getBlockConfig().getLimit(material);
+        addon.getBlockConfig().getBlockValues().entrySet().stream().filter(en -> this.getIcon(en.getKey()) != null)
+                .forEach(en -> blockRecordList
+                        .add(new BlockRecord(en.getKey(), Objects.requireNonNullElse(en.getValue(), 0),
+                                Objects.requireNonNullElse(addon.getBlockConfig().getLimit(en.getKey()), 0))));
 
-                    return new BlockRecord(material,
-                            value != null ? value : 0,
-                                    limit != null ? limit : 0);
-                }).
-                collect(Collectors.toList());
-        // Add spawn eggs
-        this.blockRecordList.addAll(Arrays.stream(EntityType.values()).filter(EntityType::isSpawnable)
-                .filter(EntityType::isAlive)
-                .filter(this.addon.getBlockConfig()::isNotHiddenBlock).map(et -> {
-                    Integer value = this.addon.getBlockConfig().getValue(this.world, et);
-                    Integer limit = this.addon.getBlockConfig().getLimit(et);
-
-                    return new BlockRecord(et, value != null ? value : 0, limit != null ? limit : 0);
-                }).collect(Collectors.toList()));
-
-        this.elementList = new ArrayList<>(Material.values().length);
+        this.elementList = new ArrayList<>();
         this.searchText = "";
 
         this.updateFilters();
@@ -264,9 +244,8 @@ public class ValuePanel
 
             this.blockRecordList.forEach(rec ->
             {
-                if (rec.keyl.toString().toLowerCase().contains(text)
-                        ||
-                        Utils.prettifyObject(rec.keyl(), this.user).toLowerCase().contains(text))
+                if (rec.keyl.toLowerCase(Locale.ENGLISH).contains(text)
+                        || Utils.prettifyObject(rec.keyl(), this.user).toLowerCase().contains(text))
                 {
                     this.elementList.add(rec);
                 }
@@ -684,163 +663,77 @@ public class ValuePanel
         return this.createMaterialButton(template, this.elementList.get(index));
     }
 
+    private Material getIcon(String key) {
+        Material icon = Registry.MATERIAL.get(NamespacedKey.fromString(key));
+        if (icon == null && key.endsWith("_spawner")) {
+            icon = Registry.MATERIAL.get(NamespacedKey.fromString(key.substring(0, key.length() - 2) + "_egg"));
+        }
+        if (icon == null && addon.isItemsAdder() && ItemsAdderHook.isInRegistry(key)) {
+            icon = ItemsAdderHook.getItemStack(key).map(ItemStack::getType).orElse(null);
+        }
+        if (icon != null && icon.isItem()) {
+            return icon;
+        }
+        return null;
+    }
+
     /**
-     * This method creates button for block.
+     * Creates a material button based on the provided template and block record.
      *
-     * @param template      the template of the button
-     * @param blockCount  count
-     * @return PanelItem button
+     * @param template  The button template.
+     * @param blockCount  The block record containing count details.
+     * @return The created PanelItem button.
      */
     private PanelItem createMaterialButton(ItemTemplateRecord template, BlockRecord blockCount) {
         PanelItemBuilder builder = new PanelItemBuilder();
+        final String baseKey = "level.gui.buttons.material.";
 
-        if (template.icon() != null) {
-            builder.icon(template.icon().clone());
-        }
-        // Show amount if less than 64.
-        if (blockCount.value() < 64) {
-            builder.amount(blockCount.value());
-        }
+        // Extract values from blockCount
+        String key = blockCount.keyl();
+        int blockValue = blockCount.value();
+        int blockLimit = blockCount.limit();
+        double underwaterMultiplier = this.addon.getSettings().getUnderWaterMultiplier();
 
-        final String reference = "level.gui.buttons.material.";
-        Object key = blockCount.keyl();
+        // Build translation strings
+        String blockId = user.isOp() ? this.user.getTranslationOrNothing(baseKey + "id", "[id]", key) : "";
         String description = Utils.prettifyDescription(key, this.user);
-        String blockId = "";
-        int blockValue = 0;
-        int blockLimit = 0;
-        String value = "";
-        String limit = "";
-        String displayMaterial = Utils.prettifyObject(key, this.user);
+        String valueTranslation = this.user.getTranslationOrNothing(baseKey + "value", TextVariables.NUMBER,
+                String.valueOf(blockValue));
+        String limitTranslation = blockLimit > 0
+                ? this.user.getTranslationOrNothing(baseKey + "limit", TextVariables.NUMBER, String.valueOf(blockLimit))
+                : "";
 
-        if (key instanceof Material m) {
-            // Material-specific settings.
-            builder.icon(PanelUtils.getMaterialItem(m));
-            blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", m.name());
-            blockValue = this.addon.getBlockConfig().getBlockValues().getOrDefault(m, 0);
-            blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(m), 0);
-        } else if (key instanceof EntityType e) {
-            // EntityType-specific settings.
-            builder.icon(PanelUtils.getEntityEgg(e));
-            description += this.user.getTranslation(this.world, "level.gui.buttons.spawner.block-name"); // Put spawner on the end
-            blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", e.name().concat(SPAWNER));
-            blockValue = this.addon.getBlockConfig().getSpawnerValues().getOrDefault(e, 0);
-            blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(e), 0);
+        // Determine icon and display material text
+        Material icon = getIcon(key);
+        builder.icon((icon == null || icon == Material.AIR) ? Material.PAPER : icon);
+
+        String displayMaterial = (icon == null) ? Util.prettifyText(key) : Utils.prettifyObject(icon, user);
+        // Special handling for spawn eggs
+        if (icon != null && icon.name().endsWith("_SPAWN_EGG")) {
+            displayMaterial = Util.prettifyText(key);
         }
 
+        // Set button title if available
         if (template.title() != null) {
             builder.name(this.user.getTranslation(this.world, template.title(), TextVariables.NUMBER,
-                    String.valueOf(blockCount.value()), "[material]", displayMaterial));
+                    String.valueOf(blockValue), "[material]", displayMaterial));
         }
 
-        value = blockValue > 0
-                ? this.user.getTranslationOrNothing(reference + "value", TextVariables.NUMBER,
-                        String.valueOf(blockValue))
-                : "";
-        limit = blockLimit > 0
-                ? this.user.getTranslationOrNothing(reference + "limit", TextVariables.NUMBER,
-                        String.valueOf(blockLimit))
-                : "";
+        // Calculate underwater value if applicable
+        String underWater = underwaterMultiplier != 1.0 ? this.user.getTranslationOrNothing(baseKey + "underwater",
+                TextVariables.NUMBER, String.valueOf(blockValue * underwaterMultiplier)) : "";
 
-        // Hide block ID unless user is an operator.
-        if (!user.isOp()) {
-            blockId = "";
-        }
-        String underWater;
-
-        if (this.addon.getSettings().getUnderWaterMultiplier() > 1.0) {
-            underWater = this.user.getTranslationOrNothing(reference + "underwater", TextVariables.NUMBER,
-                    String.valueOf(blockCount.value() * this.addon.getSettings().getUnderWaterMultiplier()));
-        } else {
-            underWater = "";
-        }
+        // Set button description if provided
         if (template.description() != null) {
-            builder.description(this.user
+            String translatedDescription = this.user
                     .getTranslation(this.world, template.description(), "[description]", description, "[id]", blockId,
-                            "[value]", value, "[underwater]", underWater, "[limit]", limit)
-                    .replaceAll("(?m)^[ \\t]*\\r?\\n", "").replaceAll("(?<!\\\\)\\|", "\n").replace("\\\\\\|", "|")); // Non regex
+                            "[value]", valueTranslation, "[underwater]", underWater, "[limit]", limitTranslation)
+                    .replaceAll("(?m)^[ \\t]*\\r?\\n", "").replaceAll("(?<!\\\\)\\|", "\n").replace("\\\\\\|", "|");
+            builder.description(translatedDescription);
         }
 
         return builder.build();
     }
-
-    /**
-     * This method creates button for material.
-     *
-     * @param template the template of the button
-     * @param materialRecord materialRecord which button must be created.
-     * @return PanelItem for generator tier.
-     */
-    /*
-    private PanelItem createMaterialButton(ItemTemplateRecord template,
-            MaterialRecord materialRecord)
-    {
-        PanelItemBuilder builder = new PanelItemBuilder();
-    
-        if (template.icon() != null)
-        {
-            builder.icon(template.icon().clone());
-        }
-        else
-        {
-            builder.icon(PanelUtils.getMaterialItem(materialRecord.material()));
-        }
-    
-        if (materialRecord.value() <= 64 && materialRecord.value() > 0)
-        {
-            builder.amount(materialRecord.value());
-        }
-    
-        if (template.title() != null)
-        {
-            builder.name(this.user.getTranslation(this.world, template.title(),
-                    "[material]", Utils.prettifyObject(materialRecord.material(), this.user)));
-        }
-    
-        String description = Utils.prettifyDescription(materialRecord.material(), this.user);
-    
-        final String reference = "level.gui.buttons.material.";
-        String blockId = this.user.getTranslationOrNothing(reference + "id",
-                "[id]", materialRecord.material().name());
-    
-        String value = this.user.getTranslationOrNothing(reference + "value",
-                TextVariables.NUMBER, String.valueOf(materialRecord.value()));
-    
-        String underWater;
-    
-        if (this.addon.getSettings().getUnderWaterMultiplier() > 1.0)
-        {
-            underWater = this.user.getTranslationOrNothing(reference + "underwater",
-                    TextVariables.NUMBER, String.valueOf(materialRecord.value() * this.addon.getSettings().getUnderWaterMultiplier()));
-        }
-        else
-        {
-            underWater = "";
-        }
-    
-        String limit = materialRecord.limit() > 0 ? this.user.getTranslationOrNothing(reference + "limit",
-                TextVariables.NUMBER,  String.valueOf(materialRecord.limit())) : "";
-    
-        if (template.description() != null)
-        {
-            builder.description(this.user.getTranslation(this.world, template.description(),
-                    "[description]", description,
-                    "[id]", blockId,
-                    "[value]", value,
-                    "[underwater]", underWater,
-                    "[limit]", limit).
-                    replaceAll("(?m)^[ \\t]*\\r?\\n", "").
-                    replaceAll("(?<!\\\\)\\|", "\n").
-                    replace("\\\\\\|", "|")); // Non regex
-        }
-    
-        builder.clickHandler((panel, user1, clickType, i) -> {
-            addon.log("Material: " + materialRecord.material());
-            return true;
-        });
-    
-        return builder.build();
-    }*/
-
 
     // ---------------------------------------------------------------------
     // Section: Other Methods

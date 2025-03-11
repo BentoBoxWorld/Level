@@ -168,6 +168,8 @@ public class IslandLevels implements DataObject {
      * @return the uwCount
      */
     public Map<Object, Integer> getUwCount() {
+        // Loaded objects come in as strings, so need to be converted to Material Or EntityTypes
+        uwCount = convertMap(uwCount);
         return uwCount;
     }
 
@@ -176,9 +178,6 @@ public class IslandLevels implements DataObject {
      * @param map the uwCount to set
      */
     public void setUwCount(Map<Object, Integer> map) {
-        // Loaded objects come in as strings, so need to be converted to Material Or EntityTypes
-        uwCount = convertMap(uwCount);
-
         this.uwCount = map;
     }
 
@@ -192,15 +191,14 @@ public class IslandLevels implements DataObject {
         return mdCount;
     }
 
-    private Map<Object, Integer> convertMap(Map<Object, Integer> mdCount) {
+    private Map<Object, Integer> convertMap(Map<Object, Integer> blockCountMap) {
         Map<Object, Integer> convertedMap = new HashMap<>();
 
-        for (Map.Entry<Object, Integer> entry : mdCount.entrySet()) {
+        for (Map.Entry<Object, Integer> entry : blockCountMap.entrySet()) {
             Object key = entry.getKey();
             Integer value = entry.getValue();
 
-            if (key instanceof String) {
-                String keyStr = (String) key;
+            if (key instanceof String keyStr) {
                 // First, try converting to Material
                 Material material = Material.matchMaterial(keyStr);
                 if (material != null) {

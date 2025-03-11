@@ -28,6 +28,7 @@ import world.bentobox.bentobox.api.panels.builders.TemplatedPanelBuilder;
 import world.bentobox.bentobox.api.panels.reader.ItemTemplateRecord;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.level.Level;
 import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.util.Utils;
@@ -218,10 +219,13 @@ public class DetailsPanel {
         if (this.activeTab == Tab.SPAWNER) {
             if (this.addon.getBlockConfig().isNotHiddenBlock(Material.SPAWNER)) {
                 Map<EntityType, Integer> spawnerCountMap = new EnumMap<>(EntityType.class);
+
                 spawnerCountMap = this.levelsData.getMdCount().entrySet().stream()
                         .filter(en -> en.getKey() instanceof EntityType)
                         .collect(Collectors.toMap(en -> (EntityType) en.getKey(), Map.Entry::getValue));
-
+                spawnerCountMap.putAll(
+                        this.levelsData.getUwCount().entrySet().stream().filter(en -> en.getKey() instanceof EntityType)
+                                .collect(Collectors.toMap(en -> (EntityType) en.getKey(), Map.Entry::getValue)));
                 spawnerCountMap.entrySet().stream().sorted((Map.Entry.comparingByKey())).forEachOrdered(entry -> {
                     if (entry.getValue() > 0) {
                         this.blockCountList.add(new BlockRec(entry.getKey(), entry.getValue(), 0));
@@ -633,84 +637,99 @@ public class DetailsPanel {
         return this.createMaterialButton(template, this.blockCountList.get(index));
     }
 
-    /**
-     * This method creates button for block.
-     *
-     * @param template      the template of the button
-     * @param blockCount  count
-     * @return PanelItem button
-     */
     private PanelItem createMaterialButton(ItemTemplateRecord template, BlockRec blockCount) {
         PanelItemBuilder builder = new PanelItemBuilder();
 
+        // Set icon and amount based on the template and block count.
         if (template.icon() != null) {
             builder.icon(template.icon().clone());
         }
-        // Show amount if less than 64.
         if (blockCount.value() < 64) {
             builder.amount(blockCount.value());
         }
 
-        final String reference = "level.gui.buttons.material.";
-        Object key = blockCount.key();
-        String description = Utils.prettifyDescription(key, this.user);
-        String blockId = "";
-        int blockValue = 0;
-        int blockLimit = 0;
-        String value = "";
-        String limit = "";
-        String displayMaterial = Utils.prettifyObject(key, this.user);
+        final String ref = "level.gui.buttons.material.";
+        BlockDataRec d = getBlockData(blockCount.key());
 
-        if (key instanceof Material m) {
-            // Material-specific settings.
-            builder.icon(PanelUtils.getMaterialItem(m));
-            blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", m.name());
-            blockValue = this.addon.getBlockConfig().getBlockValues().getOrDefault(m, 0);
-            blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(m), 0);
-        } else if (key instanceof EntityType e) {
-            // EntityType-specific settings.
-            builder.icon(PanelUtils.getEntityEgg(e));
-            description += this.user.getTranslation(this.world, "level.gui.buttons.spawner.block-name"); // Put spawner on the end
-            blockId = this.user.getTranslationOrNothing(reference + "id", "[id]", e.name().concat(SPAWNER));
-            blockValue = this.addon.getBlockConfig().getSpawnerValues().getOrDefault(e, 0);
-            blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(e), 0);
+        // Override icon from block data if available.
+        if (d.icon() != null) {
+            builder.icon(d.icon());
         }
 
+        // Set name using the title translation if provided.
         if (template.title() != null) {
             builder.name(this.user.getTranslation(this.world, template.title(), TextVariables.NUMBER,
-                    String.valueOf(blockCount.value()), "[material]", displayMaterial));
+                    String.valueOf(blockCount.value()), "[material]", d.displayMaterial()));
         }
 
-        value = blockValue > 0
-                ? this.user.getTranslationOrNothing(reference + "value", TextVariables.NUMBER,
-                        String.valueOf(blockValue))
-                : "";
-        limit = blockLimit > 0
-                ? this.user.getTranslationOrNothing(reference + "limit", TextVariables.NUMBER,
-                        String.valueOf(blockLimit))
-                : "";
-
-        String count = this.user.getTranslationOrNothing(reference + "count", TextVariables.NUMBER,
-                String.valueOf(blockCount.value()));
-
-        long calculatedValue = (long) Math.min(blockLimit > 0 ? blockLimit : Integer.MAX_VALUE,
-                blockCount.value()) * blockValue;
-        String valueText = calculatedValue > 0 ? this.user.getTranslationOrNothing(reference + "calculated",
-                TextVariables.NUMBER, String.valueOf(calculatedValue)) : "";
-
-        // Hide block ID unless user is an operator.
-        if (!user.isOp()) {
-            blockId = "";
-        }
+        // Build and set description if provided.
         if (template.description() != null) {
-            builder.description(this.user
-                    .getTranslation(this.world, template.description(), "[description]", description, "[id]", blockId,
-                            "[value]", value, "[calculated]", valueText, "[limit]", limit, "[count]", count)
-                    .replaceAll("(?m)^[ \\t]*\\r?\\n", "").replaceAll("(?<!\\\\)\\|", "\n").replace("\\\\\\|", "|"));
+            String description = buildDescription(template.description(), blockCount, d, ref);
+            builder.description(description);
         }
 
         return builder.build();
     }
+
+    private String buildDescription(String descriptionTemplate, BlockRec blockCount, BlockDataRec d, String ref) {
+        String desc = Utils.prettifyDescription(blockCount.key(), this.user) + d.extraDesc();
+        String id = this.user.isOp() ? d.blockId() : "";
+        String value = d.blockValue() > 0
+                ? this.user.getTranslationOrNothing(ref + "value", TextVariables.NUMBER, String.valueOf(d.blockValue()))
+                : "";
+
+        long calculatedRaw = (long) Math.min(d.blockLimit() > 0 ? d.blockLimit() : Integer.MAX_VALUE,
+                blockCount.value()) * d.blockValue();
+        String calculated = calculatedRaw > 0
+                ? this.user.getTranslationOrNothing(ref + "calculated", TextVariables.NUMBER,
+                        String.valueOf(calculatedRaw))
+                : "";
+
+        String limit = d.blockLimit() > 0
+                ? this.user.getTranslationOrNothing(ref + "limit", TextVariables.NUMBER, String.valueOf(d.blockLimit()))
+                : "";
+
+        String count = this.user.getTranslationOrNothing(ref + "count", TextVariables.NUMBER,
+                String.valueOf(blockCount.value()));
+
+        String translated = this.user.getTranslation(this.world, descriptionTemplate, "[description]", desc, "[id]", id,
+                "[value]", value, "[calculated]", calculated, "[limit]", limit, "[count]", count);
+
+        return translated.replaceAll("(?m)^[ \\t]*\\r?\\n", "").replaceAll("(?<!\\\\)\\|", "\n").replace("\\\\\\|",
+                "|");
+    }
+
+    private record BlockDataRec(ItemStack icon, String blockId, int blockValue, int blockLimit, String displayMaterial,
+            String extraDesc) {
+    }
+
+    private BlockDataRec getBlockData(Object key) {
+        final String ref = "level.gui.buttons.material.";
+        if (key instanceof Material m) {
+            return new BlockDataRec(PanelUtils.getMaterialItem(m),
+                    this.user.getTranslationOrNothing(ref + "id", "[id]", m.name()),
+                    Objects.requireNonNullElse(this.addon.getBlockConfig().getValue(world, m), 0),
+                    Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(m), 0),
+                    Utils.prettifyObject(key, this.user), "");
+        } else if (key instanceof EntityType e) {
+            return new BlockDataRec(PanelUtils.getEntityEgg(e),
+                    this.user.getTranslationOrNothing(ref + "id", "[id]", e.name().concat(SPAWNER)),
+                    Objects.requireNonNullElse(this.addon.getBlockConfig().getValue(world, e), 0),
+                    Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(e), 0),
+                    Utils.prettifyObject(key, this.user),
+                    this.user.getTranslation(this.world, "level.gui.buttons.spawner.block-name"));
+        } else if (key instanceof String s && addon.isItemsAdder()) {
+            Optional<ItemStack> opt = ItemsAdderHook.getItemStack(s);
+            ItemStack icon = opt.orElse(new ItemStack(Material.PAPER));
+            String disp = opt.filter(is -> is.getItemMeta().hasDisplayName())
+                    .map(is -> is.getItemMeta().getDisplayName()).orElse(Utils.prettifyObject(key, this.user));
+            return new BlockDataRec(icon, this.user.getTranslationOrNothing(ref + "id", "[id]", s),
+                    this.addon.getBlockConfig().getBlockValues().getOrDefault(s, 0),
+                    Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(s), 0), disp, "");
+        }
+        return new BlockDataRec(null, "", 0, 0, Utils.prettifyObject(key, this.user), "");
+    }
+
 
     // ---------------------------------------------------------------------
     // Section: Other Methods
