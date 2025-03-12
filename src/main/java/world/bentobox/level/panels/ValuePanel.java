@@ -135,6 +135,7 @@ public class ValuePanel
         this.activeFilter = Filter.NAME_ASC;
 
         addon.getBlockConfig().getBlockValues().entrySet().stream().filter(en -> this.getIcon(en.getKey()) != null)
+                .filter(en -> addon.getBlockConfig().isNotHiddenBlock(en.getKey()))
                 .forEach(en -> blockRecordList
                         .add(new BlockRecord(en.getKey(), Objects.requireNonNullElse(en.getValue(), 0),
                                 Objects.requireNonNullElse(addon.getBlockConfig().getLimit(en.getKey()), 0))));

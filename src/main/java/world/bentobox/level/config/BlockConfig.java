@@ -238,7 +238,9 @@ public class BlockConfig {
      * @return true if hidden
      */
     public boolean isHiddenBlock(Object obj) {
-        if (obj instanceof Material m) {
+        if (obj instanceof String s) {
+            return hiddenBlocks.contains(s);
+        } else if (obj instanceof Material m) {
             return hiddenBlocks.contains(m.name());
         }
         return hiddenBlocks.contains(Material.SPAWNER.name());
@@ -250,11 +252,7 @@ public class BlockConfig {
      * @return false if hidden
      */
     public boolean isNotHiddenBlock(Object obj) {
-        if (obj instanceof Material m) {
-            return !hiddenBlocks.contains(m.name());
-        } else {
-            return !hiddenBlocks.contains(Material.SPAWNER.name());
-        }
+        return !isHiddenBlock(obj);
     }
 
     /**
