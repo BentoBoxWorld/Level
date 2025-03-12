@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.inventory.ClickType;
@@ -699,6 +700,14 @@ public class DetailsPanel {
                 "|");
     }
 
+    /**
+     * Block data record
+     * @param icon - itemstack
+     * @param blockId - Block ID string
+     * @param blockValue - int value
+     * @param displayMaterial - user friendly name
+     * @param extraDesc - extra description
+     */
     private record BlockDataRec(ItemStack icon, String blockId, int blockValue, int blockLimit, String displayMaterial,
             String extraDesc) {
     }
@@ -706,6 +715,9 @@ public class DetailsPanel {
     private BlockDataRec getBlockData(Object key) {
         final String ref = "level.gui.buttons.material.";
         if (key instanceof Material m) {
+            if (!m.isItem()) {
+                m = convertItem(m);
+            }
             return new BlockDataRec(PanelUtils.getMaterialItem(m),
                     this.user.getTranslationOrNothing(ref + "id", "[id]", m.name()),
                     Objects.requireNonNullElse(this.addon.getBlockConfig().getValue(world, m), 0),
@@ -727,13 +739,79 @@ public class DetailsPanel {
                     this.addon.getBlockConfig().getBlockValues().getOrDefault(s, 0),
                     Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(s), 0), disp, "");
         }
-        return new BlockDataRec(null, "", 0, 0, Utils.prettifyObject(key, this.user), "");
+        return new BlockDataRec(new ItemStack(Material.PAPER), "", 0, 0, Utils.prettifyObject(key, this.user), "");
     }
 
 
     // ---------------------------------------------------------------------
     // Section: Other Methods
     // ---------------------------------------------------------------------
+
+    private Material convertItem(Material m) {
+        if (Tag.CROPS.isTagged(m)) {
+            return Material.FARMLAND;
+        }
+        if (Tag.CANDLE_CAKES.isTagged(m)) {
+            return Material.CAKE;
+        }
+        if (Tag.CAULDRONS.isTagged(m)) {
+            return Material.CAULDRON;
+        }
+        if (Tag.FLOWER_POTS.isTagged(m)) {
+            return Material.FLOWER_POT;
+        }
+        if (Tag.SNOW.isTagged(m)) {
+            return Material.SNOW_BLOCK;
+        }
+        if (Tag.WALL_CORALS.isTagged(m)) {
+            // Wall corals end in _WALL_FAN
+            return Objects.requireNonNullElse(Material.getMaterial(m.name().substring(0, m.name().length() - 9)),
+                    Material.BRAIN_CORAL);
+        }
+        if (Tag.WALL_SIGNS.isTagged(m)) {
+            // Wall signs end in _WALL_SIGN 
+            return Objects.requireNonNullElse(
+                    Material.getMaterial(m.name().substring(0, m.name().length() - 10) + "_SIGN"), Material.OAK_SIGN);
+        }
+        if (Tag.WALL_HANGING_SIGNS.isTagged(m)) {
+            // Wall signs end in _HANGING_WALL_SIGN 
+            return Objects.requireNonNullElse(
+                    Material.getMaterial(m.name().substring(0, m.name().length() - 18) + "_SIGN"), Material.OAK_SIGN);
+        }
+
+        return switch (m) {
+        case WATER -> Material.WATER_BUCKET;
+        case LAVA -> Material.LAVA_BUCKET;
+        case TRIPWIRE -> Material.TRIPWIRE_HOOK;
+        case PISTON_HEAD, MOVING_PISTON -> Material.PISTON;
+        case TALL_SEAGRASS -> Material.SEAGRASS;
+        case FIRE, SOUL_FIRE -> Material.FLINT_AND_STEEL;
+        case REDSTONE_WIRE -> Material.REDSTONE;
+        case WALL_TORCH, REDSTONE_WALL_TORCH, SOUL_WALL_TORCH -> Material.TORCH;
+        case NETHER_PORTAL, END_PORTAL, END_GATEWAY -> Material.ENDER_PEARL;
+        case ATTACHED_PUMPKIN_STEM, ATTACHED_MELON_STEM, PUMPKIN_STEM, MELON_STEM -> Material.PUMPKIN_SEEDS;
+        case COCOA -> Material.COCOA_BEANS;
+        case FROSTED_ICE -> Material.ICE;
+        case WATER_CAULDRON, LAVA_CAULDRON, POWDER_SNOW_CAULDRON -> Material.CAULDRON;
+        case SKELETON_WALL_SKULL, WITHER_SKELETON_WALL_SKULL, ZOMBIE_WALL_HEAD, PLAYER_WALL_HEAD, CREEPER_WALL_HEAD,
+                DRAGON_WALL_HEAD, PIGLIN_WALL_HEAD ->
+            Material.SKELETON_SKULL;
+        case SWEET_BERRY_BUSH -> Material.SWEET_BERRIES;
+        case WEEPING_VINES_PLANT, TWISTING_VINES_PLANT -> Material.VINE;
+        case CAVE_VINES, CAVE_VINES_PLANT -> Material.GLOW_BERRIES;
+        case BIG_DRIPLEAF_STEM -> Material.BIG_DRIPLEAF;
+        case BAMBOO_SAPLING, POTTED_BAMBOO -> Material.BAMBOO;
+        case CARROTS -> Material.CARROT;
+        case POTATOES -> Material.POTATO;
+        case BEETROOTS -> Material.BEETROOT;
+        case TORCHFLOWER_CROP -> Material.TORCHFLOWER_SEEDS;
+        case PITCHER_CROP -> Material.PITCHER_PLANT;
+        case VOID_AIR, CAVE_AIR, BUBBLE_COLUMN -> Material.GLASS_BOTTLE;
+        case KELP_PLANT -> Material.KELP;
+        case POWDER_SNOW -> Material.SNOWBALL;
+        default -> Material.PAPER;
+        };
+    }
 
     /**
      * This method is used to open UserPanel outside this class. It will be much
