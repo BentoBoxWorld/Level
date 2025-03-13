@@ -4,7 +4,7 @@ admin:
     parameters: "<Spieler>"
     description: Berechne das Insel Level für den Spieler
   levelstatus:
-    islands-in-queue: "& a Inseln in der Warteschlange: [number]"
+    islands-in-queue: "&aInseln in der Warteschlange: [number]"
   top:
     description: Zeige die Top-10 Liste
     unknown-world: "&cUnbekannte Welt!"
@@ -17,8 +17,8 @@ island:
     parameters: "[Spieler]"
     description: Berechne dein Insel Level oder zeige das Level von [Spieler]
     calculating: "&aBerechne Level..."
-    estimated-wait: "& a Geschätzte Wartezeit: [number] Sekunden"
-    in-queue: "& a Sie sind Nummer [number] in der Warteschlange"
+    estimated-wait: "&aGeschätzte Wartezeit: [number] Sekunden"
+    in-queue: "&aSie sind Nummer [number] in der Warteschlange"
     island-level-is: "&aInsel Level:  &b[level]"
     required-points-to-next-level: "&a[points] Punkte werden für das nächste Level
       benötigt"
@@ -29,13 +29,13 @@ island:
     gui-title: "&aTop Zehn"
     gui-heading: "&6[name]: &B[rank]"
     island-level: "&BLevel [level]"
-    warp-to: "&ATeleportiere zu  [name]'s Insel"
+    warp-to: "&aTeleportiere zu  [name]'s Insel"
   level-details:
     above-sea-level-blocks: Blöcke über dem Meeresspiegel
     spawners: Spawner
     underwater-blocks: Unterwasserblöcke
     all-blocks: Alle Blöcke
-    no-island: "&c Keine Insel!"
+    no-island: "&cKeine Insel!"
   value:
     description: Zeige den Wert jedes Blockes
     success: "&7Wert: &e[value]"
