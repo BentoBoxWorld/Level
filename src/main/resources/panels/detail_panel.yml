@@ -136,7 +136,7 @@ detail_panel:
         # CustomPotionColor uses the Decimal description of a Color, just as leather armor does.
         # All you need to do is take a hex code of a color (like #ff00aa) which represents red, 
         # green, blue as 2 hex digits each and convert that number into a decimal, using a hex to decimal calculator. 
-        icon: tipped_arrow{CustomPotionColor:11546150}
+        icon: tipped_arrow[potion_contents={custom_color:11546150}]
         title: level.gui.buttons.previous.name
         description: level.gui.buttons.previous.description
         data:
@@ -154,7 +154,7 @@ detail_panel:
       7: material_button
       8: material_button
       9:
-        icon: tipped_arrow{CustomPotionColor:8439583}
+        icon: tipped_arrow[potion_contents={custom_color:8439583}]
         title: level.gui.buttons.next.name
         description: level.gui.buttons.next.description
         data:
