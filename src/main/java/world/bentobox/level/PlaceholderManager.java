@@ -8,7 +8,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.bukkit.World;
+import org.bukkit.Material;
 import org.eclipse.jdt.annotation.Nullable;
+import org.bukkit.Bukkit;
 
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.addons.GameModeAddon;
@@ -97,6 +99,87 @@ public class PlaceholderManager {
         // Personal rank
         bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_rank_value",
                 u -> getRankValue(gm.getOverWorld(), u));
+
+        // Register mainhand placeholders
+        bpm.registerPlaceholder(addon,
+            gm.getDescription().getName().toLowerCase() + "_island_value_mainhand",
+            user -> {
+                if (user.getPlayer() == null || !user.getPlayer().getInventory().getItemInMainHand().getType().isBlock()) {
+                    return "0";
+                }
+                String blockName = user.getPlayer().getInventory().getItemInMainHand().getType().getKey().getKey();
+                return String.valueOf(Objects.requireNonNullElse(
+                    addon.getBlockConfig().getValue(gm.getOverWorld(), blockName),
+                    0
+                ));
+            }
+        );
+        
+        bpm.registerPlaceholder(addon,
+            gm.getDescription().getName().toLowerCase() + "_island_count_mainhand",
+            user -> {
+                if (user.getPlayer() == null || !user.getPlayer().getInventory().getItemInMainHand().getType().isBlock()) {
+                    return "0";
+                }
+                Material material = user.getPlayer().getInventory().getItemInMainHand().getType();
+                return getBlockCount(gm, user, material);
+            }
+        );
+
+        // Register looking at block placeholders
+        bpm.registerPlaceholder(addon,
+            gm.getDescription().getName().toLowerCase() + "_island_value_looking",
+            user -> {
+                if (user.getPlayer() == null) return "0";
+                var targetBlock = user.getPlayer().getTargetBlock(null, 5);
+                if (targetBlock != null && !targetBlock.getType().isAir()) {
+                    String blockName = targetBlock.getType().getKey().getKey();
+                    return String.valueOf(Objects.requireNonNullElse(
+                        addon.getBlockConfig().getValue(gm.getOverWorld(), blockName),
+                        0
+                    ));
+                }
+                return "0";
+            }
+        );
+
+        bpm.registerPlaceholder(addon,
+            gm.getDescription().getName().toLowerCase() + "_island_count_looking",
+            user -> {
+                if (user.getPlayer() == null) return "0";
+                var targetBlock = user.getPlayer().getTargetBlock(null, 5);
+                if (targetBlock != null && !targetBlock.getType().isAir()) {
+                    return getBlockCount(gm, user, targetBlock.getType());
+                }
+                return "0";
+            }
+        );
+
+        // Register placeholders for all block materials
+        if (Bukkit.getServer() != null) {
+            // Get all materials from the block config
+            addon.getBlockConfig().getBlockValues().keySet().forEach(blockName -> {
+                String formattedName = blockName.replace(':', '_').toLowerCase();
+
+                // Register value placeholder
+                bpm.registerPlaceholder(addon,
+                    gm.getDescription().getName().toLowerCase() + "_island_value_" + formattedName,
+                    user -> String.valueOf(Objects.requireNonNullElse(
+                        addon.getBlockConfig().getValue(gm.getOverWorld(), blockName),
+                        0
+                    ))
+                );
+
+                // Register count placeholder
+                bpm.registerPlaceholder(addon,
+                    gm.getDescription().getName().toLowerCase() + "_island_count_" + formattedName,
+                    user -> {
+                        Material material = Material.valueOf(blockName.toUpperCase());
+                        return getBlockCount(gm, user, material);
+                    }
+                );
+            });
+        }
     }
 
     /**
@@ -218,6 +301,45 @@ public class PlaceholderManager {
         return addon.getIslands().getIslandAt(user.getLocation())
                 .map(island -> addon.getManager().getIslandLevelString(gm.getOverWorld(), island.getOwner()))
                 .orElse("0");
+    }
+
+    /**
+     * Gets the block count for a specific material in a user's island
+     * @param gm GameModeAddon
+     * @param user User requesting the count
+     * @param material Material to count
+     * @return String representation of the count
+     */
+    private String getBlockCount(GameModeAddon gm, User user, Object material) {
+        if (user == null) {
+            return "0";
+        }
+        return getBlockCountForUser(gm, user, material);
+    }
+
+    /**
+     * Gets the block count for a specific material in a user's island
+     * @param gm GameModeAddon
+     * @param user User to get count for
+     * @param material Material to count
+     * @return String representation of the count
+     */
+    private String getBlockCountForUser(GameModeAddon gm, User user, Object material) {
+        // Get the island for the user
+        Island island = addon.getIslands().getIsland(gm.getOverWorld(), user);
+        if (island == null) {
+            return "0";
+        }
+
+        // Get the level data for the island
+        IslandLevels data = addon.getManager().getLevelsData(island);
+        if (data == null) {
+            return "0";
+        }
+
+        // Get the total count from both above sea level and underwater
+        int count = data.getMdCount().getOrDefault(material, 0) + data.getUwCount().getOrDefault(material, 0);
+        return String.valueOf(count);
     }
 
 }
