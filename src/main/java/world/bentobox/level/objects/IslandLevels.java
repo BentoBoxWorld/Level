@@ -38,8 +38,14 @@ public class IslandLevels implements DataObject {
     /**
      * Initial level
      */
+    /*
     @Expose
-    private long initialLevel;
+    private long initialLevel;*/
+    /**
+     * Initial count
+     */
+    @Expose
+    private long initialCount;
     /**
      * Points to next level
      */
@@ -116,17 +122,20 @@ public class IslandLevels implements DataObject {
     /**
      * @return the initialLevel
      */
+    /*
     public long getInitialLevel() {
+        // TODO: Add Backwards compatibility 
         return initialLevel;
     }
-
+    
     /**
      * @param initialLevel the initialLevel to set
      */
+    /*
     public void setInitialLevel(long initialLevel) {
         this.initialLevel = initialLevel;
     }
-
+    */
     /**
      * @return the pointsToNextLevel
      */
@@ -229,5 +238,18 @@ public class IslandLevels implements DataObject {
         this.mdCount = mdCount;
     }
 
+    /**
+     * @return the initialCount
+     */
+    public long getInitialCount() {
+        return initialCount;
+    }
+
+    /**
+     * @param initialCount the initialCount to set
+     */
+    public void setInitialCount(long initialCount) {
+        this.initialCount = initialCount;
+    }
 
 }

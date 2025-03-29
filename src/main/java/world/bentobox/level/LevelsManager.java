@@ -130,7 +130,8 @@ public class LevelsManager {
             return true;
         // Set the values if they were altered
         results.setLevel((Long) ilce.getKeyValues().getOrDefault("level", results.getLevel()));
-        results.setInitialLevel((Long) ilce.getKeyValues().getOrDefault("initialLevel", results.getInitialLevel()));
+        // TODO: results.setInitialLevel((Long) ilce.getKeyValues().getOrDefault("initialLevel", results.getInitialLevel()));
+        results.setInitialCount((Long) ilce.getKeyValues().getOrDefault("initialCount", results.getInitialCount()));
         results.setDeathHandicap((int) ilce.getKeyValues().getOrDefault("deathHandicap", results.getDeathHandicap()));
         results.setPointsToNextLevel(
                 (Long) ilce.getKeyValues().getOrDefault("pointsToNextLevel", results.getPointsToNextLevel()));
@@ -173,8 +174,19 @@ public class LevelsManager {
      * @param island - island
      * @return initial level of island
      */
+    /*TODO
     public long getInitialLevel(Island island) {
         return getLevelsData(island).getInitialLevel();
+    }*/
+
+    /**
+     * Get the initial count of the island. Used to zero island levels
+     * 
+     * @param island - island
+     * @return initial count of island
+     */
+    public long getInitialCount(Island island) {
+        return getLevelsData(island).getInitialCount();
     }
 
     /**
@@ -426,11 +438,26 @@ public class LevelsManager {
      * 
      * @param island - the island to set. Must have a non-null world
      * @param lv     - initial island level
+     * @deprecated Use {@link #setInitialIslandCount(Island, long)}
      */
+    /*
+    @Deprecated
     public void setInitialIslandLevel(@NonNull Island island, long lv) {
+        // TODO convert to a count
         if (island.getWorld() == null)
             return;
         levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new).setInitialLevel(lv);
+        handler.saveObjectAsync(levelsCache.get(island.getUniqueId()));
+    }
+    */
+    /**
+     * Set an initial island count
+     * 
+     * @param island - the island to set.
+     * @param lv     - initial island count
+     */
+    public void setInitialIslandCount(@NonNull Island island, long lv) {
+        levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new).setInitialCount(lv);
         handler.saveObjectAsync(levelsCache.get(island.getUniqueId()));
     }
 
@@ -450,7 +477,7 @@ public class LevelsManager {
             IslandLevels il = levelsCache.computeIfAbsent(id, IslandLevels::new);
             // Remove the initial level
             if (addon.getSettings().isZeroNewIslandLevels()) {
-                il.setLevel(lv - il.getInitialLevel());
+                // il.setLevel(lv - il.getInitialLevel()); // TODO WHAT TO DO HERE???
             } else {
                 il.setLevel(lv);
             }
