@@ -339,12 +339,13 @@ public class Level extends Addon {
 	}
 
 	/**
-	 * Sets the player's level to a value
-	 * 
-	 * @param world        - world
-	 * @param targetPlayer - target player
-	 * @param level        - level
-	 */
+     * Sets the player's level to a value. This will only last until the player reruns the level command
+     * 
+     * @param world        - world
+     * @param targetPlayer - target player
+     * @param level        - level
+     * @deprecated This is a useless method. 
+     */
 	public void setIslandLevel(World world, UUID targetPlayer, long level) {
 		getManager().setIslandLevel(world, targetPlayer, level);
 	}

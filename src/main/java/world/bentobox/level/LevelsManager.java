@@ -449,7 +449,7 @@ public class LevelsManager {
         levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new).setInitialLevel(lv);
         handler.saveObjectAsync(levelsCache.get(island.getUniqueId()));
     }
-    */
+     */
     /**
      * Set an initial island count
      * 
@@ -475,12 +475,7 @@ public class LevelsManager {
         if (island != null) {
             String id = island.getUniqueId();
             IslandLevels il = levelsCache.computeIfAbsent(id, IslandLevels::new);
-            // Remove the initial level
-            if (addon.getSettings().isZeroNewIslandLevels()) {
-                // il.setLevel(lv - il.getInitialLevel()); // TODO WHAT TO DO HERE???
-            } else {
-                il.setLevel(lv);
-            }
+            il.setLevel(lv);
             handler.saveObjectAsync(levelsCache.get(id));
             // Update TopTen
             addToTopTen(island, levelsCache.get(id).getLevel());
