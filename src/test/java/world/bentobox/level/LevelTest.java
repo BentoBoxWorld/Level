@@ -60,6 +60,7 @@ import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.bentobox.managers.AddonsManager;
 import world.bentobox.bentobox.managers.CommandsManager;
 import world.bentobox.bentobox.managers.FlagsManager;
+import world.bentobox.bentobox.managers.HooksManager;
 import world.bentobox.bentobox.managers.IslandWorldManager;
 import world.bentobox.bentobox.managers.IslandsManager;
 import world.bentobox.bentobox.managers.PlaceholdersManager;
@@ -118,6 +119,8 @@ public class LevelTest {
 	private PluginManager pim;
 	@Mock
 	private BlockConfig blockConfig;
+    @Mock
+    private HooksManager hm;
 
 	@BeforeClass
 	public static void beforeClass() throws IOException {
@@ -150,6 +153,8 @@ public class LevelTest {
 	 */
     @Before
 	public void setUp() throws Exception {
+        when(plugin.getHooks()).thenReturn(hm);
+
         Server server = ServerMocks.newServer();
 		// Set up plugin
 		Whitebox.setInternalState(BentoBox.class, "instance", plugin);
