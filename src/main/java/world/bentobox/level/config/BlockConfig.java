@@ -100,7 +100,7 @@ public class BlockConfig {
 
     private boolean isOther(String key) {
         // Maybe a custom name space
-        return ItemsAdderHook.isInRegistry(key);
+        return addon.isItemsAdder() && ItemsAdderHook.isInRegistry(key);
     }
 
     private boolean isSpawner(String key) {
