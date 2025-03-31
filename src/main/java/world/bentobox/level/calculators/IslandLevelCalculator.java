@@ -93,7 +93,8 @@ public class IslandLevelCalculator {
         chunksToCheck = getChunksToScan(island);
         this.limitCount = new HashMap<>();
         // Get the initial island level
-        results.initialLevel.set(addon.getInitialIslandLevel(island));
+        // TODO: results.initialLevel.set(addon.getInitialIslandLevel(island));
+        results.setInitialCount(addon.getInitialIslandCount(island));
         // Set up the worlds
         worlds.put(Environment.NORMAL, Util.getWorld(island.getWorld()));
         // Nether
@@ -117,19 +118,22 @@ public class IslandLevelCalculator {
     /**
      * Calculate the level based on the raw points
      * 
-     * @param blockAndDeathPoints - raw points counted on island
+     * @param rawPoints - raw points counted on island
      * @return level of island
      */
-    private long calculateLevel(long blockAndDeathPoints) {
+    private long calculateLevel(final long rawPoints) {
         String calcString = addon.getSettings().getLevelCalc();
-        String withValues = calcString.replace("blocks", String.valueOf(blockAndDeathPoints)).replace("level_cost",
+        // Reduce count by initial count, if zeroing is done
+        long modifiedPoints = rawPoints
+                - (addon.getSettings().isZeroNewIslandLevels() ? results.initialCount.get() : 0);
+        // Paste in the values to the formula
+        String withValues = calcString.replace("blocks", String.valueOf(modifiedPoints)).replace("level_cost",
                 String.valueOf(this.addon.getSettings().getLevelCost()));
-        long evalWithValues;
+        // Try and evaluate it
         try {
-            evalWithValues = (long) EquationEvaluator.eval(withValues);
-            return evalWithValues - (addon.getSettings().isZeroNewIslandLevels() ? results.initialLevel.get() : 0);
-
+            return (long) EquationEvaluator.eval(withValues);
         } catch (ParseException e) {
+            // Hmm, error.
             addon.getPlugin().logStacktrace(e);
             return 0L;
         }
@@ -240,8 +244,12 @@ public class IslandLevelCalculator {
         reportLines.add("Formula to calculate island level: " + addon.getSettings().getLevelCalc());
         reportLines.add("Level cost = " + addon.getSettings().getLevelCost());
         reportLines.add("Deaths handicap = " + results.deathHandicap.get());
+        /*
         if (addon.getSettings().isZeroNewIslandLevels()) {
             reportLines.add("Initial island level = " + (0L - addon.getManager().getInitialLevel(island)));
+        }*/
+        if (addon.getSettings().isZeroNewIslandLevels()) {
+            reportLines.add("Initial island count = " + (0L - addon.getManager().getInitialCount(island)));
         }
         reportLines.add("Previous level = " + addon.getManager().getIslandLevel(island.getWorld(), island.getOwner()));
         reportLines.add("New level = " + results.getLevel());

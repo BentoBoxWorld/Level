@@ -7,6 +7,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
+/**
+ * Where results are stored
+ */
 public class Results {
     public enum Result {
         /**
@@ -23,9 +26,21 @@ public class Results {
         TIMEOUT
     }
     List<String> report;
+    /**
+     * MaterialData count anything above sea level
+     */
     final Multiset<Object> mdCount = HashMultiset.create();
+    /**
+     * Underwater count
+     */
     final Multiset<Object> uwCount = HashMultiset.create();
+    /**
+     * Not-in-config count - blocks not listed in the scoring config file
+     */
     final Multiset<Object> ncCount = HashMultiset.create();
+    /**
+     * Blocks not counted because they exceeded limits
+     */
     final Multiset<Object> ofCount = HashMultiset.create();
     // AtomicLong and AtomicInteger must be used because they are changed by multiple concurrent threads
     AtomicLong rawBlockCount = new AtomicLong(0);
@@ -33,7 +48,11 @@ public class Results {
     AtomicLong level = new AtomicLong(0);
     AtomicInteger deathHandicap = new AtomicInteger(0);
     AtomicLong pointsToNextLevel = new AtomicLong(0);
-    AtomicLong initialLevel = new AtomicLong(0);
+    //AtomicLong initialLevel = new AtomicLong(0);
+    AtomicLong initialCount = new AtomicLong(0);
+    /**
+     * Total points before any death penalties
+     */
     AtomicLong totalPoints = new AtomicLong(0);
     final Result state;
 
@@ -107,24 +126,26 @@ public class Results {
         totalPoints.set(points);
     }
 
+    /*
     public long getInitialLevel() {
         return initialLevel.get();
     }
-
+    
     public void setInitialLevel(long initialLevel) {
         this.initialLevel.set(initialLevel);
     }
-
+    */
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
+    /*
     @Override
     public String toString() {
         return "Results [report=" + report + ", mdCount=" + mdCount + ", uwCount=" + uwCount + ", ncCount="
                 + ncCount + ", ofCount=" + ofCount + ", rawBlockCount=" + rawBlockCount + ", underWaterBlockCount="
                 + underWaterBlockCount + ", level=" + level + ", deathHandicap=" + deathHandicap
                 + ", pointsToNextLevel=" + pointsToNextLevel + ", totalPoints=" + totalPoints + ", initialLevel=" + initialLevel + "]";
-    }
+    }*/
     /**
      * @return the mdCount
      */
@@ -142,6 +163,20 @@ public class Results {
      */
     public Result getState() {
         return state;
+    }
+
+    /**
+     * @return the initialCount
+     */
+    public long getInitialCount() {
+        return initialCount.get();
+    }
+
+    /**
+     * @param long1 the initialCount to set
+     */
+    public void setInitialCount(Long count) {
+        this.initialCount.set(count);
     }
 
 }
