@@ -128,6 +128,7 @@ public class LevelsManagerTest {
     /**
      * @throws java.lang.Exception
      */
+    @SuppressWarnings("deprecation")
     @Before
     public void setUp() throws Exception {
         when(addon.getPlugin()).thenReturn(plugin);
@@ -208,15 +209,18 @@ public class LevelsManagerTest {
         List<Object> islands = new ArrayList<>();
         for (long i = -5; i < 5; i ++) {
             IslandLevels il = new IslandLevels(UUID.randomUUID().toString());
-            il.setInitialCount(3);
+            il.setInitialCount(null);
             il.setLevel(i);
             il.setPointsToNextLevel(3);
+            il.setInitialLevel(26145L); // Legacy
             islands.add(il);
         }
         // Supply no island levels first (for migrate), then islands
         when(handler.loadObjects()).thenReturn(islands);
         when(handler.objectExists(anyString())).thenReturn(true);
         when(levelsData.getLevel()).thenReturn(-5L, -4L, -3L, -2L, -1L, 0L, 1L, 2L, 3L, 4L, 5L, 45678L);
+        when(levelsData.getInitialLevel()).thenReturn(26145L, -4L, -3L, -2L, -1L, 0L, 1L, 2L, 3L, 4L, 5L, 45678L);
+        when(levelsData.getInitialCount()).thenReturn(null);
         when(levelsData.getUniqueId()).thenReturn(uuid.toString());
         when(handler.loadObject(anyString())).thenReturn(levelsData );
 
@@ -279,11 +283,11 @@ public class LevelsManagerTest {
 
     /**
      * Test method for
-     * {@link world.bentobox.level.LevelsManager#getInitialLevel(world.bentobox.bentobox.database.objects.Island)}.
+     * {@link world.bentobox.level.LevelsManager#getInitialCount(world.bentobox.bentobox.database.objects.Island)}.
      */
     @Test
-    public void testGetInitialLevel() {
-        assertEquals(0, lm.getInitialCount(island));
+    public void testGetInitialCount() {
+        assertEquals(2614500L, lm.getInitialCount(island));
     }
 
     /**

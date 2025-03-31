@@ -1,7 +1,9 @@
 package world.bentobox.level;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.Collections;
@@ -26,6 +28,7 @@ import com.google.common.collect.Maps;
 
 import world.bentobox.bentobox.database.Database;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.level.calculators.EquationEvaluator;
 import world.bentobox.level.calculators.Results;
 import world.bentobox.level.events.IslandLevelCalculatedEvent;
 import world.bentobox.level.events.IslandPreLevelEvent;
@@ -130,7 +133,6 @@ public class LevelsManager {
             return true;
         // Set the values if they were altered
         results.setLevel((Long) ilce.getKeyValues().getOrDefault("level", results.getLevel()));
-        // TODO: results.setInitialLevel((Long) ilce.getKeyValues().getOrDefault("initialLevel", results.getInitialLevel()));
         results.setInitialCount((Long) ilce.getKeyValues().getOrDefault("initialCount", results.getInitialCount()));
         results.setDeathHandicap((int) ilce.getKeyValues().getOrDefault("deathHandicap", results.getDeathHandicap()));
         results.setPointsToNextLevel(
@@ -169,24 +171,65 @@ public class LevelsManager {
     }
 
     /**
-     * Get the initial level of the island. Used to zero island levels
-     * 
-     * @param island - island
-     * @return initial level of island
-     */
-    /*TODO
-    public long getInitialLevel(Island island) {
-        return getLevelsData(island).getInitialLevel();
-    }*/
-
-    /**
      * Get the initial count of the island. Used to zero island levels
      * 
      * @param island - island
      * @return initial count of island
      */
+    @SuppressWarnings("deprecation")
     public long getInitialCount(Island island) {
-        return getLevelsData(island).getInitialCount();
+        Long initialLevel = getLevelsData(island).getInitialLevel(); // Backward compatibility check. For all new islands, this should be null.
+        Long initialCount = getLevelsData(island).getInitialCount();
+        if (initialLevel != null) {
+            // Initial level exists so convert it
+            if (initialCount == null) { // If initialCount is not null, then this is an edge case and initialCount will be used and initialLevel discarded
+                // Convert from level to count
+                initialCount = 0L;
+                try {
+                    initialCount = getNumBlocks(initialLevel);
+                } catch (Exception e) {
+                    addon.logError("Could not convert legacy initial level to count, so it will be set to 0. Error is: "
+                            + e.getLocalizedMessage());
+                    initialCount = 0L;
+                }
+            }
+            // Null out the old initial level and save
+            getLevelsData(island).setInitialLevel(null);
+            // Save
+            this.setInitialIslandCount(island, initialCount);
+        }
+        // If initialCount doesn't exist, set it to 0L
+        if (initialCount == null) {
+            initialCount = 0L;
+            getLevelsData(island).setInitialCount(0L);
+        }
+        return initialCount;
+    }
+
+    /**
+     * Runs the level calculation using the current formula until the level matches the initial value, or fails.
+     * @param initialLevel - the old initial level
+     * @return block count to obtain this level now
+     * @throws ParseException if the formula for level calc is bugged
+     * @throws IOException if the number of blocks cannot be found for this level
+     */
+    private long getNumBlocks(final long initialLevel) throws ParseException, IOException {
+        String calcString = addon.getSettings().getLevelCalc();
+        int result = -1;
+        long calculatedLevel = 0;
+        String withCost = calcString.replace("level_cost", String.valueOf(this.addon.getSettings().getLevelCost()));
+        long time = System.currentTimeMillis() + 10 * 1000; // 10 seconds
+        do {
+            result++;
+            if (System.currentTimeMillis() > time) {
+                throw new IOException("Timeout: Blocks cannot be found to create this initial level");
+            }
+            // Paste in the values to the formula
+            String withValues = withCost.replace("blocks", String.valueOf(result));
+            // Try and evaluate it
+            calculatedLevel = (long) EquationEvaluator.eval(withValues);
+        } while (calculatedLevel != initialLevel);
+        return result;
     }
 
     /**
@@ -433,23 +476,6 @@ public class LevelsManager {
         }
     }
 
-    /**
-     * Set an initial island level
-     * 
-     * @param island - the island to set. Must have a non-null world
-     * @param lv     - initial island level
-     * @deprecated Use {@link #setInitialIslandCount(Island, long)}
-     */
-    /*
-    @Deprecated
-    public void setInitialIslandLevel(@NonNull Island island, long lv) {
-        // TODO convert to a count
-        if (island.getWorld() == null)
-            return;
-        levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new).setInitialLevel(lv);
-        handler.saveObjectAsync(levelsCache.get(island.getUniqueId()));
-    }
-     */
     /**
      * Set an initial island count
      * 

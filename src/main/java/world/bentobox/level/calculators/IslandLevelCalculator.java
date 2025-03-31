@@ -118,13 +118,13 @@ public class IslandLevelCalculator {
     /**
      * Calculate the level based on the raw points
      * 
-     * @param blockAndDeathPoints - raw points counted on island
+     * @param rawPoints - raw points counted on island
      * @return level of island
      */
-    private long calculateLevel(final long blockAndDeathPoints) {
+    private long calculateLevel(final long rawPoints) {
         String calcString = addon.getSettings().getLevelCalc();
         // Reduce count by initial count, if zeroing is done
-        long modifiedPoints = blockAndDeathPoints
+        long modifiedPoints = rawPoints
                 - (addon.getSettings().isZeroNewIslandLevels() ? results.initialCount.get() : 0);
         // Paste in the values to the formula
         String withValues = calcString.replace("blocks", String.valueOf(modifiedPoints)).replace("level_cost",
