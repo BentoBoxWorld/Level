@@ -59,11 +59,11 @@ public class IslandLevelCalculatedEvent extends IslandBaseEvent {
     }
 
     /**
-     * Get the island's initial level. It may be zero if it was never calculated.
-     * @return initial level of island as calculated when the island was created.
+     * Get the island's initial count. It may be zero if it was never calculated.
+     * @return initial count of island as calculated when the island was created.
      */
-    public long getInitialLevel() {
-        return results.getInitialLevel();
+    public long getInitiaCount() {
+        return results.getInitialCount();
     }
 
     /**

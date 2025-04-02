@@ -339,12 +339,13 @@ public class Level extends Addon {
 	}
 
 	/**
-	 * Sets the player's level to a value
-	 * 
-	 * @param world        - world
-	 * @param targetPlayer - target player
-	 * @param level        - level
-	 */
+     * Sets the player's level to a value. This will only last until the player reruns the level command
+     * 
+     * @param world        - world
+     * @param targetPlayer - target player
+     * @param level        - level
+     * @deprecated This is a useless method. 
+     */
 	public void setIslandLevel(World world, UUID targetPlayer, long level) {
 		getManager().setIslandLevel(world, targetPlayer, level);
 	}
@@ -355,19 +356,31 @@ public class Level extends Addon {
 	 * @param island - island
 	 * @param level  - initial calculated island level
 	 */
-	public void setInitialIslandLevel(@NonNull Island island, long level) {
-		getManager().setInitialIslandLevel(island, level);
-	}
+    /* TODO
+    public void setInitialIslandLevel(@NonNull Island island, long level) {
+    	getManager().setInitialIslandLevel(island, level);
+    }
+    
+    /**
+     * Get the initial island level
+     * 
+     * @param island - island
+     * @return level or 0 by default
+     */
+    /* TODO
+    public long getInitialIslandLevel(@NonNull Island island) {
+    	return getManager().getInitialLevel(island);
+    }*/
 
-	/**
-	 * Get the initial island level
-	 * 
-	 * @param island - island
-	 * @return level or 0 by default
-	 */
-	public long getInitialIslandLevel(@NonNull Island island) {
-		return getManager().getInitialLevel(island);
-	}
+    /**
+     * Get the initial island count
+     * 
+     * @param island - island
+     * @return count or 0 by default
+     */
+    public long getInitialIslandCount(@NonNull Island island) {
+        return getManager().getInitialCount(island);
+    }
 
 	/**
 	 * Calculates a user's island
@@ -392,21 +405,22 @@ public class Level extends Addon {
 	 * @return LevelsData object or null if not found. Only island levels are set!
 	 * @deprecated Do not use this anymore. Use {@link #getIslandLevel(World, UUID)}
 	 */
-	@Deprecated(since = "2.3.0", forRemoval = true)
-	public LevelsData getLevelsData(UUID targetPlayer) {
-		LevelsData ld = new LevelsData(targetPlayer);
-		getPlugin().getAddonsManager().getGameModeAddons().stream()
-				.filter(gm -> !settings.getGameModes().contains(gm.getDescription().getName())).forEach(gm -> {
-					if (getSettings().isZeroNewIslandLevels()) {
-						Island island = getIslands().getIsland(gm.getOverWorld(), targetPlayer);
-						if (island != null) {
-							ld.setInitialLevel(gm.getOverWorld(), this.getInitialIslandLevel(island));
-						}
-					}
-					ld.setLevel(gm.getOverWorld(), this.getIslandLevel(gm.getOverWorld(), targetPlayer));
-				});
-		return ld;
-	}
+    /*
+    @Deprecated(since = "2.3.0", forRemoval = true)
+    public LevelsData getLevelsData(UUID targetPlayer) {
+    	LevelsData ld = new LevelsData(targetPlayer);
+    	getPlugin().getAddonsManager().getGameModeAddons().stream()
+    			.filter(gm -> !settings.getGameModes().contains(gm.getDescription().getName())).forEach(gm -> {
+    				if (getSettings().isZeroNewIslandLevels()) {
+    					Island island = getIslands().getIsland(gm.getOverWorld(), targetPlayer);
+    					if (island != null) {
+    						ld.setInitialLevel(gm.getOverWorld(), this.getInitialIslandLevel(island));
+    					}
+    				}
+    				ld.setLevel(gm.getOverWorld(), this.getIslandLevel(gm.getOverWorld(), targetPlayer));
+    			});
+    	return ld;
+    }*/
 
 	/**
 	 * @return the registeredGameModes
