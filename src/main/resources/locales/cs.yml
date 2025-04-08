@@ -1,42 +1,194 @@
-###########################################################################################
-# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
-# the one at http://yaml-online-parser.appspot.com                                        #
-#                                                                                         #
-# Translation by: CZghost                                                                 #
-###########################################################################################
-
 admin:
   level:
-    parameters: "<player>"
-    description: "vypočítat úroveň ostrova hráče"
+    parameters: <player>
+    description: vypočítat úroveň ostrova hráče
+    sethandicap:
+      parameters: <player> [+/-]<handicap>
+      description: |
+        Nastavte nebo změňte ostrov *handicap*
+        např. +10 odstraní 10 úrovní,
+        30 nastaví handicap na 30,
+        -20 přidá 20 úrovní
+      changed: '&a Počáteční ostrovní handicap se změnil z [number] na [new_number].'
+      invalid-level: '&c Neplatný handicap. Použijte celé číslo.'
+  levelstatus:
+    description: Ukažte, kolik ostrovů je ve frontě pro skenování
+    islands-in-queue: '&a Ostrovy ve frontě: [number]'
   top:
-    description: "ukázat seznam TOP 10"
-    unknown-world: "&cNeznámý svět!"
-    display: "&f[rank]. &a[name] &7- &b[level]"
+    description: ukázat seznam TOP 10
+    unknown-world: '&cNeznámý svět!'
+    display: '&f[rank]. &a[name] &7- &b[level]'
     remove:
-      description: "odstranit hráče z TOP 10"
-      parameters: "<player>"
-
+      description: odstranit hráče z TOP 10
+      parameters: <player>
+  stats:
+    description: Zobrazit statistiky na ostrovech na tomto serveru
+    title: Statistiky serveru
+    world: '&a [name]'
+    no-data: '&c Žádná data pro zpracování.'
+    average-level: 'Průměrná úroveň ostrova: [number]'
+    median-level: 'Střední úroveň ostrova: [number]'
+    mode-level: 'Úroveň ostrova režimu: [number]'
+    highest-level: 'Nejvyšší úroveň ostrova: [number]'
+    lowest-level: 'Nejnižší úroveň ostrova: [number]'
+    distribution: 'Distribuce úrovně ostrova:'
+    islands: ostrovy
 island:
-  level: 
-    parameters: "[player]"
-    description: "spočítat úroveň tvého ostrova nebo ostrova hráče [player]"
-    calculating: "&aPočítám úroveň..." 
-    island-level-is: "&aÚroveň ostrova je &b[level]"
-    required-points-to-next-level: "&a[points] vyžadováno do další úrovně"
-    deaths: "&c([number] smrtí)"
-    cooldown: "&cMusíš čekat &b[time] &csekund, než můžeš příkaz znovu použít"
-    
+  level:
+    parameters: '[player]'
+    description: spočítat úroveň tvého ostrova nebo ostrova hráče [player]
+    calculating: '&aPočítám úroveň...'
+    estimated-wait: '&a Odhadované čekání: [number] sekundy'
+    in-queue: '&a Jste číslo [number] ve frontě'
+    island-level-is: '&aÚroveň ostrova je &b[level]'
+    required-points-to-next-level: '&a[points] vyžadováno do další úrovně'
+    deaths: '&c([number] smrtí)'
+    cooldown: '&cMusíš čekat &b[time] &csekund, než můžeš příkaz znovu použít'
+    in-progress: '&6 Probíhá výpočet úrovně ostrova ...'
+    time-out: '&c Výpočet úrovně trval příliš dlouho. Zkuste to prosím znovu později.'
   top:
-    description: "ukázat TOP 10"
-    gui-title: "&aTOP 10"
-    gui-heading: "&6[name]: &B[rank]"
-    island-level: "&BÚroveň [level]"
-    warp-to: "&AWarp na ostrov [name]"
-
-  value:
-    description: "ukáže hodnotu jakéhokoliv bloku"
-    success: "&7Hodnota tohoto bloku je: &e[value]"
-    success-underwater: "&7Hodnota tohoto bloku pod úrovní moře: &e[value]"
-    empty-hand: "&cNemáš v ruce žádný blok"
-    no-value: "&cTento předmět nemá žádnou hodnotu."
+    description: ukázat TOP 10
+    gui-title: '&aTOP 10'
+    gui-heading: '&6[name]: &B[rank]'
+    island-level: '&BÚroveň [level]'
+    warp-to: '&AWarp na ostrov [name]'
+  level-details:
+    above-sea-level-blocks: Nad bloky hladiny moře
+    spawners: Spawners
+    underwater-blocks: Podvodové bloky
+    all-blocks: Všechny bloky
+    no-island: '&c Žádný ostrov!'
+    names-island: '[name]''s Island'
+    syntax: '[name] x [number]'
+    hint: '&c Spustit úroveň a zobrazit zprávu bloku'
+level:
+  commands:
+    value:
+      parameters: '[hand |<material>]'
+      description: >-
+        ukazuje hodnotu bloků. Na konci přidejte „ruku“ a zobrazíte hodnotu pro
+        položku v ruce.
+  gui:
+    titles:
+      top: '&0&l Nejlepší ostrovy'
+      detail-panel: '&0&l [name]''s Island'
+      value-panel: '&0&l Blokové hodnoty'
+    buttons:
+      island:
+        empty: '&f&l [name]. místo'
+        name: '&f&l [name]'
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: '[player]''s Island'
+        owner: '&7&l Majitel: &r&b [player]'
+        members-title: '&7&l Členové:'
+        member: '&b - [player]'
+        unknown: neznámý
+        place: '&7&o [number]. &r&7  místo'
+        level: '&7 Úroveň:&o [number]'
+      material:
+        name: '&f&l [number] x [material]'
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: '&7 Blok ID: &e [id]'
+        value: '&7 Hodnota bloku:&e  [number]'
+        limit: '&7 Limit bloku:&e  [number]'
+        count: '&7 Počet bloků:&e  [number]'
+        calculated: '&7 Vypočítaná hodnota:&e  [number]'
+      value_blocks:
+        name: '&f&l Všechny bloky s hodnotou'
+        description: |-
+          &7 Zobrazit všechny bloky
+          &7 s hodnotou na ostrově.
+      all_blocks:
+        name: '&f&l Všechny bloky'
+        description: |-
+          &7 Zobrazit všechny bloky
+          &7 na ostrově.
+      above_sea_level:
+        name: '&f&l Bloky nad hladinou moře'
+        description: |-
+          &7 Zobrazit pouze bloky
+          &7 které jsou nad mořem
+          &7 úroveň.
+      underwater:
+        name: '&f&l Blocks Under Sea level'
+        description: |-
+          &7 Zobrazit pouze bloky
+          &7 to je níže moře
+          &7 úroveň.
+      spawner:
+        name: '&f&l Spawners'
+        description: '&7 Displej pouze tření.'
+        block-name: '&b Spawner'
+      filters:
+        name:
+          name: '&f&l Sort by Name'
+          description: '&7 Sort all blocks by name.'
+        value:
+          name: '&f&l Sort by Value'
+          description: '&7 Sort all blocks by their value.'
+        count:
+          name: '&f&l Sort by Count'
+          description: '&7 Sort all blocks by their amount.'
+      value:
+        name: '&f&l [material]'
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: '&7 Block id: &e [id]'
+        value: '&7 Hodnota bloku: &e [number]'
+        underwater: '&7 Hladina moře Bellow: &e [number]'
+        limit: '&7 Limit bloku: &e [number]'
+      previous:
+        name: Předchozí stránka
+        description: '&7 Přepněte na stránku [number]'
+      next:
+        name: Další stránka
+        description: '&7 Přepněte na stránku [number]'
+      search:
+        name: Vyhledávání
+        description: |-
+          &7 Hledejte konkrétní
+          &7 hodnota.
+        search: '&b Hodnota: [value]'
+    tips:
+      click-to-view: '&e Kliknutím zobrazíte.'
+      click-to-previous: '&e Kliknutím zobrazíte předchozí stránku.'
+      click-to-next: '&e Kliknutím zobrazíte další stránku.'
+      click-to-select: '&e Kliknutím vyberte.'
+      left-click-to-cycle-up: '&e Levé kliknutí na cyklus nahoru.'
+      right-click-to-cycle-down: '&e Kliknutím pravým tlačítkem je cyklujte dolů.'
+      left-click-to-change: '&e Levý kliknutí upravte.'
+      right-click-to-clear: '&e Kliknutím pravým tlačítkem vymažte.'
+      click-to-asc: '&e Kliknutím třídíte v zvyšování pořadí.'
+      click-to-desc: '&e Kliknutím třídíte v klesajícím pořadí.'
+      click-to-warp: '&e Klikněte na warp.'
+      click-to-visit: '&e Kliknutím navštívíte.'
+      right-click-to-visit: '&e Kliknutím na návštěvu.'
+  conversations:
+    prefix: '&l&6 [BentoBox]: &r'
+    no-data: '&c Spusťte úroveň a zobrazí se zpráva o bloku.'
+    cancel-string: zrušit
+    exit-string: zrušit, ukončit, přestat
+    write-search: '&e Zadejte hodnotu vyhledávání. (Napište „zrušit“ do ukončení)'
+    search-updated: Aktualizována hodnota vyhledávání.
+    cancelled: '&c Konverzace zrušena!'
+    no-value: '&c Tato položka nemá žádnou hodnotu.'
+    unknown-item: '&c „[material]“ ve hře neexistuje.'
+    value: '&7 Hodnota „[material]“ je: &e [value]'
+    value-underwater: '&7 Hodnota [material] ''pod hladinou moře: &e [value]'
+    empty-hand: '&c V ruce nejsou žádné bloky'
+    you-have: '&7 Máte [number] na posledním počtu.'
+    you-can-place: '&7 Můžete umístit až [number] a nechat je počítat'
