@@ -22,6 +22,12 @@ public class ConfigSettings implements ConfigObject {
     private List<String> gameModes = Collections.emptyList();
 
     @ConfigComment("")
+    @ConfigComment("Disable ItemsAdder support")
+    @ConfigComment("This will ignore ItemsAdder even if it is installed and not use it. Do not set this to true unless you know what you are doing.")
+    @ConfigEntry(path = "disabled-itemsadder")
+    private boolean disableItemsAdder = false;
+
+    @ConfigComment("")
     @ConfigComment("When executing level command from console, should a report be shown?")
     @ConfigEntry(path = "log-report-to-console")
     private boolean logReportToConsole = true;
@@ -486,5 +492,19 @@ public class ConfigSettings implements ConfigObject {
      */
     public void setTera(String tera) {
         this.tera = tera;
+    }
+
+    /**
+     * @return the disableItemsAdder
+     */
+    public boolean isDisableItemsAdder() {
+        return disableItemsAdder;
+    }
+
+    /**
+     * @param disableItemsAdder the disableItemsAdder to set
+     */
+    public void setDisableItemsAdder(boolean disableItemsAdder) {
+        this.disableItemsAdder = disableItemsAdder;
     }
 }

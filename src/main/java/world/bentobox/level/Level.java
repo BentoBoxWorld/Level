@@ -483,7 +483,7 @@ public class Level extends Addon {
 	}
 
     public boolean isItemsAdder() {
-        return getPlugin().getHooks().getHook("ItemsAdder").isPresent();
+        return !getSettings().isDisableItemsAdder() && getPlugin().getHooks().getHook("ItemsAdder").isPresent();
     }
 
 }
