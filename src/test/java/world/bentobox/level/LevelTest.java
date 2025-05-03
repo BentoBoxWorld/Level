@@ -287,7 +287,7 @@ public class LevelTest {
     public void testAllLoaded() {
         addon.allLoaded();
 		verify(plugin).log("[Level] Level hooking into BSkyBlock");
-		verify(cmd, times(3)).getAddon(); // 3 commands
+        verify(cmd, times(4)).getAddon(); // 4 commands
 		verify(adminCmd, times(5)).getAddon(); // Five commands
 		// Placeholders
 		verify(phm).registerPlaceholder(eq(addon), eq("bskyblock_island_level"), any());

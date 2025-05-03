@@ -51,7 +51,8 @@ island:
     cooldown: "&c You must wait &b[time] &c seconds until you can do that again"
     in-progress: "&6 Island level calculation is in progress..."
     time-out: "&c The level calculation took too long. Please try again later."
-    
+  detail:
+    description: "shows detail of your island blocks"
   top:
     description: "show the Top Ten"
     gui-title: "&a Top Ten"
