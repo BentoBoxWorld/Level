@@ -13,6 +13,9 @@ permissions:
   '[gamemode].island.level':
     description: Player can use level command
     default: true
+  '[gamemode].island.detail':
+      description: Player can use island detail command
+      default: true
   '[gamemode].island.top':
     description: Player can use top ten command
     default: true
