@@ -1,96 +1,106 @@
-# Level
+# 🌟 Level Add-on for BentoBox
 [![Build Status](https://ci.codemc.org/buildStatus/icon?job=BentoBoxWorld/Level)](https://ci.codemc.org/job/BentoBoxWorld/job/Level/)[
 ![Bugs](https://sonarcloud.io/api/project_badges/measure?project=BentoBoxWorld_Level&metric=bugs)](https://sonarcloud.io/dashboard?id=BentoBoxWorld_Level)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=BentoBoxWorld_Level&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=BentoBoxWorld_Level)
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=BentoBoxWorld_Level&metric=ncloc)](https://sonarcloud.io/dashboard?id=BentoBoxWorld_Level)
 
-## About
+## 🔍 What is Level?
 
-Add-on for BentoBox to calculate island levels for BentoBox game modes like BSkyBlock and AcidIsland. It counts blocks and assigns a value to them. 
-Players gain levels by accumulating points and can lose levels too if their points go down. This add-on will work
-for game modes listed in the config.yml.
+**Level** is the ultimate competition booster for your BentoBox server! Designed for game modes like **BSkyBlock**, **AcidIsland**, and more, this powerful add-on turns your island into a battleground of **block-by-block domination**.
 
-Full documentation for Level can be found at [docs.bentobox.world](https://docs.bentobox.world/en/latest/addons/Level/).
+Every block you place counts toward your **island level**—and every block you lose could cost you your spot in the rankings. Whether you're aiming for the top ten or just flexing your creative builds, **Level** adds stakes, strategy, and excitement to your sky-high journey.
 
-Official download releases are at [download.bentobox.world](download.bentobox.world).
+📘 [Full Documentation](https://docs.bentobox.world/en/latest/addons/Level/)  
+📦 [Official Downloads](https://download.bentobox.world)
 
-## How to use
+---
 
-1. Place the level addon jar in the addons folder of the BentoBox plugin
-2. Restart the server
-3. The addon will create a data folder and inside the folder will be a config.yml
-4. Edit the config.yml how you want. The config specifies how much blocks are worth (see below)
-5. Restart the server if you make a change
+## 🚀 Getting Started
 
-## Upgrading
+Ready to level up? Here's how to launch **Level** on your server:
 
-1. Read the release notes carefully, but you may have to delete the old config.yml to use a new one.
+1. Drop the **Level** add-on `.jar` into your BentoBox `addons` folder.
+2. Restart your server and let the magic happen.
+3. A new `Level` data folder and `config.yml` will be created.
+4. Open `config.yml` and customize block values, settings, and behavior to suit your game mode.
+5. Restart your server again to apply changes.
 
-## Permissions
-Permissions are given automatically to players as listed below for BSkyBlock, AcidIsland and CaveBlock. If your permissions plugin strips permissions then you may have to allocate these manually. Note that if a player doesn't have the `intopten` permission, they will not be listed in the top ten.
+Now you’re all set—go build something worth leveling for! 🏗️
+
+---
+
+## 🔄 Upgrading
+
+When updating, always read the **release notes**!  
+Some updates might require a fresh `config.yml`, so make backups and review changes carefully.
+
+---
+
+## 🛡️ Permissions
+
+**Level** integrates directly with your permissions plugin, giving players the tools to compete while letting admins keep control.
+
+Default permissions for **BSkyBlock**, **AcidIsland**, and **CaveBlock**:
 
 ```
 permissions:    
-  bskyblock.intopten:
-    description: Player is in the top ten.
+  bskyblock.intopten:             # Show up in top 10
     default: true
-  bskyblock.island.level:
-    description: Player can use level command
+  bskyblock.island.level:         # Use /is level
     default: true
-  bskyblock.island.top:
-    description: Player can use top ten command
+  bskyblock.island.top:           # Use /is top
     default: true
-  bskyblock.island.value:
-    description: Player can use value command
+  bskyblock.island.value:         # Use /is value
     default: true
-  bskyblock.admin.level:
-    description: Player can use admin level command
+  bskyblock.admin.level:          # Admin access to /is level
     default: true
-  bskyblock.admin.topten:
-    description: Player can use admin top ten command
+  bskyblock.admin.topten:         # Admin access to /is topten
     default: true
 ```
 
-## Config.yml
+⚠️ Players need `intopten` to appear in the leaderboard!
 
-The config.yml has the following sections:
+---
 
-* Game Mode Addon configuration
-* General settings
-* Limits
-* Block values
-* Per-world block values
+## ⚙️ Configuration: Make It Yours
 
-### Game Mode Addon configuration
+The `config.yml` file gives you total control over how leveling works. Here's a breakdown of what you can tweak:
 
-This section allows you to list which game mode add-ons Level should hook into. Use BentoBox's version command to list the official add-on name.
+### 🎮 Game Mode Hook
+Tell Level which BentoBox game modes it should connect to.
 
-### General Settings
+### ⚙️ General Settings
+- **Underwater Block Multiplier** – Give bonus points for blocks below sea level.
+- **Level Cost** – Set how many points are needed to gain 1 island level.
+- **Level Wait** – Add a cooldown between level scans.
+- **Death Penalty** – Punish deaths with level loss.
+- **Sum Team Deaths** – Choose whether to track team deaths or just the leader's.
+- **Reset on Island Reset / Team Join** – Wipe the death count when teams change or islands are reset.
 
-This section defines a number of overall settings for the add-on.
+### 🚫 Block Limits
+Cap the number of specific blocks that count toward level (e.g., only 200 DIAMOND_BLOCKs count).
 
-* Underwater block multiplier - default value = 1. If this value is > 1 then blocks below sea level will have a greater value.
-* Level cost - Value of one island level. Default 100. Minimum value is 1.
-* Level wait - Cool down between level requests in seconds
-* Death penalty - How many block values a player will lose per death. Default value of 100 means that for every death, the player will lose 1 level (if levelcost is 100)
-* Sum Team Deaths - if true, all the team member deaths are summed. If false, only the leader's deaths counts.
-* Max deaths - If player dies more than this, it doesn't count anymore.
-* Reset deaths on island reset
-* Reset deaths on team join
-
-### Limits
-This section lists the limits for any particular block. Blocks over this amount are not counted. This limit applies to all game modes and is not world-specific.
-Format is MATERIAL: value 
-
-### Block values
-This section lists the value of a block in all game modes (worlds). To specific world-specific values, use the next section. Value must be an integer. Any blocks not listed will have a value of 0. AIR is always zero.
-Format is MATERIAL: value. 
-
-### World-specific block values
-List any blocks that have a different value in a specific world. If a block is not listed, the default value will be used from the blocks section.
-Prefix with world name. The values will apply to the associated nether and the end if they exist. Example:
-
+Format:
 ```
+DIAMOND_BLOCK: 200
+```
+
+### 💎 Block Values
+Assign point values to blocks to reward rare or hard-to-get materials.
+
+Format:
+```
+STONE: 1
+DIAMOND_BLOCK: 100
+```
+
+Blocks not listed are worth **0**. `AIR` is always ignored.
+
+### 🌍 World-Specific Values
+Customize block values for individual worlds or game modes.
+
+Example:
+```yaml
 worlds:
   AcidIsland_world:
     SAND: 0
@@ -98,4 +108,16 @@ worlds:
     ICE: 0
 ```
 
-In this example, AcidIsland will use the same values as BSkyBlock for all blocks except for sand, sandstone and ice.
+In this setup, **AcidIsland** disables points for sand-based blocks while using default values for everything else.
+
+---
+
+## 🏁 Final Words
+
+**Level** isn’t just a numbers game—it’s a **challenge**, a **competition**, and a **celebration** of creativity.  
+Whether you're climbing the ranks or just making your mark, Level brings out the best in your builds.
+
+💡 Need help or want to contribute? Join the community at [bentobox.world](https://bentobox.world) and show us what your island is made of!
+
+Now go get that top spot. 🌌  
+— The BentoBox Team

@@ -2,7 +2,7 @@ name: Level
 main: world.bentobox.level.Level
 version: ${version}${build.number}
 icon: DIAMOND
-api-version: 3.3.0
+api-version: 2.4.0
 
 authors: tastybento
 
@@ -13,6 +13,9 @@ permissions:
   '[gamemode].island.level':
     description: Player can use level command
     default: true
+  '[gamemode].island.detail':
+      description: Player can use island detail command
+      default: true
   '[gamemode].island.top':
     description: Player can use top ten command
     default: true

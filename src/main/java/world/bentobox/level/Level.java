@@ -26,6 +26,7 @@ import world.bentobox.level.commands.AdminLevelStatusCommand;
 import world.bentobox.level.commands.AdminSetInitialLevelCommand;
 import world.bentobox.level.commands.AdminStatsCommand;
 import world.bentobox.level.commands.AdminTopCommand;
+import world.bentobox.level.commands.IslandDetailCommand;
 import world.bentobox.level.commands.IslandLevelCommand;
 import world.bentobox.level.commands.IslandTopCommand;
 import world.bentobox.level.commands.IslandValueCommand;
@@ -34,7 +35,6 @@ import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
 import world.bentobox.level.listeners.MigrationListener;
-import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.requests.LevelRequestHandler;
 import world.bentobox.level.requests.TopTenRequestHandler;
 import world.bentobox.visit.VisitAddon;
@@ -249,6 +249,7 @@ public class Level extends Addon {
 			new IslandLevelCommand(this, playerCmd);
 			new IslandTopCommand(this, playerCmd);
 			new IslandValueCommand(this, playerCmd);
+            new IslandDetailCommand(this, playerCmd);
 		});
 	}
 
@@ -482,7 +483,7 @@ public class Level extends Addon {
 	}
 
     public boolean isItemsAdder() {
-        return getPlugin().getHooks().getHook("ItemsAdder").isPresent();
+        return !getSettings().isDisableItemsAdder() && getPlugin().getHooks().getHook("ItemsAdder").isPresent();
     }
 
 }
