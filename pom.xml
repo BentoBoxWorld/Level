@@ -247,14 +247,14 @@
         <dependency>
             <groupId>com.craftaro</groupId>
             <artifactId>UltimateStacker-API</artifactId>
-            <version>1.0.0-20240329.173606-35</version>
+            <version>1.0.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
        <!-- ItemsAdder -->
         <dependency>
             <groupId>dev.lone</groupId>
             <artifactId>api-itemsadder</artifactId>
-            <version>4.0.2-beta-release-11</version>
+            <version>4.0.10</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
