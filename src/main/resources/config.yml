@@ -5,6 +5,10 @@
 # Level will NOT hook into these game mode addons.
 disabled-game-modes: []
 # 
+# Disable ItemsAdder support
+# This will ignore ItemsAdder even if it is installed and not use it. Do not set this to true unless you know what you are doing.
+disabled-itemsadder: false
+# 
 # When executing level command from console, should a report be shown?
 log-report-to-console: true
 # 
