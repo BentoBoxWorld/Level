@@ -499,7 +499,7 @@ public class IslandLevelCalculator {
         processSlabs(blockData, m, belowSeaLevel);
         processStackers(loc, m);
         processUltimateStacker(m, loc, belowSeaLevel);
-        processChests(cp, blockData);
+        processChests(cp, cp.chunkSnapshot.getBlockType(x, y, z));
         processSpawnerOrBlock(m, loc, belowSeaLevel);
     }
 
@@ -524,9 +524,48 @@ public class IslandLevelCalculator {
         }
     }
 
-    private void processChests(ChunkPair cp, BlockData blockData) {
-        if (addon.getSettings().isIncludeChests() && blockData instanceof Container) {
-            chestBlocks.add(cp.chunk);
+    private void processChests(ChunkPair cp, Material material) {
+        if (addon.getSettings().isIncludeChests()) {
+            switch (material) {
+            case CHEST:
+            case TRAPPED_CHEST:
+            case BARREL:
+            case HOPPER:
+            case DISPENSER:
+            case DROPPER:
+            case SHULKER_BOX:
+            case WHITE_SHULKER_BOX:
+            case ORANGE_SHULKER_BOX:
+            case MAGENTA_SHULKER_BOX:
+            case LIGHT_BLUE_SHULKER_BOX:
+            case YELLOW_SHULKER_BOX:
+            case LIME_SHULKER_BOX:
+            case PINK_SHULKER_BOX:
+            case GRAY_SHULKER_BOX:
+            case LIGHT_GRAY_SHULKER_BOX:
+            case CYAN_SHULKER_BOX:
+            case PURPLE_SHULKER_BOX:
+            case BLUE_SHULKER_BOX:
+            case BROWN_SHULKER_BOX:
+            case GREEN_SHULKER_BOX:
+            case RED_SHULKER_BOX:
+            case BLACK_SHULKER_BOX:
+            case BREWING_STAND:
+            case FURNACE:
+            case BLAST_FURNACE:
+            case SMOKER:
+            case BEACON: // has an inventory slot
+            case ENCHANTING_TABLE: // technically has an item slot
+            case LECTERN: // stores a book
+            case JUKEBOX: // stores a record
+                // ✅ It's a container
+                chestBlocks.add(cp.chunk);
+                break;
+            default:
+                // ❌ Not a container
+                break;
+            }
+
         }
     }
 
