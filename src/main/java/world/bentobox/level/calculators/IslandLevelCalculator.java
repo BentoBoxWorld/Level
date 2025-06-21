@@ -272,7 +272,7 @@ public class IslandLevelCalculator {
         while (it.hasNext()) {
 
             Entry<Object> type = it.next();
-            Integer limit = addon.getBlockConfig().getLimit(type);
+            Integer limit = addon.getBlockConfig().getLimit(type.getElement());
             String explain = ")";
             reportLines.add(Util.prettifyText(type.toString()) + ": " + String.format("%,d", type.getCount())
                     + " blocks (max " + limit + explain);
@@ -374,7 +374,10 @@ public class IslandLevelCalculator {
         }
 
         int count = limitCount.getOrDefault(obj, 0);
+
         if (count > limit) {
+            // Add block to ofCount
+            this.results.ofCount.add(obj);
             return 0;
         }
         limitCount.put(obj, count + 1);
