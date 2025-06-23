@@ -19,6 +19,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 
+import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.level.Level;
 
@@ -177,14 +178,15 @@ public class BlockConfig {
      */
     public Integer getLimit(Object obj) {
         if (obj instanceof Material m) {
-            return blockLimits.get(m.name());
+            return blockLimits.get(m.getKey().getKey());
         }
         if (obj instanceof EntityType et) {
-            return blockLimits.get(et.name().concat(SPAWNER));
+            return blockLimits.get(et.name().toLowerCase(Locale.ENGLISH).concat(SPAWNER));
         }
         if (obj instanceof String s) {
             return blockLimits.get(s);
         }
+
         return null;
     }
 
