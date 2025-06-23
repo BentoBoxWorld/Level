@@ -56,6 +56,7 @@ import world.bentobox.level.calculators.Results.Result;
 import world.bentobox.level.config.BlockConfig;
 
 public class IslandLevelCalculator {
+    private final UUID calcId = UUID.randomUUID();  // ID for hashing
     private static final String LINE_BREAK = "==================================";
     public static final long MAX_AMOUNT = 10000000;
     private static final int CHUNKS_TO_SCAN = 100;
@@ -788,4 +789,16 @@ public class IslandLevelCalculator {
 
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof IslandLevelCalculator)) return false;
+        IslandLevelCalculator that = (IslandLevelCalculator) o;
+        return calcId.equals(that.calcId);
+    }
+
+    @Override
+    public int hashCode() {
+        return calcId.hashCode();
+    }
 }
