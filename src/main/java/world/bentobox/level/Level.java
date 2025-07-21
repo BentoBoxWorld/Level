@@ -46,58 +46,58 @@ import world.bentobox.warps.Warp;
  */
 public class Level extends Addon {
 
-	// The 10 in top ten
-	public static final int TEN = 10;
+    // The 10 in top ten
+    public static final int TEN = 10;
 
-	// Settings
-	private ConfigSettings settings;
-	private Config<ConfigSettings> configObject = new Config<>(this, ConfigSettings.class);
-	private BlockConfig blockConfig;
-	private Pipeliner pipeliner;
-	private LevelsManager manager;
-	private boolean stackersEnabled;
-	private boolean advChestEnabled;
-	private boolean roseStackersEnabled;
-	private boolean ultimateStackerEnabled;
-	private final List<GameModeAddon> registeredGameModes = new ArrayList<>();
+    // Settings
+    private ConfigSettings settings;
+    private Config<ConfigSettings> configObject = new Config<>(this, ConfigSettings.class);
+    private BlockConfig blockConfig;
+    private Pipeliner pipeliner;
+    private LevelsManager manager;
+    private boolean stackersEnabled;
+    private boolean advChestEnabled;
+    private boolean roseStackersEnabled;
+    private boolean ultimateStackerEnabled;
+    private final List<GameModeAddon> registeredGameModes = new ArrayList<>();
 
-	/**
-	 * Local variable that stores if warpHook is present.
-	 */
-	private Warp warpHook;
+    /**
+     * Local variable that stores if warpHook is present.
+     */
+    private Warp warpHook;
 
-	/**
-	 * Local variable that stores if visitHook is present.
-	 */
-	private VisitAddon visitHook;
+    /**
+     * Local variable that stores if visitHook is present.
+     */
+    private VisitAddon visitHook;
 
-	@Override
-	public void onLoad() {
-		// Save the default config from config.yml
-		saveDefaultConfig();
-		if (loadSettings()) {
-			// Disable
-			logError("Level settings could not load! Addon disabled.");
-			setState(State.DISABLED);
-		} else {
-			configObject.saveConfigObject(settings);
-		}
+    @Override
+    public void onLoad() {
+        // Save the default config from config.yml
+        saveDefaultConfig();
+        if (loadSettings()) {
+            // Disable
+            logError("Level settings could not load! Addon disabled.");
+            setState(State.DISABLED);
+        } else {
+            configObject.saveConfigObject(settings);
+        }
 
-		// Save existing panels.
-		this.saveResource("panels/top_panel.yml", false);
-		this.saveResource("panels/detail_panel.yml", false);
-		this.saveResource("panels/value_panel.yml", false);
-	}
+        // Save existing panels.
+        this.saveResource("panels/top_panel.yml", false);
+        this.saveResource("panels/detail_panel.yml", false);
+        this.saveResource("panels/value_panel.yml", false);
+    }
 
-	private boolean loadSettings() {
-		// Load settings again to get worlds
-		settings = configObject.loadConfigObject();
+    private boolean loadSettings() {
+        // Load settings again to get worlds
+        settings = configObject.loadConfigObject();
 
-		return settings == null;
-	}
+        return settings == null;
+    }
 
-	@Override
-	public void onEnable() {
+    @Override
+    public void onEnable() {
         // Everything waits until allLoaded
     }
 
@@ -133,12 +133,12 @@ public class Level extends Addon {
     private void registerGameModeCommands() {
         registeredGameModes.clear();
         getPlugin().getAddonsManager().getGameModeAddons().stream()
-                .filter(gm -> !settings.getGameModes().contains(gm.getDescription().getName())).forEach(gm -> {
-                    log("Level hooking into " + gm.getDescription().getName());
-                    registerCommands(gm);
-                    new PlaceholderManager(this).registerPlaceholders(gm);
-                    registeredGameModes.add(gm);
-                });
+        .filter(gm -> !settings.getGameModes().contains(gm.getDescription().getName())).forEach(gm -> {
+            log("Level hooking into " + gm.getDescription().getName());
+            registerCommands(gm);
+            new PlaceholderManager(this).registerPlaceholders(gm);
+            registeredGameModes.add(gm);
+        });
     }
 
     private void registerRequestHandlers() {
@@ -190,156 +190,158 @@ public class Level extends Addon {
         if (ultimateStackerEnabled) {
             log("Hooked into UltimateStacker.");
         }
-	}
+    }
 
-	/**
-	 * This method tries to hook into addons and plugins
-	 */
-	private void hookExtensions() {
-		// Try to find Visit addon and if it does not exist, display a warning
-		this.getAddonByName("Visit").ifPresentOrElse(addon -> {
-			this.visitHook = (VisitAddon) addon;
-			this.log("Level Addon hooked into Visit addon.");
-		}, () -> this.visitHook = null);
+    /**
+     * This method tries to hook into addons and plugins
+     */
+    private void hookExtensions() {
+        // Try to find Visit addon and if it does not exist, display a warning
+        this.getAddonByName("Visit").ifPresentOrElse(addon -> {
+            this.visitHook = (VisitAddon) addon;
+            this.log("Level Addon hooked into Visit addon.");
+        }, () -> this.visitHook = null);
 
-		// Try to find Warps addon and if it does not exist, display a warning
-		this.getAddonByName("Warps").ifPresentOrElse(addon -> {
-			this.warpHook = (Warp) addon;
-			this.log("Level Addon hooked into Warps addon.");
-		}, () -> this.warpHook = null);
-	}
+        // Try to find Warps addon and if it does not exist, display a warning
+        this.getAddonByName("Warps").ifPresentOrElse(addon -> {
+            this.warpHook = (Warp) addon;
+            this.log("Level Addon hooked into Warps addon.");
+        }, () -> this.warpHook = null);
+    }
 
-	/**
-	 * Compares versions
-	 * 
-	 * @param version1 version 1
-	 * @param version2 version 2
-	 * @return {@code <0 if version 1 is older than version 2, =0 if the same, >0 if version 1 is newer than version 2}
-	 */
-	public static int compareVersions(String version1, String version2) {
-		int comparisonResult = 0;
+    /**
+     * Compares versions
+     * 
+     * @param version1 version 1
+     * @param version2 version 2
+     * @return {@code <0 if version 1 is older than version 2, =0 if the same, >0 if version 1 is newer than version 2}
+     */
+    public static int compareVersions(String version1, String version2) {
+        int comparisonResult = 0;
 
-		String[] version1Splits = version1.split("\\.");
-		String[] version2Splits = version2.split("\\.");
-		int maxLengthOfVersionSplits = Math.max(version1Splits.length, version2Splits.length);
+        String[] version1Splits = version1.split("\\.");
+        String[] version2Splits = version2.split("\\.");
+        int maxLengthOfVersionSplits = Math.max(version1Splits.length, version2Splits.length);
 
-		for (int i = 0; i < maxLengthOfVersionSplits; i++) {
-			Integer v1 = i < version1Splits.length ? Integer.parseInt(version1Splits[i]) : 0;
-			Integer v2 = i < version2Splits.length ? Integer.parseInt(version2Splits[i]) : 0;
-			int compare = v1.compareTo(v2);
-			if (compare != 0) {
-				comparisonResult = compare;
-				break;
-			}
-		}
-		return comparisonResult;
-	}
+        for (int i = 0; i < maxLengthOfVersionSplits; i++) {
+            Integer v1 = i < version1Splits.length ? Integer.parseInt(version1Splits[i]) : 0;
+            Integer v2 = i < version2Splits.length ? Integer.parseInt(version2Splits[i]) : 0;
+            int compare = v1.compareTo(v2);
+            if (compare != 0) {
+                comparisonResult = compare;
+                break;
+            }
+        }
+        return comparisonResult;
+    }
 
-	private void registerCommands(GameModeAddon gm) {
-		gm.getAdminCommand().ifPresent(adminCommand -> {
-			new AdminLevelCommand(this, adminCommand);
-			new AdminTopCommand(this, adminCommand);
-			new AdminLevelStatusCommand(this, adminCommand);
-			if (getSettings().isZeroNewIslandLevels()) {
-				new AdminSetInitialLevelCommand(this, adminCommand);
-			}
-			new AdminStatsCommand(this, adminCommand);
-		});
-		gm.getPlayerCommand().ifPresent(playerCmd -> {
-			new IslandLevelCommand(this, playerCmd);
-			new IslandTopCommand(this, playerCmd);
-			new IslandValueCommand(this, playerCmd);
+    private void registerCommands(GameModeAddon gm) {
+        gm.getAdminCommand().ifPresent(adminCommand -> {
+            new AdminLevelCommand(this, adminCommand);
+            new AdminTopCommand(this, adminCommand);
+            new AdminLevelStatusCommand(this, adminCommand);
+            if (getSettings().isZeroNewIslandLevels()) {
+                new AdminSetInitialLevelCommand(this, adminCommand);
+            }
+            new AdminStatsCommand(this, adminCommand);
+        });
+        gm.getPlayerCommand().ifPresent(playerCmd -> {
+            new IslandLevelCommand(this, playerCmd);
+            new IslandTopCommand(this, playerCmd);
+            new IslandValueCommand(this, playerCmd);
             new IslandDetailCommand(this, playerCmd);
-		});
-	}
+        });
+    }
 
-	@Override
-	public void onDisable() {
-		// Stop the pipeline
-		this.getPipeliner().stop();
-	}
+    @Override
+    public void onDisable() {
+        // Stop the pipeline
+        if (this.pipeliner != null) {
+            pipeliner.stop();
+        }
+    }
 
-	private void loadBlockSettings() {
-		// Save the default blockconfig.yml
-		this.saveResource("blockconfig.yml", false);
+    private void loadBlockSettings() {
+        // Save the default blockconfig.yml
+        this.saveResource("blockconfig.yml", false);
 
-		YamlConfiguration blockValues = new YamlConfiguration();
-		try {
-			File file = new File(this.getDataFolder(), "blockconfig.yml");
-			blockValues.load(file);
-			// Load the block config class
-			blockConfig = new BlockConfig(this, blockValues, file);
-		} catch (IOException | InvalidConfigurationException e) {
-			// Disable
-			logError("Level blockconfig.yml settings could not load! Addon disabled.");
-			setState(State.DISABLED);
-		}
+        YamlConfiguration blockValues = new YamlConfiguration();
+        try {
+            File file = new File(this.getDataFolder(), "blockconfig.yml");
+            blockValues.load(file);
+            // Load the block config class
+            blockConfig = new BlockConfig(this, blockValues, file);
+        } catch (IOException | InvalidConfigurationException e) {
+            // Disable
+            logError("Level blockconfig.yml settings could not load! Addon disabled.");
+            setState(State.DISABLED);
+        }
 
-	}
+    }
 
-	/**
-	 * @return the blockConfig
-	 */
-	public BlockConfig getBlockConfig() {
-		return blockConfig;
-	}
+    /**
+     * @return the blockConfig
+     */
+    public BlockConfig getBlockConfig() {
+        return blockConfig;
+    }
 
-	/**
-	 * @return the settings
-	 */
-	public ConfigSettings getSettings() {
-		return settings;
-	}
+    /**
+     * @return the settings
+     */
+    public ConfigSettings getSettings() {
+        return settings;
+    }
 
-	/**
-	 * @return the pipeliner
-	 */
-	public Pipeliner getPipeliner() {
-		return pipeliner;
-	}
+    /**
+     * @return the pipeliner
+     */
+    public Pipeliner getPipeliner() {
+        return pipeliner;
+    }
 
-	/**
-	 * @return the manager
-	 */
-	public LevelsManager getManager() {
-		return manager;
-	}
+    /**
+     * @return the manager
+     */
+    public LevelsManager getManager() {
+        return manager;
+    }
 
-	/**
-	 * Set the config settings - used for tests only
-	 * 
-	 * @param configSettings - config settings
-	 */
-	void setSettings(ConfigSettings configSettings) {
-		this.settings = configSettings;
+    /**
+     * Set the config settings - used for tests only
+     * 
+     * @param configSettings - config settings
+     */
+    void setSettings(ConfigSettings configSettings) {
+        this.settings = configSettings;
 
-	}
+    }
 
-	/**
-	 * @return the stackersEnabled
-	 */
-	public boolean isStackersEnabled() {
-		return stackersEnabled;
-	}
+    /**
+     * @return the stackersEnabled
+     */
+    public boolean isStackersEnabled() {
+        return stackersEnabled;
+    }
 
-	/**
-	 * @return the advChestEnabled
-	 */
-	public boolean isAdvChestEnabled() {
-		return advChestEnabled;
-	}
+    /**
+     * @return the advChestEnabled
+     */
+    public boolean isAdvChestEnabled() {
+        return advChestEnabled;
+    }
 
-	/**
-	 * Get level from cache for a player.
-	 * 
-	 * @param targetPlayer - target player UUID
-	 * @return Level of player or zero if player is unknown or UUID is null
-	 */
-	public long getIslandLevel(World world, @Nullable UUID targetPlayer) {
-		return getManager().getIslandLevel(world, targetPlayer);
-	}
+    /**
+     * Get level from cache for a player.
+     * 
+     * @param targetPlayer - target player UUID
+     * @return Level of player or zero if player is unknown or UUID is null
+     */
+    public long getIslandLevel(World world, @Nullable UUID targetPlayer) {
+        return getManager().getIslandLevel(world, targetPlayer);
+    }
 
-	/**
+    /**
      * Sets the player's level to a value. This will only last until the player reruns the level command
      * 
      * @param world        - world
@@ -347,21 +349,21 @@ public class Level extends Addon {
      * @param level        - level
      * @deprecated This is a useless method. 
      */
-	public void setIslandLevel(World world, UUID targetPlayer, long level) {
-		getManager().setIslandLevel(world, targetPlayer, level);
-	}
+    public void setIslandLevel(World world, UUID targetPlayer, long level) {
+        getManager().setIslandLevel(world, targetPlayer, level);
+    }
 
-	/**
-	 * Zeros the initial island level
-	 * 
-	 * @param island - island
-	 * @param level  - initial calculated island level
-	 */
+    /**
+     * Zeros the initial island level
+     * 
+     * @param island - island
+     * @param level  - initial calculated island level
+     */
     /* TODO
     public void setInitialIslandLevel(@NonNull Island island, long level) {
     	getManager().setInitialIslandLevel(island, level);
     }
-    
+
     /**
      * Get the initial island level
      * 
@@ -383,29 +385,29 @@ public class Level extends Addon {
         return getManager().getInitialCount(island);
     }
 
-	/**
-	 * Calculates a user's island
-	 * 
-	 * @param world      - the world where this island is
-	 * @param user       - not used! See depecration message
-	 * @param playerUUID - the target island member's UUID
-	 * @deprecated Do not use this anymore. Use
-	 *             getManager().calculateLevel(playerUUID, island)
-	 */
-	@Deprecated(since = "2.3.0", forRemoval = true)
-	public void calculateIslandLevel(World world, @Nullable User user, @NonNull UUID playerUUID) {
-		Island island = getIslands().getIsland(world, playerUUID);
-		if (island != null)
-			getManager().calculateLevel(playerUUID, island);
-	}
+    /**
+     * Calculates a user's island
+     * 
+     * @param world      - the world where this island is
+     * @param user       - not used! See depecration message
+     * @param playerUUID - the target island member's UUID
+     * @deprecated Do not use this anymore. Use
+     *             getManager().calculateLevel(playerUUID, island)
+     */
+    @Deprecated(since = "2.3.0", forRemoval = true)
+    public void calculateIslandLevel(World world, @Nullable User user, @NonNull UUID playerUUID) {
+        Island island = getIslands().getIsland(world, playerUUID);
+        if (island != null)
+            getManager().calculateLevel(playerUUID, island);
+    }
 
-	/**
-	 * Provide the levels data for the target player
-	 * 
-	 * @param targetPlayer - UUID of target player
-	 * @return LevelsData object or null if not found. Only island levels are set!
-	 * @deprecated Do not use this anymore. Use {@link #getIslandLevel(World, UUID)}
-	 */
+    /**
+     * Provide the levels data for the target player
+     * 
+     * @param targetPlayer - UUID of target player
+     * @return LevelsData object or null if not found. Only island levels are set!
+     * @deprecated Do not use this anymore. Use {@link #getIslandLevel(World, UUID)}
+     */
     /*
     @Deprecated(since = "2.3.0", forRemoval = true)
     public LevelsData getLevelsData(UUID targetPlayer) {
@@ -423,64 +425,64 @@ public class Level extends Addon {
     	return ld;
     }*/
 
-	/**
-	 * @return the registeredGameModes
-	 */
-	public List<GameModeAddon> getRegisteredGameModes() {
-		return registeredGameModes;
-	}
+    /**
+     * @return the registeredGameModes
+     */
+    public List<GameModeAddon> getRegisteredGameModes() {
+        return registeredGameModes;
+    }
 
-	/**
-	 * Check if Level addon is active in game mode
-	 * 
-	 * @param gm Game Mode Addon
-	 * @return true if active, false if not
-	 */
-	public boolean isRegisteredGameMode(GameModeAddon gm) {
-		return registeredGameModes.contains(gm);
-	}
+    /**
+     * Check if Level addon is active in game mode
+     * 
+     * @param gm Game Mode Addon
+     * @return true if active, false if not
+     */
+    public boolean isRegisteredGameMode(GameModeAddon gm) {
+        return registeredGameModes.contains(gm);
+    }
 
-	/**
-	 * Checks if Level addon is active in world
-	 * 
-	 * @param world world
-	 * @return true if active, false if not
-	 */
-	public boolean isRegisteredGameModeWorld(World world) {
-		return registeredGameModes.stream().map(GameModeAddon::getOverWorld).anyMatch(w -> Util.sameWorld(world, w));
-	}
+    /**
+     * Checks if Level addon is active in world
+     * 
+     * @param world world
+     * @return true if active, false if not
+     */
+    public boolean isRegisteredGameModeWorld(World world) {
+        return registeredGameModes.stream().map(GameModeAddon::getOverWorld).anyMatch(w -> Util.sameWorld(world, w));
+    }
 
-	/**
-	 * @return the roseStackersEnabled
-	 */
-	public boolean isRoseStackersEnabled() {
-		return roseStackersEnabled;
-	}
+    /**
+     * @return the roseStackersEnabled
+     */
+    public boolean isRoseStackersEnabled() {
+        return roseStackersEnabled;
+    }
 
-	/**
-	 * @return the ultimateStackerEnabled
-	 */
-	public boolean isUltimateStackerEnabled() {
-		return ultimateStackerEnabled;
-	}
+    /**
+     * @return the ultimateStackerEnabled
+     */
+    public boolean isUltimateStackerEnabled() {
+        return ultimateStackerEnabled;
+    }
 
-	/**
-	 * Method Level#getVisitHook returns the visitHook of this object.
-	 *
-	 * @return {@code Visit} of this object, {@code null} otherwise.
-	 */
-	public VisitAddon getVisitHook() {
-		return this.visitHook;
-	}
+    /**
+     * Method Level#getVisitHook returns the visitHook of this object.
+     *
+     * @return {@code Visit} of this object, {@code null} otherwise.
+     */
+    public VisitAddon getVisitHook() {
+        return this.visitHook;
+    }
 
-	/**
-	 * Method Level#getWarpHook returns the warpHook of this object.
-	 *
-	 * @return {@code Warp} of this object, {@code null} otherwise.
-	 */
-	public Warp getWarpHook() {
-		return this.warpHook;
-	}
+    /**
+     * Method Level#getWarpHook returns the warpHook of this object.
+     *
+     * @return {@code Warp} of this object, {@code null} otherwise.
+     */
+    public Warp getWarpHook() {
+        return this.warpHook;
+    }
 
     public boolean isItemsAdder() {
         return !getSettings().isDisableItemsAdder() && getPlugin().getHooks().getHook("ItemsAdder").isPresent();
