@@ -487,9 +487,6 @@ public class IslandLevelCalculator {
     private void processBlock(ChunkPair cp, int x, int y, int z, int globalX, int globalZ) {
         BlockData blockData = cp.chunkSnapshot.getBlockData(x, y, z);
         Material m = blockData.getMaterial();
-        if (m.isAir()) {
-            return;
-        }
 
         boolean belowSeaLevel = seaHeight > 0 && y <= seaHeight;
         Location loc = new Location(cp.world, globalX, y, globalZ);
