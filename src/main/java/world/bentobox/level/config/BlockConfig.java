@@ -19,7 +19,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 
-import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.level.Level;
 
@@ -198,7 +197,7 @@ public class BlockConfig {
     }
 
     /**
-     * Retrieves the value associated with a spawner in the specified world,
+     * Retrieves the value associated with a block in the specified world,
      * using world-specific settings if available, or falling back to baseline values.
      *
      * @param world the world context
@@ -229,7 +228,6 @@ public class BlockConfig {
                 return value;
             }
         }
-
         // Fall back to the baseline value
         return getBlockValues().get(key);
     }
