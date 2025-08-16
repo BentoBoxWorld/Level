@@ -256,7 +256,6 @@ public class DetailsPanel {
         }
         // Sort and filter
         Comparator<BlockRec> sorter;
-        System.out.println("activeFilter: " + activeFilter);
 
         switch (this.activeFilter) {
         case COUNT -> {
@@ -279,26 +278,17 @@ public class DetailsPanel {
                 blockLimit = Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(o2.key()), 0);
                 int o2Count = blockLimit > 0 ? Math.min(o2.value(), blockLimit) : o2.value();
 
-                System.out.println("o1.key(): " + o1.key());
-                System.out.println("o1.key() class: " + o1.key().getClass());
-                System.out.println("o2.key(): " + o2.key());
-
                 long o1Value = (long) o1Count
                         * this.addon.getBlockConfig().getBlockValues().getOrDefault(o1.key().toString().toLowerCase(Locale.ENGLISH), 0);
                 long o2Value = (long) o2Count
                         * this.addon.getBlockConfig().getBlockValues().getOrDefault(o2.key().toString().toLowerCase(Locale.ENGLISH), 0);
 
-                System.out.println("o1Value: " + o1Value);
-                System.out.println("o2Value: " + o2Value);
-
                 if (o1Value == o2Value) {
-                    System.out.println("has same value");
                     String o1Name = Utils.prettifyObject(o1.key(), this.user);
                     String o2Name = Utils.prettifyObject(o2.key(), this.user);
 
                     return String.CASE_INSENSITIVE_ORDER.compare(o1Name, o2Name);
                 } else {
-                    System.out.println("compare long");
                     return Long.compare(o2Value, o1Value);
                 }
             };
