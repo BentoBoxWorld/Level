@@ -1,14 +1,7 @@
 package world.bentobox.level.panels;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.bukkit.Material;
@@ -286,9 +279,9 @@ public class DetailsPanel {
                 int o2Count = blockLimit > 0 ? Math.min(o2.value(), blockLimit) : o2.value();
 
                 long o1Value = (long) o1Count
-                        * this.addon.getBlockConfig().getBlockValues().getOrDefault(o1.key(), 0);
+                        * this.addon.getBlockConfig().getBlockValues().getOrDefault(o1.key().toString().toLowerCase(Locale.ENGLISH), 0);
                 long o2Value = (long) o2Count
-                        * this.addon.getBlockConfig().getBlockValues().getOrDefault(o2.key(), 0);
+                        * this.addon.getBlockConfig().getBlockValues().getOrDefault(o2.key().toString().toLowerCase(Locale.ENGLISH), 0);
 
                 if (o1Value == o2Value) {
                     String o1Name = Utils.prettifyObject(o1.key(), this.user);

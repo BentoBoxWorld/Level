@@ -64,7 +64,7 @@ public class BlockConfig {
                 // Validate
                 if (isMaterial(key) || isSpawner(key) || isOther(key)) {
                     // Store for lookup
-                    this.blockValues.put(key, blocks.getInt(key));
+                    this.blockValues.put(key.toLowerCase(Locale.ENGLISH), blocks.getInt(key));
                 } else {
                     addon.logError("Unknown listing in blocks section: " + key);
                 }
