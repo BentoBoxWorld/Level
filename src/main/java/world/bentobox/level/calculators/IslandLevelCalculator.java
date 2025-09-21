@@ -49,6 +49,7 @@ import us.lynuxcraft.deadsilenceiv.advancedchests.chest.gui.page.ChestPage;
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.hooks.ItemsAdderHook;
+import world.bentobox.bentobox.hooks.OraxenHook;
 import world.bentobox.bentobox.util.Pair;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
@@ -492,6 +493,13 @@ public class IslandLevelCalculator {
         Location loc = new Location(cp.world, globalX, y, globalZ);
 
         String customRegionId = addon.isItemsAdder() ? ItemsAdderHook.getInCustomRegion(loc) : null;
+        // Try Oraxen
+        if (customRegionId == null && BentoBox.getInstance().getHooks().getHook("ItemsAdder").isPresent()) {
+            customRegionId = OraxenHook.getOraxenBlockID(loc);
+            if (customRegionId != null) {
+                BentoBox.getInstance().logDebug(customRegionId);
+            }
+        }
         if (customRegionId != null) {
             checkBlock(customRegionId, belowSeaLevel);
             return;
