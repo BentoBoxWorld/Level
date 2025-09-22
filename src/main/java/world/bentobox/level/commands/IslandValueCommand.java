@@ -11,10 +11,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.eclipse.jdt.annotation.NonNull;
 
+import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.hooks.ItemsAdderHook;
+import world.bentobox.bentobox.hooks.OraxenHook;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
 import world.bentobox.level.objects.IslandLevels;
@@ -77,6 +79,15 @@ public class IslandValueCommand extends CompositeCommand
             return;
         }
 
+        // Oraxen
+        if (BentoBox.getInstance().getHooks().getHook("Oraxen").isPresent()) {
+            String id = OraxenHook.getIdByItem(mainHandItem);
+            if (id != null) {
+                printValue(user, "oraxen:" + id);
+                return;
+            }
+        }
+        // ItemsAdder
         if (addon.isItemsAdder()) {
             Optional<String> id = ItemsAdderHook.getNamespacedId(mainHandItem);
             if (id.isPresent()) {
@@ -145,7 +156,7 @@ public class IslandValueCommand extends CompositeCommand
         }
 
         List<String> options = new ArrayList<>(
-                Arrays.stream(Material.values()).filter(Material::isBlock).map(Material::name).toList());
+                Arrays.stream(Material.values()).filter(Material::isBlock).map(Material::name).map(String::toLowerCase).toList());
 
         options.add("HAND");
 
