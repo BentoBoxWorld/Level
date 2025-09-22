@@ -7,6 +7,8 @@
 # iasurvival:modern_stone: 100
 # The key for a block can be found by looking at it in-game and using /iablock
 #
+# For Oraxen, prefix the block name with oraxen:, for example oraxen:amethyst_ore
+#
 # The limits section lists the maximum number for any particular block. Blocks over this amount
 # are not counted.
 limits:
@@ -18,6 +20,7 @@ hidden-blocks:
 - air
 blocks:
   #iasurvival:modern_stone: 1
+  #oraxen:amethyst_ore: 3
   acacia_button: 1
   acacia_door: 2
   acacia_fence: 2
