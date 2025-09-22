@@ -19,7 +19,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 
+import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.hooks.ItemsAdderHook;
+import world.bentobox.bentobox.hooks.OraxenHook;
 import world.bentobox.level.Level;
 
 /**
@@ -100,6 +102,10 @@ public class BlockConfig {
 
     private boolean isOther(String key) {
         // Maybe a custom name space
+        if (key.startsWith("oraxen:") && BentoBox.getInstance().getHooks().getHook("Oraxen").isPresent()) {
+            return OraxenHook.exists(key.substring(7));
+        }
+        // Check ItemsAdder
         return addon.isItemsAdder() && ItemsAdderHook.isInRegistry(key);
     }
 
@@ -234,7 +240,7 @@ public class BlockConfig {
 
     /**
      * Return true if the block should be hidden
-     * @param m block material or entity type of spanwer
+     * @param m block material or entity type of spawner
      * @return true if hidden
      */
     public boolean isHiddenBlock(Object obj) {
