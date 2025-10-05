@@ -13,12 +13,14 @@ import java.util.stream.Collectors;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.common.base.Enums;
 
+import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.TemplatedPanel;
@@ -134,11 +136,12 @@ public class ValuePanel
 
         this.activeFilter = Filter.NAME_ASC;
 
-        addon.getBlockConfig().getBlockValues().entrySet().stream().filter(en -> this.getIcon(en.getKey()) != null)
-                .filter(en -> addon.getBlockConfig().isNotHiddenBlock(en.getKey()))
-                .forEach(en -> blockRecordList
-                        .add(new BlockRecord(en.getKey(), Objects.requireNonNullElse(en.getValue(), 0),
-                                Objects.requireNonNullElse(addon.getBlockConfig().getLimit(en.getKey()), 0))));
+        addon.getBlockConfig().getBlockValues().entrySet().stream()
+        .filter(en -> this.getIcon(en.getKey()) != null)
+        .filter(en -> addon.getBlockConfig().isNotHiddenBlock(en.getKey()))
+        .forEach(en -> blockRecordList
+                .add(new BlockRecord(en.getKey(), Objects.requireNonNullElse(en.getValue(), 0),
+                        Objects.requireNonNullElse(addon.getBlockConfig().getLimit(en.getKey()), 0))));
 
         this.elementList = new ArrayList<>();
         this.searchText = "";
@@ -649,7 +652,7 @@ public class ValuePanel
     {
         if (this.elementList.isEmpty())
         {
-            // Does not contain any generators.
+            // Does not contain any.
             return null;
         }
 
@@ -665,15 +668,70 @@ public class ValuePanel
     }
 
     private Material getIcon(String key) {
+        // Filter out some names
+        key = key.replaceAll("wall_", "");
+        key = key.replaceAll("_hanging", "");
         Material icon = Registry.MATERIAL.get(NamespacedKey.fromString(key));
         if (icon == null && key.endsWith("_spawner")) {
             icon = Registry.MATERIAL.get(NamespacedKey.fromString(key.substring(0, key.length() - 2) + "_egg"));
         }
+        // ItemsAdder
         if (icon == null && addon.isItemsAdder() && ItemsAdderHook.isInRegistry(key)) {
             icon = ItemsAdderHook.getItemStack(key).map(ItemStack::getType).orElse(null);
         }
         if (icon != null && icon.isItem()) {
             return icon;
+        }
+        // Not an item, but maybe still something
+        if (icon != null) {
+            switch (icon) {
+            case BUBBLE_COLUMN: return Material.WATER_BUCKET;
+            case NETHER_PORTAL: return Material.PURPLE_STAINED_GLASS_PANE;
+            case END_GATEWAY: return Material.BLACK_STAINED_GLASS_PANE;
+            case END_PORTAL: return Material.BLACK_STAINED_GLASS_PANE;
+            case SOUL_FIRE: return Material.SOUL_TORCH;
+            case WALL_TORCH: return Material.TORCH;
+            case TWISTING_VINES_PLANT: return Material.VINE;
+            case CAVE_VINES_PLANT: return Material.VINE;
+            case BAMBOO_SAPLING: return Material.BAMBOO;
+            case KELP_PLANT: return Material.KELP;
+            case SWEET_BERRY_BUSH: return Material.SWEET_BERRIES;
+            case LAVA, FIRE: return Material.LAVA_BUCKET;
+            case PISTON_HEAD: return Material.PISTON;
+            case REDSTONE_WIRE: return Material.REDSTONE;
+            case TORCHFLOWER_CROP: return Material.TORCHFLOWER_SEEDS;
+            case TALL_SEAGRASS: return Material.SEAGRASS;
+            case WATER: return Material.WATER_BUCKET;
+            case VOID_AIR: return Material.BARRIER;
+            case COCOA: return Material.COCOA_BEANS;
+            case TRIPWIRE: return Material.TRIPWIRE_HOOK;
+            case BEETROOTS: return Material.BEETROOT_SEEDS;
+            case POTATOES: return Material.POTATO;
+            case CARROTS: return Material.CARROT;
+            case PITCHER_CROP: return Material.PITCHER_POD;
+            case BIG_DRIPLEAF_STEM: return Material.BIG_DRIPLEAF;
+            default: {}
+            }
+            if (Tag.FLOWER_POTS.isTagged(icon)) {
+                return Material.FLOWER_POT;
+            }
+            if (Tag.WALL_SIGNS.isTagged(icon) || Tag.ALL_HANGING_SIGNS.isTagged(icon)) {
+                return Material.OAK_SIGN;
+            }
+            if (Tag.CANDLE_CAKES.isTagged(icon)) {
+                return Material.CAKE;
+            }
+            if (Tag.CAULDRONS.isTagged(icon)) {
+                return Material.CAULDRON;
+            }
+            if (Tag.ICE.isTagged(icon)) {
+                return Material.ICE;
+            }
+
+        }
+        // Try Oraxen
+        if (key.startsWith("oraxen:") && BentoBox.getInstance().getHooks().getHook("Oraxen").isPresent()) {
+            return Material.PAPER;
         }
         return null;
     }
@@ -702,13 +760,15 @@ public class ValuePanel
                 String.valueOf(blockValue));
         String limitTranslation = blockLimit > 0
                 ? this.user.getTranslationOrNothing(baseKey + "limit", TextVariables.NUMBER, String.valueOf(blockLimit))
-                : "";
+                        : "";
 
         // Determine icon and display material text
         Material icon = getIcon(key);
         builder.icon((icon == null || icon == Material.AIR) ? Material.PAPER : icon);
-
-        String displayMaterial = (icon == null) ? Util.prettifyText(key) : Utils.prettifyObject(icon, user);
+        if (key.startsWith("oraxen:")) {
+            key = key.substring(7);
+        }
+        String displayMaterial = (icon == null) ? Util.prettifyText(key) : Utils.prettifyObject(key, user);
         // Special handling for spawn eggs
         if (icon != null && icon.name().endsWith("_SPAWN_EGG")) {
             displayMaterial = Util.prettifyText(key);

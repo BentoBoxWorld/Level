@@ -158,6 +158,10 @@ public class Utils
                 key = ((Enum<?>) object).name().toLowerCase();
             } else {
                 key = (String) object;
+                // Remove prefix
+                if (key.startsWith("oraxen:")) {
+                    key = key.substring(7);
+                }
             }
 
             // Try our translations for Material.
@@ -177,7 +181,7 @@ public class Utils
                 // Fallback to our hook for Material.
                 return LangUtilsHook.getMaterialName((Material) object, user);
             } else {
-                return key;
+                return world.bentobox.bentobox.util.Util.prettifyText(key);
             }
         } else if (object instanceof EntityType) {
             String key = ((Enum<?>) object).name().toLowerCase();
