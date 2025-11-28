@@ -289,4 +289,11 @@ public class BlockConfig {
         return worldBlockValues;
     }
 
+    /**
+     * @return the blockLimits
+     */
+    public Map<String, Integer> getBlockLimits() {
+        return blockLimits;
+    }
+
 }
