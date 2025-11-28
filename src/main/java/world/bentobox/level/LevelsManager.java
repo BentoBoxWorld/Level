@@ -318,7 +318,6 @@ public class LevelsManager {
         } else {
             levelsCache.put(id, new IslandLevels(id));
         }
-        System.out.println("ddd = " + levelsCache.get(id).getLevel());
         // Return cached value
         return levelsCache.get(id);
     }
