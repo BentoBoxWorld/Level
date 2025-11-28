@@ -98,14 +98,6 @@ public class LevelsManagerTest extends CommonTestSetup {
         when(dbSetup.getHandler(any())).thenReturn(handler);
         when(addon.getPlugin()).thenReturn(plugin);
 
-        // Bukkit
-        /*
-        when(Bukkit.getWorld(anyString())).thenReturn(world);
-        when(Bukkit.getPluginManager()).thenReturn(pim);
-        when(Bukkit.getPlayer(any(UUID.class))).thenReturn(player);
-        when(Bukkit.getScheduler()).thenReturn(scheduler);
-        */
-
         // The database type has to be created one line before the thenReturn() to work!
         DatabaseType value = DatabaseType.JSON;
         when(plugin.getSettings()).thenReturn(pluginSettings);
@@ -117,8 +109,6 @@ public class LevelsManagerTest extends CommonTestSetup {
         when(pipeliner.addIsland(any())).thenReturn(cf);
 
         // Island
-        //when(addon.getIslands()).thenReturn(im);
-        //uuid = UUID.randomUUID();
         ImmutableSet<UUID> iset = ImmutableSet.of(uuid);
         when(island.getMemberSet()).thenReturn(iset);
         when(island.getOwner()).thenReturn(uuid);
@@ -160,13 +150,6 @@ public class LevelsManagerTest extends CommonTestSetup {
                 "player9",
                 "player10"
                 );
-        // Mock item factory (for itemstacks)
-        /*
-        ItemFactory itemFactory = mock(ItemFactory.class);
-        when(Bukkit.getItemFactory()).thenReturn(itemFactory);
-        ItemMeta itemMeta = mock(ItemMeta.class);
-        when(itemFactory.getItemMeta(any())).thenReturn(itemMeta);
-*/
         // Has perms
         when(player.hasPermission(anyString())).thenReturn(true);
         // Make island levels
@@ -212,13 +195,7 @@ public class LevelsManagerTest extends CommonTestSetup {
         User.clearUsers();
         Mockito.framework().clearInlineMocks();
     }
-/*
-    private static void deleteAll(File file) throws IOException {
-        if (file.exists()) {
-            Files.walk(file.toPath()).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-        }
-    }
-*/
+
     /**
      * Test method for
      * {@link world.bentobox.level.LevelsManager#calculateLevel(UUID, world.bentobox.bentobox.database.objects.Island)}.
@@ -233,9 +210,6 @@ public class LevelsManagerTest extends CommonTestSetup {
         cf.complete(results);
 
         assertEquals(10000L, lm.getLevelsData(island).getLevel());
-        // Map<UUID, Long> tt = lm.getTopTen(world, 10);
-        // assertEquals(1, tt.size());
-        // assertTrue(tt.get(uuid) == 10000);
         assertEquals(10000L, lm.getIslandMaxLevel(world, uuid));
 
         results.setLevel(5000);
