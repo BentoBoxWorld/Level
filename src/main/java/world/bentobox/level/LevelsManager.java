@@ -57,6 +57,7 @@ public class LevelsManager {
         // Set up the database handler to store and retrieve data
         // Note that these are saved by the BentoBox database
         handler = new Database<>(addon, IslandLevels.class);
+        
         // Initialize the cache
         levelsCache = new HashMap<>();
         // Initialize top ten lists
@@ -237,7 +238,6 @@ public class LevelsManager {
      * 
      * @param world        - world where the island is
      * @param targetPlayer - target player UUID
-     * @param ownerOnly    - return level only if the target player is the owner
      * @return Level of the player's island or zero if player is unknown or UUID is
      *         null
      */
@@ -318,6 +318,7 @@ public class LevelsManager {
         } else {
             levelsCache.put(id, new IslandLevels(id));
         }
+        System.out.println("ddd = " + levelsCache.get(id).getLevel());
         // Return cached value
         return levelsCache.get(id);
     }
@@ -492,7 +493,6 @@ public class LevelsManager {
      * member
      * 
      * @param world  - world
-     * @param island - island
      * @param lv     - level
      */
     public void setIslandLevel(@NonNull World world, @NonNull UUID targetPlayer, long lv) {

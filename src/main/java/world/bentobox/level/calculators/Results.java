@@ -173,7 +173,7 @@ public class Results {
     }
 
     /**
-     * @param long1 the initialCount to set
+     * @param count the initialCount to set
      */
     public void setInitialCount(Long count) {
         this.initialCount.set(count);

@@ -17,86 +17,56 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Logger;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Server;
-import org.bukkit.UnsafeValues;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemFactory;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.eclipse.jdt.annotation.NonNull;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
 
-import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.Settings;
 import world.bentobox.bentobox.api.addons.AddonDescription;
 import world.bentobox.bentobox.api.addons.GameModeAddon;
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.DatabaseSetup.DatabaseType;
-import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.bentobox.managers.AddonsManager;
 import world.bentobox.bentobox.managers.CommandsManager;
 import world.bentobox.bentobox.managers.FlagsManager;
 import world.bentobox.bentobox.managers.HooksManager;
-import world.bentobox.bentobox.managers.IslandWorldManager;
-import world.bentobox.bentobox.managers.IslandsManager;
 import world.bentobox.bentobox.managers.PlaceholdersManager;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.config.BlockConfig;
 import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
-import world.bentobox.level.mocks.ServerMocks;
 
 /**
  * @author tastybento
  *
  */
-@SuppressWarnings("deprecation")
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ Bukkit.class, BentoBox.class, User.class, Util.class, ItemsAdderHook.class })
-public class LevelTest {
+public class LevelTest extends CommonTestSetup {
 
 	private static File jFile;
 	@Mock
 	private User user;
-	@Mock
-	private IslandsManager im;
-	@Mock
-	private Island island;
-	@Mock
-	private BentoBox plugin;
 	@Mock
 	private FlagsManager fm;
 	@Mock
 	private GameModeAddon gameMode;
 	@Mock
 	private AddonsManager am;
-	@Mock
-	private BukkitScheduler scheduler;
 
 	@Mock
 	private Settings pluginSettings;
@@ -111,18 +81,14 @@ public class LevelTest {
 	private CompositeCommand cmd;
 	@Mock
 	private CompositeCommand adminCmd;
-	@Mock
-	private World world;
-	private UUID uuid;
 
-	@Mock
-	private PluginManager pim;
 	@Mock
 	private BlockConfig blockConfig;
     @Mock
     private HooksManager hm;
+    private MockedStatic<ItemsAdderHook> itemsAdderMock;
 
-	@BeforeClass
+	@BeforeAll
 	public static void beforeClass() throws IOException {
 		// Make the addon jar
 		jFile = new File("addon.jar");
@@ -151,14 +117,11 @@ public class LevelTest {
 	/**
 	 * @throws java.lang.Exception
 	 */
-    @Before
+	@Override
+    @BeforeEach
 	public void setUp() throws Exception {
+        super.setUp();
         when(plugin.getHooks()).thenReturn(hm);
-
-        Server server = ServerMocks.newServer();
-		// Set up plugin
-		Whitebox.setInternalState(BentoBox.class, "instance", plugin);
-		when(plugin.getLogger()).thenReturn(Logger.getAnonymousLogger());
 
 		// The database type has to be created one line before the thenReturn() to work!
 		DatabaseType value = DatabaseType.JSON;
@@ -166,14 +129,13 @@ public class LevelTest {
 		when(pluginSettings.getDatabaseType()).thenReturn(value);
 
         // ItemsAdderHook
-        PowerMockito.mockStatic(ItemsAdderHook.class, Mockito.RETURNS_MOCKS);
-        when(ItemsAdderHook.isInRegistry(anyString())).thenReturn(true);
+        itemsAdderMock = Mockito.mockStatic(ItemsAdderHook.class, Mockito.RETURNS_MOCKS);
+        itemsAdderMock.when(() -> ItemsAdderHook.isInRegistry(anyString())).thenReturn(true);
 		// Command manager
 		CommandsManager cm = mock(CommandsManager.class);
 		when(plugin.getCommandsManager()).thenReturn(cm);
 
 		// Player
-		Player p = mock(Player.class);
 		// Sometimes use Mockito.withSettings().verboseLogging()
 		when(user.isOp()).thenReturn(false);
 		uuid = UUID.randomUUID();
@@ -182,29 +144,17 @@ public class LevelTest {
 		when(user.getName()).thenReturn("tastybento");
 		User.setPlugin(plugin);
 
-		// Island World Manager
-		IslandWorldManager iwm = mock(IslandWorldManager.class);
-		when(plugin.getIWM()).thenReturn(iwm);
-
 		// Player has island to begin with
 		when(im.getIsland(Mockito.any(), Mockito.any(UUID.class))).thenReturn(island);
-		when(plugin.getIslands()).thenReturn(im);
 
 		// Locales
 		// Return the reference (USE THIS IN THE FUTURE)
 		when(user.getTranslation(Mockito.anyString()))
 				.thenAnswer((Answer<String>) invocation -> invocation.getArgument(0, String.class));
 
-		// Server
-		PowerMockito.mockStatic(Bukkit.class);
-		when(Bukkit.getServer()).thenReturn(server);
-		when(Bukkit.getLogger()).thenReturn(Logger.getAnonymousLogger());
-		when(Bukkit.getPluginManager()).thenReturn(mock(PluginManager.class));
-        when(Bukkit.getBukkitVersion()).thenReturn("");
 
         // Util
-        PowerMockito.mockStatic(Util.class, Mockito.RETURNS_MOCKS);
-        when(Util.inTest()).thenReturn(true);
+        mockedUtil.when(() -> Util.inTest()).thenReturn(true);
 
 		// Addon
 		addon = new Level();
@@ -236,48 +186,27 @@ public class LevelTest {
 		when(plugin.getFlagsManager()).thenReturn(fm);
 		when(fm.getFlags()).thenReturn(Collections.emptyList());
 
-		// Bukkit
-		when(Bukkit.getScheduler()).thenReturn(scheduler);
-		ItemMeta meta = mock(ItemMeta.class);
-		ItemFactory itemFactory = mock(ItemFactory.class);
-		when(itemFactory.getItemMeta(any())).thenReturn(meta);
-		when(Bukkit.getItemFactory()).thenReturn(itemFactory);
-		UnsafeValues unsafe = mock(UnsafeValues.class);
-		when(unsafe.getDataVersion()).thenReturn(777);
-		when(Bukkit.getUnsafe()).thenReturn(unsafe);
-		when(Bukkit.getPluginManager()).thenReturn(pim);
-
 		// placeholders
 		when(plugin.getPlaceholdersManager()).thenReturn(phm);
 
-		// World
-		when(world.getName()).thenReturn("bskyblock-world");
-		// Island
-		when(island.getWorld()).thenReturn(world);
-		when(island.getOwner()).thenReturn(uuid);
 	}
 
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@After
+	@Override
+	@AfterEach
 	public void tearDown() throws Exception {
-        ServerMocks.unsetBukkitServer();
+        super.tearDown();
 		deleteAll(new File("database"));
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void cleanUp() throws Exception {
 		new File("addon.jar").delete();
 		new File("config.yml").delete();
 		new File("blockconfig.yml").delete();
 		deleteAll(new File("addons"));
-	}
-
-	private static void deleteAll(File file) throws IOException {
-		if (file.exists()) {
-			Files.walk(file.toPath()).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-		}
 	}
 
 	/**

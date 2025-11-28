@@ -7,92 +7,62 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.beans.IntrospectionException;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFactory;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.scheduler.BukkitScheduler;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
 
-import com.google.common.collect.ImmutableSet;
-
-import world.bentobox.bentobox.BentoBox;
-import world.bentobox.bentobox.Settings;
-import world.bentobox.bentobox.api.panels.builders.PanelBuilder;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.AbstractDatabaseHandler;
 import world.bentobox.bentobox.database.DatabaseSetup;
-import world.bentobox.bentobox.database.DatabaseSetup.DatabaseType;
 import world.bentobox.bentobox.database.objects.Island;
-import world.bentobox.bentobox.managers.IslandWorldManager;
-import world.bentobox.bentobox.managers.IslandsManager;
 import world.bentobox.bentobox.managers.PlayersManager;
 import world.bentobox.level.calculators.Pipeliner;
 import world.bentobox.level.calculators.Results;
 import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.objects.IslandLevels;
+import world.bentobox.level.objects.LevelsData;
 import world.bentobox.level.objects.TopTenData;
 
 /**
  * @author tastybento
  *
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ Bukkit.class, BentoBox.class, DatabaseSetup.class, PanelBuilder.class })
-public class LevelsManagerTest {
+public class LevelsManagerTest extends CommonTestSetup {
 
     @Mock
-    private static AbstractDatabaseHandler<Object> handler;
+    private AbstractDatabaseHandler<IslandLevels> handler;
     @Mock
-    Level addon;
+    private AbstractDatabaseHandler<LevelsData> levelsDataHandler;
     @Mock
-    private BentoBox plugin;
-    @Mock
-    private Settings pluginSettings;
+    private AbstractDatabaseHandler<TopTenData> topTenHandler;
 
     // Class under test
     private LevelsManager lm;
     @Mock
-    private Island island;
-    @Mock
     private Pipeliner pipeliner;
     private CompletableFuture<Results> cf;
-    private UUID uuid;
-    @Mock
-    private World world;
-    @Mock
-    private Player player;
 
     private ConfigSettings settings;
     @Mock
@@ -102,76 +72,48 @@ public class LevelsManagerTest {
     @Mock
     private Inventory inv;
     @Mock
-    private IslandWorldManager iwm;
-    @Mock
-    private PluginManager pim;
-    @Mock
     private IslandLevels levelsData;
-    @Mock
-    private IslandsManager im;
-    @Mock
-    private BukkitScheduler scheduler;
-
-    @SuppressWarnings("unchecked")
-    @BeforeClass
-    public static void beforeClass() {
-        // This has to be done beforeClass otherwise the tests will interfere with each
-        // other
-        handler = mock(AbstractDatabaseHandler.class);
-        // Database
-        PowerMockito.mockStatic(DatabaseSetup.class);
-        DatabaseSetup dbSetup = mock(DatabaseSetup.class);
-        when(DatabaseSetup.getDatabase()).thenReturn(dbSetup);
-        when(dbSetup.getHandler(any())).thenReturn(handler);
-    }
+    
+    protected Object savedObject;
+    private MockedStatic<DatabaseSetup> mockedDatabaseSetup;
 
     /**
      * @throws java.lang.Exception
      */
-    @SuppressWarnings("deprecation")
-    @Before
+    @SuppressWarnings({ "deprecation", "unchecked" })
+    @Override
+    @BeforeEach
     public void setUp() throws Exception {
-        when(addon.getPlugin()).thenReturn(plugin);
-        // Set up plugin
-        Whitebox.setInternalState(BentoBox.class, "instance", plugin);
+        super.setUp();
+        // Clear any lingering database
+        deleteAll(new File("database"));
+        deleteAll(new File("database_backup"));
+        // Database
+        handler = mock(AbstractDatabaseHandler.class);
+        levelsDataHandler = mock(AbstractDatabaseHandler.class);
+        topTenHandler = mock(AbstractDatabaseHandler.class);
+        // Database
+        mockedDatabaseSetup = Mockito.mockStatic(DatabaseSetup.class);
+        DatabaseSetup dbSetup = mock(DatabaseSetup.class);
+        mockedDatabaseSetup.when(() -> DatabaseSetup.getDatabase()).thenReturn(dbSetup);
+        when(dbSetup.getHandler(eq(IslandLevels.class))).thenReturn(handler);
+        when(dbSetup.getHandler(eq(LevelsData.class))).thenReturn(levelsDataHandler);
+        when(dbSetup.getHandler(eq(TopTenData.class))).thenReturn(topTenHandler);
 
-        // Bukkit
-        PowerMockito.mockStatic(Bukkit.class, Mockito.RETURNS_MOCKS);
-        when(Bukkit.getWorld(anyString())).thenReturn(world);
-        when(Bukkit.getPluginManager()).thenReturn(pim);
-        when(Bukkit.getPlayer(any(UUID.class))).thenReturn(player);
-        when(Bukkit.getScheduler()).thenReturn(scheduler);
-
-        // The database type has to be created one line before the thenReturn() to work!
-        DatabaseType value = DatabaseType.JSON;
-        when(plugin.getSettings()).thenReturn(pluginSettings);
-        when(pluginSettings.getDatabaseType()).thenReturn(value);
-
+        this.databaseSetup(handler);
+        this.databaseSetup(levelsDataHandler);
+        this.databaseSetup(topTenHandler);
+        savedObject = null;
+        
+        
         // Pipeliner
         when(addon.getPipeliner()).thenReturn(pipeliner);
         cf = new CompletableFuture<>();
         when(pipeliner.addIsland(any())).thenReturn(cf);
 
-        // Island
-        when(addon.getIslands()).thenReturn(im);
-        uuid = UUID.randomUUID();
-        ImmutableSet<UUID> iset = ImmutableSet.of(uuid);
-        when(island.getMemberSet()).thenReturn(iset);
-        when(island.getOwner()).thenReturn(uuid);
-        when(island.getWorld()).thenReturn(world);
-        when(island.getUniqueId()).thenReturn(uuid.toString());
-        // Default to uuid's being island owners
-        when(im.hasIsland(eq(world), any(UUID.class))).thenReturn(true);
-        when(im.getIsland(world, uuid)).thenReturn(island);
-        when(im.getIslandById(anyString())).thenReturn(Optional.of(island));
-        when(im.getIslandById(anyString(), eq(false))).thenReturn(Optional.of(island));
-
         // Player
-        when(player.getUniqueId()).thenReturn(uuid);
-        when(player.hasPermission(anyString())).thenReturn(true);
-
-        // World
-        when(world.getName()).thenReturn("bskyblock-world");
+        when(p.getUniqueId()).thenReturn(uuid);
+        when(p.hasPermission(anyString())).thenReturn(true);
 
         // Settings
         settings = new ConfigSettings();
@@ -181,7 +123,7 @@ public class LevelsManagerTest {
         when(user.getTranslation(anyString())).thenAnswer((Answer<String>) invocation -> invocation.getArgument(0, String.class));
         when(user.getTranslation(eq("island.top.gui-heading"), eq("[name]"), anyString(), eq("[rank]"), anyString())).thenReturn("gui-heading");
         when(user.getTranslation(eq("island.top.island-level"),eq("[level]"), anyString())).thenReturn("island-level");
-        when(user.getPlayer()).thenReturn(player);
+        when(user.getPlayer()).thenReturn(p);
 
         // Player Manager
         when(addon.getPlayers()).thenReturn(pm);
@@ -196,17 +138,12 @@ public class LevelsManagerTest {
                 "player9",
                 "player10"
                 );
-        // Mock item factory (for itemstacks)
-        ItemFactory itemFactory = mock(ItemFactory.class);
-        when(Bukkit.getItemFactory()).thenReturn(itemFactory);
-        ItemMeta itemMeta = mock(ItemMeta.class);
-        when(itemFactory.getItemMeta(any())).thenReturn(itemMeta);
 
         // Has perms
-        when(player.hasPermission(anyString())).thenReturn(true);
+        when(p.hasPermission(anyString())).thenReturn(true);
         // Make island levels
 
-        List<Object> islands = new ArrayList<>();
+        List<IslandLevels> islands = new ArrayList<>();
         for (long i = -5; i < 5; i ++) {
             IslandLevels il = new IslandLevels(UUID.randomUUID().toString());
             il.setInitialCount(null);
@@ -223,34 +160,55 @@ public class LevelsManagerTest {
         when(levelsData.getInitialCount()).thenReturn(null);
         when(levelsData.getUniqueId()).thenReturn(uuid.toString());
         when(handler.loadObject(anyString())).thenReturn(levelsData );
+        System.out.println("Hanlder = " + handler);
 
+        // Island Manager
+        when(island.getOwner()).thenReturn(uuid);
+        when(island.getUniqueId()).thenReturn(uuid.toString());
+        when(im.getIsland(world, uuid)).thenReturn(island);
 
         // Inventory GUI
-        when(Bukkit.createInventory(any(), anyInt(), anyString())).thenReturn(inv);
-
-        // IWM
-        when(plugin.getIWM()).thenReturn(iwm);
-        when(iwm.getPermissionPrefix(any())).thenReturn("bskyblock.");
+        mockedBukkit.when(() -> Bukkit.createInventory(any(), anyInt(), anyString())).thenReturn(inv);
 
         lm = new LevelsManager(addon);
-
     }
 
     /**
      * @throws java.lang.Exception
      */
-    @After
+    @Override
+    @AfterEach
     public void tearDown() throws Exception {
-        deleteAll(new File("database"));
-        User.clearUsers();
-        Mockito.framework().clearInlineMocks();
+        super.tearDown();
+        handler.close();
+        this.levelsDataHandler.close();
+        this.topTenHandler.close();
     }
-
-    private static void deleteAll(File file) throws IOException {
-        if (file.exists()) {
-            Files.walk(file.toPath()).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-        }
-    }
+   
+    @SuppressWarnings("unchecked")
+    private void databaseSetup(AbstractDatabaseHandler h) throws Exception {
+        // Save objects
+        when(h.saveObject(any())).thenReturn(CompletableFuture.completedFuture(true));        
+        // Capture the parameter passed to saveObject() and store it in savedObject
+        doAnswer(invocation -> {
+            savedObject = invocation.getArgument(0);
+            return CompletableFuture.completedFuture(true);
+        }).when(h).saveObject(any());
+ 
+        // Now when loadObject() is called, return the savedObject
+        when(h.loadObject(any())).thenAnswer(invocation -> savedObject);
+        
+        // Delete object
+        doAnswer(invocation -> {
+            savedObject = null;
+            return null;
+        }).when(h).deleteObject(any());
+         
+        doAnswer(invocation -> {
+            savedObject = null;
+            return null;
+        }).when(h).deleteID(anyString());
+     }
 
     /**
      * Test method for
@@ -293,6 +251,12 @@ public class LevelsManagerTest {
     /**
      * Test method for
      * {@link world.bentobox.level.LevelsManager#getIslandLevel(org.bukkit.World, java.util.UUID)}.
+     * @throws IntrospectionException 
+     * @throws NoSuchMethodException 
+     * @throws ClassNotFoundException 
+     * @throws InvocationTargetException 
+     * @throws IllegalAccessException 
+     * @throws InstantiationException 
      */
     @Test
     public void testGetIslandLevel() {
@@ -397,9 +361,7 @@ public class LevelsManagerTest {
     public void testLoadTopTens() {
         ArgumentCaptor<Runnable> task = ArgumentCaptor.forClass(Runnable.class);
         lm.loadTopTens();
-        PowerMockito.verifyStatic(Bukkit.class); // 1
-        Bukkit.getScheduler();
-        verify(scheduler).runTaskAsynchronously(eq(plugin), task.capture()); // Capture the task in the scheduler
+        verify(sch).runTaskAsynchronously(eq(plugin), task.capture()); // Capture the task in the scheduler
         task.getValue().run(); // run it
         verify(addon).log("Generating rankings");
         verify(addon).log("Generated rankings for bskyblock-world");
