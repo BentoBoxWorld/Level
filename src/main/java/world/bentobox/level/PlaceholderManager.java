@@ -7,11 +7,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.bukkit.Keyed;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.World;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.CreatureSpawner;
@@ -19,10 +19,9 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.eclipse.jdt.annotation.Nullable;
-import org.bukkit.Bukkit;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.eclipse.jdt.annotation.Nullable;
 
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.addons.GameModeAddon;
@@ -35,9 +34,12 @@ import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.objects.TopTenData;
 
 /**
- * Handles Level placeholders
- * 
- * @author tastybento
+ * Handles registration and resolution of Level placeholders for the Level addon.
+ *
+ * The class implements:
+ * - registering placeholders via the BentoBox PlaceholdersManager
+ * - resolving top-ten and per-island level values
+ * - mapping blocks/items/spawners to the identifier used by IslandLevels
  *
  */
 public class PlaceholderManager {
@@ -50,6 +52,23 @@ public class PlaceholderManager {
         this.plugin = addon.getPlugin();
     }
 
+    /**
+     * Register placeholders for a given GameModeAddon.
+     *
+     * This method registers a number of placeholders with BentoBox's PlaceholdersManager:
+     * - island level placeholders (formatted, raw, owner-only)
+     * - points / points-to-next-level placeholders
+     * - top-ten placeholders (name, island name, members, level) for ranks 1..10
+     * - visited island placeholder
+     * - mainhand & looking placeholders (value and count)
+     * - dynamic placeholders for each configured block key from the BlockConfig
+     *
+     * The registered placeholders call into the Level manager and IslandLevels to fetch
+     * values. Safety checks are performed so that missing players, islands or data return "0"
+     * or empty strings rather than throwing exceptions.
+     *
+     * @param gm the GameModeAddon for which placeholders are being registered
+     */
     protected void registerPlaceholders(GameModeAddon gm) {
         if (plugin.getPlaceholdersManager() == null)
             return;
@@ -170,15 +189,17 @@ public class PlaceholderManager {
                 // Format the key for the placeholder name (e.g., minecraft_stone, pig_spawner)
                 String placeholderSuffix = configKey.replace(':', '_').replace('.', '_').toLowerCase();
 
-                // Register value placeholder
-                bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_island_value_" + placeholderSuffix,
+                // Register value placeholders
+                String placeholder = gm.getDescription().getName().toLowerCase() + "_island_value_" + placeholderSuffix;
+                bpm.registerPlaceholder(addon, placeholder,
                     user -> String.valueOf(Objects.requireNonNullElse(
                         // Use the configKey directly, getValue handles String keys
                         addon.getBlockConfig().getValue(gm.getOverWorld(), configKey), 0)) 
                 );
 
-                // Register count placeholder
-                bpm.registerPlaceholder(addon, gm.getDescription().getName().toLowerCase() + "_island_count_" + placeholderSuffix,
+                // Register count placeholders
+                placeholder = gm.getDescription().getName().toLowerCase() + "_island_count_" + placeholderSuffix;
+                 bpm.registerPlaceholder(addon, placeholder,
                     user -> {
                         // Convert the String configKey back to the expected Object type (EntityType, Material, String)
                         // for IslandLevels lookup.
@@ -189,15 +210,27 @@ public class PlaceholderManager {
                 );
             });
         }
+        // Register limit placeholders
+        addon.getBlockConfig().getBlockLimits().forEach((configKey, configValue) -> {
+         // Format the key for the placeholder name (e.g., minecraft_stone, pig_spawner)
+            String placeholderSuffix = configKey.replace(':', '_').replace('.', '_').toLowerCase();
+            String placeholder = gm.getDescription().getName().toLowerCase() + "_island_limit_" + placeholderSuffix;
+            bpm.registerPlaceholder(addon, placeholder, user -> String.valueOf(configValue));
+        });
     }
 
     /**
      * Get the name of the owner of the island who holds the rank in this world.
-     * 
-     * @param world    world
-     * @param rank     rank 1 to 10
-     * @param weighted if true, then the weighted rank name is returned
-     * @return rank name
+     *
+     * Behavior / notes:
+     * - rank is clamped between 1 and Level.TEN
+     * - when weighted == true, the weighted top-ten is used; otherwise the plain top-ten is used
+     * - returns an empty string if a rank is not available or owner is null
+     *
+     * @param world    world to look up the ranking in
+     * @param rank     1-based rank (will be clamped)
+     * @param weighted whether to use the weighted top-ten
+     * @return owner name or empty string
      */
     String getRankName(World world, int rank, boolean weighted) {
         // Ensure rank is within bounds
@@ -216,12 +249,14 @@ public class PlaceholderManager {
     }
 
     /**
-     * Get the island name for this rank
-     * 
-     * @param world    world
-     * @param rank     rank 1 to 10
-     * @param weighted if true, then the weighted rank name is returned
-     * @return name of island or nothing if there isn't one
+     * Get the island name for this rank.
+     *
+     * Similar behavior to getRankName, but returns the island's name (or empty string).
+     *
+     * @param world    world to look up the island in
+     * @param rank     1-based rank (clamped)
+     * @param weighted whether to use the weighted list
+     * @return name of island or empty string
      */
     String getRankIslandName(World world, int rank, boolean weighted) {
         // Ensure rank is within bounds
@@ -237,12 +272,16 @@ public class PlaceholderManager {
     }
 
     /**
-     * Gets a comma separated string of island member names
-     * 
-     * @param world    world
-     * @param rank     rank to request
-     * @param weighted if true, then the weighted rank name is returned
-     * @return comma separated string of island member names
+     * Gets a comma separated string of island member names for a given ranked island.
+     *
+     * - Members are filtered to those at or above RanksManager.MEMBER_RANK.
+     * - Members are sorted by rank descending for consistent ordering.
+     * - If the island is missing or has no members, returns an empty string.
+     *
+     * @param world    world to look up
+     * @param rank     rank in the top-ten (1..10)
+     * @param weighted whether to use weighted top-ten
+     * @return comma-separated member names, or empty string
      */
     String getRankMembers(World world, int rank, boolean weighted) {
         // Ensure rank is within bounds
@@ -269,12 +308,15 @@ public class PlaceholderManager {
     }
 
     /**
-     * Get the level for the rank requested
-     * 
-     * @param world    world
-     * @param rank     rank wanted
-     * @param weighted true if weighted (level/number of team members)
-     * @return level for the rank requested
+     * Get the level for the rank requested.
+     *
+     * - Returns a formatted level string using the manager's formatLevel helper.
+     * - If a value is missing, manager.formatLevel receives null which should handle the fallback.
+     *
+     * @param world    world to query
+     * @param rank     rank 1..10 (clamped)
+     * @param weighted whether to fetch weighted level
+     * @return string representation of the level for the rank
      */
     String getRankLevel(World world, int rank, boolean weighted) {
         // Ensure rank is within bounds
@@ -288,11 +330,11 @@ public class PlaceholderManager {
     }
 
     /**
-     * Return the rank of the player in a world
-     * 
+     * Return the rank of the player in a world.
+     *
      * @param world world
      * @param user  player
-     * @return rank where 1 is the top rank.
+     * @return rank where 1 is the top rank as a String; returns empty string for null user
      */
     private String getRankValue(World world, User user) {
         if (user == null) {
@@ -304,6 +346,13 @@ public class PlaceholderManager {
                 .values().stream().filter(l -> l > level).count() + 1);
     }
 
+    /**
+     * Return the level for the island the user is currently visiting (if any).
+     *
+     * @param gm   the GameModeAddon (used to map to the overworld)
+     * @param user the user to check
+     * @return island level string for the visited island, or empty/ "0" when not applicable
+     */
     String getVisitedIslandLevel(GameModeAddon gm, User user) {
         if (user == null || !gm.inWorld(user.getWorld()))
             return "";
@@ -314,10 +363,16 @@ public class PlaceholderManager {
 
     /**
      * Gets the most specific identifier object for a block.
-     * NOTE: Does not currently support getting custom block IDs (e.g., ItemsAdder)
-     * directly from the Block object due to hook limitations.
-     * @param block The block
-     * @return EntityType, Material, or null if air/invalid.
+     *
+     * The identifier is one of:
+     * - EntityType for mob spawners (when the spawner block contains a specific spawned type)
+     * - Material for regular blocks
+     * - null for air or unknown/invalid blocks
+     *
+     * This is used to map the block to the same identifier the BlockConfig and IslandLevels use.
+     *
+     * @param block The block to inspect, null-safe
+     * @return an EntityType or Material, or null for air/unknown
      */
     @Nullable
     private Object getBlockIdentifier(@Nullable Block block) {
@@ -345,13 +400,22 @@ public class PlaceholderManager {
 
     /**
      * Gets the most specific identifier object for an ItemStack.
-     * Prioritizes standard Bukkit methods for spawners.
-     * Adds support for reading "spawnermeta:type" NBT tag via PDC.
-     * Returns null for spawners if the specific type cannot be determined.
-     * Supports ItemsAdder items.
-     * @param itemStack The ItemStack
-     * @return EntityType, Material (for standard blocks), String (for custom items),
-     *         or null (if air, invalid, or unidentified spawner).
+     *
+     * This method attempts to:
+     * 1) Resolve a specific EntityType for spawner items via BlockStateMeta or a PersistentDataContainer key.
+     *    If the exact spawned mob cannot be determined, it returns null for spawner items so counts
+     *    are not incorrectly attributed.
+     * 2) If ItemsAdder is present, check for custom item Namespaced ID and return it (String).
+     * 3) Fallback to returning the Material for block-like items, otherwise null for non-blocks.
+     *
+     * The return type is one of:
+     * - EntityType (specific spawner type)
+     * - Material (normal block-type items)
+     * - String (custom items IDs like ItemsAdder)
+     * - null (air, invalid item, or unidentified spawner item)
+     *
+     * @param itemStack the item to inspect (may be null)
+     * @return EntityType, Material, String, or null
      */
     @Nullable
     private Object getItemIdentifier(@Nullable ItemStack itemStack) {
@@ -422,8 +486,14 @@ public class PlaceholderManager {
     }
 
     /**
-     * Helper method to convert a String key from the config (e.g., "pig_spawner", "minecraft:stone")
-     * back into the corresponding Object (EntityType, Material, String) used by IslandLevels.
+     * Convert a configuration key string (from the block config) into the identifier object
+     * used by IslandLevels.
+     *
+     * - Handles "pig_spawner" style keys and resolves them to EntityType where possible.
+     * - Resolves namespaced Material keys using Bukkit's Registry.
+     * - Returns the original string for custom items (ItemsAdder) when present in registry.
+     * - Returns Material.SPAWNER for generic "spawner" key, otherwise null if unresolvable.
+     *
      * @param configKey The key string from block config.
      * @return EntityType, Material, String identifier, or null if not resolvable.
      */
@@ -482,10 +552,12 @@ public class PlaceholderManager {
 
     /**
      * Gets the block count for a specific identifier object in a user's island.
+     * This is a thin wrapper that validates inputs and returns "0" when missing.
+     *
      * @param gm GameModeAddon
      * @param user User requesting the count
      * @param identifier The identifier object (EntityType, Material, String)
-     * @return String representation of the count.
+     * @return String representation of the count (zero when not available)
      */
     private String getBlockCount(GameModeAddon gm, User user, @Nullable Object identifier) {
         if (user == null || identifier == null) {
@@ -496,7 +568,12 @@ public class PlaceholderManager {
 
     /**
      * Gets the block count for a specific identifier object from IslandLevels.
-     * This now correctly uses EntityType or Material as keys based on `DetailsPanel`'s logic.
+     *
+     * - Fetches the Island for the user and then the IslandLevels data.
+     * - IslandLevels stores counts in two maps (mdCount and uwCount) depending on how values
+     *   are classified; we add both to provide the complete count.
+     * - Returns "0" if island or data is unavailable.
+     *
      * @param gm GameModeAddon
      * @param user User to get count for
      * @param identifier The identifier object (EntityType, Material, String)
@@ -520,5 +597,4 @@ public class PlaceholderManager {
 
         return String.valueOf(count);
     }
-
 }
