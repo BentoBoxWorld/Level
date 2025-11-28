@@ -240,7 +240,7 @@ public class BlockConfig {
 
     /**
      * Return true if the block should be hidden
-     * @param m block material or entity type of spawner
+     * @param obj object that can be a material or string
      * @return true if hidden
      */
     public boolean isHiddenBlock(Object obj) {
@@ -254,7 +254,7 @@ public class BlockConfig {
 
     /**
      * Return true if the block should not be hidden
-     * @param m block material
+     * @param obj object that can be a material or string
      * @return false if hidden
      */
     public boolean isNotHiddenBlock(Object obj) {

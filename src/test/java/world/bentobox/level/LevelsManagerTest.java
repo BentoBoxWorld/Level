@@ -12,11 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,36 +23,24 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFactory;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.scheduler.BukkitScheduler;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
 
 import com.google.common.collect.ImmutableSet;
 
-import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.Settings;
-import world.bentobox.bentobox.api.panels.builders.PanelBuilder;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.AbstractDatabaseHandler;
 import world.bentobox.bentobox.database.DatabaseSetup;
 import world.bentobox.bentobox.database.DatabaseSetup.DatabaseType;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.managers.IslandWorldManager;
-import world.bentobox.bentobox.managers.IslandsManager;
 import world.bentobox.bentobox.managers.PlayersManager;
 import world.bentobox.level.calculators.Pipeliner;
 import world.bentobox.level.calculators.Results;
@@ -68,29 +52,18 @@ import world.bentobox.level.objects.TopTenData;
  * @author tastybento
  *
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ Bukkit.class, BentoBox.class, DatabaseSetup.class, PanelBuilder.class })
-public class LevelsManagerTest {
+public class LevelsManagerTest extends CommonTestSetup {
 
     @Mock
-    private static AbstractDatabaseHandler<Object> handler;
-    @Mock
-    Level addon;
-    @Mock
-    private BentoBox plugin;
+    private AbstractDatabaseHandler<Object> handler;
     @Mock
     private Settings pluginSettings;
 
     // Class under test
     private LevelsManager lm;
     @Mock
-    private Island island;
-    @Mock
     private Pipeliner pipeliner;
     private CompletableFuture<Results> cf;
-    private UUID uuid;
-    @Mock
-    private World world;
     @Mock
     private Player player;
 
@@ -104,43 +77,26 @@ public class LevelsManagerTest {
     @Mock
     private IslandWorldManager iwm;
     @Mock
-    private PluginManager pim;
-    @Mock
     private IslandLevels levelsData;
-    @Mock
-    private IslandsManager im;
-    @Mock
-    private BukkitScheduler scheduler;
-
-    @SuppressWarnings("unchecked")
-    @BeforeClass
-    public static void beforeClass() {
-        // This has to be done beforeClass otherwise the tests will interfere with each
-        // other
-        handler = mock(AbstractDatabaseHandler.class);
-        // Database
-        PowerMockito.mockStatic(DatabaseSetup.class);
-        DatabaseSetup dbSetup = mock(DatabaseSetup.class);
-        when(DatabaseSetup.getDatabase()).thenReturn(dbSetup);
-        when(dbSetup.getHandler(any())).thenReturn(handler);
-    }
+    //@Mock
+    //private BukkitScheduler scheduler;
 
     /**
      * @throws java.lang.Exception
      */
-    @SuppressWarnings("deprecation")
-    @Before
+    @SuppressWarnings("unchecked")
+    @Override
+    @BeforeEach
     public void setUp() throws Exception {
+        super.setUp();
+        
+        handler = mock(AbstractDatabaseHandler.class);
+        // Database
+        MockedStatic<DatabaseSetup> mockedDatabaseSetup = Mockito.mockStatic(DatabaseSetup.class);
+        DatabaseSetup dbSetup = mock(DatabaseSetup.class);
+        mockedDatabaseSetup.when(() -> DatabaseSetup.getDatabase()).thenReturn(dbSetup);
+        when(dbSetup.getHandler(any())).thenReturn(handler);
         when(addon.getPlugin()).thenReturn(plugin);
-        // Set up plugin
-        Whitebox.setInternalState(BentoBox.class, "instance", plugin);
-
-        // Bukkit
-        PowerMockito.mockStatic(Bukkit.class, Mockito.RETURNS_MOCKS);
-        when(Bukkit.getWorld(anyString())).thenReturn(world);
-        when(Bukkit.getPluginManager()).thenReturn(pim);
-        when(Bukkit.getPlayer(any(UUID.class))).thenReturn(player);
-        when(Bukkit.getScheduler()).thenReturn(scheduler);
 
         // The database type has to be created one line before the thenReturn() to work!
         DatabaseType value = DatabaseType.JSON;
@@ -153,8 +109,6 @@ public class LevelsManagerTest {
         when(pipeliner.addIsland(any())).thenReturn(cf);
 
         // Island
-        when(addon.getIslands()).thenReturn(im);
-        uuid = UUID.randomUUID();
         ImmutableSet<UUID> iset = ImmutableSet.of(uuid);
         when(island.getMemberSet()).thenReturn(iset);
         when(island.getOwner()).thenReturn(uuid);
@@ -196,12 +150,6 @@ public class LevelsManagerTest {
                 "player9",
                 "player10"
                 );
-        // Mock item factory (for itemstacks)
-        ItemFactory itemFactory = mock(ItemFactory.class);
-        when(Bukkit.getItemFactory()).thenReturn(itemFactory);
-        ItemMeta itemMeta = mock(ItemMeta.class);
-        when(itemFactory.getItemMeta(any())).thenReturn(itemMeta);
-
         // Has perms
         when(player.hasPermission(anyString())).thenReturn(true);
         // Make island levels
@@ -226,10 +174,10 @@ public class LevelsManagerTest {
 
 
         // Inventory GUI
-        when(Bukkit.createInventory(any(), anyInt(), anyString())).thenReturn(inv);
+        mockedBukkit.when(() -> Bukkit.createInventory(any(), anyInt(), anyString())).thenReturn(inv);
 
         // IWM
-        when(plugin.getIWM()).thenReturn(iwm);
+       // when(plugin.getIWM()).thenReturn(iwm);
         when(iwm.getPermissionPrefix(any())).thenReturn("bskyblock.");
 
         lm = new LevelsManager(addon);
@@ -239,17 +187,13 @@ public class LevelsManagerTest {
     /**
      * @throws java.lang.Exception
      */
-    @After
+    @Override
+    @AfterEach
     public void tearDown() throws Exception {
+        super.tearDown();
         deleteAll(new File("database"));
         User.clearUsers();
         Mockito.framework().clearInlineMocks();
-    }
-
-    private static void deleteAll(File file) throws IOException {
-        if (file.exists()) {
-            Files.walk(file.toPath()).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-        }
     }
 
     /**
@@ -266,9 +210,6 @@ public class LevelsManagerTest {
         cf.complete(results);
 
         assertEquals(10000L, lm.getLevelsData(island).getLevel());
-        // Map<UUID, Long> tt = lm.getTopTen(world, 10);
-        // assertEquals(1, tt.size());
-        // assertTrue(tt.get(uuid) == 10000);
         assertEquals(10000L, lm.getIslandMaxLevel(world, uuid));
 
         results.setLevel(5000);
@@ -397,9 +338,8 @@ public class LevelsManagerTest {
     public void testLoadTopTens() {
         ArgumentCaptor<Runnable> task = ArgumentCaptor.forClass(Runnable.class);
         lm.loadTopTens();
-        PowerMockito.verifyStatic(Bukkit.class); // 1
-        Bukkit.getScheduler();
-        verify(scheduler).runTaskAsynchronously(eq(plugin), task.capture()); // Capture the task in the scheduler
+        mockedBukkit.verify(() -> Bukkit.getScheduler());
+        verify(sch).runTaskAsynchronously(eq(plugin), task.capture()); // Capture the task in the scheduler
         task.getValue().run(); // run it
         verify(addon).log("Generating rankings");
         verify(addon).log("Generated rankings for bskyblock-world");
