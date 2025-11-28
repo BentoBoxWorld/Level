@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,6 +24,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Logger;
 
+import org.bukkit.Bukkit;
 import org.eclipse.jdt.annotation.NonNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -95,11 +97,11 @@ public class LevelTest extends CommonTestSetup {
 		// Copy over config file from src folder
 		Path fromPath = Paths.get("src/main/resources/config.yml");
 		Path path = Paths.get("config.yml");
-		Files.copy(fromPath, path);
+		Files.copy(fromPath, path, StandardCopyOption.REPLACE_EXISTING);
 		// Copy over block config file from src folder
 		fromPath = Paths.get("src/main/resources/blockconfig.yml");
 		path = Paths.get("blockconfig.yml");
-		Files.copy(fromPath, path);
+		Files.copy(fromPath, path, StandardCopyOption.REPLACE_EXISTING);
 		try (JarOutputStream tempJarOutputStream = new JarOutputStream(new FileOutputStream(jFile))) {
 			// Added the new files to the jar.
 			try (FileInputStream fis = new FileInputStream(path.toFile())) {
@@ -214,6 +216,7 @@ public class LevelTest extends CommonTestSetup {
      */
 	@Test
     public void testAllLoaded() {
+	    mockedBukkit.when(() -> Bukkit.getWorld("acidisland_world")).thenReturn(null);
         addon.allLoaded();
 		verify(plugin).log("[Level] Level hooking into BSkyBlock");
         verify(cmd, times(4)).getAddon(); // 4 commands
