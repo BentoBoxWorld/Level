@@ -35,6 +35,7 @@ import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.managers.PlaceholdersManager;
 import world.bentobox.bentobox.managers.PlayersManager;
 import world.bentobox.bentobox.managers.RanksManager;
+import world.bentobox.level.config.BlockConfig;
 import world.bentobox.level.objects.IslandLevels;
 
 /**
@@ -72,6 +73,8 @@ public class PlaceholderManagerTest extends CommonTestSetup {
     private @NonNull IslandLevels data;
     @Mock
     private PlayersManager pm;
+    @Mock
+    private BlockConfig bc;
 
     /**
      * @throws java.lang.Exception
@@ -81,8 +84,9 @@ public class PlaceholderManagerTest extends CommonTestSetup {
     public void setUp() throws Exception {
         super.setUp();
 
-        // Users
+        // Addon
         when(addon.getPlayers()).thenReturn(pm);
+        when(addon.getBlockConfig()).thenReturn(bc);
 
         // Users
         when(user.getWorld()).thenReturn(world);
