@@ -31,9 +31,12 @@ import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Slab;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
+
+import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.FurnitureMechanic;
 
 import com.bgsoftware.wildstacker.api.WildStackerAPI;
 import com.bgsoftware.wildstacker.api.objects.StackedBarrel;
@@ -73,6 +76,7 @@ public class IslandLevelCalculator {
     private final int seaHeight;
     private final List<Location> stackedBlocks = new ArrayList<>();
     private final Set<Chunk> chestBlocks = new HashSet<>();
+    private final Set<Chunk> furnitureChunks = new HashSet<>();
     private final Map<Location, Boolean> spawners = new HashMap<>();
 
     /**
@@ -473,6 +477,10 @@ public class IslandLevelCalculator {
     }
 
     private void scanAsync(ChunkPair cp) {
+        // Track chunks for Oraxen furniture entity scanning (done on main thread later)
+        if (BentoBox.getInstance().getHooks().getHook("Oraxen").isPresent()) {
+            furnitureChunks.add(cp.chunk);
+        }
         // Get the chunk coordinates and island boundaries once per chunk scan
         int chunkX = cp.chunk.getX() << 4;
         int chunkZ = cp.chunk.getZ() << 4;
@@ -741,6 +749,7 @@ public class IslandLevelCalculator {
                 // Chunk finished
                 // This was the last chunk. Handle stacked blocks, spawners, chests and exit
                 handleStackedBlocks().thenCompose(v -> handleSpawners()).thenCompose(v -> handleChests())
+                .thenCompose(v -> handleOraxenFurniture())
                 .thenRun(() -> {
                     this.tidyUp();
                     this.getR().complete(getResults());
@@ -779,6 +788,50 @@ public class IslandLevelCalculator {
             futures.add(future);
         }
         // Return a CompletableFuture that completes when all futures are done
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+    }
+
+    /**
+     * Scans entities in each island chunk for Oraxen furniture and counts them toward the island level.
+     * Furniture is entity-based in Oraxen (item displays / armor stands), so it is invisible to the
+     * normal block scanner. Only the base entity of each furniture piece is counted to avoid
+     * double-counting multi-entity furniture.
+     *
+     * @return a CompletableFuture that completes when all chunks have been checked
+     */
+    private CompletableFuture<Void> handleOraxenFurniture() {
+        if (!BentoBox.getInstance().getHooks().getHook("Oraxen").isPresent() || furnitureChunks.isEmpty()) {
+            return CompletableFuture.completedFuture(null);
+        }
+        int minX = island.getMinProtectedX();
+        int maxX = island.getMaxProtectedX();
+        int minZ = island.getMinProtectedZ();
+        int maxZ = island.getMaxProtectedZ();
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        for (Chunk chunk : furnitureChunks) {
+            CompletableFuture<Void> future = Util.getChunkAtAsync(chunk.getWorld(), chunk.getX(), chunk.getZ())
+                    .thenAccept(c -> {
+                        for (Entity entity : c.getEntities()) {
+                            // Only count the root/base entity of each furniture piece
+                            if (!OraxenHook.isBaseEntity(entity)) {
+                                continue;
+                            }
+                            Location loc = entity.getLocation();
+                            // Confirm entity is within the island's protected bounds
+                            if (loc.getBlockX() < minX || loc.getBlockX() >= maxX
+                                    || loc.getBlockZ() < minZ || loc.getBlockZ() >= maxZ) {
+                                continue;
+                            }
+                            FurnitureMechanic mechanic = OraxenHook.getFurnitureMechanic(entity);
+                            if (mechanic == null) {
+                                continue;
+                            }
+                            boolean belowSeaLevel = seaHeight > 0 && loc.getBlockY() <= seaHeight;
+                            checkBlock("oraxen:" + mechanic.getItemID(), belowSeaLevel);
+                        }
+                    });
+            futures.add(future);
+        }
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
