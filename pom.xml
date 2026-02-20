@@ -171,6 +171,12 @@
               <name>Oraxen Repository</name>
               <url>https://repo.oraxen.com/releases</url>
         </repository>
+        <!-- Nexo repo -->
+        <repository>
+            <id>nexo</id>
+            <name>Nexo Repository</name>
+            <url>https://repo.nexomc.com/releases</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -275,6 +281,19 @@
             <groupId>dev.lone</groupId>
             <artifactId>api-itemsadder</artifactId>
             <version>4.0.10</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Nexo -->
+        <dependency>
+            <groupId>com.nexomc</groupId>
+            <artifactId>nexo</artifactId>
+            <version>1.19.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>dev.triumphteam</groupId>
+                    <artifactId>triumph-gui</artifactId>
+                </exclusion>
+            </exclusions>
             <scope>provided</scope>
         </dependency>
         <!-- Oraxen -->

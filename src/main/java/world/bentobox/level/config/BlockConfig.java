@@ -19,6 +19,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 
+import com.nexomc.nexo.api.NexoItems;
+
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.bentobox.hooks.OraxenHook;
@@ -104,6 +106,9 @@ public class BlockConfig {
         // Maybe a custom name space
         if (key.startsWith("oraxen:") && BentoBox.getInstance().getHooks().getHook("Oraxen").isPresent()) {
             return OraxenHook.exists(key.substring(7));
+        }
+        if (key.startsWith("nexo:") && addon.isNexo()) {
+            return NexoItems.exists(key.substring(5));
         }
         // Check ItemsAdder
         return addon.isItemsAdder() && ItemsAdderHook.isInRegistry(key);
