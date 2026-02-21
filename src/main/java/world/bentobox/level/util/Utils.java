@@ -161,6 +161,8 @@ public class Utils
                 // Remove prefix
                 if (key.startsWith("oraxen:")) {
                     key = key.substring(7);
+                } else if (key.startsWith("nexo:")) {
+                    key = key.substring(5);
                 }
             }
 

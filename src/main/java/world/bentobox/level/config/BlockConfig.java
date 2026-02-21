@@ -19,6 +19,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 
+import com.nexomc.nexo.api.NexoItems;
+
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.bentobox.hooks.OraxenHook;
@@ -104,6 +106,9 @@ public class BlockConfig {
         // Maybe a custom name space
         if (key.startsWith("oraxen:") && BentoBox.getInstance().getHooks().getHook("Oraxen").isPresent()) {
             return OraxenHook.exists(key.substring(7));
+        }
+        if (key.startsWith("nexo:") && addon.isNexo()) {
+            return NexoItems.exists(key.substring(5));
         }
         // Check ItemsAdder
         return addon.isItemsAdder() && ItemsAdderHook.isInRegistry(key);
@@ -240,7 +245,7 @@ public class BlockConfig {
 
     /**
      * Return true if the block should be hidden
-     * @param m block material or entity type of spawner
+     * @param obj object that can be a material or string
      * @return true if hidden
      */
     public boolean isHiddenBlock(Object obj) {
@@ -254,7 +259,7 @@ public class BlockConfig {
 
     /**
      * Return true if the block should not be hidden
-     * @param m block material
+     * @param obj object that can be a material or string
      * @return false if hidden
      */
     public boolean isNotHiddenBlock(Object obj) {
@@ -287,6 +292,13 @@ public class BlockConfig {
      */
     public Map<World, Map<String, Integer>> getWorldBlockValues() {
         return worldBlockValues;
+    }
+
+    /**
+     * @return the blockLimits
+     */
+    public Map<String, Integer> getBlockLimits() {
+        return blockLimits;
     }
 
 }

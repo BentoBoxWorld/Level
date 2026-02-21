@@ -488,4 +488,12 @@ public class Level extends Addon {
         return !getSettings().isDisableItemsAdder() && getPlugin().getHooks().getHook("ItemsAdder").isPresent();
     }
 
+    /**
+     * @return true if the Nexo plugin is enabled and not disabled in config
+     */
+    public boolean isNexo() {
+        return !getSettings().getDisabledPluginHooks().contains("Nexo")
+                && Bukkit.getPluginManager().isPluginEnabled("Nexo");
+    }
+
 }
