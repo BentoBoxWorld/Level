@@ -383,6 +383,43 @@ public class LevelsManagerTest extends CommonTestSetup {
 
     /**
      * Test method for
+     * {@link world.bentobox.level.LevelsManager#getTopTen(org.bukkit.World, int)}.
+     * Verifies that the top ten is sorted in descending order by level.
+     */
+    @Test
+    public void testGetTopTenSortOrder() {
+        lm.createAndCleanRankings(world);
+        Map<World, TopTenData> ttl = lm.getTopTenLists();
+        Map<String, Long> tt = ttl.get(world).getTopTen();
+        // Add islands in non-sorted order, mimicking the reported issue
+        String island65 = UUID.randomUUID().toString();
+        String island1065 = UUID.randomUUID().toString();
+        String island500 = UUID.randomUUID().toString();
+        String island200 = UUID.randomUUID().toString();
+        // Insert in arbitrary order
+        tt.put(island65, 65L);
+        tt.put(island1065, 1065L);
+        tt.put(island500, 500L);
+        tt.put(island200, 200L);
+        when(im.getIslandById(island65)).thenReturn(Optional.of(island));
+        when(im.getIslandById(island1065)).thenReturn(Optional.of(island));
+        when(im.getIslandById(island500)).thenReturn(Optional.of(island));
+        when(im.getIslandById(island200)).thenReturn(Optional.of(island));
+
+        Map<String, Long> topTen = lm.getTopTen(world, Level.TEN);
+        // Verify descending order
+        long previousLevel = Long.MAX_VALUE;
+        for (Long level : topTen.values()) {
+            assertTrue("Top ten not in descending order: " + level + " should be <= " + previousLevel,
+                    level <= previousLevel);
+            previousLevel = level;
+        }
+        // Verify highest is first
+        assertEquals(1065L, topTen.values().iterator().next().longValue());
+    }
+
+    /**
+     * Test method for
      * {@link world.bentobox.level.LevelsManager#getRank(World, UUID)}
      */
     @Test
