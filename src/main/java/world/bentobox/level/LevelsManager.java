@@ -82,6 +82,8 @@ public class LevelsManager {
                 && hasTopTenPerm(island.getWorld(), island.getOwner())) {
             topTenLists.computeIfAbsent(island.getWorld(), k -> new TopTenData(island.getWorld())).getTopTen()
                     .put(island.getUniqueId(), lv);
+            // Invalidate the cache for this world because of the update
+            cache.remove(island.getWorld());
             return true;
         }
         return false;
