@@ -767,9 +767,10 @@ public class DetailsPanel {
                     Material.getMaterial(m.name().substring(0, m.name().length() - 10) + "_SIGN"), Material.OAK_SIGN);
         }
         if (Tag.WALL_HANGING_SIGNS.isTagged(m)) {
-            // Wall signs end in _HANGING_WALL_SIGN 
+            // Wall hanging signs end in _WALL_HANGING_SIGN
             return Objects.requireNonNullElse(
-                    Material.getMaterial(m.name().substring(0, m.name().length() - 18) + "_SIGN"), Material.OAK_SIGN);
+                    Material.getMaterial(m.name().substring(0, m.name().length() - 18) + "_HANGING_SIGN"),
+                    Material.OAK_HANGING_SIGN);
         }
 
         return switch (m) {
@@ -790,7 +791,8 @@ public class DetailsPanel {
                 DRAGON_WALL_HEAD, PIGLIN_WALL_HEAD ->
             Material.SKELETON_SKULL;
         case SWEET_BERRY_BUSH -> Material.SWEET_BERRIES;
-        case WEEPING_VINES_PLANT, TWISTING_VINES_PLANT -> Material.VINE;
+        case WEEPING_VINES_PLANT -> Material.WEEPING_VINES;
+        case TWISTING_VINES_PLANT -> Material.TWISTING_VINES;
         case CAVE_VINES, CAVE_VINES_PLANT -> Material.GLOW_BERRIES;
         case BIG_DRIPLEAF_STEM -> Material.BIG_DRIPLEAF;
         case BAMBOO_SAPLING, POTTED_BAMBOO -> Material.BAMBOO;
