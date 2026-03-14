@@ -670,7 +670,6 @@ public class ValuePanel
     private Material getIcon(String key) {
         // Filter out some names
         key = key.replaceAll("wall_", "");
-        key = key.replaceAll("_hanging", "");
         Material icon = Registry.MATERIAL.get(NamespacedKey.fromString(key));
         if (icon == null && key.endsWith("_spawner")) {
             icon = Registry.MATERIAL.get(NamespacedKey.fromString(key.substring(0, key.length() - 2) + "_egg"));
@@ -691,8 +690,8 @@ public class ValuePanel
             case END_PORTAL: return Material.BLACK_STAINED_GLASS_PANE;
             case SOUL_FIRE: return Material.SOUL_TORCH;
             case WALL_TORCH: return Material.TORCH;
-            case TWISTING_VINES_PLANT: return Material.VINE;
-            case CAVE_VINES_PLANT: return Material.VINE;
+            case TWISTING_VINES_PLANT: return Material.TWISTING_VINES;
+            case CAVE_VINES, CAVE_VINES_PLANT: return Material.GLOW_BERRIES;
             case BAMBOO_SAPLING: return Material.BAMBOO;
             case KELP_PLANT: return Material.KELP;
             case SWEET_BERRY_BUSH: return Material.SWEET_BERRIES;
@@ -715,8 +714,11 @@ public class ValuePanel
             if (Tag.FLOWER_POTS.isTagged(icon)) {
                 return Material.FLOWER_POT;
             }
-            if (Tag.WALL_SIGNS.isTagged(icon) || Tag.ALL_HANGING_SIGNS.isTagged(icon)) {
+            if (Tag.WALL_SIGNS.isTagged(icon)) {
                 return Material.OAK_SIGN;
+            }
+            if (Tag.ALL_HANGING_SIGNS.isTagged(icon)) {
+                return Material.OAK_HANGING_SIGN;
             }
             if (Tag.CANDLE_CAKES.isTagged(icon)) {
                 return Material.CAKE;
