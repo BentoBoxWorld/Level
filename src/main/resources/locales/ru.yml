@@ -1,0 +1,215 @@
+# ######################################################################################## #
+# Это YML файл. Будьте осторожны при редактировании. Проверяйте свои правки                #
+# в YAML валидаторе, например, на http://yaml-online-parser.appspot.com                    #
+# ######################################################################################## #
+
+admin:
+  level:
+    parameters: <игрок>
+    description: рассчитать уровень острова для игрока
+    sethandicap:
+      parameters: <игрок> [+/-]<гандикап>
+      description: 'установить или изменить гандикап острова. Например, +10 уберёт 10 очков, 30 установит гандикап в 30, а -20 добавит 20 очков.'
+      changed: '<green>Начальный гандикап острова изменён с [number] на [new_number].</green>'
+      invalid-level: '<red>Неверный гандикап. Используйте целое число.</red>'
+  levelstatus:
+    description: показать, сколько островов находится в очереди на сканирование
+    islands-in-queue: '<green>Островов в очереди: [number]</green>'
+  top:
+    description: открывает панель с десяткой лучших по уровню острова
+    unknown-world: '<red>Неизвестный мир!</red>'
+    display: '<white>[rank]. </white><green>[name] </green><gray>- </gray><aqua>[level]</aqua>'
+    remove:
+      description: удалить игрока из десятки лучших по уровню острова
+      parameters: <игрок>
+  stats:
+    description: показать статистику по островам на этом сервере
+    title: Статистика островов сервера
+    world: '<green>[name]</green>'
+    no-data: '<red>Нет данных для обработки.</red>'
+    average-level: 'Средний уровень острова: [number]'
+    median-level: 'Медианный уровень острова: [number]'
+    mode-level: 'Модальный уровень острова: [number]'
+    highest-level: 'Наивысший уровень острова: [number]'
+    lowest-level: 'Низший уровень острова: [number]'
+    distribution: 'Распределение уровней островов:'
+    islands: остров(а)
+island:
+  level:
+    parameters: <игрок>
+    description: рассчитать уровень вашего острова
+    calculating: '<green>Вычисление уровня...</green>'
+    estimated-wait: '<green>Предполагаемое ожидание: [number] секунд.</green>'
+    in-queue: '<green>Вы номер [number] в очереди.</green>'
+    island-level-is: '<green>Уровень острова: <aqua>[level]</aqua></green>'
+    required-points-to-next-level: '<green>Прогресс уровня: <gold>[progress]</gold><aqua>/</aqua><yellow>[levelcost] </yellow>очков.</green>'
+    deaths: '<red>([number] смертей)</red>'
+    cooldown: '<red>Вы должны подождать <aqua>[time] </aqua>секунд, прежде чем повторить это.</red>'
+    in-progress: '<gold>Вычисление уровня острова уже выполняется...</gold>'
+    time-out: '<red>Вычисление уровня заняло слишком много времени. Пожалуйста, попробуйте позже.</red>'
+  detail:
+    description: показать информацию о блоках на вашем острове
+  top:
+    description: показать десятку лучших по уровню острова
+    gui-title: '<green>Десятка лучших</green>'
+    gui-heading: '<gold>[name]: <aqua>[rank]</aqua></gold>'
+    island-level: '<aqua>Уровень [level]</aqua>'
+    warp-to: '<green>Телепортация на остров [name]</green>'
+  
+  level-details:
+    above-sea-level-blocks: Блоки выше уровня моря
+    spawners: Спавнера
+    underwater-blocks: Подводные блоки
+    all-blocks: Все блоки
+    no-island: '<red>Нет острова!</red>'
+    names-island: 'Остров [name]'
+    syntax: '[name] x [number]'
+    hint: '<red>Перейдите на уровень, чтобы просмотреть отчёт по блокам.</red>'
+
+level:
+  commands:
+    value:
+      parameters: '[HAND|<материал>]'
+      description: показывает ценность блоков. Добавьте "HAND" в конце, чтобы отобразить ценность предмета в руке.
+  gui:
+    titles:
+      top: '<black><bold>Топ островов</bold></black>'
+      detail-panel: '<black><bold>Остров [name]</bold></black>'
+      value-panel: '<black><bold>Ценность блоков</bold></black>'
+    buttons:
+      island:
+        empty: '<white><bold>Место [name]</bold></white>'
+        name: '<white><bold>[name]</bold></white>'
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        # Текст, заменяющий [name], если у острова нет имени.
+        owners-island: 'Остров [player]'
+        # Текст для [owner] в описании.
+        owner: '<gray><bold>Владелец: </bold><aqua>[player]</aqua></gray>'
+        # Заголовок перед списком участников для [members] в описании
+        members-title: '<gray><bold>Участники:</bold></gray>'
+        # Список каждого участника под заголовком для [members] в описании
+        member: '<aqua> - [player]</aqua>'
+        # Имя неизвестного игрока.
+        unknown: неизвестно
+        # Секция для [place]
+        place: '<gray><italic>[number]. </italic>место</gray>'
+        # Секция для [level]
+        level: '<gray>Уровень: <italic>[number]</italic></gray>'
+      material:
+        name: '<white><bold>[number] x [material]</bold></white>'
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: '<gray>ID блока: <yellow>[id]</yellow></gray>'
+        value: '<gray>Ценность блока: <yellow>[number]</yellow></gray>'
+        limit: '<gray>Лимит блоков: <yellow>[number]</yellow></gray>'
+        count: '<gray>Количество блоков: <yellow>[number]</yellow></gray>'
+        calculated: '<gray>Общая ценность: <yellow>[number]</yellow></gray>'
+      value_blocks:
+        name: '<white><bold>Все блоки с ценностью</bold></white>'
+        description: |-
+          <gray>Показать все блоки имеющие</gray>
+          <gray>ценность на острове.</gray>
+      all_blocks:
+        name: '<white><bold>Все блоки</bold></white>'
+        description: |-
+          <gray>Показать все блоки</gray>
+          <gray>на острове.</gray>
+      above_sea_level:
+        name: '<white><bold>Блоки выше уровня моря</bold></white>'
+        description: |-
+          <gray>Показать блоки, которые находятся</gray>
+          <gray>выше уровня моря.</gray>
+      underwater:
+        name: '<white><bold>Блоки ниже уровня моря</bold></white>'
+        description: |-
+          <gray>Показать блоки, которые находятся</gray>
+          <gray>ниже уровня моря.</gray>
+      spawner:
+        name: '<white><bold>Спавнера</bold></white>'
+        description: '<gray>Показать только спавнера.</gray>'
+        block-name: '<aqua>Спавнер</aqua>'
+      filters:
+        name:
+          name: '<white><bold>Сортировать по имени</bold></white>'
+          description: '<gray>Сортировать все блоки по имени.</gray>'
+        value:
+          name: '<white><bold>Сортировать по ценности</bold></white>'
+          description: '<gray>Сортировать все блоки по их ценности.</gray>'
+        count:
+          name: '<white><bold>Сортировать по количеству</bold></white>'
+          description: '<gray>Сортировать все блоки по их количеству.</gray>'
+      value:
+        name: '<white><bold>[material]</bold></white>'
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: '<gray>ID блока: <yellow>[id]</yellow></gray>'
+        value: '<gray>Ценность блока: <yellow>[number]</yellow></gray>'
+        underwater: '<gray>Ниже уровня моря: <yellow>[number]</yellow></gray>'
+        limit: '<gray>Лимит блоков: <yellow>[number]</yellow></gray>'
+      # Кнопка для возврата на предыдущую страницу в многостраничных интерфейсах.
+      previous:
+        name: '<white><bold>Предыдущая страница</bold></white>'
+        description: '<gray>Переключиться на страницу [number]</gray>'
+      next:
+        name: '<white><bold>Следующая страница</bold></white>'
+        description: '<gray>Переключиться на страницу [number]</gray>'
+      search:
+        name: '<white><bold>Поиск по ID</bold></white>'
+        description: |-
+          <gray>Вписывайте ID блока. Очистить</gray>
+          <gray>поиск можно нажав ПКМ.</gray>
+        search: '<aqua>Значение: [value]</aqua>'
+    tips:
+      click-to-view: '<gray><yellow>Нажмите </yellow>для просмотра.</gray>'
+      click-to-previous: '<gray><yellow>Нажмите </yellow>для просмотра предыдущей страницы.</gray>'
+      click-to-next: '<gray><yellow>Нажмите </yellow>для просмотра следующей страницы.</gray>'
+      click-to-select: '<gray><yellow>Нажмите </yellow>для выбора.</gray>'
+      left-click-to-cycle-up: '<gray><yellow>ЛКМ </yellow>для перебора вверх.</gray>'
+      right-click-to-cycle-down: '<gray><yellow>ПКМ </yellow>для перебора вниз.</gray>'
+      left-click-to-change: '<gray><yellow>ЛКМ </yellow>для редактирования.</gray>'
+      right-click-to-clear: '<gray><yellow>ПКМ </yellow>для очистки.</gray>'
+      click-to-asc: '<gray><yellow>Нажмите </yellow>для сортировки по возрастанию.</gray>'
+      click-to-desc: '<gray><yellow>Нажмите </yellow>для сортировки по убыванию.</gray>'
+      click-to-warp: '<gray><yellow>Нажмите </yellow>для телепортации.</gray>'
+      click-to-visit: '<gray><yellow>Нажмите </yellow>для посещения.</gray>'
+      right-click-to-visit: '<gray><yellow>ПКМ </yellow>для посещения.</gray>'
+  conversations:
+    # Префикс для сообщений, отправляемых сервером.
+    prefix: '<gold><bold>[BentoBox]: </bold></gold><reset>'
+    no-data: '<red>Запустите команду, чтобы просмотреть отчёт по блокам.</red>'
+    # Строка для отмены ввода. (может быть только одна)
+    cancel-string: отмена
+    # Список строк для выхода из ввода. (разделяются запятыми)
+    exit-string: отмена, выход, выйти
+    # Сообщение с запросом ввода значения поиска.
+    write-search: '<yellow>Пожалуйста, введите значение поиска. (Напишите "отмена" для выхода)</yellow>'
+    # Сообщение после обновления значения поиска.
+    search-updated: '<green>Значение поиска обновлено.</green>'
+    # Сообщение, отправляемое пользователю при отмене ввода.
+    cancelled: '<red>Ввод отменён!</red>'
+    # Сообщение, если у указанного материала нет ценности.
+    no-value: '<red>У этого предмета нет ценности.</red>'
+    # Сообщение, если запрошенный материал не существует.
+    unknown-item: '<red>"[material]" не существует в игре.</red>'
+    # Сообщение при запросе ценности конкретного материала.
+    value: '<gray>Ценность "[material]" составляет: <yellow>[value] </yellow>очков.</gray>'
+    value-underwater: '<gray>Ценность "[material]" ниже уровня моря: <yellow>[value]</yellow></gray>'
+    # Сообщение, если у игрока в руке нет предмета.
+    empty-hand: '<red>В вашей руке нет блока.</red>'
+    # Сообщение о количестве размещённых блоков.
+    you-have: '<gray>При последнем подсчёте у вас [number].</gray>'
+    # Сообщение о лимите.
+    you-can-place: '<gray>Вы можете разместить до [number] блоков, и они будут учтены.</gray>'
