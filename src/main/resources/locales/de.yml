@@ -3,42 +3,199 @@ admin:
   level:
     parameters: "<Spieler>"
     description: Berechne das Insel Level für den Spieler
+    sethandicap:
+      parameters: <Spieler> [+/-]<Handicap>
+      description: |
+        Setze oder ändere das Insel-*Handicap*
+        z.B. +10 entfernt 10 Level,
+        30 setzt Handicap auf 30,
+        -20 fügt 20 Level hinzu
+      changed: "&a Das anfängliche Insel-Handicap wurde von [number] auf [new_number] geändert."
+      invalid-level: "&c Ungültiges Handicap. Verwende eine ganze Zahl."
   levelstatus:
-    islands-in-queue: "&aInseln in der Warteschlange: [number]"
+    description: Zeige wie viele Inseln in der Warteschlange für den Scan sind
+    islands-in-queue: "&a Inseln in der Warteschlange: [number]"
   top:
     description: Zeige die Top-10 Liste
-    unknown-world: "&cUnbekannte Welt!"
+    unknown-world: "&c Unbekannte Welt!"
     display: "&f[rank]. &a[name] &7- &b[level]"
     remove:
       description: entferne Spieler von Top-10
       parameters: "<Spieler>"
+  stats:
+    description: "Zeige Statistiken zu Inseln auf diesem Server"
+    title: "Server-Insel-Statistiken"
+    world: "&a [name]"
+    no-data: "&c Keine Daten zum Verarbeiten."
+    average-level: "Durchschnittliches Insel-Level: [number]"
+    median-level: "Medianes Insel-Level: [number]"
+    mode-level: "Häufigstes Insel-Level: [number]"
+    highest-level: "Höchstes Insel-Level: [number]"
+    lowest-level: "Niedrigstes Insel-Level: [number]"
+    distribution: "Insel-Level-Verteilung:"
+    islands: "Inseln"
 island:
   level:
     parameters: "[Spieler]"
     description: Berechne dein Insel Level oder zeige das Level von [Spieler]
-    calculating: "&aBerechne Level..."
-    estimated-wait: "&aGeschätzte Wartezeit: [number] Sekunden"
-    in-queue: "&aSie sind Nummer [number] in der Warteschlange"
-    island-level-is: "&aInsel Level:  &b[level]"
-    required-points-to-next-level: "&a[points] Punkte werden für das nächste Level
-      benötigt"
-    deaths: "&c([number] Tode)"
-    cooldown: "&cDu musst &b[time] &csekunden  warten bevor du das erneut machen kannst."
+    calculating: "&a Berechne Level..."
+    estimated-wait: "&a Geschätzte Wartezeit: [number] Sekunden"
+    in-queue: "&a Du bist Nummer [number] in der Warteschlange"
+    island-level-is: "&a Insel Level: &b[level]"
+    required-points-to-next-level: "&a Level-Fortschritt: &6 [progress]&b /&e [levelcost] &a Punkte"
+    deaths: "&c ([number] Tode)"
+    cooldown: "&c Du musst &b[time] &c Sekunden warten, bevor du das erneut machen kannst."
+    in-progress: "&6 Insel-Level-Berechnung läuft..."
+    time-out: "&c Die Level-Berechnung hat zu lange gedauert. Bitte versuche es später erneut."
+  detail:
+    description: "zeigt Details der Blöcke deiner Insel"
   top:
     description: Zeige die Top-10
-    gui-title: "&aTop Zehn"
+    gui-title: "&a Top Zehn"
     gui-heading: "&6[name]: &B[rank]"
-    island-level: "&BLevel [level]"
-    warp-to: "&aTeleportiere zu  [name]'s Insel"
+    island-level: "&b Level [level]"
+    warp-to: "&a Teleportiere zu [name]'s Insel"
   level-details:
     above-sea-level-blocks: Blöcke über dem Meeresspiegel
     spawners: Spawner
     underwater-blocks: Unterwasserblöcke
     all-blocks: Alle Blöcke
-    no-island: "&cKeine Insel!"
-  value:
-    description: Zeige den Wert jedes Blockes
-    success: "&7Wert: &e[value]"
-    success-underwater: "&7Wert des Blockes Unterwasser: &e[value]"
-    empty-hand: "&cDu hast keinen Block in der Hand"
-    no-value: "&cDas Item hat kein wert!"
+    no-island: "&c Keine Insel!"
+    names-island: "[name]'s Insel"
+    syntax: "[name] x [number]"
+    hint: "&c Führe level aus, um den Block-Bericht zu sehen"
+level:
+  commands:
+    value:
+      parameters: "[hand|<Material>]"
+      description: zeigt den Wert von Blöcken. Füge 'hand' am Ende hinzu, um den Wert des gehaltenen Items anzuzeigen.
+  gui:
+    titles:
+      top: "&0&l Top Inseln"
+      detail-panel: "&0&l [name]'s Insel"
+      value-panel: "&0&l Block Werte"
+    buttons:
+      island:
+        empty: '&f&l [name]. Platz'
+        name: '&f&l [name]'
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: "[player]'s Insel"
+        owner: "&7&l Besitzer: &r&b [player]"
+        members-title: "&7&l Mitglieder:"
+        member: "&b - [player]"
+        unknown: "unbekannt"
+        place: "&7&o [number]. &r&7 Platz"
+        level: "&7 Level: &o [number]"
+      material:
+        name: "&f&l [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "&7 Block-ID: &e [id]"
+        value: "&7 Block-Wert: &e [number]"
+        limit: "&7 Block-Limit: &e [number]"
+        count: "&7 Anzahl der Blöcke: &e [number]"
+        calculated: "&7 Berechneter Wert: &e [number]"
+      value_blocks:
+        name: "&f&l Alle Blöcke mit Wert"
+        description: |-
+          &7 Zeige alle Blöcke
+          &7 mit Wert auf der Insel.
+      all_blocks:
+        name: "&f&l Alle Blöcke"
+        description: |-
+          &7 Zeige alle Blöcke
+          &7 auf der Insel.
+      above_sea_level:
+        name: "&f&l Blöcke über dem Meeresspiegel"
+        description: |-
+          &7 Zeige nur Blöcke
+          &7 die über dem
+          &7 Meeresspiegel sind.
+      underwater:
+        name: "&f&l Blöcke unter dem Meeresspiegel"
+        description: |-
+          &7 Zeige nur Blöcke
+          &7 die unter dem
+          &7 Meeresspiegel sind.
+      spawner:
+        name: "&f&l Spawner"
+        description: |-
+          &7 Zeige nur Spawner.
+        block-name: "&b Spawner"
+      filters:
+        name:
+          name: "&f&l Nach Name sortieren"
+          description: |-
+            &7 Alle Blöcke nach Name sortieren.
+        value:
+          name: "&f&l Nach Wert sortieren"
+          description: |-
+            &7 Alle Blöcke nach Wert sortieren.
+        count:
+          name: "&f&l Nach Anzahl sortieren"
+          description: |-
+            &7 Alle Blöcke nach Anzahl sortieren.
+      value:
+        name: "&f&l [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "&7 Block-ID: &e [id]"
+        value: "&7 Block-Wert: &e [number]"
+        underwater: "&7 Unter dem Meeresspiegel: &e [number]"
+        limit: "&7 Block-Limit: &e [number]"
+      previous:
+        name: "&f&l Vorherige Seite"
+        description: |-
+          &7 Wechsle zu Seite [number]
+      next:
+        name: "&f&l Nächste Seite"
+        description: |-
+          &7 Wechsle zu Seite [number]
+      search:
+        name: "&f&l Suchen"
+        description: |-
+          &7 Suche nach einem bestimmten
+          &7 Wert.
+        search: "&b Wert: [value]"
+    tips:
+      click-to-view: "&e Klicken &7 zum Anzeigen."
+      click-to-previous: "&e Klicken &7 um die vorherige Seite anzuzeigen."
+      click-to-next: "&e Klicken &7 um die nächste Seite anzuzeigen."
+      click-to-select: "&e Klicken &7 zum Auswählen."
+      left-click-to-cycle-up: "&e Linksklick &7 zum Aufwärtsblättern."
+      right-click-to-cycle-down: "&e Rechtsklick &7 zum Abwärtsblättern."
+      left-click-to-change: "&e Linksklick &7 zum Bearbeiten."
+      right-click-to-clear: "&e Rechtsklick &7 zum Löschen."
+      click-to-asc: "&e Klicken &7 um aufsteigend zu sortieren."
+      click-to-desc: "&e Klicken &7 um absteigend zu sortieren."
+      click-to-warp: "&e Klicken &7 zum Teleportieren."
+      click-to-visit: "&e Klicken &7 zum Besuchen."
+      right-click-to-visit: "&e Rechtsklick &7 zum Besuchen."
+  conversations:
+    prefix: "&l&6 [BentoBox]: &r"
+    no-data: "&c Führe level aus, um den Block-Bericht zu sehen."
+    cancel-string: abbrechen
+    exit-string: abbrechen, beenden, verlassen
+    write-search: "&e Bitte gib einen Suchwert ein. (Schreibe 'abbrechen' zum Beenden)"
+    search-updated: "&a Suchwert aktualisiert."
+    cancelled: "&c Gespräch abgebrochen!"
+    no-value: "&c Dieses Item hat keinen Wert."
+    unknown-item: "&c Das '[material]' existiert nicht im Spiel."
+    value: "&7 Der Wert von '[material]' ist: &e[value]"
+    value-underwater: "&7 Der Wert von '[material]' unter dem Meeresspiegel: &e[value]"
+    empty-hand: "&c Du hast keinen Block in der Hand"
+    you-have: "&7 Du hast [number] beim letzten Zählen."
+    you-can-place: "&7 Du kannst bis zu [number] platzieren und sie werden gezählt"
