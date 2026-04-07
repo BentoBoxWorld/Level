@@ -4,8 +4,12 @@ admin:
     parameters: "<player>"
     description: Egy játékos sziget szintjének kiszámítása
     sethandicap:
-      parameters: "<játékos> <hátrány>"
-      description: állítsa be a sziget hátrányát, általában a kezdő sziget szintjét
+      parameters: <player> [+/-]<handicap>
+      description: |
+        a sziget *hátrányának* beállítása vagy megváltoztatása
+        pl. +10 eltávolít 10 szintet,
+        30 a hátrányt 30-ra állítja,
+        -20 hozzáad 20 szintet
       changed: "&a A kezdeti sziget hátrány változott erről [number] erre [new_number]."
       invalid-level: "&c Érvénytelen hátrány. Használj egész számot."
   levelstatus:
@@ -18,6 +22,18 @@ admin:
     remove:
       description: játékos törlése a Top Tízből
       parameters: "<játékos>"
+  stats:
+    description: "sziget statisztikák megjelenítése ezen a szerveren"
+    title: "Szerver Sziget Statisztikák"
+    world: "&a [name]"
+    no-data: "&c Nincs adat a feldolgozáshoz."
+    average-level: "Átlagos sziget szint: [number]"
+    median-level: "Medián sziget szint: [number]"
+    mode-level: "Módusz sziget szint: [number]"
+    highest-level: "Legmagasabb sziget szint: [number]"
+    lowest-level: "Legalacsonyabb sziget szint: [number]"
+    distribution: "Sziget szint eloszlás:"
+    islands: "szigetek"
 island:
   level:
     parameters: "[player]"
@@ -26,18 +42,19 @@ island:
     estimated-wait: "&a Becsült várakozás: [number] másodperc"
     in-queue: "&a Te vagy a(z) [number] a sorban"
     island-level-is: "&aA sziget szint: &b[level]"
-    required-points-to-next-level: "&a[points] pont szükséges a következő szinthez."
+    required-points-to-next-level: "&a Szint előrehaladás: &6 [progress]&b /&e [levelcost] &a pont"
     deaths: "&c([number] halál)"
     cooldown: "&cVárnod kell &b[time] &cmásodpercet, hogy újra használhasd."
+    in-progress: "&6 A sziget szint kiszámítása folyamatban..."
+    time-out: "&c A szint kiszámítása túl sokáig tartott. Kérjük, próbálja újra később."
+  detail:
+    description: "megmutatja a szigeted blokkjainak részleteit"
   top:
     description: Top Tíz lista megtekintése
     gui-title: "&aTop Tíz"
     gui-heading: "&6[name]: &B[rank]"
     island-level: "&BLevel [level]"
     warp-to: "&ATeleportálás [name] szigetére."
-    remove:
-      description: játékos törlése a Top Tízből
-      parameters: "<player>"
   level-details:
     above-sea-level-blocks: Tengerszint Feletti Blokkok
     spawners: Spawner-ek
@@ -47,9 +64,138 @@ island:
     names-island: "[name] szigete"
     syntax: "[name] x [number]"
     hint: "&c Futtassa a szintet a blokk jelentés megjelenítéséhez"
-  value:
-    description: Bármely blokk értékét mutatja
-    success: "&7Ennek a blokknak az értéke: &e[value]"
-    success-underwater: "&7Ennek a blokknak a tengerszint alatti értéke: &e[value]"
-    empty-hand: "&cNincsenek blokkok a kezedben"
-    no-value: "&cEnnek nincs értéke."
+level:
+  commands:
+    value:
+      parameters: "[hand|<material>]"
+      description: megmutatja a blokkok értékét. Adja hozzá a 'hand' szót a végéhez a kézben lévő tárgy értékének megjelenítéséhez.
+  gui:
+    titles:
+      top: "&0&l Top Szigetek"
+      detail-panel: "&0&l [name] szigete"
+      value-panel: "&0&l Blokk Értékek"
+    buttons:
+      island:
+        empty: '&f&l [name]. hely'
+        name: '&f&l [name]'
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: "[player] szigete"
+        owner: "&7&l Tulajdonos: &r&b [player]"
+        members-title: "&7&l Tagok:"
+        member: "&b - [player]"
+        unknown: "ismeretlen"
+        place: "&7&o [number]. &r&7 hely"
+        level: "&7 Szint: &o [number]"
+      material:
+        name: "&f&l [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "&7 Blokk azonosító: &e [id]"
+        value: "&7 Blokk értéke: &e [number]"
+        limit: "&7 Blokk korlát: &e [number]"
+        count: "&7 Blokkok száma: &e [number]"
+        calculated: "&7 Számított érték: &e [number]"
+      value_blocks:
+        name: "&f&l Minden Értékes Blokk"
+        description: |-
+          &7 Megjelenít minden blokkot
+          &7 értékkel a szigeten.
+      all_blocks:
+        name: "&f&l Minden Blokk"
+        description: |-
+          &7 Megjelenít minden blokkot
+          &7 a szigeten.
+      above_sea_level:
+        name: "&f&l Tengerszint Feletti Blokkok"
+        description: |-
+          &7 Csak a tengerszint
+          &7 feletti blokkokat
+          &7 jeleníti meg.
+      underwater:
+        name: "&f&l Tengerszint Alatti Blokkok"
+        description: |-
+          &7 Csak a tengerszint
+          &7 alatti blokkokat
+          &7 jeleníti meg.
+      spawner:
+        name: "&f&l Spawner-ek"
+        description: |-
+          &7 Csak spawner-eket jelenít meg.
+        block-name: "&b Spawner"
+      filters:
+        name:
+          name: "&f&l Rendezés Név szerint"
+          description: |-
+            &7 Minden blokkot név szerint rendez.
+        value:
+          name: "&f&l Rendezés Érték szerint"
+          description: |-
+            &7 Minden blokkot értékük szerint rendez.
+        count:
+          name: "&f&l Rendezés Mennyiség szerint"
+          description: |-
+            &7 Minden blokkot mennyiségük szerint rendez.
+      value:
+        name: "&f&l [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "&7 Blokk azonosító: &e [id]"
+        value: "&7 Blokk értéke: &e [number]"
+        underwater: "&7 Tengerszint alatt: &e [number]"
+        limit: "&7 Blokk korlát: &e [number]"
+      previous:
+        name: "&f&l Előző Oldal"
+        description: |-
+          &7 Váltás [number]. oldalra
+      next:
+        name: "&f&l Következő Oldal"
+        description: |-
+          &7 Váltás [number]. oldalra
+      search:
+        name: "&f&l Keresés"
+        description: |-
+          &7 Keresés egy adott
+          &7 értékre.
+        search: "&b Érték: [value]"
+    tips:
+      click-to-view: "&e Kattints &7 a megtekintéshez."
+      click-to-previous: "&e Kattints &7 az előző oldal megtekintéséhez."
+      click-to-next: "&e Kattints &7 a következő oldal megtekintéséhez."
+      click-to-select: "&e Kattints &7 a kiválasztáshoz."
+      left-click-to-cycle-up: "&e Bal Kattintás &7 a feljebb lépéshez."
+      right-click-to-cycle-down: "&e Jobb Kattintás &7 a lejjebb lépéshez."
+      left-click-to-change: "&e Bal Kattintás &7 a szerkesztéshez."
+      right-click-to-clear: "&e Jobb Kattintás &7 a törléshez."
+      click-to-asc: "&e Kattints &7 a növekvő sorrendű rendezéshez."
+      click-to-desc: "&e Kattints &7 a csökkenő sorrendű rendezéshez."
+      click-to-warp: "&e Kattints &7 a teleportáláshoz."
+      click-to-visit: "&e Kattints &7 a látogatáshoz."
+      right-click-to-visit: "&e Jobb Kattintás &7 a látogatáshoz."
+  conversations:
+    prefix: "&l&6 [BentoBox]: &r"
+    no-data: "&c Futtassa a szintet a blokk jelentés megtekintéséhez."
+    cancel-string: mégse
+    exit-string: mégse, kilép, abbahagyja
+    write-search: "&e Kérjük, adjon meg egy keresési értéket. (Írja be a 'mégse' szót a kilépéshez)"
+    search-updated: "&a Keresési érték frissítve."
+    cancelled: "&c Beszélgetés megszakítva!"
+    no-value: "&c Ennek a tárgynak nincs értéke."
+    unknown-item: "&c A '[material]' nem létezik a játékban."
+    value: "&7 A '[material]' értéke: &e[value]"
+    value-underwater: "&7 A '[material]' értéke tengerszint alatt: &e[value]"
+    empty-hand: "&c Nincs blokk a kezedben"
+    you-have: "&7 Az utolsó számláláskor [number] volt nálad."
+    you-can-place: "&7 Legfeljebb [number] darabot helyezhetsz le és számítanak"
