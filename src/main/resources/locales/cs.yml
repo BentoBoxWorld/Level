@@ -41,11 +41,13 @@ island:
     estimated-wait: '&a Odhadované čekání: [number] sekundy'
     in-queue: '&a Jste číslo [number] ve frontě'
     island-level-is: '&aÚroveň ostrova je &b[level]'
-    required-points-to-next-level: '&a[points] vyžadováno do další úrovně'
+    required-points-to-next-level: '&a Pokrok úrovně: &6 [progress]&b /&e [levelcost] &a bodů'
     deaths: '&c([number] smrtí)'
     cooldown: '&cMusíš čekat &b[time] &csekund, než můžeš příkaz znovu použít'
     in-progress: '&6 Probíhá výpočet úrovně ostrova ...'
     time-out: '&c Výpočet úrovně trval příliš dlouho. Zkuste to prosím znovu později.'
+  detail:
+    description: "zobrazit podrobnosti o blocích vašeho ostrova"
   top:
     description: ukázat TOP 10
     gui-title: '&aTOP 10'
