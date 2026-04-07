@@ -37,7 +37,7 @@ island:
     estimated-wait: '&a预计等待时间: [number]秒'
     in-queue: '&a你处于队列中第[number]个'
     island-level-is: '&a岛屿等级为: &b[level]'
-    required-points-to-next-level: '&a还需[points]点数才能到达下一级'
+    required-points-to-next-level: '&a等级进度: &6 [progress]&b /&e [levelcost] &a点数'
     deaths: '&c([number]次死亡)'
     cooldown: '&c还需等待&b[time]&c秒才能再次使用该指令'
     in-progress: '&6岛屿等级正在计算中...'
@@ -50,6 +50,8 @@ island:
     island-level: '&b等级: [level]'
     warp-to: '&a正在传送到[name]的岛屿'
   
+  detail:
+    description: "显示你的岛屿方块详情"
   level-details:
     above-sea-level-blocks: 海平面以上的方块
     spawners: 刷怪笼
@@ -100,6 +102,11 @@ level:
         limit: '&7方块限制: &e[number]'
         count: '&7方块数量: &e[number]'
         calculated: '&7计算值: &e[number]'
+      value_blocks:
+        name: '&f&l所有有价值的方块'
+        description: |-
+          &7 显示岛屿上所有
+          &7 有价值的方块.
       all_blocks:
         name: '&f&l所有方块'
         description: '&7显示岛屿上所有的方块'
@@ -112,6 +119,7 @@ level:
       spawner:
         name: '&f&l刷怪笼'
         description: '&7只显示刷怪笼'
+        block-name: '&b 刷怪笼'
       filters:
         name:
           name: '&f&l按名称排序'
@@ -171,3 +179,5 @@ level:
     value: '&7物品''[material]''的价值: &e[value]'
     value-underwater: '&7物品''[material]''在海平面以下的价值: &e[value]'
     empty-hand: '&c你的手中没有拿着方块'
+    you-have: '&7 你上次统计时有[number]个.'
+    you-can-place: '&7 你最多可以放置[number]个并让它们被计算在内'
