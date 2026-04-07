@@ -5,33 +5,201 @@
 
 admin:
   level:
-    parameters: "<player>"
+    parameters: "<oyuncu>"
     description: "Bir oyuncunun ada seviyesini hesapla"
+    sethandicap:
+      parameters: <oyuncu> [+/-]<handikap>
+      description: |
+        ada *handikabını* ayarla veya değiştir
+        örn. +10 10 seviye kaldırır,
+        30 handikabı 30'a ayarlar,
+        -20 20 seviye ekler
+      changed: "&a Ada başlangıç handikabı [number] değerinden [new_number] değerine değiştirildi."
+      invalid-level: "&c Geçersiz handikap. Tam sayı kullanın."
+  levelstatus:
+    description: tarama için kaç adanın kuyrukta olduğunu göster
+    islands-in-queue: "&a Kuyrukta bulunan adalar: [number]"
   top:
-    description: "Ilk 10 adayı sırala"
-    unknown-world: "&cBilinmeyen kelime"
+    description: "İlk 10 adayı sırala"
+    unknown-world: "&c Bilinmeyen dünya!"
     display: "&f[rank]. &a[name] &7- &b[level]"
-
+    remove:
+      description: oyuncuyu İlk On'dan kaldır
+      parameters: "<oyuncu>"
+  stats:
+    description: "bu sunucudaki adaların istatistiklerini göster"
+    title: "Sunucu Ada İstatistikleri"
+    world: "&a [name]"
+    no-data: "&c İşlenecek veri yok."
+    average-level: "Ortalama Ada Seviyesi: [number]"
+    median-level: "Medyan Ada Seviyesi: [number]"
+    mode-level: "Mod Ada Seviyesi: [number]"
+    highest-level: "En Yüksek Ada Seviyesi: [number]"
+    lowest-level: "En Düşük Ada Seviyesi: [number]"
+    distribution: "Ada Seviyesi Dağılımı:"
+    islands: "ada"
 island:
-  level: 
-    parameters: "[player]"
-    description: "&7Kendi ada seviyeni hesapla veya başka oyuncunun ada seviyesini öğren"
-    calculating: "&aLevel hesaplanıyor..." 
-    island-level-is: "&7Ada seviyesi &b[level]"
-    required-points-to-next-level: "&7Adayı yükseltmek için &a[points] &7Puan gerekiyor"
-    deaths: "&c(Ölümler: [number])"
-    cooldown: "&7Bunu tekrar yapmak için &b[time] &7beklemelisin"
-    
+  level:
+    parameters: "[oyuncu]"
+    description: "Kendi ada seviyeni hesapla veya başka oyuncunun ada seviyesini öğren"
+    calculating: "&a Seviye hesaplanıyor..."
+    estimated-wait: "&a Tahmini bekleme: [number] saniye"
+    in-queue: "&a Kuyrukta [number]. sıradasın"
+    island-level-is: "&a Ada seviyesi &b[level]"
+    required-points-to-next-level: "&a Seviye ilerlemesi: &6 [progress]&b /&e [levelcost] &a puan"
+    deaths: "&c ([number] ölüm)"
+    cooldown: "&c Bunu tekrar yapmak için &b[time] &c saniye beklemelisin"
+    in-progress: "&6 Ada seviyesi hesaplaması devam ediyor..."
+    time-out: "&c Seviye hesaplaması çok uzun sürdü. Lütfen daha sonra tekrar deneyin."
+  detail:
+    description: "adanın blok ayrıntılarını gösterir"
   top:
-    description: "Ilk 10 adayı sırala"
-    gui-title: "&aIlk 10 Ada"
+    description: "İlk 10 adayı sırala"
+    gui-title: "&a İlk 10 Ada"
     gui-heading: "&6Sıralama: &3[rank]"
-    island-level: "&7Seviye: &a[level]"
-    warp-to: "&a[name] &7oyuncusunun adasına ışınlanıyor"
-
-  value:
-    description: "Herhangi bir bloğun değerini gösterir"
-    success: "&7Bu bloğun değeri: &e[value]"
-    success-underwater: "&7Deniz seviyesinin altındaki bu bloğun değeri: &e[value]"
-    empty-hand: "&cElinde hiç blok yok"
-    no-value: "&cBu eşyanın bir değeri yok."
+    island-level: "&a Seviye: &7[level]"
+    warp-to: "&a [name] oyuncusunun adasına ışınlanıyor"
+  level-details:
+    above-sea-level-blocks: Deniz Seviyesi Üstü Bloklar
+    spawners: Spawner'lar
+    underwater-blocks: Su Altı Bloklar
+    all-blocks: Tüm Bloklar
+    no-island: "&c Ada yok!"
+    names-island: "[name]'nin adası"
+    syntax: "[name] x [number]"
+    hint: "&c Blok raporunu görmek için level komutunu çalıştırın"
+level:
+  commands:
+    value:
+      parameters: "[hand|<malzeme>]"
+      description: blokların değerini gösterir. Elinizdeki eşyanın değerini görmek için sona 'hand' ekleyin.
+  gui:
+    titles:
+      top: "&0&l En İyi Adalar"
+      detail-panel: "&0&l [name]'nin adası"
+      value-panel: "&0&l Blok Değerleri"
+    buttons:
+      island:
+        empty: '&f&l [name]. sıra'
+        name: '&f&l [name]'
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: "[player]'nin adası"
+        owner: "&7&l Sahip: &r&b [player]"
+        members-title: "&7&l Üyeler:"
+        member: "&b - [player]"
+        unknown: "bilinmiyor"
+        place: "&7&o [number]. &r&7 sıra"
+        level: "&7 Seviye: &o [number]"
+      material:
+        name: "&f&l [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "&7 Blok ID: &e [id]"
+        value: "&7 Blok değeri: &e [number]"
+        limit: "&7 Blok limiti: &e [number]"
+        count: "&7 Blok sayısı: &e [number]"
+        calculated: "&7 Hesaplanan değer: &e [number]"
+      value_blocks:
+        name: "&f&l Değeri Olan Tüm Bloklar"
+        description: |-
+          &7 Adada değeri olan
+          &7 tüm blokları göster.
+      all_blocks:
+        name: "&f&l Tüm Bloklar"
+        description: |-
+          &7 Adadaki tüm
+          &7 blokları göster.
+      above_sea_level:
+        name: "&f&l Deniz Seviyesi Üstü Bloklar"
+        description: |-
+          &7 Sadece deniz
+          &7 seviyesi üstündeki
+          &7 blokları göster.
+      underwater:
+        name: "&f&l Deniz Seviyesi Altı Bloklar"
+        description: |-
+          &7 Sadece deniz
+          &7 seviyesi altındaki
+          &7 blokları göster.
+      spawner:
+        name: "&f&l Spawner'lar"
+        description: |-
+          &7 Sadece spawner'ları göster.
+        block-name: "&b Spawner"
+      filters:
+        name:
+          name: "&f&l İsme Göre Sırala"
+          description: |-
+            &7 Tüm blokları isme göre sırala.
+        value:
+          name: "&f&l Değere Göre Sırala"
+          description: |-
+            &7 Tüm blokları değerlerine göre sırala.
+        count:
+          name: "&f&l Sayıya Göre Sırala"
+          description: |-
+            &7 Tüm blokları sayılarına göre sırala.
+      value:
+        name: "&f&l [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "&7 Blok ID: &e [id]"
+        value: "&7 Blok değeri: &e [number]"
+        underwater: "&7 Deniz seviyesi altı: &e [number]"
+        limit: "&7 Blok limiti: &e [number]"
+      previous:
+        name: "&f&l Önceki Sayfa"
+        description: |-
+          &7 [number]. sayfaya geç
+      next:
+        name: "&f&l Sonraki Sayfa"
+        description: |-
+          &7 [number]. sayfaya geç
+      search:
+        name: "&f&l Ara"
+        description: |-
+          &7 Belirli bir değer
+          &7 ara.
+        search: "&b Değer: [value]"
+    tips:
+      click-to-view: "&e Tıkla &7 görüntülemek için."
+      click-to-previous: "&e Tıkla &7 önceki sayfayı görüntülemek için."
+      click-to-next: "&e Tıkla &7 sonraki sayfayı görüntülemek için."
+      click-to-select: "&e Tıkla &7 seçmek için."
+      left-click-to-cycle-up: "&e Sol Tıkla &7 yukarı almak için."
+      right-click-to-cycle-down: "&e Sağ Tıkla &7 aşağı almak için."
+      left-click-to-change: "&e Sol Tıkla &7 düzenlemek için."
+      right-click-to-clear: "&e Sağ Tıkla &7 temizlemek için."
+      click-to-asc: "&e Tıkla &7 artan sırada sıralamak için."
+      click-to-desc: "&e Tıkla &7 azalan sırada sıralamak için."
+      click-to-warp: "&e Tıkla &7 ışınlanmak için."
+      click-to-visit: "&e Tıkla &7 ziyaret etmek için."
+      right-click-to-visit: "&e Sağ Tıkla &7 ziyaret etmek için."
+  conversations:
+    prefix: "&l&6 [BentoBox]: &r"
+    no-data: "&c Blok raporunu görmek için level komutunu çalıştırın."
+    cancel-string: iptal
+    exit-string: iptal, çıkış, bırak
+    write-search: "&e Lütfen bir arama değeri girin. (Çıkmak için 'iptal' yazın)"
+    search-updated: "&a Arama değeri güncellendi."
+    cancelled: "&c Konuşma iptal edildi!"
+    no-value: "&c Bu eşyanın değeri yok."
+    unknown-item: "&c '[material]' oyunda mevcut değil."
+    value: "&7 '[material]' değeri: &e[value]"
+    value-underwater: "&7 '[material]' deniz seviyesi altı değeri: &e[value]"
+    empty-hand: "&c Elinde hiç blok yok"
+    you-have: "&7 Son sayımda [number] tanen vardı."
+    you-can-place: "&7 [number] adete kadar yerleştirebilirsin ve sayılırlar"
