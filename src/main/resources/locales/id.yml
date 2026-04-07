@@ -18,6 +18,18 @@ admin:
     remove:
       description: menghapus pemain dari sepuluh besar
       parameters: "<player>"
+  stats:
+    description: "tampilkan statistik pulau di server ini"
+    title: "Statistik Pulau Server"
+    world: "&a [name]"
+    no-data: "&c Tidak ada data untuk diproses."
+    average-level: "Rata-rata Level Pulau: [number]"
+    median-level: "Median Level Pulau: [number]"
+    mode-level: "Modus Level Pulau: [number]"
+    highest-level: "Level Pulau Tertinggi: [number]"
+    lowest-level: "Level Pulau Terendah: [number]"
+    distribution: "Distribusi Level Pulau:"
+    islands: "pulau"
 island:
   level:
     parameters: "[player]"
@@ -26,7 +38,7 @@ island:
     estimated-wait: "&a Perkiraan menunggu: [number] detik"
     in-queue: "&a Kamu berada pada antrian nomor [number]"
     island-level-is: "&a Level pulau adalah &b[level]"
-    required-points-to-next-level: "&a [points] poin dibutuhkan hingga level selanjutnya"
+    required-points-to-next-level: "&a Kemajuan level: &6 [progress]&b /&e [levelcost] &a poin"
     deaths: "&c([number] kematian)"
     cooldown: "&c Kamu harus menunggu &b[time] &c detik sebelum kamu dapat melakukannya
       lagi"
@@ -38,6 +50,8 @@ island:
     gui-heading: "&6[name]: &B[rank]"
     island-level: "&b Level [level]"
     warp-to: "&A Warp ke pulau [name]"
+  detail:
+    description: "menampilkan detail blok pulau kamu"
   level-details:
     above-sea-level-blocks: Blok di atas permukaan laut
     spawners: Spawner
@@ -88,6 +102,11 @@ level:
         limit: "&7 Batas blok: &e [number]"
         count: "&7 Jumlah blok: &e [number]"
         calculated: "&7 Nilai yang dihitung: &e [number]"
+      value_blocks:
+        name: "&f&l Semua Blok Bernilai"
+        description: |-
+          &7 Tampilkan semua blok
+          &7 yang bernilai di pulau.
       all_blocks:
         name: "&f&l Semua blok"
         description: |-
@@ -108,6 +127,7 @@ level:
       spawner:
         name: "&f&l Spawner"
         description: "&7 Hanya tampilkan spawner."
+        block-name: "&b Spawner"
       filters:
         name:
           name: "&f&l Urut berdasarkan Nama"
@@ -169,3 +189,5 @@ level:
     value: "&7 Nilai dari '[material]' adalah: &e[value]"
     value-underwater: "&7Nilai dari '[material]' di bawah permukaan laut: &e[value]"
     empty-hand: "&c Tidak ada blok di tangan mu"
+    you-have: "&7 Kamu memiliki [number] pada hitungan terakhir."
+    you-can-place: "&7 Kamu dapat menempatkan hingga [number] dan membuatnya terhitung"
