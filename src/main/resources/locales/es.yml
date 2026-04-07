@@ -19,6 +19,18 @@ admin:
     remove:
       description: Elimina a un jugador de los diez primeros
       parameters: "<jugador>"
+  stats:
+    description: "mostrar estadísticas de islas en este servidor"
+    title: "Estadísticas de Islas del Servidor"
+    world: "&a [name]"
+    no-data: "&c No hay datos para procesar."
+    average-level: "Nivel promedio de isla: [number]"
+    median-level: "Nivel mediano de isla: [number]"
+    mode-level: "Nivel modal de isla: [number]"
+    highest-level: "Nivel más alto de isla: [number]"
+    lowest-level: "Nivel más bajo de isla: [number]"
+    distribution: "Distribución de niveles de isla:"
+    islands: "islas"
 island:
   level:
     parameters: "[player]"
@@ -27,12 +39,13 @@ island:
     estimated-wait: "&aEspera estimada: [number] segundos"
     in-queue: "&aEstás en el puesto [number] de la cola"
     island-level-is: "&aNivel de isla es de &b[level]"
-    required-points-to-next-level: "&a[points] Puntos requeridos hasta el siguiente
-      nivel."
+    required-points-to-next-level: "&a Progreso de nivel: &6 [progress]&b /&e [levelcost] &a puntos"
     deaths: "&c([number] Muertes)"
     cooldown: "&cDebes esperar &b[time] &csegundos para poder volver a hacer esto."
     in-progress: "&6El Calculo del nivel de la islas está en progreso..."
     time-out: "&cEl calculo del nivel de la isla está tardando. Intente más tarde."
+  detail:
+    description: "muestra el detalle de los bloques de tu isla"
   top:
     description: Muestra el top de islas
     gui-title: "&aTop diez"
@@ -89,6 +102,11 @@ level:
         limit: "&7 Limite de bloques: &e[number]"
         count: "&7 Número de bloques: &e[number]"
         calculated: "&7 Valor calculado: &e[number]"
+      value_blocks:
+        name: "&f&lTodos los Bloques con Valor"
+        description: |-
+          &7 Mostrar todos los bloques
+          &7 con valor en la isla.
       all_blocks:
         name: "&f&lTodos los bloques"
         description: |-
@@ -109,6 +127,7 @@ level:
       spawner:
         name: "&f&lSpawners"
         description: "&7Mostrar solo spawners."
+        block-name: "&b Spawner"
       filters:
         name:
           name: "&f&lOrdenar por nombre"
@@ -170,3 +189,5 @@ level:
     value: "&7 El valor de '[material]' es: &e[value]"
     value-underwater: "&7 El valor de '[material]' por debajo del nivel del mar: &e[value]"
     empty-hand: "&c No hay bloques en tu mano"
+    you-have: "&7 Tienes [number] en el último conteo."
+    you-can-place: "&7 Puedes colocar hasta [number] y que cuenten"
