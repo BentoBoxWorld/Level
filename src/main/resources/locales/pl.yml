@@ -18,6 +18,18 @@ admin:
     remove:
       description: usuwa gracza z Top 10
       parameters: "<gracz>"
+  stats:
+    description: "wyświetl statystyki wysp na tym serwerze"
+    title: "Statystyki Wysp Serwera"
+    world: "&a [name]"
+    no-data: "&c Brak danych do przetworzenia."
+    average-level: "Średni poziom wyspy: [number]"
+    median-level: "Medianowy poziom wyspy: [number]"
+    mode-level: "Modalny poziom wyspy: [number]"
+    highest-level: "Najwyższy poziom wyspy: [number]"
+    lowest-level: "Najniższy poziom wyspy: [number]"
+    distribution: "Rozkład poziomów wysp:"
+    islands: "wyspy"
 island:
   level:
     parameters: "[player]"
@@ -26,7 +38,7 @@ island:
     estimated-wait: "&a Szacowany czas: [number] sekund"
     in-queue: "&a Jestes numerem [number] w kolejce"
     island-level-is: "&aPoziom wyspy wynosi &b[level]"
-    required-points-to-next-level: "&aPozostało [points] punktów do następnego poziomu"
+    required-points-to-next-level: "&a Postęp poziomu: &6 [progress]&b /&e [levelcost] &a punktów"
     deaths: "&c([number] śmierci)"
     cooldown: "&cMusisz zaczekać &b[time] &csekund przed następnym obliczeniem poziomu"
     in-progress: "&6 Trwa obliczanie poziomu twojej wyspy..."
@@ -38,6 +50,8 @@ island:
     gui-heading: "&6[name]: &B[rank]"
     island-level: "&BPoziom [level]"
     warp-to: "&ATeleportowanie do wyspy [name]"
+  detail:
+    description: "wyświetla szczegóły bloków twojej wyspy"
   level-details:
     above-sea-level-blocks: Bloki nad poziomem morza
     spawners: Spawnery
@@ -88,6 +102,11 @@ level:
         limit: "&7 Limit bloków: &e [number]"
         count: "&7 Numer bloku: &e [number]"
         calculated: "&7 Obliczona wartość: &e [number]"
+      value_blocks:
+        name: "&f&l Wszystkie Bloki z Wartością"
+        description: |-
+          &7 Wyświetl wszystkie bloki
+          &7 z wartością na wyspie.
       all_blocks:
         name: "&f&l Wszystkie bloki"
         description: |-
@@ -107,6 +126,7 @@ level:
       spawner:
         name: "&f&l Spawnery"
         description: "&7 Wyświetlaj tylko spawnery."
+        block-name: "&b Spawner"
       filters:
         name:
           name: "&f&l Sortuj według nazwy"
@@ -169,3 +189,5 @@ level:
     value: "&7 Wartość '[material]' to: &e[value]"
     value-underwater: "&7 Wartość „[material]” poniżej poziomu morza: &e[value]"
     empty-hand: "&c W twojej ręce nie ma bloków"
+    you-have: "&7 Masz [number] przy ostatnim zliczaniu."
+    you-can-place: "&7 Możesz umieścić do [number] i będą liczone"
