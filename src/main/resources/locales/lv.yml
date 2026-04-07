@@ -3,33 +3,199 @@ admin:
   level:
     description: aprēķina spēlētāja salas līmeni
     parameters: "<spēlētājs>"
+    sethandicap:
+      parameters: <spēlētājs> [+/-]<handicap>
+      description: |
+        iestata vai maina salas *handicap*
+        piem. +10 noņem 10 līmeņus,
+        30 iestata handicap uz 30,
+        -20 pievieno 20 līmeņus
+      changed: "&a Sākuma salas handicap mainīts no [number] uz [new_number]."
+      invalid-level: "&c Nederīgs handicap. Izmanto veselu skaitli."
+  levelstatus:
+    description: rāda, cik salu ir skenēšanas rindā
+    islands-in-queue: "&a Salas rindā: [number]"
   top:
     description: rādīt labākās 10 salas
     display: "&f[rank]. &a[name] &7- &b[level]"
-    unknown-world: "&cNezināma pasaule!"
+    unknown-world: "&c Nezināma pasaule!"
     remove:
       description: noņemt spēlētāju no labāko desmit saraksta
       parameters: "<spēlētājs>"
+  stats:
+    description: "rādīt salas statistiku šajā serverī"
+    title: "Servera Salas Statistika"
+    world: "&a [name]"
+    no-data: "&c Nav datu apstrādei."
+    average-level: "Vidējais salas līmenis: [number]"
+    median-level: "Mediānais salas līmenis: [number]"
+    mode-level: "Biežākais salas līmenis: [number]"
+    highest-level: "Augstākais salas līmenis: [number]"
+    lowest-level: "Zemākais salas līmenis: [number]"
+    distribution: "Salas līmeņu sadalījums:"
+    islands: "salas"
 island:
   level:
-    calculating: "&aAprēķina līmeni..."
-    cooldown: "&cTev ir jāuzgaida &b[time]&c sekundes, lai vēlreiz aprēķinātu salas
-      līmeni!"
-    deaths: "&c([number] nāves)"
+    calculating: "&a Aprēķina līmeni..."
+    cooldown: "&c Tev ir jāuzgaida &b[time] &c sekundes, lai vēlreiz aprēķinātu salas līmeni!"
+    deaths: "&c ([number] nāves)"
     description: aprēķina tavas salas līmeni, vai parāda spēlētāja [player] līmeni
-    island-level-is: "&aSalas līmenis ir &b[level]"
+    island-level-is: "&a Salas līmenis ir &b[level]"
     parameters: "[player]"
-    required-points-to-next-level: "&aNepieciešami [points] punkti, lai sasniegtu
-      nākošo līmeni"
+    estimated-wait: "&a Paredzamais gaidīšanas laiks: [number] sekundes"
+    in-queue: "&a Tu esi numurs [number] rindā"
+    required-points-to-next-level: "&a Līmeņa progress: &6 [progress]&b /&e [levelcost] &a punkti"
+    in-progress: "&6 Salas līmeņa aprēķins notiek..."
+    time-out: "&c Līmeņa aprēķins ilga pārāk ilgi. Lūdzu, mēģini vēlāk."
+  detail:
+    description: "rāda tavas salas bloku detaļas"
   top:
     description: rādīt labākos 10
     gui-heading: "&6[name]: &B[rank]"
-    gui-title: "&aLabākie 10"
-    island-level: "&BLīmenis [level]"
-    warp-to: "&APārvietoties uz [name] salu."
-  value:
-    description: rādīt vērtību jebkuram blokam
-    empty-hand: "&cTev nav bloks rokās."
-    no-value: "&cŠim blokam/priekšmetam nav vērtības."
-    success: "&7Vērtība šim blokam ir: &e[value]"
-    success-underwater: "&7Vērtība šim blokam zem jūras līmeņa: &e[value]"
+    gui-title: "&a Labākie 10"
+    island-level: "&b Līmenis [level]"
+    warp-to: "&a Pārvietojas uz [name] salu."
+  level-details:
+    above-sea-level-blocks: Bloki virs jūras līmeņa
+    spawners: Spawners
+    underwater-blocks: Zemūdens bloki
+    all-blocks: Visi bloki
+    no-island: "&c Nav salas!"
+    names-island: "[name] sala"
+    syntax: "[name] x [number]"
+    hint: "&c Palaid level, lai redzētu bloku pārskatu"
+level:
+  commands:
+    value:
+      parameters: "[hand|<materiāls>]"
+      description: rāda bloku vērtības. Pievieno 'hand' beigās, lai rādītu rokā esošā priekšmeta vērtību.
+  gui:
+    titles:
+      top: "&0&l Top Salas"
+      detail-panel: "&0&l [name] sala"
+      value-panel: "&0&l Bloku Vērtības"
+    buttons:
+      island:
+        empty: '&f&l [name]. vieta'
+        name: '&f&l [name]'
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: "[player] sala"
+        owner: "&7&l Īpašnieks: &r&b [player]"
+        members-title: "&7&l Dalībnieki:"
+        member: "&b - [player]"
+        unknown: "nezināms"
+        place: "&7&o [number]. &r&7 vieta"
+        level: "&7 Līmenis: &o [number]"
+      material:
+        name: "&f&l [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "&7 Bloka ID: &e [id]"
+        value: "&7 Bloka vērtība: &e [number]"
+        limit: "&7 Bloka limits: &e [number]"
+        count: "&7 Bloku skaits: &e [number]"
+        calculated: "&7 Aprēķinātā vērtība: &e [number]"
+      value_blocks:
+        name: "&f&l Visi Bloki ar Vērtību"
+        description: |-
+          &7 Rādīt visus blokus
+          &7 ar vērtību salā.
+      all_blocks:
+        name: "&f&l Visi Bloki"
+        description: |-
+          &7 Rādīt visus blokus
+          &7 salā.
+      above_sea_level:
+        name: "&f&l Bloki virs jūras līmeņa"
+        description: |-
+          &7 Rādīt tikai blokus
+          &7 kas atrodas virs
+          &7 jūras līmeņa.
+      underwater:
+        name: "&f&l Bloki zem jūras līmeņa"
+        description: |-
+          &7 Rādīt tikai blokus
+          &7 kas atrodas zem
+          &7 jūras līmeņa.
+      spawner:
+        name: "&f&l Spawners"
+        description: |-
+          &7 Rādīt tikai spawnerus.
+        block-name: "&b Spawner"
+      filters:
+        name:
+          name: "&f&l Kārtot pēc Nosaukuma"
+          description: |-
+            &7 Kārtot visus blokus pēc nosaukuma.
+        value:
+          name: "&f&l Kārtot pēc Vērtības"
+          description: |-
+            &7 Kārtot visus blokus pēc vērtības.
+        count:
+          name: "&f&l Kārtot pēc Skaita"
+          description: |-
+            &7 Kārtot visus blokus pēc skaita.
+      value:
+        name: "&f&l [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "&7 Bloka ID: &e [id]"
+        value: "&7 Bloka vērtība: &e [number]"
+        underwater: "&7 Zem jūras līmeņa: &e [number]"
+        limit: "&7 Bloka limits: &e [number]"
+      previous:
+        name: "&f&l Iepriekšējā Lapa"
+        description: |-
+          &7 Pāriet uz lapu [number]
+      next:
+        name: "&f&l Nākamā Lapa"
+        description: |-
+          &7 Pāriet uz lapu [number]
+      search:
+        name: "&f&l Meklēt"
+        description: |-
+          &7 Meklēt konkrētu
+          &7 vērtību.
+        search: "&b Vērtība: [value]"
+    tips:
+      click-to-view: "&e Klikšķini &7 lai skatītu."
+      click-to-previous: "&e Klikšķini &7 lai skatītu iepriekšējo lapu."
+      click-to-next: "&e Klikšķini &7 lai skatītu nākamo lapu."
+      click-to-select: "&e Klikšķini &7 lai izvēlētos."
+      left-click-to-cycle-up: "&e Kreisais Klikšķis &7 lai celtu."
+      right-click-to-cycle-down: "&e Labais Klikšķis &7 lai nolaistu."
+      left-click-to-change: "&e Kreisais Klikšķis &7 lai rediģētu."
+      right-click-to-clear: "&e Labais Klikšķis &7 lai notīrītu."
+      click-to-asc: "&e Klikšķini &7 lai kārtotu augošā secībā."
+      click-to-desc: "&e Klikšķini &7 lai kārtotu dilstošā secībā."
+      click-to-warp: "&e Klikšķini &7 lai teleportētos."
+      click-to-visit: "&e Klikšķini &7 lai apmeklētu."
+      right-click-to-visit: "&e Labais Klikšķis &7 lai apmeklētu."
+  conversations:
+    prefix: "&l&6 [BentoBox]: &r"
+    no-data: "&c Palaid level, lai redzētu bloku pārskatu."
+    cancel-string: atcelt
+    exit-string: atcelt, iziet, pamest
+    write-search: "&e Lūdzu ievadi meklēšanas vērtību. (Raksti 'atcelt' lai izietu)"
+    search-updated: "&a Meklēšanas vērtība atjaunināta."
+    cancelled: "&c Saruna atcelta!"
+    no-value: "&c Šim priekšmetam nav vērtības."
+    unknown-item: "&c '[material]' spēlē nepastāv."
+    value: "&7 '[material]' vērtība ir: &e[value]"
+    value-underwater: "&7 '[material]' vērtība zem jūras līmeņa: &e[value]"
+    empty-hand: "&c Rokās nav bloku"
+    you-have: "&7 Pēdējā skaitīšanā tev bija [number]."
+    you-can-place: "&7 Vari novietot līdz [number] un tie tiks skaitīti"
