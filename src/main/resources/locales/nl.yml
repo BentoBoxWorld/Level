@@ -19,6 +19,18 @@ admin:
     remove:
       description: verwijder speler van de top tien
       parameters: "<speler>"
+  stats:
+    description: "toon statistieken van eilanden op deze server"
+    title: "Server Eiland Statistieken"
+    world: "&a [name]"
+    no-data: "&c Geen gegevens om te verwerken."
+    average-level: "Gemiddeld eilandniveau: [number]"
+    median-level: "Mediaan eilandniveau: [number]"
+    mode-level: "Modus eilandniveau: [number]"
+    highest-level: "Hoogste eilandniveau: [number]"
+    lowest-level: "Laagste eilandniveau: [number]"
+    distribution: "Verdeling eilandniveaus:"
+    islands: "eilanden"
 island:
   level:
     parameters: "[speler]"
@@ -27,7 +39,7 @@ island:
     estimated-wait: "&a Verwachtte wachttijd: [number] seconde"
     in-queue: "&a Jij staat op plek [number] in de wachtrij"
     island-level-is: "&a Eiland level is &b[level]"
-    required-points-to-next-level: "&a [points] punten nodig voor het volgende level"
+    required-points-to-next-level: "&a Voortgang niveau: &6 [progress]&b /&e [levelcost] &a punten"
     deaths: "&c([number] doodgegaan)"
     cooldown: "&c Je moet nog &b[time] &c seconden wachten tot je dit weer kan doen."
     in-progress: "&6 Eiland level wordt berekend..."
@@ -38,6 +50,8 @@ island:
     gui-heading: "&6[name]: &B[rank]"
     island-level: "&b Level [level]"
     warp-to: "&A Teleporteren naar [name]'s eiland"
+  detail:
+    description: "toont details van de blokken op uw eiland"
   level-details:
     above-sea-level-blocks: 'Blokken boven zeeniveau '
     spawners: Monsterkooien
@@ -88,6 +102,11 @@ level:
         limit: "&7 Block limiet: &e [number]"
         count: "&7 Aantal blokken: &e [number]"
         calculated: "&7 Berekende waarde: &e [number]"
+      value_blocks:
+        name: "&f&l Alle Blokken met Waarde"
+        description: |-
+          &7 Toon alle blokken
+          &7 met waarde op het eiland.
       all_blocks:
         name: "&f&l Alle Blokken"
         description: "&7 Toon alle blokken \n&7 op het eiland."
@@ -104,6 +123,7 @@ level:
       spawner:
         name: "&f&l Monsterkooien"
         description: "&7 Toon alleen monsterkooien."
+        block-name: "&b Monsterkooien"
       filters:
         name:
           name: "&f&l Sorteer aan de hand van naam"
@@ -163,3 +183,5 @@ level:
     value: "&7 De waarde van '[material]' is: &e[value]"
     value-underwater: "&7 The waarde van '[material]' onder zeeniveau: &e[value]"
     empty-hand: "&c Je hebt geen blok vast"
+    you-have: "&7 Je hebt [number] bij de laatste telling."
+    you-can-place: "&7 Je kunt tot [number] plaatsen en ze laten meetellen"
