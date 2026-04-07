@@ -38,7 +38,7 @@ island:
     estimated-wait: "&a Приблизне очікування: [number] секунд"
     in-queue: "&a Ви номер [number] у черзі"
     island-level-is: "&a Рівень острова &b[level]"
-    required-points-to-next-level: "&a [points] потрібні бали до наступного рівня"
+    required-points-to-next-level: "&a Прогрес рівня: &6 [progress]&b /&e [levelcost] &a балів"
     deaths: "&c([number] смерті)"
     cooldown: "&c Ви повинні зачекати &b[time] &c секунд, поки ви зможете зробити
       це знову"
@@ -50,6 +50,8 @@ island:
     gui-heading: "&6[name]: &B[rank]"
     island-level: "&b Рівень [level]"
     warp-to: "&A Варп на острів [name]."
+  detail:
+    description: "показує деталі блоків вашого острова"
   level-details:
     above-sea-level-blocks: Блоки над рівнем моря
     spawners: Спавера
@@ -100,6 +102,11 @@ level:
         limit: "&7 Обмеження блоку: &e [number]"
         count: "&7 Кількість блоків: &e [number]"
         calculated: "&7 Розраховане значення: &e [number]"
+      value_blocks:
+        name: "&f&l Усі Блоки з Цінністю"
+        description: |-
+          &7 Показати всі блоки
+          &7 з цінністю на острові.
       all_blocks:
         name: "&f&l Усі блоки"
         description: |-
@@ -118,8 +125,9 @@ level:
           &7, які знаходяться нижче моря
           &7 рівень.
       spawner:
-        name: "&f&l Спанера"
+        name: "&f&l Спавнери"
         description: "&7 Відображати лише спавнери."
+        block-name: "&b Спавнер"
       filters:
         name:
           name: "&f&l Сортувати за назвою"
@@ -182,3 +190,5 @@ level:
     value: "&7 Значення '[material]' таке: &e[value]"
     value-underwater: "&7 Значення '[material]' нижче рівня моря: &e[value]"
     empty-hand: "&c У вашій руці немає блоків"
+    you-have: "&7 У вас є [number] за останнім підрахунком."
+    you-can-place: "&7 Ви можете розмістити до [number] і вони будуть враховані"
