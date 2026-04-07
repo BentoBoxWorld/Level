@@ -2,38 +2,59 @@
 admin:
   level:
     parameters: "<player>"
-    description: 플레이어의 섬레벨을 계산합니다
+    description: 플레이어의 섬 레벨을 계산합니다
     sethandicap:
-      parameters: "<플레이어> <핸디캡>"
-      description: 섬 핸디캡을 설정하십시오. 일반적으로 시작 섬의 레벨
-      changed: "& a 초기 아일랜드 핸디캡이 [번호]에서 [new_number] (으)로 변경되었습니다."
-      invalid-level: "& c 잘못된 핸디캡. 정수를 사용하십시오."
+      parameters: <플레이어> [+/-]<핸디캡>
+      description: |
+        섬 *핸디캡*을 설정하거나 변경합니다
+        예. +10은 레벨 10을 제거하고,
+        30은 핸디캡을 30으로 설정하고,
+        -20은 레벨 20을 추가합니다
+      changed: "&a 초기 섬 핸디캡이 [number]에서 [new_number](으)로 변경되었습니다."
+      invalid-level: "&c 잘못된 핸디캡입니다. 정수를 사용하세요."
   levelstatus:
-    description: 스캔 대기열에 몇 개의 섬이 있는지 표시
-    islands-in-queue: "& a 대기열에있는 섬 : [번호]"
+    description: 스캔 대기열에 있는 섬 수를 표시합니다
+    islands-in-queue: "&a 대기열에 있는 섬: [number]"
   top:
-    unknown-world: "& c 알수없는 월드 입니다"
-    display: "&f[rank]. &a[name] &7-&b[level]"
+    description: 상위 10개 목록을 표시합니다
+    unknown-world: "&c 알 수 없는 세계입니다!"
+    display: "&f[rank]. &a[name] &7- &b[level]"
     remove:
       description: 탑 10에서 플레이어를 제거합니다
       parameters: "<플레이어>"
+  stats:
+    description: "이 서버의 섬 통계를 표시합니다"
+    title: "서버 섬 통계"
+    world: "&a [name]"
+    no-data: "&c 처리할 데이터가 없습니다."
+    average-level: "평균 섬 레벨: [number]"
+    median-level: "중앙값 섬 레벨: [number]"
+    mode-level: "최빈값 섬 레벨: [number]"
+    highest-level: "최고 섬 레벨: [number]"
+    lowest-level: "최저 섬 레벨: [number]"
+    distribution: "섬 레벨 분포:"
+    islands: "섬"
 island:
   level:
     parameters: "[플레이어]"
-    description: 섬 레벨을 계산하거나 [플레이어]의 섬레벨을 보여줍니다
-    calculating: "&a 계산중....\n"
-    estimated-wait: "&a예상 대기 시간 : [번호] 초"
-    in-queue: "& a 당신은 대기열에있는 숫자 [번호]입니다"
-    island-level-is: "& a 섬 레벨은 & b [level]"
-    required-points-to-next-level: "&a [point] 다음 레벨까지 요구되는 경험치"
+    description: 섬 레벨을 계산하거나 [플레이어]의 섬 레벨을 보여줍니다
+    calculating: "&a 계산 중..."
+    estimated-wait: "&a 예상 대기 시간: [number]초"
+    in-queue: "&a 대기열에서 [number]번째입니다"
+    island-level-is: "&a 섬 레벨은 &b[level]입니다"
+    required-points-to-next-level: "&a 레벨 진행: &6 [progress]&b /&e [levelcost] &a 포인트"
     deaths: "&c ([number] 사망)"
-    cooldown: "&c그것을 다시하려면 &b[time]초&c를 기다려야합니다."
+    cooldown: "&c 다시 사용하려면 &b[time]초 &c를 기다려야 합니다."
+    in-progress: "&6 섬 레벨 계산이 진행 중입니다..."
+    time-out: "&c 레벨 계산이 너무 오래 걸렸습니다. 나중에 다시 시도해 주세요."
+  detail:
+    description: "섬 블록의 세부 정보를 표시합니다"
   top:
     description: 탑 10을 보여줍니다
     gui-title: "&a 탑 10"
-    gui-heading: "&6 [name] : &B[rank]"
+    gui-heading: "&6 [name]: &B[rank]"
     island-level: "&b 레벨 [level]"
-    warp-to: "&a[name]님의 섬으로 이동중입니다.."
+    warp-to: "&a [name]님의 섬으로 이동 중입니다..."
   level-details:
     above-sea-level-blocks: 해발 블록
     spawners: 스포너
@@ -42,10 +63,137 @@ island:
     no-island: "&c 섬이 없습니다."
     names-island: "[name]의 섬"
     syntax: "[name] x [number]"
-    hint: "&c 블록 리포트를 보려면 레벨을 해야합니다."
-  value:
-    description: 모든 블록의 값을 보여줍니다
-    success: "&7이 블록의 값은 &e [value]입니다."
-    success-underwater: "&7 해수면 아래의 블록 값 : &e [value]"
-    empty-hand: "& c 손에 블록이 없습니다"
-    no-value: "&c 해당 항목에는 가치가 없습니다."
+    hint: "&c 블록 보고서를 보려면 level을 실행하세요."
+level:
+  commands:
+    value:
+      parameters: "[hand|<재료>]"
+      description: 블록의 가치를 표시합니다. 손에 든 아이템의 가치를 표시하려면 끝에 'hand'를 추가하세요.
+  gui:
+    titles:
+      top: "&0&l 탑 섬"
+      detail-panel: "&0&l [name]의 섬"
+      value-panel: "&0&l 블록 가치"
+    buttons:
+      island:
+        empty: '&f&l [name]. 위치'
+        name: '&f&l [name]'
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: "[player]의 섬"
+        owner: "&7&l 소유자: &r&b [player]"
+        members-title: "&7&l 멤버:"
+        member: "&b - [player]"
+        unknown: "알 수 없음"
+        place: "&7&o [number]. &r&7 위치"
+        level: "&7 레벨: &o [number]"
+      material:
+        name: "&f&l [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "&7 블록 ID: &e [id]"
+        value: "&7 블록 가치: &e [number]"
+        limit: "&7 블록 제한: &e [number]"
+        count: "&7 블록 수: &e [number]"
+        calculated: "&7 계산된 가치: &e [number]"
+      value_blocks:
+        name: "&f&l 가치 있는 모든 블록"
+        description: |-
+          &7 섬에서 가치 있는
+          &7 모든 블록을 표시합니다.
+      all_blocks:
+        name: "&f&l 모든 블록"
+        description: |-
+          &7 섬의 모든 블록을
+          &7 표시합니다.
+      above_sea_level:
+        name: "&f&l 해수면 위의 블록"
+        description: |-
+          &7 해수면 위에 있는
+          &7 블록만 표시합니다.
+      underwater:
+        name: "&f&l 해수면 아래의 블록"
+        description: |-
+          &7 해수면 아래에 있는
+          &7 블록만 표시합니다.
+      spawner:
+        name: "&f&l 스포너"
+        description: |-
+          &7 스포너만 표시합니다.
+        block-name: "&b 스포너"
+      filters:
+        name:
+          name: "&f&l 이름으로 정렬"
+          description: |-
+            &7 모든 블록을 이름으로 정렬합니다.
+        value:
+          name: "&f&l 가치로 정렬"
+          description: |-
+            &7 모든 블록을 가치로 정렬합니다.
+        count:
+          name: "&f&l 개수로 정렬"
+          description: |-
+            &7 모든 블록을 개수로 정렬합니다.
+      value:
+        name: "&f&l [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "&7 블록 ID: &e [id]"
+        value: "&7 블록 가치: &e [number]"
+        underwater: "&7 해수면 아래: &e [number]"
+        limit: "&7 블록 제한: &e [number]"
+      previous:
+        name: "&f&l 이전 페이지"
+        description: |-
+          &7 [number] 페이지로 이동
+      next:
+        name: "&f&l 다음 페이지"
+        description: |-
+          &7 [number] 페이지로 이동
+      search:
+        name: "&f&l 검색"
+        description: |-
+          &7 특정 값을
+          &7 검색합니다.
+        search: "&b 값: [value]"
+    tips:
+      click-to-view: "&e 클릭 &7 하여 보기."
+      click-to-previous: "&e 클릭 &7 하여 이전 페이지 보기."
+      click-to-next: "&e 클릭 &7 하여 다음 페이지 보기."
+      click-to-select: "&e 클릭 &7 하여 선택."
+      left-click-to-cycle-up: "&e 왼쪽 클릭 &7 하여 위로."
+      right-click-to-cycle-down: "&e 오른쪽 클릭 &7 하여 아래로."
+      left-click-to-change: "&e 왼쪽 클릭 &7 하여 편집."
+      right-click-to-clear: "&e 오른쪽 클릭 &7 하여 지우기."
+      click-to-asc: "&e 클릭 &7 하여 오름차순 정렬."
+      click-to-desc: "&e 클릭 &7 하여 내림차순 정렬."
+      click-to-warp: "&e 클릭 &7 하여 워프."
+      click-to-visit: "&e 클릭 &7 하여 방문."
+      right-click-to-visit: "&e 오른쪽 클릭 &7 하여 방문."
+  conversations:
+    prefix: "&l&6 [BentoBox]: &r"
+    no-data: "&c 블록 보고서를 보려면 level을 실행하세요."
+    cancel-string: 취소
+    exit-string: 취소, 종료, 나가기
+    write-search: "&e 검색 값을 입력하세요. ('취소' 입력으로 종료)"
+    search-updated: "&a 검색 값이 업데이트되었습니다."
+    cancelled: "&c 대화가 취소되었습니다!"
+    no-value: "&c 이 아이템에는 가치가 없습니다."
+    unknown-item: "&c '[material]'은 게임에 존재하지 않습니다."
+    value: "&7 '[material]'의 가치는: &e[value]"
+    value-underwater: "&7 '[material]'의 해수면 아래 가치: &e[value]"
+    empty-hand: "&c 손에 블록이 없습니다"
+    you-have: "&7 마지막 계산 시 [number]개 있었습니다."
+    you-can-place: "&7 최대 [number]개까지 배치하면 계산됩니다"
