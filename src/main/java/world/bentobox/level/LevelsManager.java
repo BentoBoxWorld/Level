@@ -557,9 +557,19 @@ public class LevelsManager {
         IslandLevels ld = getLevelsData(island);
         ld.addDonation(donorUUID.toString(), material, count, points);
         handler.saveObjectAsync(ld);
-        // Do not update TopTen here: donations affect future recalculations, and the
-        // stored island level is only updated when setIslandResults(...) persists the
-        // recalculated level data.
+    }
+
+    /**
+     * Queue a full level recalculation for the island. Call this after donations
+     * so that the level/top-ten update immediately.
+     *
+     * @param island the island to recalculate
+     */
+    public void recalculateAfterDonation(@NonNull Island island) {
+        UUID owner = island.getOwner();
+        if (owner != null) {
+            calculateLevel(owner, island);
+        }
     }
 
     /**

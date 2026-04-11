@@ -134,6 +134,7 @@ public class IslandDonateCommand extends ConfirmableCommand {
         }
 
         addon.getManager().donateBlocks(island, user.getUniqueId(), material.name(), amount, points);
+        addon.getManager().recalculateAfterDonation(island);
 
         user.sendMessage("island.donate.hand.success",
                 TextVariables.NUMBER, String.valueOf(amount),
@@ -144,10 +145,10 @@ public class IslandDonateCommand extends ConfirmableCommand {
     @Override
     public Optional<List<String>> tabComplete(User user, String alias, List<String> args) {
         String lastArg = !args.isEmpty() ? args.get(args.size() - 1) : "";
-        if (args.size() <= 2) {
+        if (args.size() <= 1) {
             return Optional.of(Util.tabLimit(List.of("hand"), lastArg));
         }
-        if (args.size() == 3 && "hand".equalsIgnoreCase(args.get(1)) && user.isPlayer()) {
+        if (args.size() == 2 && "hand".equalsIgnoreCase(args.get(0)) && user.isPlayer()) {
             int held = user.getPlayer().getInventory().getItemInMainHand().getAmount();
             if (held > 0) {
                 return Optional.of(Util.tabLimit(List.of(String.valueOf(held)), lastArg));

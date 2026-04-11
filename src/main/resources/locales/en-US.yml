@@ -58,6 +58,7 @@ island:
     no-permission: "<red>You do not have permission to donate blocks on this island."
     no-value: "<red>That block has no level value."
     invalid-amount: "<red>Invalid amount. Use a positive number."
+    invalid-item: "<red>Only blocks with a configured level value can be donated."
     empty: "<red>There are no valid blocks to donate."
     cancelled: "<yellow>Donation cancelled. Items returned."
     success: "<green>Donated [number] blocks for <aqua>[points]<green> points! These points are permanent."

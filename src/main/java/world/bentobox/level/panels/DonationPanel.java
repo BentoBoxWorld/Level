@@ -189,6 +189,8 @@ public class DonationPanel implements Listener {
             user.sendMessage("island.donate.success",
                     POINTS_PLACEHOLDER, Utils.formatNumber(user, totalPoints),
                     TextVariables.NUMBER, String.valueOf(donations.values().stream().mapToInt(Integer::intValue).sum()));
+            // Queue a full level recalculation so the donation is reflected immediately
+            addon.getManager().recalculateAfterDonation(island);
         }
     }
 
@@ -315,7 +317,7 @@ public class DonationPanel implements Listener {
                 inventory.setItem(slot, null);
                 Map<Integer, ItemStack> overflow = player.getInventory().addItem(inSlot);
                 overflow.values().forEach(item -> player.getWorld().dropItemNaturally(player.getLocation(), item));
-                user.sendMessage("island.donate.hand.not-block");
+                user.sendMessage("island.donate.invalid-item");
             }
             updatePreview();
         });
