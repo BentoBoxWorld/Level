@@ -1,6 +1,5 @@
 package world.bentobox.level.commands;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,9 +7,11 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import world.bentobox.bentobox.api.commands.CompositeCommand;
+import world.bentobox.bentobox.api.commands.ConfirmableCommand;
 import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
 import world.bentobox.level.panels.DonationPanel;
 import world.bentobox.level.util.Utils;
@@ -21,7 +22,7 @@ import world.bentobox.level.util.Utils;
  *
  * @author tastybento
  */
-public class IslandDonateCommand extends CompositeCommand {
+public class IslandDonateCommand extends ConfirmableCommand {
 
     private final Level addon;
 
@@ -79,56 +80,79 @@ public class IslandDonateCommand extends CompositeCommand {
             return false;
         }
 
-        Material material = hand.getType();
-        Integer blockValue = addon.getBlockConfig().getValue(getWorld(), material);
+        final Material material = hand.getType();
+        final Integer blockValue = addon.getBlockConfig().getValue(getWorld(), material);
         if (blockValue == null || blockValue <= 0) {
             user.sendMessage("island.donate.no-value");
             return false;
         }
 
-        // Determine amount
-        int amount = hand.getAmount();
+        int requested = hand.getAmount();
         if (args.size() > 1) {
+            if ("help".equalsIgnoreCase(args.get(1))) {
+                showHelp(this, user);
+                return true;
+            }
             try {
-                amount = Integer.parseInt(args.get(1));
-                if (amount < 1) {
+                requested = Integer.parseInt(args.get(1));
+                if (requested < 1) {
                     user.sendMessage("island.donate.invalid-amount");
                     return false;
                 }
-                amount = Math.min(amount, hand.getAmount());
             } catch (NumberFormatException e) {
                 user.sendMessage("island.donate.invalid-amount");
                 return false;
             }
         }
 
-        // Calculate points
+        final int previewAmount = Math.min(requested, hand.getAmount());
+        final long previewPoints = (long) previewAmount * blockValue;
+        final int finalRequested = requested;
+
+        String prompt = user.getTranslation("island.donate.hand.confirm-prompt",
+                TextVariables.NUMBER, String.valueOf(previewAmount),
+                "[material]", Utils.prettifyObject(material, user),
+                "[points]", Utils.formatNumber(user, previewPoints));
+
+        askConfirmation(user, prompt, () -> performHandDonation(user, island, material, blockValue, finalRequested));
+        return true;
+    }
+
+    private void performHandDonation(User user, Island island, Material material, int blockValue, int requested) {
+        ItemStack currentHand = user.getPlayer().getInventory().getItemInMainHand();
+        if (currentHand.getType() != material || currentHand.getAmount() == 0) {
+            user.sendMessage("island.donate.hand.not-block");
+            return;
+        }
+        int amount = Math.min(requested, currentHand.getAmount());
         long points = (long) amount * blockValue;
 
-        // Remove items from hand
-        if (amount >= hand.getAmount()) {
+        if (amount >= currentHand.getAmount()) {
             user.getPlayer().getInventory().setItemInMainHand(null);
         } else {
-            hand.setAmount(hand.getAmount() - amount);
+            currentHand.setAmount(currentHand.getAmount() - amount);
         }
 
-        // Record the donation
         addon.getManager().donateBlocks(island, user.getUniqueId(), material.name(), amount, points);
 
-        // Notify the player
         user.sendMessage("island.donate.hand.success",
                 TextVariables.NUMBER, String.valueOf(amount),
                 "[material]", Utils.prettifyObject(material, user),
-                "[points]", String.valueOf(points));
-
-        return true;
+                "[points]", Utils.formatNumber(user, points));
     }
 
     @Override
     public Optional<List<String>> tabComplete(User user, String alias, List<String> args) {
-        if (args.size() == 1) {
-            return Optional.of(List.of("hand"));
+        String lastArg = !args.isEmpty() ? args.get(args.size() - 1) : "";
+        if (args.size() <= 2) {
+            return Optional.of(Util.tabLimit(List.of("hand"), lastArg));
         }
-        return Optional.of(new ArrayList<>());
+        if (args.size() == 3 && "hand".equalsIgnoreCase(args.get(1)) && user.isPlayer()) {
+            int held = user.getPlayer().getInventory().getItemInMainHand().getAmount();
+            if (held > 0) {
+                return Optional.of(Util.tabLimit(List.of(String.valueOf(held)), lastArg));
+            }
+        }
+        return Optional.of(List.of());
     }
 }

@@ -60,15 +60,16 @@ island:
     invalid-amount: "<red>Invalid amount. Use a positive number."
     empty: "<red>There are no valid blocks to donate."
     cancelled: "<yellow>Donation cancelled. Items returned."
-    success: "<green>Donated [number] blocks for <aqua>[points]<green>points! These points are permanent."
+    success: "<green>Donated [number] blocks for <aqua>[points]<green> points! These points are permanent."
     confirm: "<red><bold>Confirm - Items will be DESTROYED!"
     cancel: "<green><bold>Cancel - Return Items"
     gui-title: "<black><bold>Donate Blocks"
-    gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points] <gray>points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
+    gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
     preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
     hand:
-      success: "<green>Donated [number] x [material] for <aqua>[points]<green>permanent points!"
+      success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"
       not-block: "<red>You must be holding a placeable block to donate."
+      confirm-prompt: "<red>About to DESTROY <gold>[number] x [material]<red> for <aqua>[points]<red> permanent points."
   detail:
     description: "shows detail of your island blocks"
   top:
@@ -164,7 +165,7 @@ level:
         name: "<white><bold>Blocks Under Sea level"
         description: |-
           <gray>Display only blocks
-          <gray>that are bellow sea
+          <gray>that are below sea
           <gray>level.
       spawner:
         name: "<white><bold>Spawners"
@@ -199,7 +200,7 @@ level:
           [id]
         id: "<gray>Block id: <yellow>[id]"
         value: "<gray>Block value: <yellow>[number]"
-        underwater: "<gray>Bellow sea level: <yellow>[number]"
+        underwater: "<gray>Below sea level: <yellow>[number]"
         limit: "<gray>Block limit: <yellow>[number]"
       # Button that is used in multi-page GUIs which allows to return to previous page.
       previous:

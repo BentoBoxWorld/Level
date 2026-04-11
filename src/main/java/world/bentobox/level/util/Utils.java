@@ -7,6 +7,7 @@
 package world.bentobox.level.util;
 
 
+import java.text.NumberFormat;
 import java.util.List;
 
 import org.bukkit.Material;
@@ -21,6 +22,13 @@ public class Utils
 {
 
     private Utils() {} // Private constructor as this is a utility class only with static methods
+
+    /**
+     * Formats a number using the user's locale (e.g. 10500 → "10,500" in en-US, "10.500" in de).
+     */
+    public static String formatNumber(User user, long value) {
+        return NumberFormat.getInstance(user.getLocale()).format(value);
+    }
 
     /**
      * This method sends a message to the user with appended "prefix" text before message.

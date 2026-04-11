@@ -87,7 +87,7 @@ public class DonationPanel implements Listener {
         long currentDonated = addon.getManager().getDonatedPoints(island);
         ItemStack info = createNamedItem(Material.BOOK,
                 user.getTranslation("island.donate.gui-info",
-                        "[points]", String.valueOf(currentDonated)));
+                        "[points]", Utils.formatNumber(user, currentDonated)));
         inventory.setItem(INFO_SLOT, info);
 
         // Cancel button
@@ -135,7 +135,7 @@ public class DonationPanel implements Listener {
         long points = calculateDonationValue();
         ItemStack preview = createNamedItem(Material.EXPERIENCE_BOTTLE,
                 user.getTranslation("island.donate.preview",
-                        "[points]", String.valueOf(points)));
+                        "[points]", Utils.formatNumber(user, points)));
         inventory.setItem(PREVIEW_SLOT, preview);
     }
 
@@ -178,7 +178,7 @@ public class DonationPanel implements Listener {
             user.sendMessage("island.donate.empty");
         } else {
             user.sendMessage("island.donate.success",
-                    "[points]", String.valueOf(totalPoints),
+                    "[points]", Utils.formatNumber(user, totalPoints),
                     TextVariables.NUMBER, String.valueOf(donations.values().stream().mapToInt(Integer::intValue).sum()));
         }
     }
