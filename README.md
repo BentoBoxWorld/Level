@@ -77,6 +77,33 @@ Tell Level which BentoBox game modes it should connect to.
 - **Sum Team Deaths** – Choose whether to track team deaths or just the leader's.
 - **Reset on Island Reset / Team Join** – Wipe the death count when teams change or islands are reset.
 
+### 📐 Level Calculation Formula
+
+The `level-calc` setting in `config.yml` controls how island levels are computed. It supports the following variables:
+
+| Variable | Description |
+|---|---|
+| `blocks` | The total block value points for the island, minus any death penalty |
+| `level_cost` | The value of one island level (see `levelcost` setting) |
+| `island_members` | The number of members currently on the island team |
+
+The formula can use `+`, `-`, `*`, `/`, `^`, `sqrt`, `sin`, `cos`, `tan`, and `log` (natural log). The result is rounded to the nearest whole number.
+
+**Default formula:** `blocks / level_cost`
+
+**Handicap (fairness) example:** To divide the island level equally per member so solo islands remain competitive with larger teams, use:
+
+```yaml
+level-calc: "blocks / level_cost / island_members"
+```
+
+With this formula and the default `level_cost` of `100`, a block worth 100 points would contribute the following to the **island level**:
+- **0.25 levels** per block on an island with 4 members (100 / 100 / 4 = 0.25)
+- **0.33 levels** per block on an island with 3 members (100 / 100 / 3 ≈ 0.33)
+- **1 level** per block on a solo island (100 / 100 / 1 = 1)
+
+This makes competition fairer between solo players and large teams.
+
 ### 🚫 Block Limits
 Cap the number of specific blocks that count toward level (e.g., only 200 DIAMOND_BLOCKs count).
 
