@@ -136,8 +136,11 @@ public class IslandLevelCalculator {
         long modifiedPoints = rawPoints
                 - (addon.getSettings().isZeroNewIslandLevels() ? results.initialCount.get() : 0);
         // Paste in the values to the formula
-        String withValues = calcString.replace("blocks", String.valueOf(modifiedPoints)).replace("level_cost",
-                String.valueOf(this.addon.getSettings().getLevelCost()));
+        // Use Math.max(1, ...) to prevent division by zero if island_members is used in the formula
+        int memberCount = Math.max(1, this.island.getMemberSet().size());
+        String withValues = calcString.replace("island_members", String.valueOf(memberCount))
+                .replace("blocks", String.valueOf(modifiedPoints))
+                .replace("level_cost", String.valueOf(this.addon.getSettings().getLevelCost()));
         // Try and evaluate it
         try {
             return (long) EquationEvaluator.eval(withValues);
@@ -252,6 +255,7 @@ public class IslandLevelCalculator {
         reportLines.add("Total block value count = " + String.format("%,d", results.rawBlockCount.get()));
         reportLines.add("Formula to calculate island level: " + addon.getSettings().getLevelCalc());
         reportLines.add("Level cost = " + addon.getSettings().getLevelCost());
+        reportLines.add("Island members = " + island.getMemberSet().size());
         reportLines.add("Deaths handicap = " + results.deathHandicap.get());
         /*
         if (addon.getSettings().isZeroNewIslandLevels()) {
