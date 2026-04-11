@@ -89,8 +89,9 @@ JaCoCo coverage reports are generated during `mvn verify`.
 | `locales/` | `src/main/resources/locales/` | Translation strings |
 | `panels/` | `src/main/resources/panels/` | GUI layout definitions |
 
-**Panel template upgrades:** Files under `panels/` are copied to the addon's data folder (`plugins/BentoBox/addons/Level/panels/`) on first run and are **not** overwritten on upgrade. If a release modifies a panel template (new tabs, buttons, slots, etc.), the release notes must instruct users to delete the affected on-disk panel file so it regenerates — otherwise existing servers will silently keep the old layout.
+**Panel template upgrades:** Files under `panels/` are copied to the addon's data folder (`plugins/BentoBox/addons/Level/panels/`) on first run and are **not** overwritten on upgrade. If a release modifies a panel template (new tabs, buttons, slots, etc.), the release notes/changelog must explicitly instruct users to delete the affected on-disk panel file so it regenerates — otherwise existing servers will silently keep the old layout.
 
+**Current upgrade-sensitive example:** If `src/main/resources/panels/detail_panel.yml` changes (for example by adding a new `DONATED` tab), existing servers must delete/regenerate `plugins/BentoBox/addons/Level/panels/detail_panel.yml` after upgrading or they will continue using the old panel definition and the new tab will not appear.
 ## Code Conventions
 
 - Null safety via Eclipse JDT annotations (`@NonNull`, `@Nullable`) — honour these on public APIs
