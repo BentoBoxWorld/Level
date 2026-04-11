@@ -60,6 +60,7 @@ public class Level extends Addon {
     public static final Flag BLOCK_DONATION = new Flag.Builder("ISLAND_BLOCK_DONATION", Material.HOPPER)
             .type(Flag.Type.PROTECTION)
             .defaultRank(RanksManager.OWNER_RANK)
+            .minimumRank(RanksManager.MEMBER_RANK)
             .mode(Flag.Mode.BASIC)
             .build();
 
