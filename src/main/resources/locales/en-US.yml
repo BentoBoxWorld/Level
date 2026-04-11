@@ -8,20 +8,20 @@ admin:
     parameters: "<player>"
     description: "calculate the island level for player"
     sethandicap:
-      parameters: <player> [+/-]<handicap>
+      parameters: <player>[+/-]<handicap>
       description: |
         set or change the island *handicap*
         e.g. +10 will remove 10 levels, 
         30 will set handicap to 30,
         -20 will add 20 levels
-      changed: "<green> Initial island handicap changed from [number] to [new_number]."
-      invalid-level: "<red> Invalid handicap. Use an integer."
+      changed: "<green>Initial island handicap changed from [number] to [new_number]."
+      invalid-level: "<red>Invalid handicap. Use an integer."
   levelstatus:
     description: "show how many islands are in the queue for scanning"
-    islands-in-queue: "<green> Islands in queue: [number]"
+    islands-in-queue: "<green>Islands in queue: [number]"
   top:
     description: "show the top ten list"
-    unknown-world: "<red> Unknown world!"
+    unknown-world: "<red>Unknown world!"
     display: "<white>[rank]. <green>[name] <gray>- <aqua>[level]"
     remove:
       description: "remove player from Top Ten"
@@ -29,8 +29,8 @@ admin:
   stats:
     description: "show stats on islands on this server"
     title: "Server Island Stats"
-    world: "<green> [name]"
-    no-data: "<red> No data to process."
+    world: "<green>[name]"
+    no-data: "<red>No data to process."
     average-level: "Average Island Level: [number]"
     median-level: "Median Island Level: [number]"
     mode-level: "Mode Island Level: [number]"
@@ -42,51 +42,51 @@ island:
   level: 
     parameters: "[player]"
     description: "calculate your island level or show the level of [player]"
-    calculating: "<green> Calculating level..."
-    estimated-wait: "<green> Estimated wait: [number] seconds"
-    in-queue: "<green> You are number [number] in the queue"
-    island-level-is: "<green> Island level is <aqua>[level]"
-    required-points-to-next-level: "<green> Level progress: <gold> [progress]<aqua> /<yellow> [levelcost] <green> points"
-    deaths: "<red> ([number] deaths)"
-    cooldown: "<red> You must wait <aqua>[time] <red> seconds until you can do that again"
-    in-progress: "<gold> Island level calculation is in progress..."
-    time-out: "<red> The level calculation took too long. Please try again later."
+    calculating: "<green>Calculating level..."
+    estimated-wait: "<green>Estimated wait: [number] seconds"
+    in-queue: "<green>You are number [number] in the queue"
+    island-level-is: "<green>Island level is <aqua>[level]"
+    required-points-to-next-level: "<green>Level progress: <gold>[progress]<aqua>/<yellow>[levelcost] <green>points"
+    deaths: "<red>([number] deaths)"
+    cooldown: "<red>You must wait <aqua>[time] <red>seconds until you can do that again"
+    in-progress: "<gold>Island level calculation is in progress..."
+    time-out: "<red>The level calculation took too long. Please try again later."
   donate:
     parameters: "[hand [amount]]"
     description: "donate blocks to permanently raise island level"
-    must-be-on-island: "<red> You must be on your island to donate blocks."
-    no-permission: "<red> You do not have permission to donate blocks on this island."
-    no-value: "<red> That block has no level value."
-    invalid-amount: "<red> Invalid amount. Use a positive number."
-    empty: "<red> There are no valid blocks to donate."
-    cancelled: "<yellow> Donation cancelled. Items returned."
-    success: "<green> Donated [number] blocks for <aqua>[points]<green> points! These points are permanent."
-    confirm: "<red><bold> Confirm - Items will be DESTROYED!"
-    cancel: "<green><bold> Cancel - Return Items"
-    gui-title: "<black><bold> Donate Blocks"
-    gui-info: "<gold> Donate blocks to your island|<gray> Currently donated: <gold>[points] <gray>points|<red> Warning: donated items are|<red> destroyed and cannot be returned!"
-    preview: "<yellow> Points to add: <gold>[points]|<red> These items will be destroyed!"
+    must-be-on-island: "<red>You must be on your island to donate blocks."
+    no-permission: "<red>You do not have permission to donate blocks on this island."
+    no-value: "<red>That block has no level value."
+    invalid-amount: "<red>Invalid amount. Use a positive number."
+    empty: "<red>There are no valid blocks to donate."
+    cancelled: "<yellow>Donation cancelled. Items returned."
+    success: "<green>Donated [number] blocks for <aqua>[points]<green>points! These points are permanent."
+    confirm: "<red><bold>Confirm - Items will be DESTROYED!"
+    cancel: "<green><bold>Cancel - Return Items"
+    gui-title: "<black><bold>Donate Blocks"
+    gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points] <gray>points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
+    preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
     hand:
-      success: "<green> Donated [number] x [material] for <aqua>[points]<green> permanent points!"
-      not-block: "<red> You must be holding a placeable block to donate."
+      success: "<green>Donated [number] x [material] for <aqua>[points]<green>permanent points!"
+      not-block: "<red>You must be holding a placeable block to donate."
   detail:
     description: "shows detail of your island blocks"
   top:
     description: "show the Top Ten"
-    gui-title: "<green> Top Ten"
+    gui-title: "<green>Top Ten"
     gui-heading: "<gold>[name]: <aqua>[rank]"
-    island-level: "<aqua> Level [level]"
-    warp-to: "<green> Warping to [name]'s island"
+    island-level: "<aqua>Level [level]"
+    warp-to: "<green>Warping to [name]'s island"
   
   level-details:
     above-sea-level-blocks: "Above Sea Level Blocks"
     spawners: "Spawners"
     underwater-blocks: "Underwater Blocks"
     all-blocks: "All Blocks"
-    no-island: "<red> No island!"
+    no-island: "<red>No island!"
     names-island: "[name]'s island"
     syntax: "[name] x [number]"
-    hint: "<red> Run level to see the block report"
+    hint: "<red>Run level to see the block report"
 
 protection:
   flags:
@@ -104,13 +104,13 @@ level:
       description: "shows the value of blocks. Add 'hand' at the end to display value for item in hand."
   gui:
     titles:
-      top: "<black><bold> Top Islands"
-      detail-panel: "<black><bold> [name]'s island"
-      value-panel: "<black><bold> Block Values"
+      top: "<black><bold>Top Islands"
+      detail-panel: "<black><bold>[name]'s island"
+      value-panel: "<black><bold>Block Values"
     buttons:
       island:
-        empty: '<white><bold> [name]. place'
-        name: '<white><bold> [name]'
+        empty: '<white><bold>[name]. place'
+        name: '<white><bold>[name]'
         description: |-
           [owner]
           [members]
@@ -119,19 +119,19 @@ level:
         # Text that is replacing [name] if island do not have a name
         owners-island: "[player]'s Island"
         # Text for [owner] in description.
-        owner: "<gray><bold> Owner: <reset><aqua> [player]"
+        owner: "<gray><bold>Owner: <reset><aqua>[player]"
         # Title before listing members for [members] in description
-        members-title: "<gray><bold> Members:"
+        members-title: "<gray><bold>Members:"
         # List each member under the title for [members] in description
-        member: "<aqua> - [player]"
+        member: "<aqua>- [player]"
         # Name of unknown player.
         unknown: "unknown"
         # Section for parsing [place]
-        place: "<gray><italic> [number]. <reset><gray> place"
+        place: "<gray><italic>[number]. <reset><gray>place"
         # Section for parsing [level]
-        level: "<gray> Level: <italic> [number]"
+        level: "<gray>Level: <italic>[number]"
       material:
-        name: "<white><bold> [number] x [material]"
+        name: "<white><bold>[number] x [material]"
         description: |-
           [description]
           [count]
@@ -139,122 +139,122 @@ level:
           [calculated]
           [limit]
           [id]
-        id: "<gray> Block id: <yellow> [id]"
-        value: "<gray> Block value: <yellow> [number]"
-        limit: "<gray> Block limit: <yellow> [number]"
-        count: "<gray> Number of blocks: <yellow> [number]"
-        calculated: "<gray> Calculated value: <yellow> [number]"
+        id: "<gray>Block id: <yellow>[id]"
+        value: "<gray>Block value: <yellow>[number]"
+        limit: "<gray>Block limit: <yellow>[number]"
+        count: "<gray>Number of blocks: <yellow>[number]"
+        calculated: "<gray>Calculated value: <yellow>[number]"
       value_blocks:
-        name: "<white><bold> All Blocks With Value"
+        name: "<white><bold>All Blocks With Value"
         description: |-
-          <gray> Display all blocks
-          <gray> with value on island.
+          <gray>Display all blocks
+          <gray>with value on island.
       all_blocks:
-        name: "<white><bold> All Blocks"
+        name: "<white><bold>All Blocks"
         description: |-
-          <gray> Display all blocks
-          <gray> on island.
+          <gray>Display all blocks
+          <gray>on island.
       above_sea_level:
-        name: "<white><bold> Blocks Above Sea Level"
+        name: "<white><bold>Blocks Above Sea Level"
         description: |-
-          <gray> Display only blocks
-          <gray> that are above sea
-          <gray> level.
+          <gray>Display only blocks
+          <gray>that are above sea
+          <gray>level.
       underwater:
-        name: "<white><bold> Blocks Under Sea level"
+        name: "<white><bold>Blocks Under Sea level"
         description: |-
-          <gray> Display only blocks
-          <gray> that are bellow sea
-          <gray> level.
+          <gray>Display only blocks
+          <gray>that are bellow sea
+          <gray>level.
       spawner:
-        name: "<white><bold> Spawners"
+        name: "<white><bold>Spawners"
         description: |-
-          <gray> Display only spawners.
-        block-name: "<aqua> Spawner"
+          <gray>Display only spawners.
+        block-name: "<aqua>Spawner"
       donated:
-        name: "<white><bold> Donated Blocks"
+        name: "<white><bold>Donated Blocks"
         description: |-
-          <gray> Display blocks permanently
-          <gray> donated to island level.
+          <gray>Display blocks permanently
+          <gray>donated to island level.
       filters:
         name:
-          name: "<white><bold> Sort by Name"
+          name: "<white><bold>Sort by Name"
           description: |-
-            <gray> Sort all blocks by name.
+            <gray>Sort all blocks by name.
         value:
-          name: "<white><bold> Sort by Value"
+          name: "<white><bold>Sort by Value"
           description: |-
-            <gray> Sort all blocks by their value.
+            <gray>Sort all blocks by their value.
         count:
-          name: "<white><bold> Sort by Count"
+          name: "<white><bold>Sort by Count"
           description: |-
-            <gray> Sort all blocks by their amount.
+            <gray>Sort all blocks by their amount.
       value:
-        name: "<white><bold> [material]"
+        name: "<white><bold>[material]"
         description: |-
           [description]
           [value]
           [underwater]
           [limit]
           [id]
-        id: "<gray> Block id: <yellow> [id]"
-        value: "<gray> Block value: <yellow> [number]"
-        underwater: "<gray> Bellow sea level: <yellow> [number]"
-        limit: "<gray> Block limit: <yellow> [number]"
+        id: "<gray>Block id: <yellow>[id]"
+        value: "<gray>Block value: <yellow>[number]"
+        underwater: "<gray>Bellow sea level: <yellow>[number]"
+        limit: "<gray>Block limit: <yellow>[number]"
       # Button that is used in multi-page GUIs which allows to return to previous page.
       previous:
-        name: "<white><bold> Previous Page"
+        name: "<white><bold>Previous Page"
         description: |-
-          <gray> Switch to [number] page
+          <gray>Switch to [number] page
       # Button that is used in multi-page GUIs which allows to go to next page.
       next:
-        name: "<white><bold> Next Page"
+        name: "<white><bold>Next Page"
         description: |-
-          <gray> Switch to [number] page
+          <gray>Switch to [number] page
       search:
-        name: "<white><bold> Search"
+        name: "<white><bold>Search"
         description: |-
-          <gray> Search for a specific
-          <gray> value.
-        search: "<aqua> Value: [value]"
+          <gray>Search for a specific
+          <gray>value.
+        search: "<aqua>Value: [value]"
     tips:
-      click-to-view: "<yellow> Click <gray> to view."
-      click-to-previous: "<yellow> Click <gray> to view previous page."
-      click-to-next: "<yellow> Click <gray> to view next page."
-      click-to-select: "<yellow> Click <gray> to select."
-      left-click-to-cycle-up: "<yellow> Left Click <gray> to cycle up."
-      right-click-to-cycle-down: "<yellow> Right Click <gray> to cycle down."
-      left-click-to-change: "<yellow> Left Click <gray> to edit."
-      right-click-to-clear: "<yellow> Right Click <gray> to clear."
-      click-to-asc: "<yellow> Click <gray> to sort in increasing order."
-      click-to-desc: "<yellow> Click <gray> to sort in decreasing order."
-      click-to-warp: "<yellow> Click <gray> to warp."
-      click-to-visit: "<yellow> Click <gray> to visit."
-      right-click-to-visit: "<yellow> Right Click <gray> to visit."
+      click-to-view: "<yellow>Click <gray>to view."
+      click-to-previous: "<yellow>Click <gray>to view previous page."
+      click-to-next: "<yellow>Click <gray>to view next page."
+      click-to-select: "<yellow>Click <gray>to select."
+      left-click-to-cycle-up: "<yellow>Left Click <gray>to cycle up."
+      right-click-to-cycle-down: "<yellow>Right Click <gray>to cycle down."
+      left-click-to-change: "<yellow>Left Click <gray>to edit."
+      right-click-to-clear: "<yellow>Right Click <gray>to clear."
+      click-to-asc: "<yellow>Click <gray>to sort in increasing order."
+      click-to-desc: "<yellow>Click <gray>to sort in decreasing order."
+      click-to-warp: "<yellow>Click <gray>to warp."
+      click-to-visit: "<yellow>Click <gray>to visit."
+      right-click-to-visit: "<yellow>Right Click <gray>to visit."
   conversations:
     # Prefix for messages that are send from server.
-    prefix: "<bold><gold> [BentoBox]: <reset>"
-    no-data: "<red> Run level to see the block report."
+    prefix: "<bold><gold>[BentoBox]: <reset>"
+    no-data: "<red>Run level to see the block report."
     # String that allows to cancel conversation. (can be only one)
     cancel-string: "cancel"
     # List of strings that allows to exit conversation. (separated with ,)
     exit-string: "cancel, exit, quit"
     # Message that asks for search value input.
-    write-search: "<yellow> Please enter a search value. (Write 'cancel' to exit)"
+    write-search: "<yellow>Please enter a search value. (Write 'cancel' to exit)"
     # Message that appears after updating search value.
-    search-updated: "<green> Search value updated."
+    search-updated: "<green>Search value updated."
     # Message that is sent to user when conversation is cancelled.
-    cancelled: "<red> Conversation cancelled!"
+    cancelled: "<red>Conversation cancelled!"
     # Message that is sent to user when given material does not have any value.
-    no-value: "<red> That item has no value."
+    no-value: "<red>That item has no value."
     # Message that is sent to user when requested material does not exist.
-    unknown-item: "<red> The '[material]' does not exist in game."
+    unknown-item: "<red>The '[material]' does not exist in game."
     # Messages that is sent to user when requesting value for a specific material.
-    value: "<gray> The value of '[material]' is: <yellow>[value]"
-    value-underwater: "<gray> The value of '[material]' below sea-level: <yellow>[value]"
+    value: "<gray>The value of '[material]' is: <yellow>[value]"
+    value-underwater: "<gray>The value of '[material]' below sea-level: <yellow>[value]"
     # Message that is sent to user when he does not hold any items in hand.
-    empty-hand: "<red> There are no blocks in your hand"
+    empty-hand: "<red>There are no blocks in your hand"
     # Message when showing how many have been placed of a block
-    you-have: "<gray> You have [number] at last count."
+    you-have: "<gray>You have [number] at last count."
     # Message about the limit
-    you-can-place: "<gray> You can place up to [number] and have them count"
+    you-can-place: "<gray>You can place up to [number] and have them count"

@@ -50,6 +50,24 @@ island:
     cooldown: '<red> Bạn phải chờ <aqua>[time] <red> giây trước khi có thể làm điều đó'
     in-progress: '<gold> Đang tính toán cấp đảo...'
     time-out: '<red> Tính toán cấp đảo quá lâu. Vui lòng thử lại sau.'
+  donate:
+    parameters: "[hand [amount]]"
+    description: "donate blocks to permanently raise island level"
+    must-be-on-island: "<red>You must be on your island to donate blocks."
+    no-permission: "<red>You do not have permission to donate blocks on this island."
+    no-value: "<red>That block has no level value."
+    invalid-amount: "<red>Invalid amount. Use a positive number."
+    empty: "<red>There are no valid blocks to donate."
+    cancelled: "<yellow>Donation cancelled. Items returned."
+    success: "<green>Donated [number] blocks for <aqua>[points]<green>points! These points are permanent."
+    confirm: "<red><bold>Confirm - Items will be DESTROYED!"
+    cancel: "<green><bold>Cancel - Return Items"
+    gui-title: "<black><bold>Donate Blocks"
+    gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points] <gray>points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
+    preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    hand:
+      success: "<green>Donated [number] x [material] for <aqua>[points]<green>permanent points!"
+      not-block: "<red>You must be holding a placeable block to donate."
   detail:
     description: "hiển thị chi tiết các khối trên đảo của bạn"
   top:
@@ -67,6 +85,15 @@ island:
     names-island: 'đảo của [name]'
     syntax: '[name] x [number]'
     hint: '<red> Chạy lệnh cấp để xem báo cáo khối'
+protection:
+  flags:
+    ISLAND_BLOCK_DONATION:
+      description: |-
+        <green>Toggle who can donate</green>
+        <green>blocks to raise island level.</green>
+      name: Block Donation
+      hint: Block donation not allowed
+
 level:
   commands:
     value:
@@ -134,6 +161,11 @@ level:
         description: |-
           <gray> Chỉ hiển thị lồng sinh quái.
         block-name: "<aqua> Lồng Sinh Quái"
+      donated:
+        name: "<white><bold>Donated Blocks"
+        description: |-
+          <gray>Display blocks permanently
+          <gray>donated to island level.
       filters:
         name:
           name: "<white><bold> Sắp Xếp theo Tên"
