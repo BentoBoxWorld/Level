@@ -1,7 +1,8 @@
 package world.bentobox.level.panels;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
@@ -18,9 +19,13 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
+
 import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
 import world.bentobox.level.util.Utils;
 
@@ -319,14 +324,70 @@ public class DonationPanel implements Listener {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            String[] parts = text.split("\\|");
-            meta.setDisplayName(parts[0]);
-            if (parts.length > 1) {
-                meta.setLore(Arrays.asList(Arrays.copyOfRange(parts, 1, parts.length)));
+            List<String> parts = splitWithStyleCarryover(text);
+            meta.displayName(removeDefaultItalic(Util.parseMiniMessageOrLegacy(parts.get(0))));
+            if (parts.size() > 1) {
+                List<Component> lore = new ArrayList<>(parts.size() - 1);
+                for (int i = 1; i < parts.size(); i++) {
+                    lore.add(removeDefaultItalic(Util.parseMiniMessageOrLegacy(parts.get(i))));
+                }
+                meta.lore(lore);
             }
             item.setItemMeta(meta);
         }
         return item;
+    }
+
+    /**
+     * Splits a legacy-coded string on '|' while carrying the active color and
+     * formatting codes from the previous segment to the next. Without this,
+     * a span like "§cWarning|destroyed" would split into "§cWarning" and
+     * "destroyed" — the second line would lose its red color, since the
+     * componentToLegacy walker only emits §c once for a contiguous run.
+     */
+    private static List<String> splitWithStyleCarryover(String text) {
+        List<String> result = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        String activeColor = "";
+        StringBuilder activeFormats = new StringBuilder();
+        int i = 0;
+        while (i < text.length()) {
+            char c = text.charAt(i);
+            if (c == '|') {
+                result.add(current.toString());
+                current = new StringBuilder();
+                current.append(activeColor).append(activeFormats);
+                i++;
+                continue;
+            }
+            if (c == '\u00A7' && i + 1 < text.length()) {
+                char code = Character.toLowerCase(text.charAt(i + 1));
+                String pair = "\u00A7" + code;
+                current.append(pair);
+                if ("0123456789abcdef".indexOf(code) >= 0) {
+                    activeColor = pair;
+                    activeFormats.setLength(0);
+                } else if ("klmno".indexOf(code) >= 0) {
+                    activeFormats.append(pair);
+                } else if (code == 'r') {
+                    activeColor = "";
+                    activeFormats.setLength(0);
+                }
+                i += 2;
+                continue;
+            }
+            current.append(c);
+            i++;
+        }
+        result.add(current.toString());
+        return result;
+    }
+
+    private static Component removeDefaultItalic(Component component) {
+        if (component.decoration(TextDecoration.ITALIC) == TextDecoration.State.NOT_SET) {
+            return component.decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE);
+        }
+        return component;
     }
 
     /**
