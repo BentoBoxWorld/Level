@@ -6,23 +6,23 @@ admin:
     sethandicap:
       parameters: "<player> <handicap>"
       description: встановити гандикап острова, як правило, рівень острова стартера
-      changed: "&a Початковий гандикап острова змінено з [number] на [new_number]."
-      invalid-level: "&c Недійсний гандикап. Використовуйте ціле число."
+      changed: "<green> Початковий гандикап острова змінено з [number] на [new_number]."
+      invalid-level: "<red> Недійсний гандикап. Використовуйте ціле число."
   levelstatus:
     description: показати, скільки островів у черзі на сканування
-    islands-in-queue: "&a Острови в черзі: [number]"
+    islands-in-queue: "<green> Острови в черзі: [number]"
   top:
     description: показати першу десятку списку
-    unknown-world: "&c Невідомий світ!"
-    display: "&f[rank]. &a[name] &7- &b[level]"
+    unknown-world: "<red> Невідомий світ!"
+    display: "<white>[rank]. <green>[name] <gray>- <aqua>[level]"
     remove:
       description: видалити гравця з першої десятки
       parameters: "<player>"
   stats:
     description: показати статистику островів на цьому сервері
     title: Статистика острова сервера
-    world: "&a [name]"
-    no-data: "&c Немає даних для обробки."
+    world: "<green> [name]"
+    no-data: "<red> Немає даних для обробки."
     average-level: 'Середній рівень острова: [number]'
     median-level: 'Середній рівень острова: [number]'
     mode-level: 'Рівень острова режиму: [number]'
@@ -34,22 +34,22 @@ island:
   level:
     parameters: "[player]"
     description: обчисліть свій рівень острова або покажіть рівень [player]
-    calculating: "&a Розрахунок рівня..."
-    estimated-wait: "&a Приблизне очікування: [number] секунд"
-    in-queue: "&a Ви номер [number] у черзі"
-    island-level-is: "&a Рівень острова &b[level]"
-    required-points-to-next-level: "&a Прогрес рівня: &6 [progress]&b /&e [levelcost] &a балів"
-    deaths: "&c([number] смерті)"
-    cooldown: "&c Ви повинні зачекати &b[time] &c секунд, поки ви зможете зробити
+    calculating: "<green> Розрахунок рівня..."
+    estimated-wait: "<green> Приблизне очікування: [number] секунд"
+    in-queue: "<green> Ви номер [number] у черзі"
+    island-level-is: "<green> Рівень острова <aqua>[level]"
+    required-points-to-next-level: "<green> Прогрес рівня: <gold> [progress]<aqua> /<yellow> [levelcost] <green> балів"
+    deaths: "<red>([number] смерті)"
+    cooldown: "<red> Ви повинні зачекати <aqua>[time] <red> секунд, поки ви зможете зробити
       це знову"
-    in-progress: "&6 Розрахунок рівня острова триває..."
-    time-out: "&c Розрахунок рівня тривав занадто довго. Будь-ласка спробуйте пізніше."
+    in-progress: "<gold> Розрахунок рівня острова триває..."
+    time-out: "<red> Розрахунок рівня тривав занадто довго. Будь-ласка спробуйте пізніше."
   top:
     description: показати першу десятку
     gui-title: "& Десятка Кращих"
-    gui-heading: "&6[name]: &B[rank]"
-    island-level: "&b Рівень [level]"
-    warp-to: "&A Варп на острів [name]."
+    gui-heading: "<gold>[name]: <aqua>[rank]"
+    island-level: "<aqua> Рівень [level]"
+    warp-to: "<green> Варп на острів [name]."
   detail:
     description: "показує деталі блоків вашого острова"
   level-details:
@@ -57,10 +57,10 @@ island:
     spawners: Спавера
     underwater-blocks: Підводні блоки
     all-blocks: Всі блоки
-    no-island: "&c Немає острова!"
+    no-island: "<red> Немає острова!"
     names-island: острів [name].
     syntax: "[name] x [number]"
-    hint: "&c Запустіть рівень, щоб переглянути звіт про блокування"
+    hint: "<red> Запустіть рівень, щоб переглянути звіт про блокування"
 level:
   commands:
     value:
@@ -69,27 +69,27 @@ level:
         значення предмета в руках.
   gui:
     titles:
-      top: "&0&l Топ островів"
-      detail-panel: "&0&l острів [name]."
-      value-panel: "&0&l Значення блоку"
+      top: "<black><bold> Топ островів"
+      detail-panel: "<black><bold> острів [name]."
+      value-panel: "<black><bold> Значення блоку"
     buttons:
       island:
-        empty: "&f&l [name]. місце"
-        name: "&f&l [name]"
+        empty: "<white><bold> [name]. місце"
+        name: "<white><bold> [name]"
         description: |-
           [owner]
           [members]
           [place]
           [level]
         owners-island: Острів [player].
-        owner: "&7&l Власник: &r&b [player]"
-        members-title: "&7&l Члени:"
-        member: "&b - [player]"
+        owner: "<gray><bold> Власник: <reset><aqua> [player]"
+        members-title: "<gray><bold> Члени:"
+        member: "<aqua> - [player]"
         unknown: невідомий
-        place: "&7&o [number]. &r&7 місце"
-        level: "&7 Рівень: &o [number]"
+        place: "<gray><italic> [number]. <reset><gray> місце"
+        level: "<gray> Рівень: <italic> [number]"
       material:
-        name: "&f&l [number] x [material]"
+        name: "<white><bold> [number] x [material]"
         description: |-
           [description]
           [count]
@@ -97,98 +97,98 @@ level:
           [calculated]
           [limit]
           [id]
-        id: "&7 Ідентифікатор блоку: &e [id]"
-        value: "&7 Значення блоку: &e [number]"
-        limit: "&7 Обмеження блоку: &e [number]"
-        count: "&7 Кількість блоків: &e [number]"
-        calculated: "&7 Розраховане значення: &e [number]"
+        id: "<gray> Ідентифікатор блоку: <yellow> [id]"
+        value: "<gray> Значення блоку: <yellow> [number]"
+        limit: "<gray> Обмеження блоку: <yellow> [number]"
+        count: "<gray> Кількість блоків: <yellow> [number]"
+        calculated: "<gray> Розраховане значення: <yellow> [number]"
       value_blocks:
-        name: "&f&l Усі Блоки з Цінністю"
+        name: "<white><bold> Усі Блоки з Цінністю"
         description: |-
-          &7 Показати всі блоки
-          &7 з цінністю на острові.
+          <gray> Показати всі блоки
+          <gray> з цінністю на острові.
       all_blocks:
-        name: "&f&l Усі блоки"
+        name: "<white><bold> Усі блоки"
         description: |-
-          &7 Показати всі блоки
-          &7 на острові.
+          <gray> Показати всі блоки
+          <gray> на острові.
       above_sea_level:
-        name: "&f&l Блоки над рівнем моря"
+        name: "<white><bold> Блоки над рівнем моря"
         description: |-
-          &7 Показувати лише блоки
-          &7, які знаходяться над морем
-          &7 рівень.
+          <gray> Показувати лише блоки
+          <gray>, які знаходяться над морем
+          <gray> рівень.
       underwater:
-        name: "&f&l Блоки під рівнем моря"
+        name: "<white><bold> Блоки під рівнем моря"
         description: |-
-          &7 Показувати лише блоки
-          &7, які знаходяться нижче моря
-          &7 рівень.
+          <gray> Показувати лише блоки
+          <gray>, які знаходяться нижче моря
+          <gray> рівень.
       spawner:
-        name: "&f&l Спавнери"
-        description: "&7 Відображати лише спавнери."
-        block-name: "&b Спавнер"
+        name: "<white><bold> Спавнери"
+        description: "<gray> Відображати лише спавнери."
+        block-name: "<aqua> Спавнер"
       filters:
         name:
-          name: "&f&l Сортувати за назвою"
-          description: "&7 Сортувати всі блоки за назвою."
+          name: "<white><bold> Сортувати за назвою"
+          description: "<gray> Сортувати всі блоки за назвою."
         value:
-          name: "&f&l Сортувати за значенням"
-          description: "&7 Сортувати всі блоки за їх значенням."
+          name: "<white><bold> Сортувати за значенням"
+          description: "<gray> Сортувати всі блоки за їх значенням."
         count:
-          name: "&f&l Сортувати за кількістю"
-          description: "&7 Відсортуйте всі блоки за їх кількістю."
+          name: "<white><bold> Сортувати за кількістю"
+          description: "<gray> Відсортуйте всі блоки за їх кількістю."
       value:
-        name: "&f&l [material]"
+        name: "<white><bold> [material]"
         description: |-
           [description]
           [value]
           [underwater]
           [limit]
           [id]
-        id: "&7 Ідентифікатор блоку: &e [id]"
-        value: "&7 Значення блоку: &e [number]"
-        underwater: "&7 Нижче рівня моря: &e [number]"
-        limit: "&7 Обмеження блоку: &e [number]"
+        id: "<gray> Ідентифікатор блоку: <yellow> [id]"
+        value: "<gray> Значення блоку: <yellow> [number]"
+        underwater: "<gray> Нижче рівня моря: <yellow> [number]"
+        limit: "<gray> Обмеження блоку: <yellow> [number]"
       previous:
-        name: "&f&l Попередня сторінка"
-        description: "&7 Перейти на сторінку [number]."
+        name: "<white><bold> Попередня сторінка"
+        description: "<gray> Перейти на сторінку [number]."
       next:
-        name: "&f&l Наступна сторінка"
-        description: "&7 Перейти на сторінку [number]."
+        name: "<white><bold> Наступна сторінка"
+        description: "<gray> Перейти на сторінку [number]."
       search:
-        name: "&f&l Пошук"
+        name: "<white><bold> Пошук"
         description: |-
-          &7 Пошук конкретного
-          &7 значення.
-        search: "&b Значення: [value]"
+          <gray> Пошук конкретного
+          <gray> значення.
+        search: "<aqua> Значення: [value]"
     tips:
-      click-to-view: "&e Натисніть &7, щоб переглянути."
-      click-to-previous: "&e Натисніть &7, щоб переглянути попередню сторінку."
-      click-to-next: "&e Натисніть &7, щоб переглянути наступну сторінку."
-      click-to-select: "&e Натисніть &7, щоб вибрати."
-      left-click-to-cycle-up: "&e Клацніть лівою кнопкою миші &7, щоб перейти вгору."
-      right-click-to-cycle-down: "&e Клацніть правою кнопкою миші &7, щоб перейти
+      click-to-view: "<yellow> Натисніть <gray>, щоб переглянути."
+      click-to-previous: "<yellow> Натисніть <gray>, щоб переглянути попередню сторінку."
+      click-to-next: "<yellow> Натисніть <gray>, щоб переглянути наступну сторінку."
+      click-to-select: "<yellow> Натисніть <gray>, щоб вибрати."
+      left-click-to-cycle-up: "<yellow> Клацніть лівою кнопкою миші <gray>, щоб перейти вгору."
+      right-click-to-cycle-down: "<yellow> Клацніть правою кнопкою миші <gray>, щоб перейти
         вниз."
-      left-click-to-change: "&e Клацніть лівою кнопкою миші &7 для редагування."
-      right-click-to-clear: "&e Клацніть правою кнопкою миші &7, щоб очистити."
-      click-to-asc: "&e Клацніть &7, щоб відсортувати в порядку збільшення."
-      click-to-desc: "&e Клацніть &7, щоб відсортувати в порядку зменшення."
-      click-to-warp: "&e Натисніть &7, щоб деформувати."
-      click-to-visit: "&e Натисніть &7, щоб відвідати."
-      right-click-to-visit: "&e Клацніть правою кнопкою миші &7, щоб відвідати."
+      left-click-to-change: "<yellow> Клацніть лівою кнопкою миші <gray> для редагування."
+      right-click-to-clear: "<yellow> Клацніть правою кнопкою миші <gray>, щоб очистити."
+      click-to-asc: "<yellow> Клацніть <gray>, щоб відсортувати в порядку збільшення."
+      click-to-desc: "<yellow> Клацніть <gray>, щоб відсортувати в порядку зменшення."
+      click-to-warp: "<yellow> Натисніть <gray>, щоб деформувати."
+      click-to-visit: "<yellow> Натисніть <gray>, щоб відвідати."
+      right-click-to-visit: "<yellow> Клацніть правою кнопкою миші <gray>, щоб відвідати."
   conversations:
-    prefix: "&l&6 [BentoBox]: &r"
-    no-data: "&c Запустіть рівень, щоб переглянути звіт про блокування."
+    prefix: "<bold><gold> [BentoBox]: <reset>"
+    no-data: "<red> Запустіть рівень, щоб переглянути звіт про блокування."
     cancel-string: cancel
     exit-string: cancel, exit, quit
-    write-search: "&e Введіть пошукове значення. (Напишіть 'cancel', щоб вийти)"
-    search-updated: "&a Значення пошуку оновлено."
-    cancelled: "&c Розмова скасована!"
-    no-value: "&c Цей предмет не має цінності."
-    unknown-item: "&c '[material]' не існує в грі."
-    value: "&7 Значення '[material]' таке: &e[value]"
-    value-underwater: "&7 Значення '[material]' нижче рівня моря: &e[value]"
-    empty-hand: "&c У вашій руці немає блоків"
-    you-have: "&7 У вас є [number] за останнім підрахунком."
-    you-can-place: "&7 Ви можете розмістити до [number] і вони будуть враховані"
+    write-search: "<yellow> Введіть пошукове значення. (Напишіть 'cancel', щоб вийти)"
+    search-updated: "<green> Значення пошуку оновлено."
+    cancelled: "<red> Розмова скасована!"
+    no-value: "<red> Цей предмет не має цінності."
+    unknown-item: "<red> '[material]' не існує в грі."
+    value: "<gray> Значення '[material]' таке: <yellow>[value]"
+    value-underwater: "<gray> Значення '[material]' нижче рівня моря: <yellow>[value]"
+    empty-hand: "<red> У вашій руці немає блоків"
+    you-have: "<gray> У вас є [number] за останнім підрахунком."
+    you-can-place: "<gray> Ви можете розмістити до [number] і вони будуть враховані"

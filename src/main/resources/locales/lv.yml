@@ -10,23 +10,23 @@ admin:
         piem. +10 noņem 10 līmeņus,
         30 iestata handicap uz 30,
         -20 pievieno 20 līmeņus
-      changed: "&a Sākuma salas handicap mainīts no [number] uz [new_number]."
-      invalid-level: "&c Nederīgs handicap. Izmanto veselu skaitli."
+      changed: "<green> Sākuma salas handicap mainīts no [number] uz [new_number]."
+      invalid-level: "<red> Nederīgs handicap. Izmanto veselu skaitli."
   levelstatus:
     description: rāda, cik salu ir skenēšanas rindā
-    islands-in-queue: "&a Salas rindā: [number]"
+    islands-in-queue: "<green> Salas rindā: [number]"
   top:
     description: rādīt labākās 10 salas
-    display: "&f[rank]. &a[name] &7- &b[level]"
-    unknown-world: "&c Nezināma pasaule!"
+    display: "<white>[rank]. <green>[name] <gray>- <aqua>[level]"
+    unknown-world: "<red> Nezināma pasaule!"
     remove:
       description: noņemt spēlētāju no labāko desmit saraksta
       parameters: "<spēlētājs>"
   stats:
     description: "rādīt salas statistiku šajā serverī"
     title: "Servera Salas Statistika"
-    world: "&a [name]"
-    no-data: "&c Nav datu apstrādei."
+    world: "<green> [name]"
+    no-data: "<red> Nav datu apstrādei."
     average-level: "Vidējais salas līmenis: [number]"
     median-level: "Mediānais salas līmenis: [number]"
     mode-level: "Biežākais salas līmenis: [number]"
@@ -36,34 +36,34 @@ admin:
     islands: "salas"
 island:
   level:
-    calculating: "&a Aprēķina līmeni..."
-    cooldown: "&c Tev ir jāuzgaida &b[time] &c sekundes, lai vēlreiz aprēķinātu salas līmeni!"
-    deaths: "&c ([number] nāves)"
+    calculating: "<green> Aprēķina līmeni..."
+    cooldown: "<red> Tev ir jāuzgaida <aqua>[time] <red> sekundes, lai vēlreiz aprēķinātu salas līmeni!"
+    deaths: "<red> ([number] nāves)"
     description: aprēķina tavas salas līmeni, vai parāda spēlētāja [player] līmeni
-    island-level-is: "&a Salas līmenis ir &b[level]"
+    island-level-is: "<green> Salas līmenis ir <aqua>[level]"
     parameters: "[player]"
-    estimated-wait: "&a Paredzamais gaidīšanas laiks: [number] sekundes"
-    in-queue: "&a Tu esi numurs [number] rindā"
-    required-points-to-next-level: "&a Līmeņa progress: &6 [progress]&b /&e [levelcost] &a punkti"
-    in-progress: "&6 Salas līmeņa aprēķins notiek..."
-    time-out: "&c Līmeņa aprēķins ilga pārāk ilgi. Lūdzu, mēģini vēlāk."
+    estimated-wait: "<green> Paredzamais gaidīšanas laiks: [number] sekundes"
+    in-queue: "<green> Tu esi numurs [number] rindā"
+    required-points-to-next-level: "<green> Līmeņa progress: <gold> [progress]<aqua> /<yellow> [levelcost] <green> punkti"
+    in-progress: "<gold> Salas līmeņa aprēķins notiek..."
+    time-out: "<red> Līmeņa aprēķins ilga pārāk ilgi. Lūdzu, mēģini vēlāk."
   detail:
     description: "rāda tavas salas bloku detaļas"
   top:
     description: rādīt labākos 10
-    gui-heading: "&6[name]: &B[rank]"
-    gui-title: "&a Labākie 10"
-    island-level: "&b Līmenis [level]"
-    warp-to: "&a Pārvietojas uz [name] salu."
+    gui-heading: "<gold>[name]: <aqua>[rank]"
+    gui-title: "<green> Labākie 10"
+    island-level: "<aqua> Līmenis [level]"
+    warp-to: "<green> Pārvietojas uz [name] salu."
   level-details:
     above-sea-level-blocks: Bloki virs jūras līmeņa
     spawners: Spawners
     underwater-blocks: Zemūdens bloki
     all-blocks: Visi bloki
-    no-island: "&c Nav salas!"
+    no-island: "<red> Nav salas!"
     names-island: "[name] sala"
     syntax: "[name] x [number]"
-    hint: "&c Palaid level, lai redzētu bloku pārskatu"
+    hint: "<red> Palaid level, lai redzētu bloku pārskatu"
 level:
   commands:
     value:
@@ -71,27 +71,27 @@ level:
       description: rāda bloku vērtības. Pievieno 'hand' beigās, lai rādītu rokā esošā priekšmeta vērtību.
   gui:
     titles:
-      top: "&0&l Top Salas"
-      detail-panel: "&0&l [name] sala"
-      value-panel: "&0&l Bloku Vērtības"
+      top: "<black><bold> Top Salas"
+      detail-panel: "<black><bold> [name] sala"
+      value-panel: "<black><bold> Bloku Vērtības"
     buttons:
       island:
-        empty: '&f&l [name]. vieta'
-        name: '&f&l [name]'
+        empty: '<white><bold> [name]. vieta'
+        name: '<white><bold> [name]'
         description: |-
           [owner]
           [members]
           [place]
           [level]
         owners-island: "[player] sala"
-        owner: "&7&l Īpašnieks: &r&b [player]"
-        members-title: "&7&l Dalībnieki:"
-        member: "&b - [player]"
+        owner: "<gray><bold> Īpašnieks: <reset><aqua> [player]"
+        members-title: "<gray><bold> Dalībnieki:"
+        member: "<aqua> - [player]"
         unknown: "nezināms"
-        place: "&7&o [number]. &r&7 vieta"
-        level: "&7 Līmenis: &o [number]"
+        place: "<gray><italic> [number]. <reset><gray> vieta"
+        level: "<gray> Līmenis: <italic> [number]"
       material:
-        name: "&f&l [number] x [material]"
+        name: "<white><bold> [number] x [material]"
         description: |-
           [description]
           [count]
@@ -99,103 +99,103 @@ level:
           [calculated]
           [limit]
           [id]
-        id: "&7 Bloka ID: &e [id]"
-        value: "&7 Bloka vērtība: &e [number]"
-        limit: "&7 Bloka limits: &e [number]"
-        count: "&7 Bloku skaits: &e [number]"
-        calculated: "&7 Aprēķinātā vērtība: &e [number]"
+        id: "<gray> Bloka ID: <yellow> [id]"
+        value: "<gray> Bloka vērtība: <yellow> [number]"
+        limit: "<gray> Bloka limits: <yellow> [number]"
+        count: "<gray> Bloku skaits: <yellow> [number]"
+        calculated: "<gray> Aprēķinātā vērtība: <yellow> [number]"
       value_blocks:
-        name: "&f&l Visi Bloki ar Vērtību"
+        name: "<white><bold> Visi Bloki ar Vērtību"
         description: |-
-          &7 Rādīt visus blokus
-          &7 ar vērtību salā.
+          <gray> Rādīt visus blokus
+          <gray> ar vērtību salā.
       all_blocks:
-        name: "&f&l Visi Bloki"
+        name: "<white><bold> Visi Bloki"
         description: |-
-          &7 Rādīt visus blokus
-          &7 salā.
+          <gray> Rādīt visus blokus
+          <gray> salā.
       above_sea_level:
-        name: "&f&l Bloki virs jūras līmeņa"
+        name: "<white><bold> Bloki virs jūras līmeņa"
         description: |-
-          &7 Rādīt tikai blokus
-          &7 kas atrodas virs
-          &7 jūras līmeņa.
+          <gray> Rādīt tikai blokus
+          <gray> kas atrodas virs
+          <gray> jūras līmeņa.
       underwater:
-        name: "&f&l Bloki zem jūras līmeņa"
+        name: "<white><bold> Bloki zem jūras līmeņa"
         description: |-
-          &7 Rādīt tikai blokus
-          &7 kas atrodas zem
-          &7 jūras līmeņa.
+          <gray> Rādīt tikai blokus
+          <gray> kas atrodas zem
+          <gray> jūras līmeņa.
       spawner:
-        name: "&f&l Spawners"
+        name: "<white><bold> Spawners"
         description: |-
-          &7 Rādīt tikai spawnerus.
-        block-name: "&b Spawner"
+          <gray> Rādīt tikai spawnerus.
+        block-name: "<aqua> Spawner"
       filters:
         name:
-          name: "&f&l Kārtot pēc Nosaukuma"
+          name: "<white><bold> Kārtot pēc Nosaukuma"
           description: |-
-            &7 Kārtot visus blokus pēc nosaukuma.
+            <gray> Kārtot visus blokus pēc nosaukuma.
         value:
-          name: "&f&l Kārtot pēc Vērtības"
+          name: "<white><bold> Kārtot pēc Vērtības"
           description: |-
-            &7 Kārtot visus blokus pēc vērtības.
+            <gray> Kārtot visus blokus pēc vērtības.
         count:
-          name: "&f&l Kārtot pēc Skaita"
+          name: "<white><bold> Kārtot pēc Skaita"
           description: |-
-            &7 Kārtot visus blokus pēc skaita.
+            <gray> Kārtot visus blokus pēc skaita.
       value:
-        name: "&f&l [material]"
+        name: "<white><bold> [material]"
         description: |-
           [description]
           [value]
           [underwater]
           [limit]
           [id]
-        id: "&7 Bloka ID: &e [id]"
-        value: "&7 Bloka vērtība: &e [number]"
-        underwater: "&7 Zem jūras līmeņa: &e [number]"
-        limit: "&7 Bloka limits: &e [number]"
+        id: "<gray> Bloka ID: <yellow> [id]"
+        value: "<gray> Bloka vērtība: <yellow> [number]"
+        underwater: "<gray> Zem jūras līmeņa: <yellow> [number]"
+        limit: "<gray> Bloka limits: <yellow> [number]"
       previous:
-        name: "&f&l Iepriekšējā Lapa"
+        name: "<white><bold> Iepriekšējā Lapa"
         description: |-
-          &7 Pāriet uz lapu [number]
+          <gray> Pāriet uz lapu [number]
       next:
-        name: "&f&l Nākamā Lapa"
+        name: "<white><bold> Nākamā Lapa"
         description: |-
-          &7 Pāriet uz lapu [number]
+          <gray> Pāriet uz lapu [number]
       search:
-        name: "&f&l Meklēt"
+        name: "<white><bold> Meklēt"
         description: |-
-          &7 Meklēt konkrētu
-          &7 vērtību.
-        search: "&b Vērtība: [value]"
+          <gray> Meklēt konkrētu
+          <gray> vērtību.
+        search: "<aqua> Vērtība: [value]"
     tips:
-      click-to-view: "&e Klikšķini &7 lai skatītu."
-      click-to-previous: "&e Klikšķini &7 lai skatītu iepriekšējo lapu."
-      click-to-next: "&e Klikšķini &7 lai skatītu nākamo lapu."
-      click-to-select: "&e Klikšķini &7 lai izvēlētos."
-      left-click-to-cycle-up: "&e Kreisais Klikšķis &7 lai celtu."
-      right-click-to-cycle-down: "&e Labais Klikšķis &7 lai nolaistu."
-      left-click-to-change: "&e Kreisais Klikšķis &7 lai rediģētu."
-      right-click-to-clear: "&e Labais Klikšķis &7 lai notīrītu."
-      click-to-asc: "&e Klikšķini &7 lai kārtotu augošā secībā."
-      click-to-desc: "&e Klikšķini &7 lai kārtotu dilstošā secībā."
-      click-to-warp: "&e Klikšķini &7 lai teleportētos."
-      click-to-visit: "&e Klikšķini &7 lai apmeklētu."
-      right-click-to-visit: "&e Labais Klikšķis &7 lai apmeklētu."
+      click-to-view: "<yellow> Klikšķini <gray> lai skatītu."
+      click-to-previous: "<yellow> Klikšķini <gray> lai skatītu iepriekšējo lapu."
+      click-to-next: "<yellow> Klikšķini <gray> lai skatītu nākamo lapu."
+      click-to-select: "<yellow> Klikšķini <gray> lai izvēlētos."
+      left-click-to-cycle-up: "<yellow> Kreisais Klikšķis <gray> lai celtu."
+      right-click-to-cycle-down: "<yellow> Labais Klikšķis <gray> lai nolaistu."
+      left-click-to-change: "<yellow> Kreisais Klikšķis <gray> lai rediģētu."
+      right-click-to-clear: "<yellow> Labais Klikšķis <gray> lai notīrītu."
+      click-to-asc: "<yellow> Klikšķini <gray> lai kārtotu augošā secībā."
+      click-to-desc: "<yellow> Klikšķini <gray> lai kārtotu dilstošā secībā."
+      click-to-warp: "<yellow> Klikšķini <gray> lai teleportētos."
+      click-to-visit: "<yellow> Klikšķini <gray> lai apmeklētu."
+      right-click-to-visit: "<yellow> Labais Klikšķis <gray> lai apmeklētu."
   conversations:
-    prefix: "&l&6 [BentoBox]: &r"
-    no-data: "&c Palaid level, lai redzētu bloku pārskatu."
+    prefix: "<bold><gold> [BentoBox]: <reset>"
+    no-data: "<red> Palaid level, lai redzētu bloku pārskatu."
     cancel-string: atcelt
     exit-string: atcelt, iziet, pamest
-    write-search: "&e Lūdzu ievadi meklēšanas vērtību. (Raksti 'atcelt' lai izietu)"
-    search-updated: "&a Meklēšanas vērtība atjaunināta."
-    cancelled: "&c Saruna atcelta!"
-    no-value: "&c Šim priekšmetam nav vērtības."
-    unknown-item: "&c '[material]' spēlē nepastāv."
-    value: "&7 '[material]' vērtība ir: &e[value]"
-    value-underwater: "&7 '[material]' vērtība zem jūras līmeņa: &e[value]"
-    empty-hand: "&c Rokās nav bloku"
-    you-have: "&7 Pēdējā skaitīšanā tev bija [number]."
-    you-can-place: "&7 Vari novietot līdz [number] un tie tiks skaitīti"
+    write-search: "<yellow> Lūdzu ievadi meklēšanas vērtību. (Raksti 'atcelt' lai izietu)"
+    search-updated: "<green> Meklēšanas vērtība atjaunināta."
+    cancelled: "<red> Saruna atcelta!"
+    no-value: "<red> Šim priekšmetam nav vērtības."
+    unknown-item: "<red> '[material]' spēlē nepastāv."
+    value: "<gray> '[material]' vērtība ir: <yellow>[value]"
+    value-underwater: "<gray> '[material]' vērtība zem jūras līmeņa: <yellow>[value]"
+    empty-hand: "<red> Rokās nav bloku"
+    you-have: "<gray> Pēdējā skaitīšanā tev bija [number]."
+    you-can-place: "<gray> Vari novietot līdz [number] un tie tiks skaitīti"

@@ -13,23 +13,23 @@ admin:
         ví dụ: +10 sẽ bỏ 10 cấp,
         30 sẽ đặt handicap thành 30,
         -20 sẽ thêm 20 cấp
-      changed: '&a Handicap ban đầu của đảo đã thay đổi từ [number] thành [new_number].'
-      invalid-level: '&c Handicap không hợp lệ. Hãy dùng số nguyên.'
+      changed: '<green> Handicap ban đầu của đảo đã thay đổi từ [number] thành [new_number].'
+      invalid-level: '<red> Handicap không hợp lệ. Hãy dùng số nguyên.'
   levelstatus:
     description: xem bao nhiêu đảo đang trong hàng chờ được quét
-    islands-in-queue: '&a Đảo đang chờ: [number]'
+    islands-in-queue: '<green> Đảo đang chờ: [number]'
   top:
     description: xem bảng xếp hạng TOP 10
-    unknown-world: '&c Thế giới không xác định!'
-    display: '&f[rank]. &a[name] &7- &b[level]'
+    unknown-world: '<red> Thế giới không xác định!'
+    display: '<white>[rank]. <green>[name] <gray>- <aqua>[level]'
     remove:
       description: xoá người khỏi TOP 10
       parameters: <người chơi>
   stats:
     description: "hiển thị thống kê đảo trên máy chủ này"
     title: "Thống Kê Đảo Máy Chủ"
-    world: "&a [name]"
-    no-data: "&c Không có dữ liệu để xử lý."
+    world: "<green> [name]"
+    no-data: "<red> Không có dữ liệu để xử lý."
     average-level: "Cấp đảo trung bình: [number]"
     median-level: "Cấp đảo trung vị: [number]"
     mode-level: "Cấp đảo phổ biến nhất: [number]"
@@ -41,32 +41,32 @@ island:
   level:
     parameters: '[người chơi]'
     description: tính toán cấp đảo của bạn hoặc xem cấp đảo của [người chơi]
-    calculating: '&a Đang tính toán cấp đảo...'
-    estimated-wait: '&a Thời gian còn lại: [number] giây'
-    in-queue: '&a Bạn đang ở vị trí [number] trong hàng chờ'
-    island-level-is: '&a Cấp đảo là &b[level]'
-    required-points-to-next-level: '&a Tiến độ cấp: &6 [progress]&b /&e [levelcost] &a điểm'
-    deaths: '&c([number] lần chết)'
-    cooldown: '&c Bạn phải chờ &b[time] &c giây trước khi có thể làm điều đó'
-    in-progress: '&6 Đang tính toán cấp đảo...'
-    time-out: '&c Tính toán cấp đảo quá lâu. Vui lòng thử lại sau.'
+    calculating: '<green> Đang tính toán cấp đảo...'
+    estimated-wait: '<green> Thời gian còn lại: [number] giây'
+    in-queue: '<green> Bạn đang ở vị trí [number] trong hàng chờ'
+    island-level-is: '<green> Cấp đảo là <aqua>[level]'
+    required-points-to-next-level: '<green> Tiến độ cấp: <gold> [progress]<aqua> /<yellow> [levelcost] <green> điểm'
+    deaths: '<red>([number] lần chết)'
+    cooldown: '<red> Bạn phải chờ <aqua>[time] <red> giây trước khi có thể làm điều đó'
+    in-progress: '<gold> Đang tính toán cấp đảo...'
+    time-out: '<red> Tính toán cấp đảo quá lâu. Vui lòng thử lại sau.'
   detail:
     description: "hiển thị chi tiết các khối trên đảo của bạn"
   top:
     description: xem TOP 10
-    gui-title: '&a TOP 10'
-    gui-heading: '&6[name]: &B[rank]'
-    island-level: '&b Cấp [level]'
-    warp-to: '&A Đang dịch chuyển đến đảo của [name]'
+    gui-title: '<green> TOP 10'
+    gui-heading: '<gold>[name]: <aqua>[rank]'
+    island-level: '<aqua> Cấp [level]'
+    warp-to: '<green> Đang dịch chuyển đến đảo của [name]'
   level-details:
     above-sea-level-blocks: Khối Trên Mực Nước Biển
     spawners: Lồng Sinh Quái
     underwater-blocks: Khối Dưới Nước
     all-blocks: Toàn Bộ Khối
-    no-island: '&c Không có đảo!'
+    no-island: '<red> Không có đảo!'
     names-island: 'đảo của [name]'
     syntax: '[name] x [number]'
-    hint: '&c Chạy lệnh cấp để xem báo cáo khối'
+    hint: '<red> Chạy lệnh cấp để xem báo cáo khối'
 level:
   commands:
     value:
@@ -74,27 +74,27 @@ level:
       description: hiển thị giá trị của các khối. Thêm 'hand' vào cuối để hiển thị giá trị của vật phẩm đang cầm.
   gui:
     titles:
-      top: "&0&l Top Đảo"
-      detail-panel: "&0&l Đảo của [name]"
-      value-panel: "&0&l Giá Trị Khối"
+      top: "<black><bold> Top Đảo"
+      detail-panel: "<black><bold> Đảo của [name]"
+      value-panel: "<black><bold> Giá Trị Khối"
     buttons:
       island:
-        empty: '&f&l Vị trí [name].'
-        name: '&f&l [name]'
+        empty: '<white><bold> Vị trí [name].'
+        name: '<white><bold> [name]'
         description: |-
           [owner]
           [members]
           [place]
           [level]
         owners-island: "Đảo của [player]"
-        owner: "&7&l Chủ: &r&b [player]"
-        members-title: "&7&l Thành viên:"
-        member: "&b - [player]"
+        owner: "<gray><bold> Chủ: <reset><aqua> [player]"
+        members-title: "<gray><bold> Thành viên:"
+        member: "<aqua> - [player]"
         unknown: "không rõ"
-        place: "&7&o [number]. &r&7 vị trí"
-        level: "&7 Cấp: &o [number]"
+        place: "<gray><italic> [number]. <reset><gray> vị trí"
+        level: "<gray> Cấp: <italic> [number]"
       material:
-        name: "&f&l [number] x [material]"
+        name: "<white><bold> [number] x [material]"
         description: |-
           [description]
           [count]
@@ -102,103 +102,103 @@ level:
           [calculated]
           [limit]
           [id]
-        id: "&7 ID khối: &e [id]"
-        value: "&7 Giá trị khối: &e [number]"
-        limit: "&7 Giới hạn khối: &e [number]"
-        count: "&7 Số lượng khối: &e [number]"
-        calculated: "&7 Giá trị tính toán: &e [number]"
+        id: "<gray> ID khối: <yellow> [id]"
+        value: "<gray> Giá trị khối: <yellow> [number]"
+        limit: "<gray> Giới hạn khối: <yellow> [number]"
+        count: "<gray> Số lượng khối: <yellow> [number]"
+        calculated: "<gray> Giá trị tính toán: <yellow> [number]"
       value_blocks:
-        name: "&f&l Tất Cả Khối Có Giá Trị"
+        name: "<white><bold> Tất Cả Khối Có Giá Trị"
         description: |-
-          &7 Hiển thị tất cả khối
-          &7 có giá trị trên đảo.
+          <gray> Hiển thị tất cả khối
+          <gray> có giá trị trên đảo.
       all_blocks:
-        name: "&f&l Tất Cả Khối"
+        name: "<white><bold> Tất Cả Khối"
         description: |-
-          &7 Hiển thị tất cả khối
-          &7 trên đảo.
+          <gray> Hiển thị tất cả khối
+          <gray> trên đảo.
       above_sea_level:
-        name: "&f&l Khối Trên Mực Nước Biển"
+        name: "<white><bold> Khối Trên Mực Nước Biển"
         description: |-
-          &7 Chỉ hiển thị khối
-          &7 ở trên mực
-          &7 nước biển.
+          <gray> Chỉ hiển thị khối
+          <gray> ở trên mực
+          <gray> nước biển.
       underwater:
-        name: "&f&l Khối Dưới Mực Nước Biển"
+        name: "<white><bold> Khối Dưới Mực Nước Biển"
         description: |-
-          &7 Chỉ hiển thị khối
-          &7 ở dưới mực
-          &7 nước biển.
+          <gray> Chỉ hiển thị khối
+          <gray> ở dưới mực
+          <gray> nước biển.
       spawner:
-        name: "&f&l Lồng Sinh Quái"
+        name: "<white><bold> Lồng Sinh Quái"
         description: |-
-          &7 Chỉ hiển thị lồng sinh quái.
-        block-name: "&b Lồng Sinh Quái"
+          <gray> Chỉ hiển thị lồng sinh quái.
+        block-name: "<aqua> Lồng Sinh Quái"
       filters:
         name:
-          name: "&f&l Sắp Xếp theo Tên"
+          name: "<white><bold> Sắp Xếp theo Tên"
           description: |-
-            &7 Sắp xếp tất cả khối theo tên.
+            <gray> Sắp xếp tất cả khối theo tên.
         value:
-          name: "&f&l Sắp Xếp theo Giá Trị"
+          name: "<white><bold> Sắp Xếp theo Giá Trị"
           description: |-
-            &7 Sắp xếp tất cả khối theo giá trị.
+            <gray> Sắp xếp tất cả khối theo giá trị.
         count:
-          name: "&f&l Sắp Xếp theo Số Lượng"
+          name: "<white><bold> Sắp Xếp theo Số Lượng"
           description: |-
-            &7 Sắp xếp tất cả khối theo số lượng.
+            <gray> Sắp xếp tất cả khối theo số lượng.
       value:
-        name: "&f&l [material]"
+        name: "<white><bold> [material]"
         description: |-
           [description]
           [value]
           [underwater]
           [limit]
           [id]
-        id: "&7 ID khối: &e [id]"
-        value: "&7 Giá trị khối: &e [number]"
-        underwater: "&7 Dưới mực nước biển: &e [number]"
-        limit: "&7 Giới hạn khối: &e [number]"
+        id: "<gray> ID khối: <yellow> [id]"
+        value: "<gray> Giá trị khối: <yellow> [number]"
+        underwater: "<gray> Dưới mực nước biển: <yellow> [number]"
+        limit: "<gray> Giới hạn khối: <yellow> [number]"
       previous:
-        name: "&f&l Trang Trước"
+        name: "<white><bold> Trang Trước"
         description: |-
-          &7 Chuyển đến trang [number]
+          <gray> Chuyển đến trang [number]
       next:
-        name: "&f&l Trang Tiếp"
+        name: "<white><bold> Trang Tiếp"
         description: |-
-          &7 Chuyển đến trang [number]
+          <gray> Chuyển đến trang [number]
       search:
-        name: "&f&l Tìm Kiếm"
+        name: "<white><bold> Tìm Kiếm"
         description: |-
-          &7 Tìm kiếm một giá trị
-          &7 cụ thể.
-        search: "&b Giá trị: [value]"
+          <gray> Tìm kiếm một giá trị
+          <gray> cụ thể.
+        search: "<aqua> Giá trị: [value]"
     tips:
-      click-to-view: "&e Nhấp &7 để xem."
-      click-to-previous: "&e Nhấp &7 để xem trang trước."
-      click-to-next: "&e Nhấp &7 để xem trang tiếp."
-      click-to-select: "&e Nhấp &7 để chọn."
-      left-click-to-cycle-up: "&e Nhấp Trái &7 để lên."
-      right-click-to-cycle-down: "&e Nhấp Phải &7 để xuống."
-      left-click-to-change: "&e Nhấp Trái &7 để chỉnh sửa."
-      right-click-to-clear: "&e Nhấp Phải &7 để xóa."
-      click-to-asc: "&e Nhấp &7 để sắp xếp tăng dần."
-      click-to-desc: "&e Nhấp &7 để sắp xếp giảm dần."
-      click-to-warp: "&e Nhấp &7 để dịch chuyển."
-      click-to-visit: "&e Nhấp &7 để thăm."
-      right-click-to-visit: "&e Nhấp Phải &7 để thăm."
+      click-to-view: "<yellow> Nhấp <gray> để xem."
+      click-to-previous: "<yellow> Nhấp <gray> để xem trang trước."
+      click-to-next: "<yellow> Nhấp <gray> để xem trang tiếp."
+      click-to-select: "<yellow> Nhấp <gray> để chọn."
+      left-click-to-cycle-up: "<yellow> Nhấp Trái <gray> để lên."
+      right-click-to-cycle-down: "<yellow> Nhấp Phải <gray> để xuống."
+      left-click-to-change: "<yellow> Nhấp Trái <gray> để chỉnh sửa."
+      right-click-to-clear: "<yellow> Nhấp Phải <gray> để xóa."
+      click-to-asc: "<yellow> Nhấp <gray> để sắp xếp tăng dần."
+      click-to-desc: "<yellow> Nhấp <gray> để sắp xếp giảm dần."
+      click-to-warp: "<yellow> Nhấp <gray> để dịch chuyển."
+      click-to-visit: "<yellow> Nhấp <gray> để thăm."
+      right-click-to-visit: "<yellow> Nhấp Phải <gray> để thăm."
   conversations:
-    prefix: "&l&6 [BentoBox]: &r"
-    no-data: "&c Chạy lệnh cấp để xem báo cáo khối."
+    prefix: "<bold><gold> [BentoBox]: <reset>"
+    no-data: "<red> Chạy lệnh cấp để xem báo cáo khối."
     cancel-string: hủy
     exit-string: hủy, thoát, bỏ
-    write-search: "&e Vui lòng nhập giá trị tìm kiếm. (Nhập 'hủy' để thoát)"
-    search-updated: "&a Giá trị tìm kiếm đã cập nhật."
-    cancelled: "&c Cuộc trò chuyện đã bị hủy!"
-    no-value: "&c Vật phẩm này không có giá trị."
-    unknown-item: "&c '[material]' không tồn tại trong trò chơi."
-    value: "&7 Giá trị của '[material]' là: &e[value]"
-    value-underwater: "&7 Giá trị của '[material]' dưới mực nước biển: &e[value]"
-    empty-hand: "&c Không có khối nào trên tay bạn"
-    you-have: "&7 Bạn có [number] lần đếm cuối cùng."
-    you-can-place: "&7 Bạn có thể đặt tối đa [number] và chúng sẽ được tính"
+    write-search: "<yellow> Vui lòng nhập giá trị tìm kiếm. (Nhập 'hủy' để thoát)"
+    search-updated: "<green> Giá trị tìm kiếm đã cập nhật."
+    cancelled: "<red> Cuộc trò chuyện đã bị hủy!"
+    no-value: "<red> Vật phẩm này không có giá trị."
+    unknown-item: "<red> '[material]' không tồn tại trong trò chơi."
+    value: "<gray> Giá trị của '[material]' là: <yellow>[value]"
+    value-underwater: "<gray> Giá trị của '[material]' dưới mực nước biển: <yellow>[value]"
+    empty-hand: "<red> Không có khối nào trên tay bạn"
+    you-have: "<gray> Bạn có [number] lần đếm cuối cùng."
+    you-can-place: "<gray> Bạn có thể đặt tối đa [number] và chúng sẽ được tính"
