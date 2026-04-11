@@ -150,11 +150,13 @@ public class DonationPanel implements Listener {
     }
 
     /**
-     * Process the donation - consume items and record them.
+     * Process the donation - consume items and record them. Items with no
+     * configured value are returned to the player rather than consumed.
      */
     private void processDonation() {
         Map<String, Integer> donations = new HashMap<>();
         long totalPoints = 0;
+        Player player = user.getPlayer();
 
         for (int slot : DONATION_SLOTS) {
             ItemStack item = inventory.getItem(slot);
@@ -168,9 +170,14 @@ public class DonationPanel implements Listener {
                     totalPoints += points;
                     // Record each material type as a separate donation log entry
                     addon.getManager().donateBlocks(island, user.getUniqueId(), mat.name(), count, points);
+                    // Clear the slot - items are consumed
+                    inventory.setItem(slot, null);
+                } else {
+                    // Return valueless items to the player rather than consuming them
+                    inventory.setItem(slot, null);
+                    Map<Integer, ItemStack> overflow = player.getInventory().addItem(item);
+                    overflow.values().forEach(drop -> player.getWorld().dropItemNaturally(player.getLocation(), drop));
                 }
-                // Clear the slot - items are consumed
-                inventory.setItem(slot, null);
             }
         }
 
@@ -218,22 +225,36 @@ public class DonationPanel implements Listener {
             // But if they shift-click into the donation panel, only allow into donation slots
             if (event.isShiftClick()) {
                 event.setCancelled(true);
-                // Manually handle shift-click to a donation slot
+                // Manually handle shift-click to a donation slot using inventory APIs
                 ItemStack clicked = event.getCurrentItem();
-                if (clicked != null && !clicked.getType().isAir() && clicked.getType().isBlock()) {
+                Integer clickedValue = clicked != null && !clicked.getType().isAir() && clicked.getType().isBlock()
+                        ? addon.getBlockConfig().getValue(world, clicked.getType()) : null;
+                if (clickedValue != null && clickedValue > 0) {
+                    ItemStack remaining = clicked.clone();
                     for (int ds : DONATION_SLOTS) {
+                        if (remaining.getAmount() <= 0) {
+                            break;
+                        }
+
                         ItemStack existing = inventory.getItem(ds);
                         if (existing == null || existing.getType().isAir()) {
-                            inventory.setItem(ds, clicked.clone());
-                            clicked.setAmount(0);
+                            inventory.setItem(ds, remaining.clone());
+                            remaining.setAmount(0);
                             break;
-                        } else if (existing.isSimilar(clicked) && existing.getAmount() < existing.getMaxStackSize()) {
+                        } else if (existing.isSimilar(remaining) && existing.getAmount() < existing.getMaxStackSize()) {
                             int space = existing.getMaxStackSize() - existing.getAmount();
-                            int transfer = Math.min(space, clicked.getAmount());
-                            existing.setAmount(existing.getAmount() + transfer);
-                            clicked.setAmount(clicked.getAmount() - transfer);
-                            if (clicked.getAmount() <= 0) break;
+                            int transfer = Math.min(space, remaining.getAmount());
+                            ItemStack updated = existing.clone();
+                            updated.setAmount(updated.getAmount() + transfer);
+                            inventory.setItem(ds, updated);
+                            remaining.setAmount(remaining.getAmount() - transfer);
                         }
+                    }
+
+                    if (remaining.getAmount() <= 0) {
+                        event.setCurrentItem(null);
+                    } else {
+                        event.setCurrentItem(remaining);
                     }
                 }
                 updatePreview();
@@ -268,13 +289,16 @@ public class DonationPanel implements Listener {
         if (isDonationSlot(slot)) {
             // Allow the click but validate on next tick
             Bukkit.getScheduler().runTask(addon.getPlugin(), () -> {
-                // Validate: only blocks with value are allowed
+                // Validate: only blocks with a configured value are allowed
                 ItemStack inSlot = inventory.getItem(slot);
                 if (inSlot != null && !inSlot.getType().isAir()) {
-                    if (!inSlot.getType().isBlock()) {
-                        // Return non-block item to player
-                        player.getInventory().addItem(inSlot);
+                    Integer blockValue = inSlot.getType().isBlock()
+                            ? addon.getBlockConfig().getValue(world, inSlot.getType()) : null;
+                    boolean validDonationItem = blockValue != null && blockValue > 0;
+                    if (!validDonationItem) {
                         inventory.setItem(slot, null);
+                        Map<Integer, ItemStack> overflow = player.getInventory().addItem(inSlot);
+                        overflow.values().forEach(item -> player.getWorld().dropItemNaturally(player.getLocation(), item));
                         user.sendMessage("island.donate.hand.not-block");
                     }
                 }

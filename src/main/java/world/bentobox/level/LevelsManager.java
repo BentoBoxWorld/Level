@@ -554,11 +554,12 @@ public class LevelsManager {
      * @param points   the point value of this donation
      */
     public void donateBlocks(@NonNull Island island, @NonNull UUID donorUUID, @NonNull String material, int count, long points) {
-        IslandLevels ld = levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new);
+        IslandLevels ld = getLevelsData(island);
         ld.addDonation(donorUUID.toString(), material, count, points);
         handler.saveObjectAsync(ld);
-        // Update the top ten to reflect the donation
-        addToTopTen(island, ld.getLevel());
+        // Do not update TopTen here: donations affect future recalculations, and the
+        // stored island level is only updated when setIslandResults(...) persists the
+        // recalculated level data.
     }
 
     /**

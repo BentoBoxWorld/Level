@@ -8,7 +8,7 @@ admin:
     parameters: "<player>"
     description: "calculate the island level for player"
     sethandicap:
-      parameters: <player>[+/-]<handicap>
+      parameters: "<player> [+/-]<handicap>"
       description: |
         set or change the island *handicap*
         e.g. +10 will remove 10 levels, 
