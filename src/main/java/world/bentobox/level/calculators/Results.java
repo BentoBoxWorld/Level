@@ -54,6 +54,10 @@ public class Results {
      * Total points before any death penalties
      */
     AtomicLong totalPoints = new AtomicLong(0);
+    /**
+     * Points contributed via block donation (permanent)
+     */
+    AtomicLong donatedPoints = new AtomicLong(0);
     final Result state;
 
     public Results(Result state) {
@@ -177,6 +181,20 @@ public class Results {
      */
     public void setInitialCount(Long count) {
         this.initialCount.set(count);
+    }
+
+    /**
+     * @return the donated points
+     */
+    public long getDonatedPoints() {
+        return donatedPoints.get();
+    }
+
+    /**
+     * @param points the donated points to set
+     */
+    public void setDonatedPoints(long points) {
+        this.donatedPoints.set(points);
     }
 
 }

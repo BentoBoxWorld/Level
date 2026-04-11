@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -17,8 +18,10 @@ import org.eclipse.jdt.annotation.Nullable;
 import world.bentobox.bentobox.api.addons.Addon;
 import world.bentobox.bentobox.api.addons.GameModeAddon;
 import world.bentobox.bentobox.api.configuration.Config;
+import world.bentobox.bentobox.api.flags.Flag;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.bentobox.managers.RanksManager;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.calculators.Pipeliner;
 import world.bentobox.level.commands.AdminLevelCommand;
@@ -27,6 +30,7 @@ import world.bentobox.level.commands.AdminSetInitialLevelCommand;
 import world.bentobox.level.commands.AdminStatsCommand;
 import world.bentobox.level.commands.AdminTopCommand;
 import world.bentobox.level.commands.IslandDetailCommand;
+import world.bentobox.level.commands.IslandDonateCommand;
 import world.bentobox.level.commands.IslandLevelCommand;
 import world.bentobox.level.commands.IslandTopCommand;
 import world.bentobox.level.commands.IslandValueCommand;
@@ -48,6 +52,16 @@ public class Level extends Addon {
 
     // The 10 in top ten
     public static final int TEN = 10;
+
+    /**
+     * Flag to control who can donate blocks to raise island level.
+     * Default: OWNER only. Can be extended down to MEMBER rank.
+     */
+    public static final Flag BLOCK_DONATION = new Flag.Builder("ISLAND_BLOCK_DONATION", Material.HOPPER)
+            .type(Flag.Type.PROTECTION)
+            .defaultRank(RanksManager.OWNER_RANK)
+            .mode(Flag.Mode.BASIC)
+            .build();
 
     // Settings
     private ConfigSettings settings;
@@ -113,6 +127,9 @@ public class Level extends Addon {
         hookAdvancedChests();
         hookPlugin("RoseStacker", this::hookRoseStackers);
         hookPlugin("UltimateStacker", this::hookUltimateStacker);
+
+        // Register the block donation flag
+        getPlugin().getFlagsManager().registerFlag(this, BLOCK_DONATION);
 
         if (this.isEnabled()) {
             hookExtensions();
@@ -250,6 +267,7 @@ public class Level extends Addon {
             new IslandTopCommand(this, playerCmd);
             new IslandValueCommand(this, playerCmd);
             new IslandDetailCommand(this, playerCmd);
+            new IslandDonateCommand(this, playerCmd);
         });
     }
 

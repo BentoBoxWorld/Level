@@ -1,6 +1,8 @@
 package world.bentobox.level.objects;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -73,6 +75,28 @@ public class IslandLevels implements DataObject {
      */
     @Expose
     private Map<Object, Integer> mdCount;
+
+    /**
+     * Donated blocks - blocks permanently contributed to island level.
+     * Key is the material name (String), value is the count donated.
+     * Null-safe for backwards compatibility with legacy data.
+     */
+    @Expose
+    private Map<String, Integer> donatedBlocks;
+
+    /**
+     * Total point value of all donated blocks.
+     * Null-safe for backwards compatibility.
+     */
+    @Expose
+    private Long donatedPoints;
+
+    /**
+     * Audit log of all donations made to this island.
+     * Null-safe for backwards compatibility.
+     */
+    @Expose
+    private List<DonationRecord> donationLog;
 
     /**
      * Constructor for new island
@@ -249,6 +273,83 @@ public class IslandLevels implements DataObject {
      */
     public void setInitialCount(Long initialCount) {
         this.initialCount = initialCount;
+    }
+
+    // ---- Donation fields (null-safe for backwards compatibility) ----
+
+    /**
+     * Record for tracking individual donations for audit purposes.
+     * @param timestamp when the donation was made (epoch millis)
+     * @param donorUUID UUID of the player who donated
+     * @param material the material name that was donated
+     * @param count how many blocks were donated
+     * @param points the point value at time of donation
+     */
+    public record DonationRecord(long timestamp, String donorUUID, String material, int count, long points) {
+    }
+
+    /**
+     * Get the donated blocks map.
+     * @return map of material name to count, never null
+     */
+    public Map<String, Integer> getDonatedBlocks() {
+        if (donatedBlocks == null) {
+            donatedBlocks = new HashMap<>();
+        }
+        return donatedBlocks;
+    }
+
+    /**
+     * @param donatedBlocks the donatedBlocks to set
+     */
+    public void setDonatedBlocks(Map<String, Integer> donatedBlocks) {
+        this.donatedBlocks = donatedBlocks;
+    }
+
+    /**
+     * Get the total donated points for this island.
+     * @return donated points, never null
+     */
+    public long getDonatedPoints() {
+        return donatedPoints == null ? 0L : donatedPoints;
+    }
+
+    /**
+     * @param donatedPoints the donatedPoints to set
+     */
+    public void setDonatedPoints(long donatedPoints) {
+        this.donatedPoints = donatedPoints;
+    }
+
+    /**
+     * Get the donation audit log.
+     * @return list of donation records, never null
+     */
+    public List<DonationRecord> getDonationLog() {
+        if (donationLog == null) {
+            donationLog = new ArrayList<>();
+        }
+        return donationLog;
+    }
+
+    /**
+     * @param donationLog the donationLog to set
+     */
+    public void setDonationLog(List<DonationRecord> donationLog) {
+        this.donationLog = donationLog;
+    }
+
+    /**
+     * Add a donation to this island's records.
+     * @param donorUUID UUID of the player donating
+     * @param material the material being donated
+     * @param count how many blocks
+     * @param points the point value of this donation
+     */
+    public void addDonation(String donorUUID, String material, int count, long points) {
+        getDonatedBlocks().merge(material, count, Integer::sum);
+        this.donatedPoints = getDonatedPoints() + points;
+        getDonationLog().add(new DonationRecord(System.currentTimeMillis(), donorUUID, material, count, points));
     }
 
     /**

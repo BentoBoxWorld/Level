@@ -542,4 +542,43 @@ public class LevelsManager {
         handler.deleteID(uniqueId);
     }
 
+    // ---- Block Donation Methods ----
+
+    /**
+     * Record a block donation for an island. Items should already be removed from the player's inventory.
+     *
+     * @param island   the island receiving the donation
+     * @param donorUUID UUID of the donating player
+     * @param material the material name being donated
+     * @param count    how many blocks
+     * @param points   the point value of this donation
+     */
+    public void donateBlocks(@NonNull Island island, @NonNull UUID donorUUID, @NonNull String material, int count, long points) {
+        IslandLevels ld = levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new);
+        ld.addDonation(donorUUID.toString(), material, count, points);
+        handler.saveObjectAsync(ld);
+        // Update the top ten to reflect the donation
+        addToTopTen(island, ld.getLevel());
+    }
+
+    /**
+     * Get the total donated points for an island.
+     *
+     * @param island the island
+     * @return total donated points
+     */
+    public long getDonatedPoints(@NonNull Island island) {
+        return getLevelsData(island).getDonatedPoints();
+    }
+
+    /**
+     * Get the donated blocks map for an island.
+     *
+     * @param island the island
+     * @return map of material name to count
+     */
+    public Map<String, Integer> getDonatedBlocks(@NonNull Island island) {
+        return getLevelsData(island).getDonatedBlocks();
+    }
+
 }

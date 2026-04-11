@@ -1,0 +1,343 @@
+package world.bentobox.level.panels;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import world.bentobox.bentobox.api.localization.TextVariables;
+import world.bentobox.bentobox.api.user.User;
+import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.level.Level;
+import world.bentobox.level.util.Utils;
+
+/**
+ * Donation GUI panel. Players drag blocks from their inventory into the donation
+ * slots. A confirm button finalizes the donation; cancel returns items.
+ *
+ * @author tastybento
+ */
+public class DonationPanel implements Listener {
+
+    private static final int SIZE = 36; // 4 rows
+    private static final String TITLE_REF = "island.donate.gui-title";
+
+    // Slot layout
+    private static final int INFO_SLOT = 4;
+    private static final int CANCEL_SLOT = 28;
+    private static final int PREVIEW_SLOT = 31;
+    private static final int CONFIRM_SLOT = 34;
+
+    // Donation slots: rows 2 and 3, columns 2-8 (slots 10-16, 19-25)
+    private static final int[] DONATION_SLOTS = {
+            10, 11, 12, 13, 14, 15, 16,
+            19, 20, 21, 22, 23, 24, 25
+    };
+
+    // Border slots: everything else
+    private static final Material BORDER_MATERIAL = Material.BLACK_STAINED_GLASS_PANE;
+
+    private final Level addon;
+    private final World world;
+    private final User user;
+    private final Island island;
+    private final Inventory inventory;
+    private boolean confirmed = false;
+
+    private DonationPanel(Level addon, World world, User user, Island island) {
+        this.addon = addon;
+        this.world = world;
+        this.user = user;
+        this.island = island;
+
+        // Create the inventory
+        String title = user.getTranslation(TITLE_REF);
+        this.inventory = Bukkit.createInventory(null, SIZE, title);
+
+        // Fill borders
+        ItemStack border = createNamedItem(BORDER_MATERIAL, " ");
+        for (int i = 0; i < SIZE; i++) {
+            inventory.setItem(i, border);
+        }
+
+        // Clear donation slots
+        for (int slot : DONATION_SLOTS) {
+            inventory.setItem(slot, null);
+        }
+
+        // Info pane
+        long currentDonated = addon.getManager().getDonatedPoints(island);
+        ItemStack info = createNamedItem(Material.BOOK,
+                user.getTranslation("island.donate.gui-info",
+                        "[points]", String.valueOf(currentDonated)));
+        inventory.setItem(INFO_SLOT, info);
+
+        // Cancel button
+        ItemStack cancel = createNamedItem(Material.RED_STAINED_GLASS_PANE,
+                user.getTranslation("island.donate.cancel"));
+        inventory.setItem(CANCEL_SLOT, cancel);
+
+        // Preview pane (starts at 0)
+        updatePreview();
+
+        // Confirm button
+        ItemStack confirm = createNamedItem(Material.LIME_STAINED_GLASS_PANE,
+                user.getTranslation("island.donate.confirm"));
+        inventory.setItem(CONFIRM_SLOT, confirm);
+
+        // Register listener
+        Bukkit.getPluginManager().registerEvents(this, addon.getPlugin());
+    }
+
+    private void build() {
+        user.getPlayer().openInventory(inventory);
+    }
+
+    /**
+     * Calculate the total point value of items in the donation slots.
+     */
+    private long calculateDonationValue() {
+        long total = 0;
+        for (int slot : DONATION_SLOTS) {
+            ItemStack item = inventory.getItem(slot);
+            if (item != null && !item.getType().isAir()) {
+                Integer value = addon.getBlockConfig().getValue(world, item.getType());
+                if (value != null && value > 0) {
+                    total += (long) value * item.getAmount();
+                }
+            }
+        }
+        return total;
+    }
+
+    /**
+     * Update the preview pane to show current point value.
+     */
+    private void updatePreview() {
+        long points = calculateDonationValue();
+        ItemStack preview = createNamedItem(Material.EXPERIENCE_BOTTLE,
+                user.getTranslation("island.donate.preview",
+                        "[points]", String.valueOf(points)));
+        inventory.setItem(PREVIEW_SLOT, preview);
+    }
+
+    /**
+     * Check if a slot is a donation slot.
+     */
+    private boolean isDonationSlot(int slot) {
+        for (int s : DONATION_SLOTS) {
+            if (s == slot) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Process the donation - consume items and record them.
+     */
+    private void processDonation() {
+        Map<String, Integer> donations = new HashMap<>();
+        long totalPoints = 0;
+
+        for (int slot : DONATION_SLOTS) {
+            ItemStack item = inventory.getItem(slot);
+            if (item != null && !item.getType().isAir()) {
+                Material mat = item.getType();
+                Integer value = addon.getBlockConfig().getValue(world, mat);
+                if (value != null && value > 0) {
+                    int count = item.getAmount();
+                    long points = (long) value * count;
+                    donations.merge(mat.name(), count, Integer::sum);
+                    totalPoints += points;
+                    // Record each material type as a separate donation log entry
+                    addon.getManager().donateBlocks(island, user.getUniqueId(), mat.name(), count, points);
+                }
+                // Clear the slot - items are consumed
+                inventory.setItem(slot, null);
+            }
+        }
+
+        if (donations.isEmpty()) {
+            user.sendMessage("island.donate.empty");
+        } else {
+            user.sendMessage("island.donate.success",
+                    "[points]", String.valueOf(totalPoints),
+                    TextVariables.NUMBER, String.valueOf(donations.values().stream().mapToInt(Integer::intValue).sum()));
+        }
+    }
+
+    /**
+     * Return all items in donation slots to the player.
+     */
+    private void returnItems() {
+        Player player = user.getPlayer();
+        for (int slot : DONATION_SLOTS) {
+            ItemStack item = inventory.getItem(slot);
+            if (item != null && !item.getType().isAir()) {
+                Map<Integer, ItemStack> overflow = player.getInventory().addItem(item);
+                // Drop any items that don't fit
+                overflow.values().forEach(drop -> player.getWorld().dropItemNaturally(player.getLocation(), drop));
+                inventory.setItem(slot, null);
+            }
+        }
+    }
+
+    private void cleanup() {
+        HandlerList.unregisterAll(this);
+    }
+
+    // ---- Event Handlers ----
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!event.getInventory().equals(inventory)) return;
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+        if (!player.getUniqueId().equals(user.getUniqueId())) return;
+
+        int slot = event.getRawSlot();
+
+        // Clicks in the player's own inventory are allowed (for picking up items)
+        if (slot >= SIZE) {
+            // But if they shift-click into the donation panel, only allow into donation slots
+            if (event.isShiftClick()) {
+                event.setCancelled(true);
+                // Manually handle shift-click to a donation slot
+                ItemStack clicked = event.getCurrentItem();
+                if (clicked != null && !clicked.getType().isAir() && clicked.getType().isBlock()) {
+                    for (int ds : DONATION_SLOTS) {
+                        ItemStack existing = inventory.getItem(ds);
+                        if (existing == null || existing.getType().isAir()) {
+                            inventory.setItem(ds, clicked.clone());
+                            clicked.setAmount(0);
+                            break;
+                        } else if (existing.isSimilar(clicked) && existing.getAmount() < existing.getMaxStackSize()) {
+                            int space = existing.getMaxStackSize() - existing.getAmount();
+                            int transfer = Math.min(space, clicked.getAmount());
+                            existing.setAmount(existing.getAmount() + transfer);
+                            clicked.setAmount(clicked.getAmount() - transfer);
+                            if (clicked.getAmount() <= 0) break;
+                        }
+                    }
+                }
+                updatePreview();
+            }
+            return;
+        }
+
+        // Cancel button
+        if (slot == CANCEL_SLOT) {
+            event.setCancelled(true);
+            returnItems();
+            confirmed = true; // prevent double-return on close
+            player.closeInventory();
+            user.sendMessage("island.donate.cancelled");
+            return;
+        }
+
+        // Confirm button
+        if (slot == CONFIRM_SLOT) {
+            event.setCancelled(true);
+            if (calculateDonationValue() <= 0) {
+                user.sendMessage("island.donate.empty");
+                return;
+            }
+            confirmed = true;
+            processDonation();
+            player.closeInventory();
+            return;
+        }
+
+        // Donation slots - allow placing/removing items
+        if (isDonationSlot(slot)) {
+            // Allow the click but validate on next tick
+            Bukkit.getScheduler().runTask(addon.getPlugin(), () -> {
+                // Validate: only blocks with value are allowed
+                ItemStack inSlot = inventory.getItem(slot);
+                if (inSlot != null && !inSlot.getType().isAir()) {
+                    if (!inSlot.getType().isBlock()) {
+                        // Return non-block item to player
+                        player.getInventory().addItem(inSlot);
+                        inventory.setItem(slot, null);
+                        user.sendMessage("island.donate.hand.not-block");
+                    }
+                }
+                updatePreview();
+            });
+            return;
+        }
+
+        // All other slots (borders, info, preview) - cancel
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onInventoryDrag(InventoryDragEvent event) {
+        if (!event.getInventory().equals(inventory)) return;
+        // Only allow drags into donation slots
+        for (int slot : event.getRawSlots()) {
+            if (slot < SIZE && !isDonationSlot(slot)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+        // Update preview after drag
+        Bukkit.getScheduler().runTask(addon.getPlugin(), this::updatePreview);
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (!event.getInventory().equals(inventory)) return;
+        if (!(event.getPlayer() instanceof Player player)) return;
+        if (!player.getUniqueId().equals(user.getUniqueId())) return;
+
+        // Return items if not confirmed
+        if (!confirmed) {
+            returnItems();
+        }
+        cleanup();
+    }
+
+    // ---- Helper Methods ----
+
+    /**
+     * Create a named item. If the text contains '|' characters, the first segment
+     * becomes the display name and the rest become lore lines.
+     */
+    private static ItemStack createNamedItem(Material material, String text) {
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            String[] parts = text.split("\\|");
+            meta.setDisplayName(parts[0]);
+            if (parts.length > 1) {
+                meta.setLore(Arrays.asList(Arrays.copyOfRange(parts, 1, parts.length)));
+            }
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    /**
+     * Open the donation panel for a player.
+     *
+     * @param addon  Level addon
+     * @param world  world context
+     * @param user   the user opening the panel
+     * @param island the island to donate to
+     */
+    public static void openPanel(Level addon, World world, User user, Island island) {
+        new DonationPanel(addon, world, user, island).build();
+    }
+}

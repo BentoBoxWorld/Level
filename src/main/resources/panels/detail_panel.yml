@@ -100,6 +100,17 @@ detail_panel:
           view:
             click-type: unknown
             tooltip: level.gui.tips.click-to-view
+      7:
+        icon: HOPPER
+        title: level.gui.buttons.donated.name
+        description: level.gui.buttons.donated.description
+        data:
+          type: TAB
+          tab: DONATED
+        actions:
+          view:
+            click-type: unknown
+            tooltip: level.gui.tips.click-to-view
       9:
         # You can create multiple buttons. By default it is one.
         icon: IRON_TRAPDOOR
