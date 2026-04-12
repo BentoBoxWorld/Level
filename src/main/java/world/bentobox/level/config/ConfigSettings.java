@@ -98,8 +98,10 @@ public class ConfigSettings implements ConfigObject {
     @ConfigComment("Island level calculation formula")
     @ConfigComment("blocks - the sum total of all block values, less any death penalty")
     @ConfigComment("level_cost - in a linear equation, the value of one level")
+    @ConfigComment("island_members - the number of members on the island team (useful for handicap/fairness systems)")
     @ConfigComment("This formula can include +,=,*,/,sqrt,^,sin,cos,tan,log (natural log). Result will always be rounded to a long integer")
     @ConfigComment("for example, an alternative non-linear option could be: 3 * sqrt(blocks / level_cost)")
+    @ConfigComment("To implement a handicap by team size: blocks / level_cost / island_members")
     @ConfigEntry(path = "level-calc")
     private String levelCalc = "blocks / level_cost";
 
