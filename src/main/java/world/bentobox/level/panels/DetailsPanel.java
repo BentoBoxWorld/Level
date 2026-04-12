@@ -61,7 +61,11 @@ public class DetailsPanel {
         /**
          * Spawner Tab.
          */
-        SPAWNER
+        SPAWNER,
+        /**
+         * Donated blocks Tab.
+         */
+        DONATED
     }
 
     /**
@@ -210,7 +214,18 @@ public class DetailsPanel {
     private void updateFilters() {
         this.blockCountList.clear();
 
-        if (this.activeTab == Tab.SPAWNER) {
+        if (this.activeTab == Tab.DONATED) {
+            // Show donated blocks
+            Map<String, Integer> donated = this.levelsData.getDonatedBlocks();
+            for (Map.Entry<String, Integer> entry : donated.entrySet()) {
+                if (entry.getValue() > 0) {
+                    // Try to convert to Material for display
+                    Material mat = Material.matchMaterial(entry.getKey());
+                    Object key = mat != null ? mat : entry.getKey();
+                    this.blockCountList.add(new BlockRec(key, entry.getValue(), 0));
+                }
+            }
+        } else if (this.activeTab == Tab.SPAWNER) {
             if (this.addon.getBlockConfig().isNotHiddenBlock(Material.SPAWNER)) {
                 Map<EntityType, Integer> spawnerCountMap = new EnumMap<>(EntityType.class);
 

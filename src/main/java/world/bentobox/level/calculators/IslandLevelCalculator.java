@@ -291,6 +291,22 @@ public class IslandLevelCalculator {
             + " blocks (max " + limit + explain);
         }
         reportLines.add(LINE_BREAK);
+        // Donated blocks section
+        if (results.donatedPoints.get() > 0) {
+            reportLines.add("Donated blocks (permanent contributions):");
+            reportLines.add("Total donated points = " + String.format("%,d", results.donatedPoints.get()));
+            Map<String, Integer> donatedBlocks = addon.getManager().getDonatedBlocks(island);
+            donatedBlocks.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .forEach(entry -> {
+                    Integer value = addon.getBlockConfig().getBlockValues().getOrDefault(entry.getKey().toLowerCase(java.util.Locale.ENGLISH), 0);
+                    long totalValue = (long) value * entry.getValue();
+                    reportLines.add("  " + Util.prettifyText(entry.getKey()) + " x "
+                            + String.format("%,d", entry.getValue())
+                            + " = " + String.format("%,d", totalValue) + " points");
+                });
+            reportLines.add(LINE_BREAK);
+        }
         return reportLines;
     }
 
@@ -704,6 +720,11 @@ public class IslandLevelCalculator {
         // Finalize calculations
         results.rawBlockCount
         .addAndGet((long) (results.underWaterBlockCount.get() * addon.getSettings().getUnderWaterMultiplier()));
+
+        // Add donated block points (permanent contributions that persist across recalculations)
+        long donatedPoints = addon.getManager().getDonatedPoints(island);
+        results.rawBlockCount.addAndGet(donatedPoints);
+        results.donatedPoints.set(donatedPoints);
 
         // Set the death penalty
         if (this.addon.getSettings().isSumTeamDeaths()) {

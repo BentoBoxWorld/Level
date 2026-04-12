@@ -9,23 +9,23 @@ admin:
         např. +10 odstraní 10 úrovní,
         30 nastaví handicap na 30,
         -20 přidá 20 úrovní
-      changed: '&a Počáteční ostrovní handicap se změnil z [number] na [new_number].'
-      invalid-level: '&c Neplatný handicap. Použijte celé číslo.'
+      changed: '<green> Počáteční ostrovní handicap se změnil z [number] na [new_number].'
+      invalid-level: '<red> Neplatný handicap. Použijte celé číslo.'
   levelstatus:
     description: Ukažte, kolik ostrovů je ve frontě pro skenování
-    islands-in-queue: '&a Ostrovy ve frontě: [number]'
+    islands-in-queue: '<green> Ostrovy ve frontě: [number]'
   top:
     description: ukázat seznam TOP 10
-    unknown-world: '&cNeznámý svět!'
-    display: '&f[rank]. &a[name] &7- &b[level]'
+    unknown-world: '<red>Neznámý svět!'
+    display: '<white>[rank]. <green>[name] <gray>- <aqua>[level]'
     remove:
       description: odstranit hráče z TOP 10
       parameters: <player>
   stats:
     description: Zobrazit statistiky na ostrovech na tomto serveru
     title: Statistiky serveru
-    world: '&a [name]'
-    no-data: '&c Žádná data pro zpracování.'
+    world: '<green> [name]'
+    no-data: '<red> Žádná data pro zpracování.'
     average-level: 'Průměrná úroveň ostrova: [number]'
     median-level: 'Střední úroveň ostrova: [number]'
     mode-level: 'Úroveň ostrova režimu: [number]'
@@ -37,32 +37,60 @@ island:
   level:
     parameters: '[player]'
     description: spočítat úroveň tvého ostrova nebo ostrova hráče [player]
-    calculating: '&aPočítám úroveň...'
-    estimated-wait: '&a Odhadované čekání: [number] sekundy'
-    in-queue: '&a Jste číslo [number] ve frontě'
-    island-level-is: '&aÚroveň ostrova je &b[level]'
-    required-points-to-next-level: '&a Pokrok úrovně: &6 [progress]&b /&e [levelcost] &a bodů'
-    deaths: '&c([number] smrtí)'
-    cooldown: '&cMusíš čekat &b[time] &csekund, než můžeš příkaz znovu použít'
-    in-progress: '&6 Probíhá výpočet úrovně ostrova ...'
-    time-out: '&c Výpočet úrovně trval příliš dlouho. Zkuste to prosím znovu později.'
+    calculating: '<green>Počítám úroveň...'
+    estimated-wait: '<green> Odhadované čekání: [number] sekundy'
+    in-queue: '<green> Jste číslo [number] ve frontě'
+    island-level-is: '<green>Úroveň ostrova je <aqua>[level]'
+    required-points-to-next-level: '<green> Pokrok úrovně: <gold> [progress]<aqua> /<yellow> [levelcost] <green> bodů'
+    deaths: '<red>([number] smrtí)'
+    cooldown: '<red>Musíš čekat <aqua>[time] <red>sekund, než můžeš příkaz znovu použít'
+    in-progress: '<gold> Probíhá výpočet úrovně ostrova ...'
+    time-out: '<red> Výpočet úrovně trval příliš dlouho. Zkuste to prosím znovu později.'
+  donate:
+    parameters: "[hand [amount]]"
+    description: "donate blocks to permanently raise island level"
+    must-be-on-island: "<red>You must be on your island to donate blocks."
+    no-permission: "<red>You do not have permission to donate blocks on this island."
+    no-value: "<red>That block has no level value."
+    invalid-amount: "<red>Invalid amount. Use a positive number."
+    empty: "<red>There are no valid blocks to donate."
+    cancelled: "<yellow>Donation cancelled. Items returned."
+    success: "<green>Donated [number] blocks for <aqua>[points]<green> points! These points are permanent."
+    confirm: "<red><bold>Confirm - Items will be DESTROYED!"
+    cancel: "<green><bold>Cancel - Return Items"
+    gui-title: "<black><bold>Donate Blocks"
+    gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
+    preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    hand:
+      success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"
+      not-block: "<red>You must be holding a placeable block to donate."
+      confirm-prompt: "<red>About to DESTROY <gold>[number] x [material]<red> for <aqua>[points]<red> permanent points."
   detail:
     description: "zobrazit podrobnosti o blocích vašeho ostrova"
   top:
     description: ukázat TOP 10
-    gui-title: '&aTOP 10'
-    gui-heading: '&6[name]: &B[rank]'
-    island-level: '&BÚroveň [level]'
-    warp-to: '&AWarp na ostrov [name]'
+    gui-title: '<green>TOP 10'
+    gui-heading: '<gold>[name]: <aqua>[rank]'
+    island-level: '<aqua>Úroveň [level]'
+    warp-to: '<green>Warp na ostrov [name]'
   level-details:
     above-sea-level-blocks: Nad bloky hladiny moře
     spawners: Spawners
     underwater-blocks: Podvodové bloky
     all-blocks: Všechny bloky
-    no-island: '&c Žádný ostrov!'
+    no-island: '<red> Žádný ostrov!'
     names-island: '[name]''s Island'
     syntax: '[name] x [number]'
-    hint: '&c Spustit úroveň a zobrazit zprávu bloku'
+    hint: '<red> Spustit úroveň a zobrazit zprávu bloku'
+protection:
+  flags:
+    ISLAND_BLOCK_DONATION:
+      description: |-
+        <green>Toggle who can donate</green>
+        <green>blocks to raise island level.</green>
+      name: Block Donation
+      hint: Block donation not allowed
+
 level:
   commands:
     value:
@@ -72,27 +100,27 @@ level:
         položku v ruce.
   gui:
     titles:
-      top: '&0&l Nejlepší ostrovy'
-      detail-panel: '&0&l [name]''s Island'
-      value-panel: '&0&l Blokové hodnoty'
+      top: '<black><bold> Nejlepší ostrovy'
+      detail-panel: '<black><bold> [name]''s Island'
+      value-panel: '<black><bold> Blokové hodnoty'
     buttons:
       island:
-        empty: '&f&l [name]. místo'
-        name: '&f&l [name]'
+        empty: '<white><bold> [name]. místo'
+        name: '<white><bold> [name]'
         description: |-
           [owner]
           [members]
           [place]
           [level]
         owners-island: '[player]''s Island'
-        owner: '&7&l Majitel: &r&b [player]'
-        members-title: '&7&l Členové:'
-        member: '&b - [player]'
+        owner: '<gray><bold> Majitel: <reset><aqua> [player]'
+        members-title: '<gray><bold> Členové:'
+        member: '<aqua> - [player]'
         unknown: neznámý
-        place: '&7&o [number]. &r&7  místo'
-        level: '&7 Úroveň:&o [number]'
+        place: '<gray><italic> [number]. <reset><gray>  místo'
+        level: '<gray> Úroveň:<italic> [number]'
       material:
-        name: '&f&l [number] x [material]'
+        name: '<white><bold> [number] x [material]'
         description: |-
           [description]
           [count]
@@ -100,97 +128,102 @@ level:
           [calculated]
           [limit]
           [id]
-        id: '&7 Blok ID: &e [id]'
-        value: '&7 Hodnota bloku:&e  [number]'
-        limit: '&7 Limit bloku:&e  [number]'
-        count: '&7 Počet bloků:&e  [number]'
-        calculated: '&7 Vypočítaná hodnota:&e  [number]'
+        id: '<gray> Blok ID: <yellow> [id]'
+        value: '<gray> Hodnota bloku:<yellow>  [number]'
+        limit: '<gray> Limit bloku:<yellow>  [number]'
+        count: '<gray> Počet bloků:<yellow>  [number]'
+        calculated: '<gray> Vypočítaná hodnota:<yellow>  [number]'
       value_blocks:
-        name: '&f&l Všechny bloky s hodnotou'
+        name: '<white><bold> Všechny bloky s hodnotou'
         description: |-
-          &7 Zobrazit všechny bloky
-          &7 s hodnotou na ostrově.
+          <gray> Zobrazit všechny bloky
+          <gray> s hodnotou na ostrově.
       all_blocks:
-        name: '&f&l Všechny bloky'
+        name: '<white><bold> Všechny bloky'
         description: |-
-          &7 Zobrazit všechny bloky
-          &7 na ostrově.
+          <gray> Zobrazit všechny bloky
+          <gray> na ostrově.
       above_sea_level:
-        name: '&f&l Bloky nad hladinou moře'
+        name: '<white><bold> Bloky nad hladinou moře'
         description: |-
-          &7 Zobrazit pouze bloky
-          &7 které jsou nad mořem
-          &7 úroveň.
+          <gray> Zobrazit pouze bloky
+          <gray> které jsou nad mořem
+          <gray> úroveň.
       underwater:
-        name: '&f&l Blocks Under Sea level'
+        name: '<white><bold> Blocks Under Sea level'
         description: |-
-          &7 Zobrazit pouze bloky
-          &7 to je níže moře
-          &7 úroveň.
+          <gray> Zobrazit pouze bloky
+          <gray> to je níže moře
+          <gray> úroveň.
       spawner:
-        name: '&f&l Spawners'
-        description: '&7 Displej pouze tření.'
-        block-name: '&b Spawner'
+        name: '<white><bold> Spawners'
+        description: '<gray> Displej pouze tření.'
+        block-name: '<aqua> Spawner'
+      donated:
+        name: "<white><bold>Donated Blocks"
+        description: |-
+          <gray>Display blocks permanently
+          <gray>donated to island level.
       filters:
         name:
-          name: '&f&l Sort by Name'
-          description: '&7 Sort all blocks by name.'
+          name: '<white><bold> Sort by Name'
+          description: '<gray> Sort all blocks by name.'
         value:
-          name: '&f&l Sort by Value'
-          description: '&7 Sort all blocks by their value.'
+          name: '<white><bold> Sort by Value'
+          description: '<gray> Sort all blocks by their value.'
         count:
-          name: '&f&l Sort by Count'
-          description: '&7 Sort all blocks by their amount.'
+          name: '<white><bold> Sort by Count'
+          description: '<gray> Sort all blocks by their amount.'
       value:
-        name: '&f&l [material]'
+        name: '<white><bold> [material]'
         description: |-
           [description]
           [value]
           [underwater]
           [limit]
           [id]
-        id: '&7 Block id: &e [id]'
-        value: '&7 Hodnota bloku: &e [number]'
-        underwater: '&7 Hladina moře Bellow: &e [number]'
-        limit: '&7 Limit bloku: &e [number]'
+        id: '<gray> Block id: <yellow> [id]'
+        value: '<gray> Hodnota bloku: <yellow> [number]'
+        underwater: '<gray> Hladina moře Below: <yellow> [number]'
+        limit: '<gray> Limit bloku: <yellow> [number]'
       previous:
         name: Předchozí stránka
-        description: '&7 Přepněte na stránku [number]'
+        description: '<gray> Přepněte na stránku [number]'
       next:
         name: Další stránka
-        description: '&7 Přepněte na stránku [number]'
+        description: '<gray> Přepněte na stránku [number]'
       search:
         name: Vyhledávání
         description: |-
-          &7 Hledejte konkrétní
-          &7 hodnota.
-        search: '&b Hodnota: [value]'
+          <gray> Hledejte konkrétní
+          <gray> hodnota.
+        search: '<aqua> Hodnota: [value]'
     tips:
-      click-to-view: '&e Kliknutím zobrazíte.'
-      click-to-previous: '&e Kliknutím zobrazíte předchozí stránku.'
-      click-to-next: '&e Kliknutím zobrazíte další stránku.'
-      click-to-select: '&e Kliknutím vyberte.'
-      left-click-to-cycle-up: '&e Levé kliknutí na cyklus nahoru.'
-      right-click-to-cycle-down: '&e Kliknutím pravým tlačítkem je cyklujte dolů.'
-      left-click-to-change: '&e Levý kliknutí upravte.'
-      right-click-to-clear: '&e Kliknutím pravým tlačítkem vymažte.'
-      click-to-asc: '&e Kliknutím třídíte v zvyšování pořadí.'
-      click-to-desc: '&e Kliknutím třídíte v klesajícím pořadí.'
-      click-to-warp: '&e Klikněte na warp.'
-      click-to-visit: '&e Kliknutím navštívíte.'
-      right-click-to-visit: '&e Kliknutím na návštěvu.'
+      click-to-view: '<yellow> Kliknutím zobrazíte.'
+      click-to-previous: '<yellow> Kliknutím zobrazíte předchozí stránku.'
+      click-to-next: '<yellow> Kliknutím zobrazíte další stránku.'
+      click-to-select: '<yellow> Kliknutím vyberte.'
+      left-click-to-cycle-up: '<yellow> Levé kliknutí na cyklus nahoru.'
+      right-click-to-cycle-down: '<yellow> Kliknutím pravým tlačítkem je cyklujte dolů.'
+      left-click-to-change: '<yellow> Levý kliknutí upravte.'
+      right-click-to-clear: '<yellow> Kliknutím pravým tlačítkem vymažte.'
+      click-to-asc: '<yellow> Kliknutím třídíte v zvyšování pořadí.'
+      click-to-desc: '<yellow> Kliknutím třídíte v klesajícím pořadí.'
+      click-to-warp: '<yellow> Klikněte na warp.'
+      click-to-visit: '<yellow> Kliknutím navštívíte.'
+      right-click-to-visit: '<yellow> Kliknutím na návštěvu.'
   conversations:
-    prefix: '&l&6 [BentoBox]: &r'
-    no-data: '&c Spusťte úroveň a zobrazí se zpráva o bloku.'
+    prefix: '<bold><gold> [BentoBox]: <reset>'
+    no-data: '<red> Spusťte úroveň a zobrazí se zpráva o bloku.'
     cancel-string: zrušit
     exit-string: zrušit, ukončit, přestat
-    write-search: '&e Zadejte hodnotu vyhledávání. (Napište „zrušit“ do ukončení)'
+    write-search: '<yellow> Zadejte hodnotu vyhledávání. (Napište „zrušit“ do ukončení)'
     search-updated: Aktualizována hodnota vyhledávání.
-    cancelled: '&c Konverzace zrušena!'
-    no-value: '&c Tato položka nemá žádnou hodnotu.'
-    unknown-item: '&c „[material]“ ve hře neexistuje.'
-    value: '&7 Hodnota „[material]“ je: &e [value]'
-    value-underwater: '&7 Hodnota [material] ''pod hladinou moře: &e [value]'
-    empty-hand: '&c V ruce nejsou žádné bloky'
-    you-have: '&7 Máte [number] na posledním počtu.'
-    you-can-place: '&7 Můžete umístit až [number] a nechat je počítat'
+    cancelled: '<red> Konverzace zrušena!'
+    no-value: '<red> Tato položka nemá žádnou hodnotu.'
+    unknown-item: '<red> „[material]“ ve hře neexistuje.'
+    value: '<gray> Hodnota „[material]“ je: <yellow> [value]'
+    value-underwater: '<gray> Hodnota [material] ''pod hladinou moře: <yellow> [value]'
+    empty-hand: '<red> V ruce nejsou žádné bloky'
+    you-have: '<gray> Máte [number] na posledním počtu.'
+    you-can-place: '<gray> Můžete umístit až [number] a nechat je počítat'

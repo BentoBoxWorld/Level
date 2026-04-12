@@ -219,7 +219,7 @@ public class LevelTest extends CommonTestSetup {
 	    mockedBukkit.when(() -> Bukkit.getWorld("acidisland_world")).thenReturn(null);
         addon.allLoaded();
 		verify(plugin).log("[Level] Level hooking into BSkyBlock");
-        verify(cmd, times(4)).getAddon(); // 4 commands
+        verify(cmd, times(5)).getAddon(); // 5 commands
 		verify(adminCmd, times(5)).getAddon(); // Five commands
 		// Placeholders
 		verify(phm).registerPlaceholder(eq(addon), eq("bskyblock_island_level"), any());

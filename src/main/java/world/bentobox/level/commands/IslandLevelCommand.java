@@ -11,6 +11,7 @@ import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.level.Level;
 import world.bentobox.level.calculators.Results;
 import world.bentobox.level.calculators.Results.Result;
+import world.bentobox.level.util.Utils;
 
 public class IslandLevelCommand extends CompositeCommand {
 
@@ -112,9 +113,9 @@ public class IslandLevelCommand extends CompositeCommand {
             // Send player how many points are required to reach next island level
             if (results.getPointsToNextLevel() >= 0) {
                 user.sendMessage("island.level.required-points-to-next-level",
-                        "[points]", String.valueOf(results.getPointsToNextLevel()),
-                        "[progress]", String.valueOf(this.addon.getSettings().getLevelCost()-results.getPointsToNextLevel()),
-                        "[levelcost]", String.valueOf(this.addon.getSettings().getLevelCost())
+                        "[points]", Utils.formatNumber(user, results.getPointsToNextLevel()),
+                        "[progress]", Utils.formatNumber(user, this.addon.getSettings().getLevelCost() - results.getPointsToNextLevel()),
+                        "[levelcost]", Utils.formatNumber(user, this.addon.getSettings().getLevelCost())
                 );
             }
             // Tell other team members

@@ -6,23 +6,23 @@ admin:
     sethandicap:
       parameters: "<player> <handicap>"
       description: mengatur handicap pulau, biasanya level pulau pemula
-      changed: "&a Handicap pulau awal diubah dari [number] menjadi [new_number]."
-      invalid-level: "&c Handicap tidak valid. Gunakan angka bulat."
+      changed: "<green> Handicap pulau awal diubah dari [number] menjadi [new_number]."
+      invalid-level: "<red> Handicap tidak valid. Gunakan angka bulat."
   levelstatus:
     description: menunjukkan berapa banyak pulau dalam antrian untuk pemindaian
-    islands-in-queue: "&a Pulau di dalam antrian: [number]"
+    islands-in-queue: "<green> Pulau di dalam antrian: [number]"
   top:
     description: menunjukkan daftar sepuluh besar
-    unknown-world: "&c Dunia tidak ditemukan!"
-    display: "&f[rank]. &a[name] &7- &b[level]"
+    unknown-world: "<red> Dunia tidak ditemukan!"
+    display: "<white>[rank]. <green>[name] <gray>- <aqua>[level]"
     remove:
       description: menghapus pemain dari sepuluh besar
       parameters: "<player>"
   stats:
     description: "tampilkan statistik pulau di server ini"
     title: "Statistik Pulau Server"
-    world: "&a [name]"
-    no-data: "&c Tidak ada data untuk diproses."
+    world: "<green> [name]"
+    no-data: "<red> Tidak ada data untuk diproses."
     average-level: "Rata-rata Level Pulau: [number]"
     median-level: "Median Level Pulau: [number]"
     mode-level: "Modus Level Pulau: [number]"
@@ -34,22 +34,41 @@ island:
   level:
     parameters: "[player]"
     description: hitung level pulau kamu atau melihat level [player]
-    calculating: "&a Menghitung level..."
-    estimated-wait: "&a Perkiraan menunggu: [number] detik"
-    in-queue: "&a Kamu berada pada antrian nomor [number]"
-    island-level-is: "&a Level pulau adalah &b[level]"
-    required-points-to-next-level: "&a Kemajuan level: &6 [progress]&b /&e [levelcost] &a poin"
-    deaths: "&c([number] kematian)"
-    cooldown: "&c Kamu harus menunggu &b[time] &c detik sebelum kamu dapat melakukannya
+    calculating: "<green> Menghitung level..."
+    estimated-wait: "<green> Perkiraan menunggu: [number] detik"
+    in-queue: "<green> Kamu berada pada antrian nomor [number]"
+    island-level-is: "<green> Level pulau adalah <aqua>[level]"
+    required-points-to-next-level: "<green> Kemajuan level: <gold> [progress]<aqua> /<yellow> [levelcost] <green> poin"
+    deaths: "<red>([number] kematian)"
+    cooldown: "<red> Kamu harus menunggu <aqua>[time] <red> detik sebelum kamu dapat melakukannya
       lagi"
-    in-progress: "&6 Perhitungan level pulau sedang dijalankan..."
-    time-out: "&c Perhitungan level pulau terlalu lama. Coba lagi nanti."
+    in-progress: "<gold> Perhitungan level pulau sedang dijalankan..."
+    time-out: "<red> Perhitungan level pulau terlalu lama. Coba lagi nanti."
+  donate:
+    parameters: "[hand [amount]]"
+    description: "donate blocks to permanently raise island level"
+    must-be-on-island: "<red>You must be on your island to donate blocks."
+    no-permission: "<red>You do not have permission to donate blocks on this island."
+    no-value: "<red>That block has no level value."
+    invalid-amount: "<red>Invalid amount. Use a positive number."
+    empty: "<red>There are no valid blocks to donate."
+    cancelled: "<yellow>Donation cancelled. Items returned."
+    success: "<green>Donated [number] blocks for <aqua>[points]<green> points! These points are permanent."
+    confirm: "<red><bold>Confirm - Items will be DESTROYED!"
+    cancel: "<green><bold>Cancel - Return Items"
+    gui-title: "<black><bold>Donate Blocks"
+    gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
+    preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    hand:
+      success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"
+      not-block: "<red>You must be holding a placeable block to donate."
+      confirm-prompt: "<red>About to DESTROY <gold>[number] x [material]<red> for <aqua>[points]<red> permanent points."
   top:
     description: menunjukkan Sepuluh Besar
-    gui-title: "&a Sepuluh Besar"
-    gui-heading: "&6[name]: &B[rank]"
-    island-level: "&b Level [level]"
-    warp-to: "&A Warp ke pulau [name]"
+    gui-title: "<green> Sepuluh Besar"
+    gui-heading: "<gold>[name]: <aqua>[rank]"
+    island-level: "<aqua> Level [level]"
+    warp-to: "<green> Warp ke pulau [name]"
   detail:
     description: "menampilkan detail blok pulau kamu"
   level-details:
@@ -57,10 +76,19 @@ island:
     spawners: Spawner
     underwater-blocks: Blok di bawah permukaan laut
     all-blocks: Semua blok
-    no-island: "&c Tidak ada pulau!"
+    no-island: "<red> Tidak ada pulau!"
     names-island: Pulau [name]
     syntax: "[name] x [number]"
-    hint: "&c Jalankan perintah level untuk melihat laporan blok"
+    hint: "<red> Jalankan perintah level untuk melihat laporan blok"
+protection:
+  flags:
+    ISLAND_BLOCK_DONATION:
+      description: |-
+        <green>Toggle who can donate</green>
+        <green>blocks to raise island level.</green>
+      name: Block Donation
+      hint: Block donation not allowed
+
 level:
   commands:
     value:
@@ -69,27 +97,27 @@ level:
         nilai item di tangan.
   gui:
     titles:
-      top: "&0&l Pulau Terbaik"
-      detail-panel: "&0&l Pulau [name]"
-      value-panel: "&0&l Nilai Blok"
+      top: "<black><bold> Pulau Terbaik"
+      detail-panel: "<black><bold> Pulau [name]"
+      value-panel: "<black><bold> Nilai Blok"
     buttons:
       island:
-        empty: "&f&l [name]. place"
-        name: "&f&l [name]"
+        empty: "<white><bold> [name]. place"
+        name: "<white><bold> [name]"
         description: |-
           [owner]
           [members]
           [place]
           [level]
         owners-island: Pulau [player]
-        owner: "&7&l Pemilik: &r&b [player]"
-        members-title: "&7&l Anggota:"
-        member: "&b - [player]"
+        owner: "<gray><bold> Pemilik: <reset><aqua> [player]"
+        members-title: "<gray><bold> Anggota:"
+        member: "<aqua> - [player]"
         unknown: tidak diketahui
-        place: "&r&7Peringkat &7&o [number]."
-        level: "&7 Level: &o [number]"
+        place: "<reset><gray>Peringkat <gray><italic> [number]."
+        level: "<gray> Level: <italic> [number]"
       material:
-        name: "&f&l [number] x [material]"
+        name: "<white><bold> [number] x [material]"
         description: |-
           [description]
           [count]
@@ -97,97 +125,102 @@ level:
           [calculated]
           [limit]
           [id]
-        id: "&7 Id blok: &e [id]"
-        value: "&7 Nilai blok: &e [number]"
-        limit: "&7 Batas blok: &e [number]"
-        count: "&7 Jumlah blok: &e [number]"
-        calculated: "&7 Nilai yang dihitung: &e [number]"
+        id: "<gray> Id blok: <yellow> [id]"
+        value: "<gray> Nilai blok: <yellow> [number]"
+        limit: "<gray> Batas blok: <yellow> [number]"
+        count: "<gray> Jumlah blok: <yellow> [number]"
+        calculated: "<gray> Nilai yang dihitung: <yellow> [number]"
       value_blocks:
-        name: "&f&l Semua Blok Bernilai"
+        name: "<white><bold> Semua Blok Bernilai"
         description: |-
-          &7 Tampilkan semua blok
-          &7 yang bernilai di pulau.
+          <gray> Tampilkan semua blok
+          <gray> yang bernilai di pulau.
       all_blocks:
-        name: "&f&l Semua blok"
+        name: "<white><bold> Semua blok"
         description: |-
-          &7 Tampilkan semua blok
-          &7 di pulau.
+          <gray> Tampilkan semua blok
+          <gray> di pulau.
       above_sea_level:
-        name: "&f&l Blok Diatas Permukaan Laut"
+        name: "<white><bold> Blok Diatas Permukaan Laut"
         description: |-
-          &7 Hanya mengampilkan blok
-          &7 yang berada di atas
-          &7 permukaan laut.
+          <gray> Hanya mengampilkan blok
+          <gray> yang berada di atas
+          <gray> permukaan laut.
       underwater:
-        name: "&f&l Blok Di bawah Permukaan Laut"
+        name: "<white><bold> Blok Di bawah Permukaan Laut"
         description: |-
-          &7 Hanya menampilkan blok
-          &7 yang berada di bawah
-          &7 permukaan laut.
+          <gray> Hanya menampilkan blok
+          <gray> yang berada di bawah
+          <gray> permukaan laut.
       spawner:
-        name: "&f&l Spawner"
-        description: "&7 Hanya tampilkan spawner."
-        block-name: "&b Spawner"
+        name: "<white><bold> Spawner"
+        description: "<gray> Hanya tampilkan spawner."
+        block-name: "<aqua> Spawner"
+      donated:
+        name: "<white><bold>Donated Blocks"
+        description: |-
+          <gray>Display blocks permanently
+          <gray>donated to island level.
       filters:
         name:
-          name: "&f&l Urut berdasarkan Nama"
-          description: "&7 Mengurutkan semua blok berdasarkan nama."
+          name: "<white><bold> Urut berdasarkan Nama"
+          description: "<gray> Mengurutkan semua blok berdasarkan nama."
         value:
-          name: "&f&l Urut berdasarkan Nilai"
-          description: "&7 Mengurutkan semua blok berdasarkan nilainya."
+          name: "<white><bold> Urut berdasarkan Nilai"
+          description: "<gray> Mengurutkan semua blok berdasarkan nilainya."
         count:
-          name: "&f&l Urut berdasarkan Jumlah"
-          description: "&7 Mengurutkan semua blok berdasarkan jumlahnya."
+          name: "<white><bold> Urut berdasarkan Jumlah"
+          description: "<gray> Mengurutkan semua blok berdasarkan jumlahnya."
       value:
-        name: "&f&l [material]"
+        name: "<white><bold> [material]"
         description: |-
           [description]
           [value]
           [underwater]
           [limit]
           [id]
-        id: "&7 Id blok: &e [id]"
-        value: "&7 Nilai blok: &e [number]"
-        underwater: "&7 Dibawah permukaan laut: &e [number]"
-        limit: "&7 Batas block: &e [number]"
+        id: "<gray> Id blok: <yellow> [id]"
+        value: "<gray> Nilai blok: <yellow> [number]"
+        underwater: "<gray> Dibawah permukaan laut: <yellow> [number]"
+        limit: "<gray> Batas block: <yellow> [number]"
       previous:
-        name: "&f&l Halaman sebelumnya"
-        description: "&7 Beralih ke halaman [number]"
+        name: "<white><bold> Halaman sebelumnya"
+        description: "<gray> Beralih ke halaman [number]"
       next:
-        name: "&f&l Halaman selanjutnya"
-        description: "&7 Beralih ke halaman [number]"
+        name: "<white><bold> Halaman selanjutnya"
+        description: "<gray> Beralih ke halaman [number]"
       search:
-        name: "&f&l Cari"
+        name: "<white><bold> Cari"
         description: |-
-          &7 Mencari nilai yang
-          &7 spesifik.
-        search: "&b Nilai: [value]"
+          <gray> Mencari nilai yang
+          <gray> spesifik.
+        search: "<aqua> Nilai: [value]"
     tips:
-      click-to-view: "&e Klik &7 untuk melihat."
-      click-to-previous: "&e Klik &7 untuk melihat halaman sebelumnya."
-      click-to-next: "&e Klik &7 untuk melihat halaman selanjutnya."
-      click-to-select: "&e Klik &7 untuk memilih."
-      left-click-to-cycle-up: "&e Klik Kiri &7 untuk memutar ke atas."
-      right-click-to-cycle-down: "&e Klik Kanan &7 memutar ke bawah."
-      left-click-to-change: "&e Klik Kiri &7 untuk mengubah."
-      right-click-to-clear: "&e Klik Kanan &7 untuk membersihkan."
-      click-to-asc: "&e Klik &7 untuk mengurutkan dalam urutan menaik."
-      click-to-desc: "&e Klik &7 untuk mengurutkan dalam urutan menurun."
-      click-to-warp: "&e Klik &7 untuk warp."
-      click-to-visit: "&e Klik &7 untuk mengunjungi."
-      right-click-to-visit: "&e Klik Kanan &7 untuk mengunjungi."
+      click-to-view: "<yellow> Klik <gray> untuk melihat."
+      click-to-previous: "<yellow> Klik <gray> untuk melihat halaman sebelumnya."
+      click-to-next: "<yellow> Klik <gray> untuk melihat halaman selanjutnya."
+      click-to-select: "<yellow> Klik <gray> untuk memilih."
+      left-click-to-cycle-up: "<yellow> Klik Kiri <gray> untuk memutar ke atas."
+      right-click-to-cycle-down: "<yellow> Klik Kanan <gray> memutar ke bawah."
+      left-click-to-change: "<yellow> Klik Kiri <gray> untuk mengubah."
+      right-click-to-clear: "<yellow> Klik Kanan <gray> untuk membersihkan."
+      click-to-asc: "<yellow> Klik <gray> untuk mengurutkan dalam urutan menaik."
+      click-to-desc: "<yellow> Klik <gray> untuk mengurutkan dalam urutan menurun."
+      click-to-warp: "<yellow> Klik <gray> untuk warp."
+      click-to-visit: "<yellow> Klik <gray> untuk mengunjungi."
+      right-click-to-visit: "<yellow> Klik Kanan <gray> untuk mengunjungi."
   conversations:
-    prefix: "&l&6 [BentoBox]: &r"
-    no-data: "&c Jalankan perintah level untuk melihat laporan blok"
+    prefix: "<bold><gold> [BentoBox]: <reset>"
+    no-data: "<red> Jalankan perintah level untuk melihat laporan blok"
     cancel-string: batal
     exit-string: batal, keluar, berhenti
-    write-search: "&e Tolong masukkan pencarian nilai. (Ketik 'batal' untuk keluar)"
-    search-updated: "&a Nilai pencarian diperbarui."
-    cancelled: "&c Percakapan dibatalkan!"
-    no-value: "&c Item itu tidak ada nilai."
-    unknown-item: "&c '[material]' tidak ada di dalam permainan."
-    value: "&7 Nilai dari '[material]' adalah: &e[value]"
-    value-underwater: "&7Nilai dari '[material]' di bawah permukaan laut: &e[value]"
-    empty-hand: "&c Tidak ada blok di tangan mu"
-    you-have: "&7 Kamu memiliki [number] pada hitungan terakhir."
-    you-can-place: "&7 Kamu dapat menempatkan hingga [number] dan membuatnya terhitung"
+    write-search: "<yellow> Tolong masukkan pencarian nilai. (Ketik 'batal' untuk keluar)"
+    search-updated: "<green> Nilai pencarian diperbarui."
+    cancelled: "<red> Percakapan dibatalkan!"
+    no-value: "<red> Item itu tidak ada nilai."
+    unknown-item: "<red> '[material]' tidak ada di dalam permainan."
+    value: "<gray> Nilai dari '[material]' adalah: <yellow>[value]"
+    value-underwater: "<gray>Nilai dari '[material]' di bawah permukaan laut: <yellow>[value]"
+    empty-hand: "<red> Tidak ada blok di tangan mu"
+    you-have: "<gray> Kamu memiliki [number] pada hitungan terakhir."
+    you-can-place: "<gray> Kamu dapat menempatkan hingga [number] dan membuatnya terhitung"
