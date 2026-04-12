@@ -1,0 +1,152 @@
+package world.bentobox.level.listeners;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+
+import world.bentobox.bentobox.api.events.island.IslandCreatedEvent;
+import world.bentobox.bentobox.api.events.island.IslandDeleteEvent;
+import world.bentobox.bentobox.api.events.island.IslandPreclearEvent;
+import world.bentobox.bentobox.api.events.island.IslandResettedEvent;
+import world.bentobox.bentobox.api.events.island.IslandUnregisteredEvent;
+import world.bentobox.bentobox.api.events.team.TeamSetownerEvent;
+import world.bentobox.level.CommonTestSetup;
+import world.bentobox.level.LevelsManager;
+import world.bentobox.level.calculators.Pipeliner;
+import world.bentobox.level.calculators.Results;
+import world.bentobox.level.config.ConfigSettings;
+
+/**
+ * Tests for {@link IslandActivitiesListeners}
+ */
+public class IslandActivitiesListenersTest extends CommonTestSetup {
+
+    @Mock
+    private LevelsManager manager;
+    @Mock
+    private Pipeliner pipeliner;
+    @Mock
+    private ConfigSettings settings;
+
+    private IslandActivitiesListeners listener;
+
+    @Override
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
+        when(addon.getManager()).thenReturn(manager);
+        when(addon.getPipeliner()).thenReturn(pipeliner);
+        when(addon.getSettings()).thenReturn(settings);
+        when(addon.getPlugin()).thenReturn(plugin);
+
+        when(island.getOwner()).thenReturn(uuid);
+        when(island.getWorld()).thenReturn(world);
+        when(island.getUniqueId()).thenReturn(uuid.toString());
+        when(island.getCenter()).thenReturn(location); // needed by event copy constructors
+
+        Results results = new Results();
+        results.setTotalPoints(100L);
+        when(pipeliner.zeroIsland(any())).thenReturn(CompletableFuture.completedFuture(results));
+
+        listener = new IslandActivitiesListeners(addon);
+    }
+
+    @Override
+    @AfterEach
+    public void tearDown() throws Exception {
+        super.tearDown();
+    }
+
+    // --- IslandCreatedEvent ---
+
+    @Test
+    public void testOnNewIslandCreatedZeroNewIslandLevelsTrue() {
+        when(settings.isZeroNewIslandLevels()).thenReturn(true);
+        IslandCreatedEvent event = new IslandCreatedEvent(island, uuid, false, location);
+        listener.onNewIsland(event);
+        // Scheduler runTaskLater is called
+        verify(sch).runTaskLater(any(), any(Runnable.class), anyLong());
+    }
+
+    @Test
+    public void testOnNewIslandCreatedZeroNewIslandLevelsFalse() {
+        when(settings.isZeroNewIslandLevels()).thenReturn(false);
+        IslandCreatedEvent event = new IslandCreatedEvent(island, uuid, false, location);
+        listener.onNewIsland(event);
+        verify(sch, never()).runTaskLater(any(), any(Runnable.class), anyLong());
+    }
+
+    // --- IslandResettedEvent ---
+
+    @Test
+    public void testOnIslandResettedZeroNewIslandLevelsTrue() {
+        when(settings.isZeroNewIslandLevels()).thenReturn(true);
+        IslandResettedEvent event = new IslandResettedEvent(island, uuid, false, location, island);
+        listener.onNewIsland(event);
+        verify(pipeliner).zeroIsland(island);
+    }
+
+    @Test
+    public void testOnIslandResettedZeroNewIslandLevelsFalse() {
+        when(settings.isZeroNewIslandLevels()).thenReturn(false);
+        IslandResettedEvent event = new IslandResettedEvent(island, uuid, false, location, island);
+        listener.onNewIsland(event);
+        verify(pipeliner, never()).zeroIsland(any());
+    }
+
+    // --- IslandPreclearEvent (remove from top ten) ---
+
+    @Test
+    public void testOnIslandDeleteRemovesFromTopTen() {
+        IslandPreclearEvent event = new IslandPreclearEvent(island, uuid, false, location, island);
+        listener.onIslandDelete(event);
+        verify(manager).removeEntry(world, uuid.toString());
+    }
+
+    @Test
+    public void testOnIslandDeleteNoWorldNoAction() {
+        when(island.getWorld()).thenReturn(null);
+        IslandPreclearEvent event = new IslandPreclearEvent(island, uuid, false, location, island);
+        listener.onIslandDelete(event);
+        verify(manager, never()).removeEntry(any(), anyString());
+    }
+
+    // --- IslandDeleteEvent ---
+
+    @Test
+    public void testOnIslandDeletedCallsDeleteIsland() {
+        IslandDeleteEvent event = new IslandDeleteEvent(island, uuid, false, location);
+        listener.onIslandDeleted(event);
+        verify(manager).deleteIsland(uuid.toString());
+    }
+
+    // --- IslandUnregisteredEvent ---
+
+    @Test
+    public void testOnIslandUnregisteredRemovesFromTopTen() {
+        IslandUnregisteredEvent event = new IslandUnregisteredEvent(island, uuid, false, location);
+        listener.onIsland(event);
+        verify(manager).removeEntry(world, uuid.toString());
+    }
+
+    // --- TeamSetownerEvent ---
+
+    @Test
+    public void testOnNewIslandOwnerRemovesEntry() {
+        TeamSetownerEvent event = new TeamSetownerEvent(island, UUID.randomUUID(), false, location);
+        listener.onNewIslandOwner(event);
+        verify(manager).removeEntry(world, uuid.toString());
+    }
+}
