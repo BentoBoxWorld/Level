@@ -1,8 +1,8 @@
 package world.bentobox.level.objects;
 
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.World;
 
@@ -20,7 +20,7 @@ public class TopTenData {
     @Expose
     private String uniqueId = "";
     @Expose
-    private Map<String, Long> topTen = new LinkedHashMap<>();
+    private Map<String, Long> topTen = new ConcurrentHashMap<>();
 
     public TopTenData(World k) {
 	uniqueId = k.getName().toLowerCase(Locale.ENGLISH);

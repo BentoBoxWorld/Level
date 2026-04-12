@@ -1,56 +1,237 @@
-# 
+###########################################################################################
 # This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
 # the one at http://yaml-online-parser.appspot.com                                        #
+###########################################################################################
 admin:
   level:
     parameters: <người chơi>
     description: tính toán cấp độ đảo của người chơi
     sethandicap:
-      parameters: <người chơi> <cấp>
-      description: chỉnh cấp của các đảo bắt đầu
-      changed: '&a Cấp đảo bắt đầu đã chỉnh từ [number] thành [new_number].'
-      invalid-level: '&c Cấp không xác định. Hãy dùng số nguyên.'
+      parameters: <người chơi> [+/-]<handicap>
+      description: |
+        đặt hoặc thay đổi *handicap* của đảo
+        ví dụ: +10 sẽ bỏ 10 cấp,
+        30 sẽ đặt handicap thành 30,
+        -20 sẽ thêm 20 cấp
+      changed: '<green> Handicap ban đầu của đảo đã thay đổi từ [number] thành [new_number].'
+      invalid-level: '<red> Handicap không hợp lệ. Hãy dùng số nguyên.'
   levelstatus:
     description: xem bao nhiêu đảo đang trong hàng chờ được quét
-    islands-in-queue: '&a Đảo đang chờ: [number]'
+    islands-in-queue: '<green> Đảo đang chờ: [number]'
   top:
     description: xem bảng xếp hạng TOP 10
-    unknown-world: '&c Thế giới không xác định!'
-    display: '&f[rank]. &a[name] &7- &b[level]'
+    unknown-world: '<red> Thế giới không xác định!'
+    display: '<white>[rank]. <green>[name] <gray>- <aqua>[level]'
     remove:
       description: xoá người khỏi TOP 10
       parameters: <người chơi>
+  stats:
+    description: "hiển thị thống kê đảo trên máy chủ này"
+    title: "Thống Kê Đảo Máy Chủ"
+    world: "<green> [name]"
+    no-data: "<red> Không có dữ liệu để xử lý."
+    average-level: "Cấp đảo trung bình: [number]"
+    median-level: "Cấp đảo trung vị: [number]"
+    mode-level: "Cấp đảo phổ biến nhất: [number]"
+    highest-level: "Cấp đảo cao nhất: [number]"
+    lowest-level: "Cấp đảo thấp nhất: [number]"
+    distribution: "Phân phối cấp đảo:"
+    islands: "đảo"
 island:
   level:
     parameters: '[người chơi]'
     description: tính toán cấp đảo của bạn hoặc xem cấp đảo của [người chơi]
-    calculating: '&a Đang tính toán cấp đảo...'
-    estimated-wait: '&a Thời gian còn lại: [number] giây'
-    in-queue: '&a Bạn đang ở vị trí [number] trong hàng chờ'
-    island-level-is: '&a Cấp đảo là &b[level]'
-    required-points-to-next-level: '&a Cần [points] điểm để qua cấp tiếp theo'
-    deaths: '&c([number] lần chết)'
-    cooldown: '&c Bạn phải chờ &b[time] &c giây trước khi có thể làm điều đó'
-    in-progress: '&6 Quá trình tính toán cấp đảo đang thực hiện...'
-    time-out: '&c Tính toán cấp đảo quá lâu. Vui lòng thử lại sau.'
+    calculating: '<green> Đang tính toán cấp đảo...'
+    estimated-wait: '<green> Thời gian còn lại: [number] giây'
+    in-queue: '<green> Bạn đang ở vị trí [number] trong hàng chờ'
+    island-level-is: '<green> Cấp đảo là <aqua>[level]'
+    required-points-to-next-level: '<green> Tiến độ cấp: <gold> [progress]<aqua> /<yellow> [levelcost] <green> điểm'
+    deaths: '<red>([number] lần chết)'
+    cooldown: '<red> Bạn phải chờ <aqua>[time] <red> giây trước khi có thể làm điều đó'
+    in-progress: '<gold> Đang tính toán cấp đảo...'
+    time-out: '<red> Tính toán cấp đảo quá lâu. Vui lòng thử lại sau.'
+  donate:
+    parameters: "[hand [amount]]"
+    description: "donate blocks to permanently raise island level"
+    must-be-on-island: "<red>You must be on your island to donate blocks."
+    no-permission: "<red>You do not have permission to donate blocks on this island."
+    no-value: "<red>That block has no level value."
+    invalid-amount: "<red>Invalid amount. Use a positive number."
+    empty: "<red>There are no valid blocks to donate."
+    cancelled: "<yellow>Donation cancelled. Items returned."
+    success: "<green>Donated [number] blocks for <aqua>[points]<green> points! These points are permanent."
+    confirm: "<red><bold>Confirm - Items will be DESTROYED!"
+    cancel: "<green><bold>Cancel - Return Items"
+    gui-title: "<black><bold>Donate Blocks"
+    gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
+    preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    hand:
+      success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"
+      not-block: "<red>You must be holding a placeable block to donate."
+      confirm-prompt: "<red>About to DESTROY <gold>[number] x [material]<red> for <aqua>[points]<red> permanent points."
+  detail:
+    description: "hiển thị chi tiết các khối trên đảo của bạn"
   top:
     description: xem TOP 10
-    gui-title: '&a TOP 10'
-    gui-heading: '&6[name]: &B[rank]'
-    island-level: '&b Cấp [level]'
-    warp-to: '&A Đang dịch chuyển đến đảo của [name]'
+    gui-title: '<green> TOP 10'
+    gui-heading: '<gold>[name]: <aqua>[rank]'
+    island-level: '<aqua> Cấp [level]'
+    warp-to: '<green> Đang dịch chuyển đến đảo của [name]'
   level-details:
     above-sea-level-blocks: Khối Trên Mực Nước Biển
     spawners: Lồng Sinh Quái
     underwater-blocks: Khối Dưới Nước
     all-blocks: Toàn Bộ Khối
-    no-island: '&c Không có đảo!'
+    no-island: '<red> Không có đảo!'
     names-island: 'đảo của [name]'
     syntax: '[name] x [number]'
-    hint: '&c Chạy lệnh cấp để xem báo cáo khối'
-  value:
-    description: xem giá trị của bất kì khối
-    success: '&7 Giá trị của khối này là: &e[value]'
-    success-underwater: '&7 Giá trị của khối này dưới mực nước biển: &e[value]'
-    empty-hand: '&c Không có khối nào trên tay bạn'
-    no-value: '&c Vật phẩm này vô giá trị.'
+    hint: '<red> Chạy lệnh cấp để xem báo cáo khối'
+protection:
+  flags:
+    ISLAND_BLOCK_DONATION:
+      description: |-
+        <green>Toggle who can donate</green>
+        <green>blocks to raise island level.</green>
+      name: Block Donation
+      hint: Block donation not allowed
+
+level:
+  commands:
+    value:
+      parameters: "[hand|<material>]"
+      description: hiển thị giá trị của các khối. Thêm 'hand' vào cuối để hiển thị giá trị của vật phẩm đang cầm.
+  gui:
+    titles:
+      top: "<black><bold> Top Đảo"
+      detail-panel: "<black><bold> Đảo của [name]"
+      value-panel: "<black><bold> Giá Trị Khối"
+    buttons:
+      island:
+        empty: '<white><bold> Vị trí [name].'
+        name: '<white><bold> [name]'
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: "Đảo của [player]"
+        owner: "<gray><bold> Chủ: <reset><aqua> [player]"
+        members-title: "<gray><bold> Thành viên:"
+        member: "<aqua> - [player]"
+        unknown: "không rõ"
+        place: "<gray><italic> [number]. <reset><gray> vị trí"
+        level: "<gray> Cấp: <italic> [number]"
+      material:
+        name: "<white><bold> [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "<gray> ID khối: <yellow> [id]"
+        value: "<gray> Giá trị khối: <yellow> [number]"
+        limit: "<gray> Giới hạn khối: <yellow> [number]"
+        count: "<gray> Số lượng khối: <yellow> [number]"
+        calculated: "<gray> Giá trị tính toán: <yellow> [number]"
+      value_blocks:
+        name: "<white><bold> Tất Cả Khối Có Giá Trị"
+        description: |-
+          <gray> Hiển thị tất cả khối
+          <gray> có giá trị trên đảo.
+      all_blocks:
+        name: "<white><bold> Tất Cả Khối"
+        description: |-
+          <gray> Hiển thị tất cả khối
+          <gray> trên đảo.
+      above_sea_level:
+        name: "<white><bold> Khối Trên Mực Nước Biển"
+        description: |-
+          <gray> Chỉ hiển thị khối
+          <gray> ở trên mực
+          <gray> nước biển.
+      underwater:
+        name: "<white><bold> Khối Dưới Mực Nước Biển"
+        description: |-
+          <gray> Chỉ hiển thị khối
+          <gray> ở dưới mực
+          <gray> nước biển.
+      spawner:
+        name: "<white><bold> Lồng Sinh Quái"
+        description: |-
+          <gray> Chỉ hiển thị lồng sinh quái.
+        block-name: "<aqua> Lồng Sinh Quái"
+      donated:
+        name: "<white><bold>Donated Blocks"
+        description: |-
+          <gray>Display blocks permanently
+          <gray>donated to island level.
+      filters:
+        name:
+          name: "<white><bold> Sắp Xếp theo Tên"
+          description: |-
+            <gray> Sắp xếp tất cả khối theo tên.
+        value:
+          name: "<white><bold> Sắp Xếp theo Giá Trị"
+          description: |-
+            <gray> Sắp xếp tất cả khối theo giá trị.
+        count:
+          name: "<white><bold> Sắp Xếp theo Số Lượng"
+          description: |-
+            <gray> Sắp xếp tất cả khối theo số lượng.
+      value:
+        name: "<white><bold> [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "<gray> ID khối: <yellow> [id]"
+        value: "<gray> Giá trị khối: <yellow> [number]"
+        underwater: "<gray> Dưới mực nước biển: <yellow> [number]"
+        limit: "<gray> Giới hạn khối: <yellow> [number]"
+      previous:
+        name: "<white><bold> Trang Trước"
+        description: |-
+          <gray> Chuyển đến trang [number]
+      next:
+        name: "<white><bold> Trang Tiếp"
+        description: |-
+          <gray> Chuyển đến trang [number]
+      search:
+        name: "<white><bold> Tìm Kiếm"
+        description: |-
+          <gray> Tìm kiếm một giá trị
+          <gray> cụ thể.
+        search: "<aqua> Giá trị: [value]"
+    tips:
+      click-to-view: "<yellow> Nhấp <gray> để xem."
+      click-to-previous: "<yellow> Nhấp <gray> để xem trang trước."
+      click-to-next: "<yellow> Nhấp <gray> để xem trang tiếp."
+      click-to-select: "<yellow> Nhấp <gray> để chọn."
+      left-click-to-cycle-up: "<yellow> Nhấp Trái <gray> để lên."
+      right-click-to-cycle-down: "<yellow> Nhấp Phải <gray> để xuống."
+      left-click-to-change: "<yellow> Nhấp Trái <gray> để chỉnh sửa."
+      right-click-to-clear: "<yellow> Nhấp Phải <gray> để xóa."
+      click-to-asc: "<yellow> Nhấp <gray> để sắp xếp tăng dần."
+      click-to-desc: "<yellow> Nhấp <gray> để sắp xếp giảm dần."
+      click-to-warp: "<yellow> Nhấp <gray> để dịch chuyển."
+      click-to-visit: "<yellow> Nhấp <gray> để thăm."
+      right-click-to-visit: "<yellow> Nhấp Phải <gray> để thăm."
+  conversations:
+    prefix: "<bold><gold> [BentoBox]: <reset>"
+    no-data: "<red> Chạy lệnh cấp để xem báo cáo khối."
+    cancel-string: hủy
+    exit-string: hủy, thoát, bỏ
+    write-search: "<yellow> Vui lòng nhập giá trị tìm kiếm. (Nhập 'hủy' để thoát)"
+    search-updated: "<green> Giá trị tìm kiếm đã cập nhật."
+    cancelled: "<red> Cuộc trò chuyện đã bị hủy!"
+    no-value: "<red> Vật phẩm này không có giá trị."
+    unknown-item: "<red> '[material]' không tồn tại trong trò chơi."
+    value: "<gray> Giá trị của '[material]' là: <yellow>[value]"
+    value-underwater: "<gray> Giá trị của '[material]' dưới mực nước biển: <yellow>[value]"
+    empty-hand: "<red> Không có khối nào trên tay bạn"
+    you-have: "<gray> Bạn có [number] lần đếm cuối cùng."
+    you-can-place: "<gray> Bạn có thể đặt tối đa [number] và chúng sẽ được tính"

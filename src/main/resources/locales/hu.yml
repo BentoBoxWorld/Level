@@ -4,52 +4,231 @@ admin:
     parameters: "<player>"
     description: Egy játékos sziget szintjének kiszámítása
     sethandicap:
-      parameters: "<játékos> <hátrány>"
-      description: állítsa be a sziget hátrányát, általában a kezdő sziget szintjét
-      changed: "&a A kezdeti sziget hátrány változott erről [number] erre [new_number]."
-      invalid-level: "&c Érvénytelen hátrány. Használj egész számot."
+      parameters: <player> [+/-]<handicap>
+      description: |
+        a sziget *hátrányának* beállítása vagy megváltoztatása
+        pl. +10 eltávolít 10 szintet,
+        30 a hátrányt 30-ra állítja,
+        -20 hozzáad 20 szintet
+      changed: "<green> A kezdeti sziget hátrány változott erről [number] erre [new_number]."
+      invalid-level: "<red> Érvénytelen hátrány. Használj egész számot."
   levelstatus:
     description: megmutatja, hogy hány sziget van a szkennelési sorban
-    islands-in-queue: "&a Szigetek a sorban: [number]"
+    islands-in-queue: "<green> Szigetek a sorban: [number]"
   top:
     description: Top Tíz lista megtekintése
-    unknown-world: "&cIsmeretlen világ!"
-    display: "&f[rank]. &a[name] &7- &b[level]"
+    unknown-world: "<red>Ismeretlen világ!"
+    display: "<white>[rank]. <green>[name] <gray>- <aqua>[level]"
     remove:
       description: játékos törlése a Top Tízből
       parameters: "<játékos>"
+  stats:
+    description: "sziget statisztikák megjelenítése ezen a szerveren"
+    title: "Szerver Sziget Statisztikák"
+    world: "<green> [name]"
+    no-data: "<red> Nincs adat a feldolgozáshoz."
+    average-level: "Átlagos sziget szint: [number]"
+    median-level: "Medián sziget szint: [number]"
+    mode-level: "Módusz sziget szint: [number]"
+    highest-level: "Legmagasabb sziget szint: [number]"
+    lowest-level: "Legalacsonyabb sziget szint: [number]"
+    distribution: "Sziget szint eloszlás:"
+    islands: "szigetek"
 island:
   level:
     parameters: "[player]"
     description: A saját vagy más játékos sziget szintjének kiszámítása
-    calculating: "&aSziget szint kiszámítása..."
-    estimated-wait: "&a Becsült várakozás: [number] másodperc"
-    in-queue: "&a Te vagy a(z) [number] a sorban"
-    island-level-is: "&aA sziget szint: &b[level]"
-    required-points-to-next-level: "&a[points] pont szükséges a következő szinthez."
-    deaths: "&c([number] halál)"
-    cooldown: "&cVárnod kell &b[time] &cmásodpercet, hogy újra használhasd."
+    calculating: "<green>Sziget szint kiszámítása..."
+    estimated-wait: "<green> Becsült várakozás: [number] másodperc"
+    in-queue: "<green> Te vagy a(z) [number] a sorban"
+    island-level-is: "<green>A sziget szint: <aqua>[level]"
+    required-points-to-next-level: "<green> Szint előrehaladás: <gold> [progress]<aqua> /<yellow> [levelcost] <green> pont"
+    deaths: "<red>([number] halál)"
+    cooldown: "<red>Várnod kell <aqua>[time] <red>másodpercet, hogy újra használhasd."
+    in-progress: "<gold> A sziget szint kiszámítása folyamatban..."
+    time-out: "<red> A szint kiszámítása túl sokáig tartott. Kérjük, próbálja újra később."
+  donate:
+    parameters: "[hand [amount]]"
+    description: "donate blocks to permanently raise island level"
+    must-be-on-island: "<red>You must be on your island to donate blocks."
+    no-permission: "<red>You do not have permission to donate blocks on this island."
+    no-value: "<red>That block has no level value."
+    invalid-amount: "<red>Invalid amount. Use a positive number."
+    empty: "<red>There are no valid blocks to donate."
+    cancelled: "<yellow>Donation cancelled. Items returned."
+    success: "<green>Donated [number] blocks for <aqua>[points]<green> points! These points are permanent."
+    confirm: "<red><bold>Confirm - Items will be DESTROYED!"
+    cancel: "<green><bold>Cancel - Return Items"
+    gui-title: "<black><bold>Donate Blocks"
+    gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
+    preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    hand:
+      success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"
+      not-block: "<red>You must be holding a placeable block to donate."
+      confirm-prompt: "<red>About to DESTROY <gold>[number] x [material]<red> for <aqua>[points]<red> permanent points."
+  detail:
+    description: "megmutatja a szigeted blokkjainak részleteit"
   top:
     description: Top Tíz lista megtekintése
-    gui-title: "&aTop Tíz"
-    gui-heading: "&6[name]: &B[rank]"
-    island-level: "&BLevel [level]"
-    warp-to: "&ATeleportálás [name] szigetére."
-    remove:
-      description: játékos törlése a Top Tízből
-      parameters: "<player>"
+    gui-title: "<green>Top Tíz"
+    gui-heading: "<gold>[name]: <aqua>[rank]"
+    island-level: "<aqua>Level [level]"
+    warp-to: "<green>Teleportálás [name] szigetére."
   level-details:
     above-sea-level-blocks: Tengerszint Feletti Blokkok
     spawners: Spawner-ek
     underwater-blocks: Víz Alatti Blokkok
     all-blocks: Minden Blokk
-    no-island: "&c Nincs sziget!"
+    no-island: "<red> Nincs sziget!"
     names-island: "[name] szigete"
     syntax: "[name] x [number]"
-    hint: "&c Futtassa a szintet a blokk jelentés megjelenítéséhez"
-  value:
-    description: Bármely blokk értékét mutatja
-    success: "&7Ennek a blokknak az értéke: &e[value]"
-    success-underwater: "&7Ennek a blokknak a tengerszint alatti értéke: &e[value]"
-    empty-hand: "&cNincsenek blokkok a kezedben"
-    no-value: "&cEnnek nincs értéke."
+    hint: "<red> Futtassa a szintet a blokk jelentés megjelenítéséhez"
+protection:
+  flags:
+    ISLAND_BLOCK_DONATION:
+      description: |-
+        <green>Toggle who can donate</green>
+        <green>blocks to raise island level.</green>
+      name: Block Donation
+      hint: Block donation not allowed
+
+level:
+  commands:
+    value:
+      parameters: "[hand|<material>]"
+      description: megmutatja a blokkok értékét. Adja hozzá a 'hand' szót a végéhez a kézben lévő tárgy értékének megjelenítéséhez.
+  gui:
+    titles:
+      top: "<black><bold> Top Szigetek"
+      detail-panel: "<black><bold> [name] szigete"
+      value-panel: "<black><bold> Blokk Értékek"
+    buttons:
+      island:
+        empty: '<white><bold> [name]. hely'
+        name: '<white><bold> [name]'
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: "[player] szigete"
+        owner: "<gray><bold> Tulajdonos: <reset><aqua> [player]"
+        members-title: "<gray><bold> Tagok:"
+        member: "<aqua> - [player]"
+        unknown: "ismeretlen"
+        place: "<gray><italic> [number]. <reset><gray> hely"
+        level: "<gray> Szint: <italic> [number]"
+      material:
+        name: "<white><bold> [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "<gray> Blokk azonosító: <yellow> [id]"
+        value: "<gray> Blokk értéke: <yellow> [number]"
+        limit: "<gray> Blokk korlát: <yellow> [number]"
+        count: "<gray> Blokkok száma: <yellow> [number]"
+        calculated: "<gray> Számított érték: <yellow> [number]"
+      value_blocks:
+        name: "<white><bold> Minden Értékes Blokk"
+        description: |-
+          <gray> Megjelenít minden blokkot
+          <gray> értékkel a szigeten.
+      all_blocks:
+        name: "<white><bold> Minden Blokk"
+        description: |-
+          <gray> Megjelenít minden blokkot
+          <gray> a szigeten.
+      above_sea_level:
+        name: "<white><bold> Tengerszint Feletti Blokkok"
+        description: |-
+          <gray> Csak a tengerszint
+          <gray> feletti blokkokat
+          <gray> jeleníti meg.
+      underwater:
+        name: "<white><bold> Tengerszint Alatti Blokkok"
+        description: |-
+          <gray> Csak a tengerszint
+          <gray> alatti blokkokat
+          <gray> jeleníti meg.
+      spawner:
+        name: "<white><bold> Spawner-ek"
+        description: |-
+          <gray> Csak spawner-eket jelenít meg.
+        block-name: "<aqua> Spawner"
+      donated:
+        name: "<white><bold>Donated Blocks"
+        description: |-
+          <gray>Display blocks permanently
+          <gray>donated to island level.
+      filters:
+        name:
+          name: "<white><bold> Rendezés Név szerint"
+          description: |-
+            <gray> Minden blokkot név szerint rendez.
+        value:
+          name: "<white><bold> Rendezés Érték szerint"
+          description: |-
+            <gray> Minden blokkot értékük szerint rendez.
+        count:
+          name: "<white><bold> Rendezés Mennyiség szerint"
+          description: |-
+            <gray> Minden blokkot mennyiségük szerint rendez.
+      value:
+        name: "<white><bold> [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "<gray> Blokk azonosító: <yellow> [id]"
+        value: "<gray> Blokk értéke: <yellow> [number]"
+        underwater: "<gray> Tengerszint alatt: <yellow> [number]"
+        limit: "<gray> Blokk korlát: <yellow> [number]"
+      previous:
+        name: "<white><bold> Előző Oldal"
+        description: |-
+          <gray> Váltás [number]. oldalra
+      next:
+        name: "<white><bold> Következő Oldal"
+        description: |-
+          <gray> Váltás [number]. oldalra
+      search:
+        name: "<white><bold> Keresés"
+        description: |-
+          <gray> Keresés egy adott
+          <gray> értékre.
+        search: "<aqua> Érték: [value]"
+    tips:
+      click-to-view: "<yellow> Kattints <gray> a megtekintéshez."
+      click-to-previous: "<yellow> Kattints <gray> az előző oldal megtekintéséhez."
+      click-to-next: "<yellow> Kattints <gray> a következő oldal megtekintéséhez."
+      click-to-select: "<yellow> Kattints <gray> a kiválasztáshoz."
+      left-click-to-cycle-up: "<yellow> Bal Kattintás <gray> a feljebb lépéshez."
+      right-click-to-cycle-down: "<yellow> Jobb Kattintás <gray> a lejjebb lépéshez."
+      left-click-to-change: "<yellow> Bal Kattintás <gray> a szerkesztéshez."
+      right-click-to-clear: "<yellow> Jobb Kattintás <gray> a törléshez."
+      click-to-asc: "<yellow> Kattints <gray> a növekvő sorrendű rendezéshez."
+      click-to-desc: "<yellow> Kattints <gray> a csökkenő sorrendű rendezéshez."
+      click-to-warp: "<yellow> Kattints <gray> a teleportáláshoz."
+      click-to-visit: "<yellow> Kattints <gray> a látogatáshoz."
+      right-click-to-visit: "<yellow> Jobb Kattintás <gray> a látogatáshoz."
+  conversations:
+    prefix: "<bold><gold> [BentoBox]: <reset>"
+    no-data: "<red> Futtassa a szintet a blokk jelentés megtekintéséhez."
+    cancel-string: mégse
+    exit-string: mégse, kilép, abbahagyja
+    write-search: "<yellow> Kérjük, adjon meg egy keresési értéket. (Írja be a 'mégse' szót a kilépéshez)"
+    search-updated: "<green> Keresési érték frissítve."
+    cancelled: "<red> Beszélgetés megszakítva!"
+    no-value: "<red> Ennek a tárgynak nincs értéke."
+    unknown-item: "<red> A '[material]' nem létezik a játékban."
+    value: "<gray> A '[material]' értéke: <yellow>[value]"
+    value-underwater: "<gray> A '[material]' értéke tengerszint alatt: <yellow>[value]"
+    empty-hand: "<red> Nincs blokk a kezedben"
+    you-have: "<gray> Az utolsó számláláskor [number] volt nálad."
+    you-can-place: "<gray> Legfeljebb [number] darabot helyezhetsz le és számítanak"

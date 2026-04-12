@@ -7,46 +7,88 @@ admin:
       parameters: "<speler> <handicap>"
       description: stel handicap in voor het eiland, normaal gesproken het level van
         het starter eiland.
-      changed: "&a Initiële handicap is veranderd van [number] naar [new_number]."
-      invalid-level: "&c Ongeldige handicap. Gebruik een getal."
+      changed: "<green> Initiële handicap is veranderd van [number] naar [new_number]."
+      invalid-level: "<red> Ongeldige handicap. Gebruik een getal."
   levelstatus:
     description: laat zien hoeveel eilanden er in de wachtrij staan voor het scannen
-    islands-in-queue: "&a Aantal eilanden in de wachtrij: [number]"
+    islands-in-queue: "<green> Aantal eilanden in de wachtrij: [number]"
   top:
     description: Laat de top tien zien
-    unknown-world: "&c Ongeldige wereld!"
-    display: "&f[rank]. &a[name] &7- &b[level]"
+    unknown-world: "<red> Ongeldige wereld!"
+    display: "<white>[rank]. <green>[name] <gray>- <aqua>[level]"
     remove:
       description: verwijder speler van de top tien
       parameters: "<speler>"
+  stats:
+    description: "toon statistieken van eilanden op deze server"
+    title: "Server Eiland Statistieken"
+    world: "<green> [name]"
+    no-data: "<red> Geen gegevens om te verwerken."
+    average-level: "Gemiddeld eilandniveau: [number]"
+    median-level: "Mediaan eilandniveau: [number]"
+    mode-level: "Modus eilandniveau: [number]"
+    highest-level: "Hoogste eilandniveau: [number]"
+    lowest-level: "Laagste eilandniveau: [number]"
+    distribution: "Verdeling eilandniveaus:"
+    islands: "eilanden"
 island:
   level:
     parameters: "[speler]"
     description: bereken het eiland level voor [player]
-    calculating: "&a Level aan het berekenen..."
-    estimated-wait: "&a Verwachtte wachttijd: [number] seconde"
-    in-queue: "&a Jij staat op plek [number] in de wachtrij"
-    island-level-is: "&a Eiland level is &b[level]"
-    required-points-to-next-level: "&a [points] punten nodig voor het volgende level"
-    deaths: "&c([number] doodgegaan)"
-    cooldown: "&c Je moet nog &b[time] &c seconden wachten tot je dit weer kan doen."
-    in-progress: "&6 Eiland level wordt berekend..."
-    time-out: "&c De level berekening duurde te lang. Probeer het later opnieuw."
+    calculating: "<green> Level aan het berekenen..."
+    estimated-wait: "<green> Verwachtte wachttijd: [number] seconde"
+    in-queue: "<green> Jij staat op plek [number] in de wachtrij"
+    island-level-is: "<green> Eiland level is <aqua>[level]"
+    required-points-to-next-level: "<green> Voortgang niveau: <gold> [progress]<aqua> /<yellow> [levelcost] <green> punten"
+    deaths: "<red>([number] doodgegaan)"
+    cooldown: "<red> Je moet nog <aqua>[time] <red> seconden wachten tot je dit weer kan doen."
+    in-progress: "<gold> Eiland level wordt berekend..."
+    time-out: "<red> De level berekening duurde te lang. Probeer het later opnieuw."
+  donate:
+    parameters: "[hand [amount]]"
+    description: "donate blocks to permanently raise island level"
+    must-be-on-island: "<red>You must be on your island to donate blocks."
+    no-permission: "<red>You do not have permission to donate blocks on this island."
+    no-value: "<red>That block has no level value."
+    invalid-amount: "<red>Invalid amount. Use a positive number."
+    empty: "<red>There are no valid blocks to donate."
+    cancelled: "<yellow>Donation cancelled. Items returned."
+    success: "<green>Donated [number] blocks for <aqua>[points]<green> points! These points are permanent."
+    confirm: "<red><bold>Confirm - Items will be DESTROYED!"
+    cancel: "<green><bold>Cancel - Return Items"
+    gui-title: "<black><bold>Donate Blocks"
+    gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
+    preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    hand:
+      success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"
+      not-block: "<red>You must be holding a placeable block to donate."
+      confirm-prompt: "<red>About to DESTROY <gold>[number] x [material]<red> for <aqua>[points]<red> permanent points."
   top:
     description: Toon de Top tien
-    gui-title: "&a Top tien"
-    gui-heading: "&6[name]: &B[rank]"
-    island-level: "&b Level [level]"
-    warp-to: "&A Teleporteren naar [name]'s eiland"
+    gui-title: "<green> Top tien"
+    gui-heading: "<gold>[name]: <aqua>[rank]"
+    island-level: "<aqua> Level [level]"
+    warp-to: "<green> Teleporteren naar [name]'s eiland"
+  detail:
+    description: "toont details van de blokken op uw eiland"
   level-details:
     above-sea-level-blocks: 'Blokken boven zeeniveau '
     spawners: Monsterkooien
     underwater-blocks: Blokken onder zeeniveau
     all-blocks: Alle blokken
-    no-island: "&c Geen eiland!"
+    no-island: "<red> Geen eiland!"
     names-island: "[name]'s eiland"
     syntax: "[name] x [number]"
-    hint: "&c Gebruik level om het blokkenrapport te zien"
+    hint: "<red> Gebruik level om het blokkenrapport te zien"
+protection:
+  flags:
+    ISLAND_BLOCK_DONATION:
+      description: |-
+        <green>Toggle who can donate</green>
+        <green>blocks to raise island level.</green>
+      name: Block Donation
+      hint: Block donation not allowed
+
 level:
   commands:
     value:
@@ -55,27 +97,27 @@ level:
         waarde te laten zien van het item in je hand.
   gui:
     titles:
-      top: "&0&l Top eilanden"
-      detail-panel: "&0&l [name]'s eiland"
-      value-panel: "&0&l Blok waardes"
+      top: "<black><bold> Top eilanden"
+      detail-panel: "<black><bold> [name]'s eiland"
+      value-panel: "<black><bold> Blok waardes"
     buttons:
       island:
-        empty: "&f&l [name]. plaats"
-        name: "&f&l [name]"
+        empty: "<white><bold> [name]. plaats"
+        name: "<white><bold> [name]"
         description: |-
           [owner]
           [members]
           [place]
           [level]
         owners-island: "[player]'s Eiland"
-        owner: "&7&l Eigenaar: &r&b [player]"
-        members-title: "&7&l Leden:"
-        member: "&b - [player]"
+        owner: "<gray><bold> Eigenaar: <reset><aqua> [player]"
+        members-title: "<gray><bold> Leden:"
+        member: "<aqua> - [player]"
         unknown: onbekend
-        place: "&7&o [number]. &r&7 plaats"
-        level: "&7 Level: &o [number]"
+        place: "<gray><italic> [number]. <reset><gray> plaats"
+        level: "<gray> Level: <italic> [number]"
       material:
-        name: "&f&l [number] x [material]"
+        name: "<white><bold> [number] x [material]"
         description: |-
           [description]
           [count]
@@ -83,83 +125,96 @@ level:
           [calculated]
           [limit]
           [id]
-        id: "&7 Blok id: &e [id]"
-        value: "&7 Block waarde: &e [number]"
-        limit: "&7 Block limiet: &e [number]"
-        count: "&7 Aantal blokken: &e [number]"
-        calculated: "&7 Berekende waarde: &e [number]"
+        id: "<gray> Blok id: <yellow> [id]"
+        value: "<gray> Block waarde: <yellow> [number]"
+        limit: "<gray> Block limiet: <yellow> [number]"
+        count: "<gray> Aantal blokken: <yellow> [number]"
+        calculated: "<gray> Berekende waarde: <yellow> [number]"
+      value_blocks:
+        name: "<white><bold> Alle Blokken met Waarde"
+        description: |-
+          <gray> Toon alle blokken
+          <gray> met waarde op het eiland.
       all_blocks:
-        name: "&f&l Alle Blokken"
-        description: "&7 Toon alle blokken \n&7 op het eiland."
+        name: "<white><bold> Alle Blokken"
+        description: "<gray> Toon alle blokken \n<gray> op het eiland."
       above_sea_level:
-        name: "&f&l Blokken boven zeeniveau"
+        name: "<white><bold> Blokken boven zeeniveau"
         description: |-
-          &7 Toon alleen blokken
-          &7 die boven zeeniveau zijn
+          <gray> Toon alleen blokken
+          <gray> die boven zeeniveau zijn
       underwater:
-        name: "&f&l Blokken onder zeeniveau"
+        name: "<white><bold> Blokken onder zeeniveau"
         description: |-
-          &7 Toon alleen blokken
-          &7 die onder zeeniveau zijn
+          <gray> Toon alleen blokken
+          <gray> die onder zeeniveau zijn
       spawner:
-        name: "&f&l Monsterkooien"
-        description: "&7 Toon alleen monsterkooien."
+        name: "<white><bold> Monsterkooien"
+        description: "<gray> Toon alleen monsterkooien."
+        block-name: "<aqua> Monsterkooien"
+      donated:
+        name: "<white><bold>Donated Blocks"
+        description: |-
+          <gray>Display blocks permanently
+          <gray>donated to island level.
       filters:
         name:
-          name: "&f&l Sorteer aan de hand van naam"
-          description: "&7 Sorteer alle blokken aan de hand van naam."
+          name: "<white><bold> Sorteer aan de hand van naam"
+          description: "<gray> Sorteer alle blokken aan de hand van naam."
         value:
-          name: "&f&l Sorteer aan de hand van waarde"
-          description: "&7 Sorteer alle blokken aan de hand van waarde."
+          name: "<white><bold> Sorteer aan de hand van waarde"
+          description: "<gray> Sorteer alle blokken aan de hand van waarde."
         count:
-          name: "&f&l Sorteer aan de hand van aantal"
-          description: "&7 Sorteer alle blokken aan de hand van aantal."
+          name: "<white><bold> Sorteer aan de hand van aantal"
+          description: "<gray> Sorteer alle blokken aan de hand van aantal."
       value:
-        name: "&f&l [material]"
+        name: "<white><bold> [material]"
         description: |-
           [description]
           [value]
           [underwater]
           [limit]
           [id]
-        id: "&7 Blok id: &e [id]"
-        value: "&7 Block waarrde: &e [number]"
-        underwater: "&7 Onder zeeniveau: &e [number]"
-        limit: "&7 Blok limiet: &e [number]"
+        id: "<gray> Blok id: <yellow> [id]"
+        value: "<gray> Block waarrde: <yellow> [number]"
+        underwater: "<gray> Onder zeeniveau: <yellow> [number]"
+        limit: "<gray> Blok limiet: <yellow> [number]"
       previous:
-        name: "&f&l Vorige pagina"
-        description: "&7 Ga naar pagina [number]"
+        name: "<white><bold> Vorige pagina"
+        description: "<gray> Ga naar pagina [number]"
       next:
-        name: "&f&l Volgende pagina"
-        description: "&7 Ga naar pagina [number]"
+        name: "<white><bold> Volgende pagina"
+        description: "<gray> Ga naar pagina [number]"
       search:
-        name: "&f&l Zoek"
-        description: "&7 Zoek voor een \n&7 specifieke waarde."
-        search: "&b Waarde: [value]"
+        name: "<white><bold> Zoek"
+        description: "<gray> Zoek voor een \n<gray> specifieke waarde."
+        search: "<aqua> Waarde: [value]"
     tips:
-      click-to-view: "&e Klik &7 om te zien."
-      click-to-previous: "&e Klik &7 om de vorige pagina te zien."
-      click-to-next: "&e Klik &7 om de volgende pagina te zien."
-      click-to-select: "&e Klik &7 om te selecteren."
-      left-click-to-cycle-up: "&e Linker Klik &7 om door te lopen."
-      right-click-to-cycle-down: "&e Rechter Klik &7 om terug door te lopen."
-      left-click-to-change: "&e Linker Klik &7 om bij te werken."
-      right-click-to-clear: "&e Linker Klik &7 om te verwijderen."
-      click-to-asc: "&e Klik &7 om te toenemend te sorteren."
-      click-to-desc: "&e Klik &7 om te afnemenend te sorteren."
-      click-to-warp: "&e Klik &7 om te teleporteren."
-      click-to-visit: "&e Klik &7 om te bezoeken."
-      right-click-to-visit: "&e Rechter Klik &7 om te bezoeken."
+      click-to-view: "<yellow> Klik <gray> om te zien."
+      click-to-previous: "<yellow> Klik <gray> om de vorige pagina te zien."
+      click-to-next: "<yellow> Klik <gray> om de volgende pagina te zien."
+      click-to-select: "<yellow> Klik <gray> om te selecteren."
+      left-click-to-cycle-up: "<yellow> Linker Klik <gray> om door te lopen."
+      right-click-to-cycle-down: "<yellow> Rechter Klik <gray> om terug door te lopen."
+      left-click-to-change: "<yellow> Linker Klik <gray> om bij te werken."
+      right-click-to-clear: "<yellow> Linker Klik <gray> om te verwijderen."
+      click-to-asc: "<yellow> Klik <gray> om te toenemend te sorteren."
+      click-to-desc: "<yellow> Klik <gray> om te afnemenend te sorteren."
+      click-to-warp: "<yellow> Klik <gray> om te teleporteren."
+      click-to-visit: "<yellow> Klik <gray> om te bezoeken."
+      right-click-to-visit: "<yellow> Rechter Klik <gray> om te bezoeken."
   conversations:
-    prefix: "&l&6 [BentoBox]: &r"
-    no-data: "&c Gebruik level om het blokkenrapport te zien."
+    prefix: "<bold><gold> [BentoBox]: <reset>"
+    no-data: "<red> Gebruik level om het blokkenrapport te zien."
     cancel-string: stop
     exit-string: stop
-    write-search: "&e Schrijf een zoekopdracht. (Schrijf 'stop' om te zoeken)"
-    search-updated: "&a Zoekopdracht bijgewerkt."
-    cancelled: "&c Conversatie gestopt!"
-    no-value: "&c Dit item heeft geen waarde."
-    unknown-item: "&c '[material]' bestaat niet in het spel."
-    value: "&7 De waarde van '[material]' is: &e[value]"
-    value-underwater: "&7 The waarde van '[material]' onder zeeniveau: &e[value]"
-    empty-hand: "&c Je hebt geen blok vast"
+    write-search: "<yellow> Schrijf een zoekopdracht. (Schrijf 'stop' om te zoeken)"
+    search-updated: "<green> Zoekopdracht bijgewerkt."
+    cancelled: "<red> Conversatie gestopt!"
+    no-value: "<red> Dit item heeft geen waarde."
+    unknown-item: "<red> '[material]' bestaat niet in het spel."
+    value: "<gray> De waarde van '[material]' is: <yellow>[value]"
+    value-underwater: "<gray> The waarde van '[material]' onder zeeniveau: <yellow>[value]"
+    empty-hand: "<red> Je hebt geen blok vast"
+    you-have: "<gray> Je hebt [number] bij de laatste telling."
+    you-can-place: "<gray> Je kunt tot [number] plaatsen en ze laten meetellen"

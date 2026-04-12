@@ -3,33 +3,232 @@ admin:
   level:
     description: aprēķina spēlētāja salas līmeni
     parameters: "<spēlētājs>"
+    sethandicap:
+      parameters: <spēlētājs> [+/-]<handicap>
+      description: |
+        iestata vai maina salas *handicap*
+        piem. +10 noņem 10 līmeņus,
+        30 iestata handicap uz 30,
+        -20 pievieno 20 līmeņus
+      changed: "<green> Sākuma salas handicap mainīts no [number] uz [new_number]."
+      invalid-level: "<red> Nederīgs handicap. Izmanto veselu skaitli."
+  levelstatus:
+    description: rāda, cik salu ir skenēšanas rindā
+    islands-in-queue: "<green> Salas rindā: [number]"
   top:
     description: rādīt labākās 10 salas
-    display: "&f[rank]. &a[name] &7- &b[level]"
-    unknown-world: "&cNezināma pasaule!"
+    display: "<white>[rank]. <green>[name] <gray>- <aqua>[level]"
+    unknown-world: "<red> Nezināma pasaule!"
     remove:
       description: noņemt spēlētāju no labāko desmit saraksta
       parameters: "<spēlētājs>"
+  stats:
+    description: "rādīt salas statistiku šajā serverī"
+    title: "Servera Salas Statistika"
+    world: "<green> [name]"
+    no-data: "<red> Nav datu apstrādei."
+    average-level: "Vidējais salas līmenis: [number]"
+    median-level: "Mediānais salas līmenis: [number]"
+    mode-level: "Biežākais salas līmenis: [number]"
+    highest-level: "Augstākais salas līmenis: [number]"
+    lowest-level: "Zemākais salas līmenis: [number]"
+    distribution: "Salas līmeņu sadalījums:"
+    islands: "salas"
 island:
   level:
-    calculating: "&aAprēķina līmeni..."
-    cooldown: "&cTev ir jāuzgaida &b[time]&c sekundes, lai vēlreiz aprēķinātu salas
-      līmeni!"
-    deaths: "&c([number] nāves)"
+    calculating: "<green> Aprēķina līmeni..."
+    cooldown: "<red> Tev ir jāuzgaida <aqua>[time] <red> sekundes, lai vēlreiz aprēķinātu salas līmeni!"
+    deaths: "<red> ([number] nāves)"
     description: aprēķina tavas salas līmeni, vai parāda spēlētāja [player] līmeni
-    island-level-is: "&aSalas līmenis ir &b[level]"
+    island-level-is: "<green> Salas līmenis ir <aqua>[level]"
     parameters: "[player]"
-    required-points-to-next-level: "&aNepieciešami [points] punkti, lai sasniegtu
-      nākošo līmeni"
+    estimated-wait: "<green> Paredzamais gaidīšanas laiks: [number] sekundes"
+    in-queue: "<green> Tu esi numurs [number] rindā"
+    required-points-to-next-level: "<green> Līmeņa progress: <gold> [progress]<aqua> /<yellow> [levelcost] <green> punkti"
+    in-progress: "<gold> Salas līmeņa aprēķins notiek..."
+    time-out: "<red> Līmeņa aprēķins ilga pārāk ilgi. Lūdzu, mēģini vēlāk."
+  donate:
+    parameters: "[hand [amount]]"
+    description: "donate blocks to permanently raise island level"
+    must-be-on-island: "<red>You must be on your island to donate blocks."
+    no-permission: "<red>You do not have permission to donate blocks on this island."
+    no-value: "<red>That block has no level value."
+    invalid-amount: "<red>Invalid amount. Use a positive number."
+    empty: "<red>There are no valid blocks to donate."
+    cancelled: "<yellow>Donation cancelled. Items returned."
+    success: "<green>Donated [number] blocks for <aqua>[points]<green> points! These points are permanent."
+    confirm: "<red><bold>Confirm - Items will be DESTROYED!"
+    cancel: "<green><bold>Cancel - Return Items"
+    gui-title: "<black><bold>Donate Blocks"
+    gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
+    preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    hand:
+      success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"
+      not-block: "<red>You must be holding a placeable block to donate."
+      confirm-prompt: "<red>About to DESTROY <gold>[number] x [material]<red> for <aqua>[points]<red> permanent points."
+  detail:
+    description: "rāda tavas salas bloku detaļas"
   top:
     description: rādīt labākos 10
-    gui-heading: "&6[name]: &B[rank]"
-    gui-title: "&aLabākie 10"
-    island-level: "&BLīmenis [level]"
-    warp-to: "&APārvietoties uz [name] salu."
-  value:
-    description: rādīt vērtību jebkuram blokam
-    empty-hand: "&cTev nav bloks rokās."
-    no-value: "&cŠim blokam/priekšmetam nav vērtības."
-    success: "&7Vērtība šim blokam ir: &e[value]"
-    success-underwater: "&7Vērtība šim blokam zem jūras līmeņa: &e[value]"
+    gui-heading: "<gold>[name]: <aqua>[rank]"
+    gui-title: "<green> Labākie 10"
+    island-level: "<aqua> Līmenis [level]"
+    warp-to: "<green> Pārvietojas uz [name] salu."
+  level-details:
+    above-sea-level-blocks: Bloki virs jūras līmeņa
+    spawners: Spawners
+    underwater-blocks: Zemūdens bloki
+    all-blocks: Visi bloki
+    no-island: "<red> Nav salas!"
+    names-island: "[name] sala"
+    syntax: "[name] x [number]"
+    hint: "<red> Palaid level, lai redzētu bloku pārskatu"
+protection:
+  flags:
+    ISLAND_BLOCK_DONATION:
+      description: |-
+        <green>Toggle who can donate</green>
+        <green>blocks to raise island level.</green>
+      name: Block Donation
+      hint: Block donation not allowed
+
+level:
+  commands:
+    value:
+      parameters: "[hand|<materiāls>]"
+      description: rāda bloku vērtības. Pievieno 'hand' beigās, lai rādītu rokā esošā priekšmeta vērtību.
+  gui:
+    titles:
+      top: "<black><bold> Top Salas"
+      detail-panel: "<black><bold> [name] sala"
+      value-panel: "<black><bold> Bloku Vērtības"
+    buttons:
+      island:
+        empty: '<white><bold> [name]. vieta'
+        name: '<white><bold> [name]'
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: "[player] sala"
+        owner: "<gray><bold> Īpašnieks: <reset><aqua> [player]"
+        members-title: "<gray><bold> Dalībnieki:"
+        member: "<aqua> - [player]"
+        unknown: "nezināms"
+        place: "<gray><italic> [number]. <reset><gray> vieta"
+        level: "<gray> Līmenis: <italic> [number]"
+      material:
+        name: "<white><bold> [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "<gray> Bloka ID: <yellow> [id]"
+        value: "<gray> Bloka vērtība: <yellow> [number]"
+        limit: "<gray> Bloka limits: <yellow> [number]"
+        count: "<gray> Bloku skaits: <yellow> [number]"
+        calculated: "<gray> Aprēķinātā vērtība: <yellow> [number]"
+      value_blocks:
+        name: "<white><bold> Visi Bloki ar Vērtību"
+        description: |-
+          <gray> Rādīt visus blokus
+          <gray> ar vērtību salā.
+      all_blocks:
+        name: "<white><bold> Visi Bloki"
+        description: |-
+          <gray> Rādīt visus blokus
+          <gray> salā.
+      above_sea_level:
+        name: "<white><bold> Bloki virs jūras līmeņa"
+        description: |-
+          <gray> Rādīt tikai blokus
+          <gray> kas atrodas virs
+          <gray> jūras līmeņa.
+      underwater:
+        name: "<white><bold> Bloki zem jūras līmeņa"
+        description: |-
+          <gray> Rādīt tikai blokus
+          <gray> kas atrodas zem
+          <gray> jūras līmeņa.
+      spawner:
+        name: "<white><bold> Spawners"
+        description: |-
+          <gray> Rādīt tikai spawnerus.
+        block-name: "<aqua> Spawner"
+      donated:
+        name: "<white><bold>Donated Blocks"
+        description: |-
+          <gray>Display blocks permanently
+          <gray>donated to island level.
+      filters:
+        name:
+          name: "<white><bold> Kārtot pēc Nosaukuma"
+          description: |-
+            <gray> Kārtot visus blokus pēc nosaukuma.
+        value:
+          name: "<white><bold> Kārtot pēc Vērtības"
+          description: |-
+            <gray> Kārtot visus blokus pēc vērtības.
+        count:
+          name: "<white><bold> Kārtot pēc Skaita"
+          description: |-
+            <gray> Kārtot visus blokus pēc skaita.
+      value:
+        name: "<white><bold> [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "<gray> Bloka ID: <yellow> [id]"
+        value: "<gray> Bloka vērtība: <yellow> [number]"
+        underwater: "<gray> Zem jūras līmeņa: <yellow> [number]"
+        limit: "<gray> Bloka limits: <yellow> [number]"
+      previous:
+        name: "<white><bold> Iepriekšējā Lapa"
+        description: |-
+          <gray> Pāriet uz lapu [number]
+      next:
+        name: "<white><bold> Nākamā Lapa"
+        description: |-
+          <gray> Pāriet uz lapu [number]
+      search:
+        name: "<white><bold> Meklēt"
+        description: |-
+          <gray> Meklēt konkrētu
+          <gray> vērtību.
+        search: "<aqua> Vērtība: [value]"
+    tips:
+      click-to-view: "<yellow> Klikšķini <gray> lai skatītu."
+      click-to-previous: "<yellow> Klikšķini <gray> lai skatītu iepriekšējo lapu."
+      click-to-next: "<yellow> Klikšķini <gray> lai skatītu nākamo lapu."
+      click-to-select: "<yellow> Klikšķini <gray> lai izvēlētos."
+      left-click-to-cycle-up: "<yellow> Kreisais Klikšķis <gray> lai celtu."
+      right-click-to-cycle-down: "<yellow> Labais Klikšķis <gray> lai nolaistu."
+      left-click-to-change: "<yellow> Kreisais Klikšķis <gray> lai rediģētu."
+      right-click-to-clear: "<yellow> Labais Klikšķis <gray> lai notīrītu."
+      click-to-asc: "<yellow> Klikšķini <gray> lai kārtotu augošā secībā."
+      click-to-desc: "<yellow> Klikšķini <gray> lai kārtotu dilstošā secībā."
+      click-to-warp: "<yellow> Klikšķini <gray> lai teleportētos."
+      click-to-visit: "<yellow> Klikšķini <gray> lai apmeklētu."
+      right-click-to-visit: "<yellow> Labais Klikšķis <gray> lai apmeklētu."
+  conversations:
+    prefix: "<bold><gold> [BentoBox]: <reset>"
+    no-data: "<red> Palaid level, lai redzētu bloku pārskatu."
+    cancel-string: atcelt
+    exit-string: atcelt, iziet, pamest
+    write-search: "<yellow> Lūdzu ievadi meklēšanas vērtību. (Raksti 'atcelt' lai izietu)"
+    search-updated: "<green> Meklēšanas vērtība atjaunināta."
+    cancelled: "<red> Saruna atcelta!"
+    no-value: "<red> Šim priekšmetam nav vērtības."
+    unknown-item: "<red> '[material]' spēlē nepastāv."
+    value: "<gray> '[material]' vērtība ir: <yellow>[value]"
+    value-underwater: "<gray> '[material]' vērtība zem jūras līmeņa: <yellow>[value]"
+    empty-hand: "<red> Rokās nav bloku"
+    you-have: "<gray> Pēdējā skaitīšanā tev bija [number]."
+    you-can-place: "<gray> Vari novietot līdz [number] un tie tiks skaitīti"

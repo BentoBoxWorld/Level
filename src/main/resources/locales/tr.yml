@@ -5,33 +5,234 @@
 
 admin:
   level:
-    parameters: "<player>"
+    parameters: "<oyuncu>"
     description: "Bir oyuncunun ada seviyesini hesapla"
+    sethandicap:
+      parameters: <oyuncu> [+/-]<handikap>
+      description: |
+        ada *handikabını* ayarla veya değiştir
+        örn. +10 10 seviye kaldırır,
+        30 handikabı 30'a ayarlar,
+        -20 20 seviye ekler
+      changed: "<green> Ada başlangıç handikabı [number] değerinden [new_number] değerine değiştirildi."
+      invalid-level: "<red> Geçersiz handikap. Tam sayı kullanın."
+  levelstatus:
+    description: tarama için kaç adanın kuyrukta olduğunu göster
+    islands-in-queue: "<green> Kuyrukta bulunan adalar: [number]"
   top:
-    description: "Ilk 10 adayı sırala"
-    unknown-world: "&cBilinmeyen kelime"
-    display: "&f[rank]. &a[name] &7- &b[level]"
-
+    description: "İlk 10 adayı sırala"
+    unknown-world: "<red> Bilinmeyen dünya!"
+    display: "<white>[rank]. <green>[name] <gray>- <aqua>[level]"
+    remove:
+      description: oyuncuyu İlk On'dan kaldır
+      parameters: "<oyuncu>"
+  stats:
+    description: "bu sunucudaki adaların istatistiklerini göster"
+    title: "Sunucu Ada İstatistikleri"
+    world: "<green> [name]"
+    no-data: "<red> İşlenecek veri yok."
+    average-level: "Ortalama Ada Seviyesi: [number]"
+    median-level: "Medyan Ada Seviyesi: [number]"
+    mode-level: "Mod Ada Seviyesi: [number]"
+    highest-level: "En Yüksek Ada Seviyesi: [number]"
+    lowest-level: "En Düşük Ada Seviyesi: [number]"
+    distribution: "Ada Seviyesi Dağılımı:"
+    islands: "ada"
 island:
-  level: 
-    parameters: "[player]"
-    description: "&7Kendi ada seviyeni hesapla veya başka oyuncunun ada seviyesini öğren"
-    calculating: "&aLevel hesaplanıyor..." 
-    island-level-is: "&7Ada seviyesi &b[level]"
-    required-points-to-next-level: "&7Adayı yükseltmek için &a[points] &7Puan gerekiyor"
-    deaths: "&c(Ölümler: [number])"
-    cooldown: "&7Bunu tekrar yapmak için &b[time] &7beklemelisin"
-    
+  level:
+    parameters: "[oyuncu]"
+    description: "Kendi ada seviyeni hesapla veya başka oyuncunun ada seviyesini öğren"
+    calculating: "<green> Seviye hesaplanıyor..."
+    estimated-wait: "<green> Tahmini bekleme: [number] saniye"
+    in-queue: "<green> Kuyrukta [number]. sıradasın"
+    island-level-is: "<green> Ada seviyesi <aqua>[level]"
+    required-points-to-next-level: "<green> Seviye ilerlemesi: <gold> [progress]<aqua> /<yellow> [levelcost] <green> puan"
+    deaths: "<red> ([number] ölüm)"
+    cooldown: "<red> Bunu tekrar yapmak için <aqua>[time] <red> saniye beklemelisin"
+    in-progress: "<gold> Ada seviyesi hesaplaması devam ediyor..."
+    time-out: "<red> Seviye hesaplaması çok uzun sürdü. Lütfen daha sonra tekrar deneyin."
+  donate:
+    parameters: "[hand [amount]]"
+    description: "donate blocks to permanently raise island level"
+    must-be-on-island: "<red>You must be on your island to donate blocks."
+    no-permission: "<red>You do not have permission to donate blocks on this island."
+    no-value: "<red>That block has no level value."
+    invalid-amount: "<red>Invalid amount. Use a positive number."
+    empty: "<red>There are no valid blocks to donate."
+    cancelled: "<yellow>Donation cancelled. Items returned."
+    success: "<green>Donated [number] blocks for <aqua>[points]<green> points! These points are permanent."
+    confirm: "<red><bold>Confirm - Items will be DESTROYED!"
+    cancel: "<green><bold>Cancel - Return Items"
+    gui-title: "<black><bold>Donate Blocks"
+    gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
+    preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    hand:
+      success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"
+      not-block: "<red>You must be holding a placeable block to donate."
+      confirm-prompt: "<red>About to DESTROY <gold>[number] x [material]<red> for <aqua>[points]<red> permanent points."
+  detail:
+    description: "adanın blok ayrıntılarını gösterir"
   top:
-    description: "Ilk 10 adayı sırala"
-    gui-title: "&aIlk 10 Ada"
-    gui-heading: "&6Sıralama: &3[rank]"
-    island-level: "&7Seviye: &a[level]"
-    warp-to: "&a[name] &7oyuncusunun adasına ışınlanıyor"
+    description: "İlk 10 adayı sırala"
+    gui-title: "<green> İlk 10 Ada"
+    gui-heading: "<gold>Sıralama: <dark_aqua>[rank]"
+    island-level: "<green> Seviye: <gray>[level]"
+    warp-to: "<green> [name] oyuncusunun adasına ışınlanıyor"
+  level-details:
+    above-sea-level-blocks: Deniz Seviyesi Üstü Bloklar
+    spawners: Spawner'lar
+    underwater-blocks: Su Altı Bloklar
+    all-blocks: Tüm Bloklar
+    no-island: "<red> Ada yok!"
+    names-island: "[name]'nin adası"
+    syntax: "[name] x [number]"
+    hint: "<red> Blok raporunu görmek için level komutunu çalıştırın"
+protection:
+  flags:
+    ISLAND_BLOCK_DONATION:
+      description: |-
+        <green>Toggle who can donate</green>
+        <green>blocks to raise island level.</green>
+      name: Block Donation
+      hint: Block donation not allowed
 
-  value:
-    description: "Herhangi bir bloğun değerini gösterir"
-    success: "&7Bu bloğun değeri: &e[value]"
-    success-underwater: "&7Deniz seviyesinin altındaki bu bloğun değeri: &e[value]"
-    empty-hand: "&cElinde hiç blok yok"
-    no-value: "&cBu eşyanın bir değeri yok."
+level:
+  commands:
+    value:
+      parameters: "[hand|<malzeme>]"
+      description: blokların değerini gösterir. Elinizdeki eşyanın değerini görmek için sona 'hand' ekleyin.
+  gui:
+    titles:
+      top: "<black><bold> En İyi Adalar"
+      detail-panel: "<black><bold> [name]'nin adası"
+      value-panel: "<black><bold> Blok Değerleri"
+    buttons:
+      island:
+        empty: '<white><bold> [name]. sıra'
+        name: '<white><bold> [name]'
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: "[player]'nin adası"
+        owner: "<gray><bold> Sahip: <reset><aqua> [player]"
+        members-title: "<gray><bold> Üyeler:"
+        member: "<aqua> - [player]"
+        unknown: "bilinmiyor"
+        place: "<gray><italic> [number]. <reset><gray> sıra"
+        level: "<gray> Seviye: <italic> [number]"
+      material:
+        name: "<white><bold> [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "<gray> Blok ID: <yellow> [id]"
+        value: "<gray> Blok değeri: <yellow> [number]"
+        limit: "<gray> Blok limiti: <yellow> [number]"
+        count: "<gray> Blok sayısı: <yellow> [number]"
+        calculated: "<gray> Hesaplanan değer: <yellow> [number]"
+      value_blocks:
+        name: "<white><bold> Değeri Olan Tüm Bloklar"
+        description: |-
+          <gray> Adada değeri olan
+          <gray> tüm blokları göster.
+      all_blocks:
+        name: "<white><bold> Tüm Bloklar"
+        description: |-
+          <gray> Adadaki tüm
+          <gray> blokları göster.
+      above_sea_level:
+        name: "<white><bold> Deniz Seviyesi Üstü Bloklar"
+        description: |-
+          <gray> Sadece deniz
+          <gray> seviyesi üstündeki
+          <gray> blokları göster.
+      underwater:
+        name: "<white><bold> Deniz Seviyesi Altı Bloklar"
+        description: |-
+          <gray> Sadece deniz
+          <gray> seviyesi altındaki
+          <gray> blokları göster.
+      spawner:
+        name: "<white><bold> Spawner'lar"
+        description: |-
+          <gray> Sadece spawner'ları göster.
+        block-name: "<aqua> Spawner"
+      donated:
+        name: "<white><bold>Donated Blocks"
+        description: |-
+          <gray>Display blocks permanently
+          <gray>donated to island level.
+      filters:
+        name:
+          name: "<white><bold> İsme Göre Sırala"
+          description: |-
+            <gray> Tüm blokları isme göre sırala.
+        value:
+          name: "<white><bold> Değere Göre Sırala"
+          description: |-
+            <gray> Tüm blokları değerlerine göre sırala.
+        count:
+          name: "<white><bold> Sayıya Göre Sırala"
+          description: |-
+            <gray> Tüm blokları sayılarına göre sırala.
+      value:
+        name: "<white><bold> [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "<gray> Blok ID: <yellow> [id]"
+        value: "<gray> Blok değeri: <yellow> [number]"
+        underwater: "<gray> Deniz seviyesi altı: <yellow> [number]"
+        limit: "<gray> Blok limiti: <yellow> [number]"
+      previous:
+        name: "<white><bold> Önceki Sayfa"
+        description: |-
+          <gray> [number]. sayfaya geç
+      next:
+        name: "<white><bold> Sonraki Sayfa"
+        description: |-
+          <gray> [number]. sayfaya geç
+      search:
+        name: "<white><bold> Ara"
+        description: |-
+          <gray> Belirli bir değer
+          <gray> ara.
+        search: "<aqua> Değer: [value]"
+    tips:
+      click-to-view: "<yellow> Tıkla <gray> görüntülemek için."
+      click-to-previous: "<yellow> Tıkla <gray> önceki sayfayı görüntülemek için."
+      click-to-next: "<yellow> Tıkla <gray> sonraki sayfayı görüntülemek için."
+      click-to-select: "<yellow> Tıkla <gray> seçmek için."
+      left-click-to-cycle-up: "<yellow> Sol Tıkla <gray> yukarı almak için."
+      right-click-to-cycle-down: "<yellow> Sağ Tıkla <gray> aşağı almak için."
+      left-click-to-change: "<yellow> Sol Tıkla <gray> düzenlemek için."
+      right-click-to-clear: "<yellow> Sağ Tıkla <gray> temizlemek için."
+      click-to-asc: "<yellow> Tıkla <gray> artan sırada sıralamak için."
+      click-to-desc: "<yellow> Tıkla <gray> azalan sırada sıralamak için."
+      click-to-warp: "<yellow> Tıkla <gray> ışınlanmak için."
+      click-to-visit: "<yellow> Tıkla <gray> ziyaret etmek için."
+      right-click-to-visit: "<yellow> Sağ Tıkla <gray> ziyaret etmek için."
+  conversations:
+    prefix: "<bold><gold> [BentoBox]: <reset>"
+    no-data: "<red> Blok raporunu görmek için level komutunu çalıştırın."
+    cancel-string: iptal
+    exit-string: iptal, çıkış, bırak
+    write-search: "<yellow> Lütfen bir arama değeri girin. (Çıkmak için 'iptal' yazın)"
+    search-updated: "<green> Arama değeri güncellendi."
+    cancelled: "<red> Konuşma iptal edildi!"
+    no-value: "<red> Bu eşyanın değeri yok."
+    unknown-item: "<red> '[material]' oyunda mevcut değil."
+    value: "<gray> '[material]' değeri: <yellow>[value]"
+    value-underwater: "<gray> '[material]' deniz seviyesi altı değeri: <yellow>[value]"
+    empty-hand: "<red> Elinde hiç blok yok"
+    you-have: "<gray> Son sayımda [number] tanen vardı."
+    you-can-place: "<gray> [number] adete kadar yerleştirebilirsin ve sayılırlar"

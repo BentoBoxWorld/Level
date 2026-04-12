@@ -61,7 +61,11 @@ public class DetailsPanel {
         /**
          * Spawner Tab.
          */
-        SPAWNER
+        SPAWNER,
+        /**
+         * Donated blocks Tab.
+         */
+        DONATED
     }
 
     /**
@@ -210,7 +214,18 @@ public class DetailsPanel {
     private void updateFilters() {
         this.blockCountList.clear();
 
-        if (this.activeTab == Tab.SPAWNER) {
+        if (this.activeTab == Tab.DONATED) {
+            // Show donated blocks
+            Map<String, Integer> donated = this.levelsData.getDonatedBlocks();
+            for (Map.Entry<String, Integer> entry : donated.entrySet()) {
+                if (entry.getValue() > 0) {
+                    // Try to convert to Material for display
+                    Material mat = Material.matchMaterial(entry.getKey());
+                    Object key = mat != null ? mat : entry.getKey();
+                    this.blockCountList.add(new BlockRec(key, entry.getValue(), 0));
+                }
+            }
+        } else if (this.activeTab == Tab.SPAWNER) {
             if (this.addon.getBlockConfig().isNotHiddenBlock(Material.SPAWNER)) {
                 Map<EntityType, Integer> spawnerCountMap = new EnumMap<>(EntityType.class);
 
@@ -767,9 +782,10 @@ public class DetailsPanel {
                     Material.getMaterial(m.name().substring(0, m.name().length() - 10) + "_SIGN"), Material.OAK_SIGN);
         }
         if (Tag.WALL_HANGING_SIGNS.isTagged(m)) {
-            // Wall signs end in _HANGING_WALL_SIGN 
+            // Wall hanging signs end in _WALL_HANGING_SIGN
             return Objects.requireNonNullElse(
-                    Material.getMaterial(m.name().substring(0, m.name().length() - 18) + "_SIGN"), Material.OAK_SIGN);
+                    Material.getMaterial(m.name().substring(0, m.name().length() - 18) + "_HANGING_SIGN"),
+                    Material.OAK_HANGING_SIGN);
         }
 
         return switch (m) {
@@ -790,7 +806,8 @@ public class DetailsPanel {
                 DRAGON_WALL_HEAD, PIGLIN_WALL_HEAD ->
             Material.SKELETON_SKULL;
         case SWEET_BERRY_BUSH -> Material.SWEET_BERRIES;
-        case WEEPING_VINES_PLANT, TWISTING_VINES_PLANT -> Material.VINE;
+        case WEEPING_VINES_PLANT -> Material.WEEPING_VINES;
+        case TWISTING_VINES_PLANT -> Material.TWISTING_VINES;
         case CAVE_VINES, CAVE_VINES_PLANT -> Material.GLOW_BERRIES;
         case BIG_DRIPLEAF_STEM -> Material.BIG_DRIPLEAF;
         case BAMBOO_SAPLING, POTTED_BAMBOO -> Material.BAMBOO;

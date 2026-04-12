@@ -3,42 +3,232 @@ admin:
   level:
     parameters: "<Spieler>"
     description: Berechne das Insel Level für den Spieler
+    sethandicap:
+      parameters: <Spieler> [+/-]<Handicap>
+      description: |
+        Setze oder ändere das Insel-*Handicap*
+        z.B. +10 entfernt 10 Level,
+        30 setzt Handicap auf 30,
+        -20 fügt 20 Level hinzu
+      changed: "<green> Das anfängliche Insel-Handicap wurde von [number] auf [new_number] geändert."
+      invalid-level: "<red> Ungültiges Handicap. Verwende eine ganze Zahl."
   levelstatus:
-    islands-in-queue: "&aInseln in der Warteschlange: [number]"
+    description: Zeige wie viele Inseln in der Warteschlange für den Scan sind
+    islands-in-queue: "<green> Inseln in der Warteschlange: [number]"
   top:
     description: Zeige die Top-10 Liste
-    unknown-world: "&cUnbekannte Welt!"
-    display: "&f[rank]. &a[name] &7- &b[level]"
+    unknown-world: "<red> Unbekannte Welt!"
+    display: "<white>[rank]. <green>[name] <gray>- <aqua>[level]"
     remove:
       description: entferne Spieler von Top-10
       parameters: "<Spieler>"
+  stats:
+    description: "Zeige Statistiken zu Inseln auf diesem Server"
+    title: "Server-Insel-Statistiken"
+    world: "<green> [name]"
+    no-data: "<red> Keine Daten zum Verarbeiten."
+    average-level: "Durchschnittliches Insel-Level: [number]"
+    median-level: "Medianes Insel-Level: [number]"
+    mode-level: "Häufigstes Insel-Level: [number]"
+    highest-level: "Höchstes Insel-Level: [number]"
+    lowest-level: "Niedrigstes Insel-Level: [number]"
+    distribution: "Insel-Level-Verteilung:"
+    islands: "Inseln"
 island:
   level:
     parameters: "[Spieler]"
     description: Berechne dein Insel Level oder zeige das Level von [Spieler]
-    calculating: "&aBerechne Level..."
-    estimated-wait: "&aGeschätzte Wartezeit: [number] Sekunden"
-    in-queue: "&aSie sind Nummer [number] in der Warteschlange"
-    island-level-is: "&aInsel Level:  &b[level]"
-    required-points-to-next-level: "&a[points] Punkte werden für das nächste Level
-      benötigt"
-    deaths: "&c([number] Tode)"
-    cooldown: "&cDu musst &b[time] &csekunden  warten bevor du das erneut machen kannst."
+    calculating: "<green> Berechne Level..."
+    estimated-wait: "<green> Geschätzte Wartezeit: [number] Sekunden"
+    in-queue: "<green> Du bist Nummer [number] in der Warteschlange"
+    island-level-is: "<green> Insel Level: <aqua>[level]"
+    required-points-to-next-level: "<green> Level-Fortschritt: <gold> [progress]<aqua> /<yellow> [levelcost] <green> Punkte"
+    deaths: "<red> ([number] Tode)"
+    cooldown: "<red> Du musst <aqua>[time] <red> Sekunden warten, bevor du das erneut machen kannst."
+    in-progress: "<gold> Insel-Level-Berechnung läuft..."
+    time-out: "<red> Die Level-Berechnung hat zu lange gedauert. Bitte versuche es später erneut."
+  donate:
+    parameters: "[hand [amount]]"
+    description: "donate blocks to permanently raise island level"
+    must-be-on-island: "<red>You must be on your island to donate blocks."
+    no-permission: "<red>You do not have permission to donate blocks on this island."
+    no-value: "<red>That block has no level value."
+    invalid-amount: "<red>Invalid amount. Use a positive number."
+    empty: "<red>There are no valid blocks to donate."
+    cancelled: "<yellow>Donation cancelled. Items returned."
+    success: "<green>Donated [number] blocks for <aqua>[points]<green> points! These points are permanent."
+    confirm: "<red><bold>Confirm - Items will be DESTROYED!"
+    cancel: "<green><bold>Cancel - Return Items"
+    gui-title: "<black><bold>Donate Blocks"
+    gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
+    preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    hand:
+      success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"
+      not-block: "<red>You must be holding a placeable block to donate."
+      confirm-prompt: "<red>About to DESTROY <gold>[number] x [material]<red> for <aqua>[points]<red> permanent points."
+  detail:
+    description: "zeigt Details der Blöcke deiner Insel"
   top:
     description: Zeige die Top-10
-    gui-title: "&aTop Zehn"
-    gui-heading: "&6[name]: &B[rank]"
-    island-level: "&BLevel [level]"
-    warp-to: "&aTeleportiere zu  [name]'s Insel"
+    gui-title: "<green> Top Zehn"
+    gui-heading: "<gold>[name]: <aqua>[rank]"
+    island-level: "<aqua> Level [level]"
+    warp-to: "<green> Teleportiere zu [name]'s Insel"
   level-details:
     above-sea-level-blocks: Blöcke über dem Meeresspiegel
     spawners: Spawner
     underwater-blocks: Unterwasserblöcke
     all-blocks: Alle Blöcke
-    no-island: "&cKeine Insel!"
-  value:
-    description: Zeige den Wert jedes Blockes
-    success: "&7Wert: &e[value]"
-    success-underwater: "&7Wert des Blockes Unterwasser: &e[value]"
-    empty-hand: "&cDu hast keinen Block in der Hand"
-    no-value: "&cDas Item hat kein wert!"
+    no-island: "<red> Keine Insel!"
+    names-island: "[name]'s Insel"
+    syntax: "[name] x [number]"
+    hint: "<red> Führe level aus, um den Block-Bericht zu sehen"
+protection:
+  flags:
+    ISLAND_BLOCK_DONATION:
+      description: |-
+        <green>Toggle who can donate</green>
+        <green>blocks to raise island level.</green>
+      name: Block Donation
+      hint: Block donation not allowed
+
+level:
+  commands:
+    value:
+      parameters: "[hand|<Material>]"
+      description: zeigt den Wert von Blöcken. Füge 'hand' am Ende hinzu, um den Wert des gehaltenen Items anzuzeigen.
+  gui:
+    titles:
+      top: "<black><bold> Top Inseln"
+      detail-panel: "<black><bold> [name]'s Insel"
+      value-panel: "<black><bold> Block Werte"
+    buttons:
+      island:
+        empty: '<white><bold> [name]. Platz'
+        name: '<white><bold> [name]'
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: "[player]'s Insel"
+        owner: "<gray><bold> Besitzer: <reset><aqua> [player]"
+        members-title: "<gray><bold> Mitglieder:"
+        member: "<aqua> - [player]"
+        unknown: "unbekannt"
+        place: "<gray><italic> [number]. <reset><gray> Platz"
+        level: "<gray> Level: <italic> [number]"
+      material:
+        name: "<white><bold> [number] x [material]"
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: "<gray> Block-ID: <yellow> [id]"
+        value: "<gray> Block-Wert: <yellow> [number]"
+        limit: "<gray> Block-Limit: <yellow> [number]"
+        count: "<gray> Anzahl der Blöcke: <yellow> [number]"
+        calculated: "<gray> Berechneter Wert: <yellow> [number]"
+      value_blocks:
+        name: "<white><bold> Alle Blöcke mit Wert"
+        description: |-
+          <gray> Zeige alle Blöcke
+          <gray> mit Wert auf der Insel.
+      all_blocks:
+        name: "<white><bold> Alle Blöcke"
+        description: |-
+          <gray> Zeige alle Blöcke
+          <gray> auf der Insel.
+      above_sea_level:
+        name: "<white><bold> Blöcke über dem Meeresspiegel"
+        description: |-
+          <gray> Zeige nur Blöcke
+          <gray> die über dem
+          <gray> Meeresspiegel sind.
+      underwater:
+        name: "<white><bold> Blöcke unter dem Meeresspiegel"
+        description: |-
+          <gray> Zeige nur Blöcke
+          <gray> die unter dem
+          <gray> Meeresspiegel sind.
+      spawner:
+        name: "<white><bold> Spawner"
+        description: |-
+          <gray> Zeige nur Spawner.
+        block-name: "<aqua> Spawner"
+      donated:
+        name: "<white><bold>Donated Blocks"
+        description: |-
+          <gray>Display blocks permanently
+          <gray>donated to island level.
+      filters:
+        name:
+          name: "<white><bold> Nach Name sortieren"
+          description: |-
+            <gray> Alle Blöcke nach Name sortieren.
+        value:
+          name: "<white><bold> Nach Wert sortieren"
+          description: |-
+            <gray> Alle Blöcke nach Wert sortieren.
+        count:
+          name: "<white><bold> Nach Anzahl sortieren"
+          description: |-
+            <gray> Alle Blöcke nach Anzahl sortieren.
+      value:
+        name: "<white><bold> [material]"
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: "<gray> Block-ID: <yellow> [id]"
+        value: "<gray> Block-Wert: <yellow> [number]"
+        underwater: "<gray> Unter dem Meeresspiegel: <yellow> [number]"
+        limit: "<gray> Block-Limit: <yellow> [number]"
+      previous:
+        name: "<white><bold> Vorherige Seite"
+        description: |-
+          <gray> Wechsle zu Seite [number]
+      next:
+        name: "<white><bold> Nächste Seite"
+        description: |-
+          <gray> Wechsle zu Seite [number]
+      search:
+        name: "<white><bold> Suchen"
+        description: |-
+          <gray> Suche nach einem bestimmten
+          <gray> Wert.
+        search: "<aqua> Wert: [value]"
+    tips:
+      click-to-view: "<yellow> Klicken <gray> zum Anzeigen."
+      click-to-previous: "<yellow> Klicken <gray> um die vorherige Seite anzuzeigen."
+      click-to-next: "<yellow> Klicken <gray> um die nächste Seite anzuzeigen."
+      click-to-select: "<yellow> Klicken <gray> zum Auswählen."
+      left-click-to-cycle-up: "<yellow> Linksklick <gray> zum Aufwärtsblättern."
+      right-click-to-cycle-down: "<yellow> Rechtsklick <gray> zum Abwärtsblättern."
+      left-click-to-change: "<yellow> Linksklick <gray> zum Bearbeiten."
+      right-click-to-clear: "<yellow> Rechtsklick <gray> zum Löschen."
+      click-to-asc: "<yellow> Klicken <gray> um aufsteigend zu sortieren."
+      click-to-desc: "<yellow> Klicken <gray> um absteigend zu sortieren."
+      click-to-warp: "<yellow> Klicken <gray> zum Teleportieren."
+      click-to-visit: "<yellow> Klicken <gray> zum Besuchen."
+      right-click-to-visit: "<yellow> Rechtsklick <gray> zum Besuchen."
+  conversations:
+    prefix: "<bold><gold> [BentoBox]: <reset>"
+    no-data: "<red> Führe level aus, um den Block-Bericht zu sehen."
+    cancel-string: abbrechen
+    exit-string: abbrechen, beenden, verlassen
+    write-search: "<yellow> Bitte gib einen Suchwert ein. (Schreibe 'abbrechen' zum Beenden)"
+    search-updated: "<green> Suchwert aktualisiert."
+    cancelled: "<red> Gespräch abgebrochen!"
+    no-value: "<red> Dieses Item hat keinen Wert."
+    unknown-item: "<red> Das '[material]' existiert nicht im Spiel."
+    value: "<gray> Der Wert von '[material]' ist: <yellow>[value]"
+    value-underwater: "<gray> Der Wert von '[material]' unter dem Meeresspiegel: <yellow>[value]"
+    empty-hand: "<red> Du hast keinen Block in der Hand"
+    you-have: "<gray> Du hast [number] beim letzten Zählen."
+    you-can-place: "<gray> Du kannst bis zu [number] platzieren und sie werden gezählt"
