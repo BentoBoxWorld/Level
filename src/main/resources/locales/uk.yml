@@ -45,24 +45,26 @@ island:
     in-progress: "<gold> Розрахунок рівня острова триває..."
     time-out: "<red> Розрахунок рівня тривав занадто довго. Будь-ласка спробуйте пізніше."
   donate:
-    parameters: "[hand [amount]]"
-    description: "donate blocks to permanently raise island level"
-    must-be-on-island: "<red>You must be on your island to donate blocks."
-    no-permission: "<red>You do not have permission to donate blocks on this island."
-    no-value: "<red>That block has no level value."
-    invalid-amount: "<red>Invalid amount. Use a positive number."
-    empty: "<red>There are no valid blocks to donate."
-    cancelled: "<yellow>Donation cancelled. Items returned."
-    success: "<green>Donated [number] blocks for <aqua>[points]<green> points! These points are permanent."
-    confirm: "<red><bold>Confirm - Items will be DESTROYED!"
-    cancel: "<green><bold>Cancel - Return Items"
-    gui-title: "<black><bold>Donate Blocks"
-    gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
-    preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    parameters: "[рука [кількість]]"
+    description: "пожертвувати блоки для постійного підвищення рівня острова"
+    must-be-on-island: "<red>Щоб пожертвувати блоки, ви повинні бути на своєму острові."
+    no-permission: "<red>У вас немає дозволу жертвувати блоки на цьому острові."
+    no-value: "<red>Цей блок не має значення рівня."
+    invalid-amount: "<red>Недійсна кількість. Використовуйте позитивне число."
+    invalid-item: "<red>Можна жертвувати лише блоки з налаштованим значенням рівня."
+    empty: "<red>Немає дійсних блоків для пожертвування."
+    cancelled: "<yellow>Пожертвування скасовано. Предмети повернуто."
+    success: "<green>Пожертвовано [number] блоків за <aqua>[points]<green> очок! Ці очки є постійними."
+    confirm: "<red><bold>Підтвердити — Предмети будуть ЗНИЩЕНІ!"
+    cancel: "<green><bold>Скасувати — Повернути предмети"
+    gui-title: "<black><bold>Пожертвувати блоки"
+    gui-info: "<gold>Пожертвуйте блоки своєму острову|<gray>Пожертвовано: <gold>[points]<gray> очок|<red>Увага: пожертвувані предмети|<red>знищуються і не можуть бути повернуті!"
+    preview: "<yellow>Очок буде додано: <gold>[points]|<red>Ці предмети будуть знищені!"
     hand:
-      success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"
-      not-block: "<red>You must be holding a placeable block to donate."
-      confirm-prompt: "<red>About to DESTROY <gold>[number] x [material]<red> for <aqua>[points]<red> permanent points."
+      keyword: "рука"
+      success: "<green>Пожертвовано [number] x [material] за <aqua>[points]<green> постійних очок!"
+      not-block: "<red>Ви повинні тримати блок, який можна розмістити."
+      confirm-prompt: "<red>Буде ЗНИЩЕНО <gold>[number] x [material]<red> за <aqua>[points]<red> постійних очок."
   top:
     description: показати першу десятку
     gui-title: "& Десятка Кращих"
@@ -92,9 +94,8 @@ protection:
 level:
   commands:
     value:
-      parameters: "[hand|<material>]"
-      description: показує значення блоків. Додайте 'hand' в кінці, щоб відобразити
-        значення предмета в руках.
+      parameters: "[рука|<матеріал>]"
+      description: показує значення блоків. Додайте 'рука' в кінці, щоб відобразити значення предмета в руках.
   gui:
     titles:
       top: "<black><bold> Топ островів"

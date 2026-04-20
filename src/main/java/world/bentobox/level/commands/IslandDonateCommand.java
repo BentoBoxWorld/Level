@@ -60,8 +60,8 @@ public class IslandDonateCommand extends ConfirmableCommand {
             return false;
         }
 
-        // Handle "hand" subcommand
-        if (!args.isEmpty() && "hand".equalsIgnoreCase(args.get(0))) {
+        // Handle "hand" subcommand (accepts English "hand" or the localized keyword)
+        if (!args.isEmpty() && isHandKeyword(user, args.get(0))) {
             return handleHandDonation(user, island, args);
         }
 
@@ -145,15 +145,21 @@ public class IslandDonateCommand extends ConfirmableCommand {
     @Override
     public Optional<List<String>> tabComplete(User user, String alias, List<String> args) {
         String lastArg = !args.isEmpty() ? args.get(args.size() - 1) : "";
+        String handKeyword = user.getTranslation("island.donate.hand.keyword");
         if (args.size() <= 1) {
-            return Optional.of(Util.tabLimit(List.of("hand"), lastArg));
+            return Optional.of(Util.tabLimit(List.of(handKeyword), lastArg));
         }
-        if (args.size() == 2 && "hand".equalsIgnoreCase(args.get(0)) && user.isPlayer()) {
+        if (args.size() == 2 && isHandKeyword(user, args.get(0)) && user.isPlayer()) {
             int held = user.getPlayer().getInventory().getItemInMainHand().getAmount();
             if (held > 0) {
                 return Optional.of(Util.tabLimit(List.of(String.valueOf(held)), lastArg));
             }
         }
         return Optional.of(List.of());
+    }
+
+    private boolean isHandKeyword(User user, String arg) {
+        String localized = user.getTranslation("island.donate.hand.keyword");
+        return "hand".equalsIgnoreCase(arg) || localized.equalsIgnoreCase(arg);
     }
 }
