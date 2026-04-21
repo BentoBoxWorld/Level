@@ -64,6 +64,7 @@ public class IslandDonateCommandTest extends CommonTestSetup {
         when(user.getTranslation(anyString())).thenAnswer(i -> i.getArgument(0, String.class));
         when(user.getTranslation(anyString(), anyString(), anyString())).thenAnswer(i -> i.getArgument(0, String.class));
         when(user.getTranslation(anyString(), anyString(), anyString(), anyString(), anyString())).thenAnswer(i -> i.getArgument(0, String.class));
+        when(user.getTranslation("island.donate.hand.keyword")).thenReturn("hand");
         when(user.getLocation()).thenReturn(location);
 
         when(player.getInventory()).thenReturn(inventory);
