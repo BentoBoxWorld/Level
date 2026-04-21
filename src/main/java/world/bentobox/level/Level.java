@@ -515,4 +515,12 @@ public class Level extends Addon {
                 && Bukkit.getPluginManager().isPluginEnabled("Nexo");
     }
 
+    /**
+     * @return true if the CraftEngine plugin is hooked and not disabled in config
+     */
+    public boolean isCraftEngine() {
+        return !getSettings().getDisabledPluginHooks().contains("CraftEngine")
+                && getPlugin().getHooks().getHook("CraftEngine").isPresent();
+    }
+
 }
