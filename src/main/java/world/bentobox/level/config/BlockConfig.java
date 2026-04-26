@@ -22,6 +22,7 @@ import org.bukkit.entity.EntityType;
 import com.nexomc.nexo.api.NexoItems;
 
 import world.bentobox.bentobox.BentoBox;
+import world.bentobox.bentobox.hooks.CraftEngineHook;
 import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.bentobox.hooks.OraxenHook;
 import world.bentobox.level.Level;
@@ -111,7 +112,11 @@ public class BlockConfig {
             return NexoItems.exists(key.substring(5));
         }
         // Check ItemsAdder
-        return addon.isItemsAdder() && ItemsAdderHook.isInRegistry(key);
+        if (addon.isItemsAdder() && ItemsAdderHook.isInRegistry(key)) {
+            return true;
+        }
+        // Check CraftEngine — block IDs are already namespaced (e.g. "mynamespace:my_block")
+        return addon.isCraftEngine() && CraftEngineHook.exists(key);
     }
 
     private boolean isSpawner(String key) {

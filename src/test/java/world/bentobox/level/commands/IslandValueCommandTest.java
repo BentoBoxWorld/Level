@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -68,6 +69,7 @@ public class IslandValueCommandTest extends CommonTestSetup {
         when(user.getTranslation(anyString())).thenAnswer(i -> i.getArgument(0, String.class));
         when(user.getTranslation(anyString(), anyString(), anyString())).thenAnswer(i -> i.getArgument(0, String.class));
         when(user.getTranslation(anyString(), anyString(), anyString(), anyString(), anyString())).thenAnswer(i -> i.getArgument(0, String.class));
+        when(user.getTranslation("island.donate.hand.keyword")).thenReturn("hand");
         when(user.getTranslationOrNothing(anyString())).thenReturn("");
 
         when(player.getInventory()).thenReturn(inventory);
@@ -109,7 +111,7 @@ public class IslandValueCommandTest extends CommonTestSetup {
     public void testExecuteUnknownMaterial() {
         assertTrue(cmd.execute(user, "value", List.of("NOTAMATERIAL")));
         // Sends unknown-item message via Utils.sendMessage
-        verify(user).getTranslation(anyString()); // translation called for unknown item message
+        verify(user, times(2)).getTranslation(anyString()); // keyword lookup + unknown item message
     }
 
     @Test

@@ -54,6 +54,7 @@ import us.lynuxcraft.deadsilenceiv.advancedchests.chest.AdvancedChest;
 import us.lynuxcraft.deadsilenceiv.advancedchests.chest.gui.page.ChestPage;
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.bentobox.hooks.CraftEngineHook;
 import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.bentobox.hooks.OraxenHook;
 import world.bentobox.bentobox.util.Pair;
@@ -562,11 +563,11 @@ public class IslandLevelCalculator {
         // Create a Location object only when needed for more complex checks.
         Location loc = null;
 
-        // === Custom Block Hooks (ItemsAdder, Oraxen, Nexo) ===
+        // === Custom Block Hooks (ItemsAdder, Oraxen, Nexo, CraftEngine) ===
         // These hooks can define custom blocks that override vanilla behavior.
         // They must be checked first.
         if (addon.isItemsAdder() || BentoBox.getInstance().getHooks().getHook("Oraxen").isPresent()
-                || addon.isNexo()) {
+                || addon.isNexo() || addon.isCraftEngine()) {
             loc = new Location(cp.world, globalX, y, globalZ);
             String customBlockId = null;
             if (addon.isItemsAdder()) {
@@ -583,6 +584,9 @@ public class IslandLevelCalculator {
                 if (nexoMechanic != null) {
                     customBlockId = "nexo:" + nexoMechanic.getItemID();
                 }
+            }
+            if (customBlockId == null && addon.isCraftEngine()) {
+                customBlockId = CraftEngineHook.getBlockId(loc);
             }
 
             if (customBlockId != null) {

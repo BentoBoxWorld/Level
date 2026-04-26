@@ -60,7 +60,8 @@ public class IslandValueCommand extends CompositeCommand
         }
 
         String arg = args.get(0);
-        if ("HAND".equalsIgnoreCase(arg)) {
+        String handKeyword = user.getTranslation("island.donate.hand.keyword");
+        if ("HAND".equalsIgnoreCase(arg) || handKeyword.equalsIgnoreCase(arg)) {
             executeHandCommand(user);
             return true;
         }
@@ -158,7 +159,7 @@ public class IslandValueCommand extends CompositeCommand
         List<String> options = new ArrayList<>(
                 Arrays.stream(Material.values()).filter(Material::isBlock).map(Material::name).map(String::toLowerCase).toList());
 
-        options.add("HAND");
+        options.add(user.getTranslation("island.donate.hand.keyword"));
 
         return Optional.of(Util.tabLimit(options, lastArg));
     }
