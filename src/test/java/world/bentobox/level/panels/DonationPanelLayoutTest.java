@@ -3,11 +3,16 @@ package world.bentobox.level.panels;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.util.List;
+
 import org.bukkit.Material;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.junit.jupiter.api.Test;
 
@@ -26,6 +31,7 @@ class DonationPanelLayoutTest {
     private static ItemStack iconOf(Material mat) {
         ItemStack stack = mock(ItemStack.class);
         when(stack.getType()).thenReturn(mat);
+        when(stack.clone()).thenReturn(stack);
         return stack;
     }
 
@@ -200,5 +206,121 @@ class DonationPanelLayoutTest {
         for (int s : layout.donationSlots) {
             assertTrue(s != 10, "slot 10 must be reserved by the unknown template entry");
         }
+    }
+
+    @Test
+    void decorativeItemsWithUnknownTypeAreStored() {
+        // An entry with BOGUS type should appear in decorativeItems so
+        // DonationPanel can place it visibly in the inventory.
+        PanelTemplateRecord t = template(border(), 4);
+        t.addButtonTemplate(0, 4, namedButton(Material.BOOK, "INFO", null));
+        t.addButtonTemplate(1, 1, namedButton(Material.PAPER, "BOGUS", null));
+        t.addButtonTemplate(3, 1, namedButton(Material.RED_STAINED_GLASS_PANE, "CANCEL", null));
+        t.addButtonTemplate(3, 4, namedButton(Material.EXPERIENCE_BOTTLE, "PREVIEW", null));
+        t.addButtonTemplate(3, 7, namedButton(Material.LIME_STAINED_GLASS_PANE, "CONFIRM", null));
+
+        DonationPanelLayout layout = DonationPanelLayout.fromTemplate(t);
+
+        assertTrue(layout.decorativeItems.containsKey(10),
+                "slot 10 must be in decorativeItems so it gets rendered");
+        assertEquals(Material.PAPER, layout.decorativeItems.get(10).getType());
+    }
+
+    @Test
+    void decorativeItemsWithNoTypeAreStored() {
+        // An entry that has NO data section at all should also appear in
+        // decorativeItems.
+        PanelTemplateRecord t = template(border(), 4);
+        t.addButtonTemplate(0, 4, namedButton(Material.BOOK, "INFO", null));
+        // Row 2 col 1 (slot 9): plain item with no data.type
+        ItemStack diamond = mock(ItemStack.class);
+        when(diamond.getType()).thenReturn(Material.DIAMOND);
+        when(diamond.clone()).thenReturn(diamond);
+        t.addButtonTemplate(1, 0, new ItemTemplateRecord(diamond, null, null, null));
+        t.addButtonTemplate(3, 1, namedButton(Material.RED_STAINED_GLASS_PANE, "CANCEL", null));
+        t.addButtonTemplate(3, 4, namedButton(Material.EXPERIENCE_BOTTLE, "PREVIEW", null));
+        t.addButtonTemplate(3, 7, namedButton(Material.LIME_STAINED_GLASS_PANE, "CONFIRM", null));
+
+        DonationPanelLayout layout = DonationPanelLayout.fromTemplate(t);
+
+        assertTrue(layout.decorativeItems.containsKey(9),
+                "slot 9 must be in decorativeItems (no data.type set)");
+        assertEquals(Material.DIAMOND, layout.decorativeItems.get(9).getType());
+    }
+
+    @Test
+    void defaultsUsesDefaultTitleRef() {
+        DonationPanelLayout layout = DonationPanelLayout.defaults();
+        assertEquals(DonationPanelLayout.DEFAULT_TITLE_REF, layout.panelTitle);
+    }
+
+    @Test
+    void templateTitleIsPropagatedToLayout() {
+        PanelTemplateRecord t = new PanelTemplateRecord(Panel.Type.INVENTORY,
+                "my.custom.title", border(), null,
+                new boolean[]{true, true, true, true, false, false});
+        t.addButtonTemplate(0, 4, namedButton(Material.BOOK, "INFO", null));
+        t.addButtonTemplate(3, 1, namedButton(Material.RED_STAINED_GLASS_PANE, "CANCEL", null));
+        t.addButtonTemplate(3, 4, namedButton(Material.EXPERIENCE_BOTTLE, "PREVIEW", null));
+        t.addButtonTemplate(3, 7, namedButton(Material.LIME_STAINED_GLASS_PANE, "CONFIRM", null));
+
+        DonationPanelLayout layout = DonationPanelLayout.fromTemplate(t);
+
+        assertEquals("my.custom.title", layout.panelTitle);
+    }
+
+    @Test
+    void nullTemplateTitleFallsBackToDefaultTitleRef() {
+        // title is null in the template — should default to DEFAULT_TITLE_REF.
+        PanelTemplateRecord t = new PanelTemplateRecord(Panel.Type.INVENTORY,
+                null, border(), null,
+                new boolean[]{true, true, true, true, false, false});
+        t.addButtonTemplate(0, 4, namedButton(Material.BOOK, "INFO", null));
+        t.addButtonTemplate(3, 1, namedButton(Material.RED_STAINED_GLASS_PANE, "CANCEL", null));
+        t.addButtonTemplate(3, 4, namedButton(Material.EXPERIENCE_BOTTLE, "PREVIEW", null));
+        t.addButtonTemplate(3, 7, namedButton(Material.LIME_STAINED_GLASS_PANE, "CONFIRM", null));
+
+        DonationPanelLayout layout = DonationPanelLayout.fromTemplate(t);
+
+        assertEquals(DonationPanelLayout.DEFAULT_TITLE_REF, layout.panelTitle);
+    }
+
+    // ---- YAML structure test (no MockBukkit needed — YamlConfiguration is pure SnakeYAML) ----
+
+    @Test
+    void shippedDonationPanelYmlUsesListForceShownAndHasAllFourButtons() {
+        File ymlFile = new File("src/main/resources/panels/donation_panel.yml");
+        assertTrue(ymlFile.exists(), "donation_panel.yml must exist under src/main/resources/panels/");
+
+        YamlConfiguration cfg = YamlConfiguration.loadConfiguration(ymlFile);
+
+        // force-shown must be a list (consistent with top_panel.yml / detail_panel.yml)
+        assertTrue(cfg.isList("donation_panel.force-shown"),
+                "force-shown must be a list, e.g. [1,2,3,4], not a scalar integer");
+
+        List<Integer> forcedRows = cfg.getIntegerList("donation_panel.force-shown");
+        assertEquals(4, forcedRows.size(),
+                "donation_panel.yml should force exactly 4 rows");
+
+        // All four named buttons must be present in the content section
+        assertNotNull(cfg.getString("donation_panel.content.1.5.data.type"),
+                "INFO button must be at row 1 col 5");
+        assertEquals("INFO", cfg.getString("donation_panel.content.1.5.data.type"));
+
+        assertNotNull(cfg.getString("donation_panel.content.4.2.data.type"),
+                "CANCEL button must be at row 4 col 2");
+        assertEquals("CANCEL", cfg.getString("donation_panel.content.4.2.data.type"));
+
+        assertNotNull(cfg.getString("donation_panel.content.4.5.data.type"),
+                "PREVIEW button must be at row 4 col 5");
+        assertEquals("PREVIEW", cfg.getString("donation_panel.content.4.5.data.type"));
+
+        assertNotNull(cfg.getString("donation_panel.content.4.8.data.type"),
+                "CONFIRM button must be at row 4 col 8");
+        assertEquals("CONFIRM", cfg.getString("donation_panel.content.4.8.data.type"));
+
+        // Title must match the default translation key
+        assertEquals(DonationPanelLayout.DEFAULT_TITLE_REF,
+                cfg.getString("donation_panel.title"));
     }
 }

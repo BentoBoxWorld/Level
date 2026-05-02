@@ -42,7 +42,6 @@ import world.bentobox.level.util.Utils;
  */
 public class DonationPanel implements Listener {
 
-    private static final String TITLE_REF = "island.donate.gui-title";
     private static final String POINTS_PLACEHOLDER = "[points]";
 
     private final Level addon;
@@ -65,9 +64,10 @@ public class DonationPanel implements Listener {
             donationSlotSet.add(s);
         }
 
-        // Create the inventory
+        // Create the inventory — use the title from the template (falls back to the
+        // default translation key when no template title is set).
         Component title = removeDefaultItalic(
-                Util.parseMiniMessageOrLegacy(user.getTranslation(TITLE_REF)));
+                Util.parseMiniMessageOrLegacy(user.getTranslation(layout.panelTitle)));
         this.inventory = Bukkit.createInventory(null, layout.size, title);
 
         // Fill borders if a border material is configured
@@ -76,11 +76,15 @@ public class DonationPanel implements Listener {
             for (int i = 0; i < layout.size; i++) {
                 if (!donationSlotSet.contains(i)
                         && i != layout.infoSlot && i != layout.cancelSlot
-                        && i != layout.previewSlot && i != layout.confirmSlot) {
+                        && i != layout.previewSlot && i != layout.confirmSlot
+                        && !layout.decorativeItems.containsKey(i)) {
                     inventory.setItem(i, border);
                 }
             }
         }
+
+        // Place decorative items from the template (non-button, non-border entries)
+        layout.decorativeItems.forEach((slot, item) -> inventory.setItem(slot, item));
 
         // Info pane
         long currentDonated = addon.getManager().getDonatedPoints(island);

@@ -1,7 +1,10 @@
 package world.bentobox.level.panels;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.Material;
@@ -23,6 +26,7 @@ final class DonationPanelLayout {
     static final int DEFAULT_PREVIEW_SLOT = 31;
     static final int DEFAULT_CONFIRM_SLOT = 34;
     static final Material DEFAULT_BORDER_MATERIAL = Material.BLACK_STAINED_GLASS_PANE;
+    static final String DEFAULT_TITLE_REF = "island.donate.gui-title";
     static final int[] DEFAULT_DONATION_SLOTS = {
             10, 11, 12, 13, 14, 15, 16,
             19, 20, 21, 22, 23, 24, 25
@@ -47,6 +51,14 @@ final class DonationPanelLayout {
     final Material confirmMaterial;
     final String cancelTitleOverride;
     final String confirmTitleOverride;
+    /** Translation key (or literal text) for the inventory title. */
+    final String panelTitle;
+    /**
+     * Decorative items keyed by absolute slot index. These are template entries
+     * whose {@code data.type} is absent or unrecognised. They reserve their slot
+     * (keeping donated blocks out) and should be placed visibly in the inventory.
+     */
+    final Map<Integer, ItemStack> decorativeItems;
 
     private DonationPanelLayout(int size,
             int infoSlot, int cancelSlot, int previewSlot, int confirmSlot,
@@ -54,7 +66,9 @@ final class DonationPanelLayout {
             Material borderMaterial,
             Material infoMaterial, Material cancelMaterial,
             Material previewMaterial, Material confirmMaterial,
-            String cancelTitleOverride, String confirmTitleOverride) {
+            String cancelTitleOverride, String confirmTitleOverride,
+            String panelTitle,
+            Map<Integer, ItemStack> decorativeItems) {
         this.size = size;
         this.infoSlot = infoSlot;
         this.cancelSlot = cancelSlot;
@@ -68,6 +82,8 @@ final class DonationPanelLayout {
         this.confirmMaterial = confirmMaterial;
         this.cancelTitleOverride = cancelTitleOverride;
         this.confirmTitleOverride = confirmTitleOverride;
+        this.panelTitle = panelTitle;
+        this.decorativeItems = Collections.unmodifiableMap(decorativeItems);
     }
 
     /**
@@ -82,7 +98,9 @@ final class DonationPanelLayout {
                 DEFAULT_BORDER_MATERIAL,
                 Material.BOOK, Material.RED_STAINED_GLASS_PANE,
                 Material.EXPERIENCE_BOTTLE, Material.LIME_STAINED_GLASS_PANE,
-                null, null);
+                null, null,
+                DEFAULT_TITLE_REF,
+                Collections.emptyMap());
     }
 
     /**
@@ -109,6 +127,7 @@ final class DonationPanelLayout {
         String cancelTitle = null, confirmTitle = null;
 
         Set<Integer> occupied = new LinkedHashSet<>();
+        Map<Integer, ItemStack> decorativeItems = new LinkedHashMap<>();
         for (int r = 0; r < rowCount; r++) {
             for (int c = 0; c < 9; c++) {
                 ItemTemplateRecord rec = content[r][c];
@@ -119,7 +138,14 @@ final class DonationPanelLayout {
                 // overwritten by donated blocks.
                 occupied.add(slot);
                 Object typeObj = rec.dataMap().get(DATA_TYPE);
-                if (typeObj == null) continue;
+                if (typeObj == null) {
+                    // No data.type: treat as a decorative item.
+                    ItemStack icon = rec.icon();
+                    if (icon != null) {
+                        decorativeItems.put(slot, icon.clone());
+                    }
+                    continue;
+                }
                 String type = String.valueOf(typeObj);
                 switch (type) {
                 case TYPE_INFO -> {
@@ -144,7 +170,14 @@ final class DonationPanelLayout {
                     if (m != null) confirmMat = m;
                     confirmTitle = rec.title();
                 }
-                default -> { /* unknown data.type - ignore */ }
+                default -> {
+                    // Unknown data.type: reserve the slot and render the icon
+                    // so admin-placed decorations are visible.
+                    ItemStack icon = rec.icon();
+                    if (icon != null) {
+                        decorativeItems.put(slot, icon.clone());
+                    }
+                }
                 }
             }
         }
@@ -157,6 +190,11 @@ final class DonationPanelLayout {
         Material borderMat = materialOf(template.border() == null ? null : template.border().icon());
         boolean hasBorder = borderMat != null && borderMat != Material.AIR;
 
+        // Use the template's title key if it's set; fall back to the default.
+        String titleKey = (template.title() != null && !template.title().isBlank())
+                ? template.title()
+                : DEFAULT_TITLE_REF;
+
         int size = rowCount * 9;
         int[] donationSlots = computeDonationSlots(rowCount, occupied, hasBorder);
 
@@ -164,7 +202,9 @@ final class DonationPanelLayout {
                 size, infoSlot, cancelSlot, previewSlot, confirmSlot, donationSlots,
                 hasBorder ? borderMat : Material.AIR,
                 infoMat, cancelMat, previewMat, confirmMat,
-                cancelTitle, confirmTitle);
+                cancelTitle, confirmTitle,
+                titleKey,
+                decorativeItems);
     }
 
     private static int computeRowCount(PanelTemplateRecord template) {
