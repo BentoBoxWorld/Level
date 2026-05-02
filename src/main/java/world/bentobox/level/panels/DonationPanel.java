@@ -1,9 +1,12 @@
 package world.bentobox.level.panels;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -23,6 +26,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import world.bentobox.bentobox.api.localization.TextVariables;
+import world.bentobox.bentobox.api.panels.reader.PanelTemplateRecord;
+import world.bentobox.bentobox.api.panels.reader.TemplateReader;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.util.Util;
@@ -37,30 +42,16 @@ import world.bentobox.level.util.Utils;
  */
 public class DonationPanel implements Listener {
 
-    private static final int SIZE = 36; // 4 rows
     private static final String TITLE_REF = "island.donate.gui-title";
     private static final String POINTS_PLACEHOLDER = "[points]";
-
-    // Slot layout
-    private static final int INFO_SLOT = 4;
-    private static final int CANCEL_SLOT = 28;
-    private static final int PREVIEW_SLOT = 31;
-    private static final int CONFIRM_SLOT = 34;
-
-    // Donation slots: rows 2 and 3, columns 2-8 (slots 10-16, 19-25)
-    private static final int[] DONATION_SLOTS = {
-            10, 11, 12, 13, 14, 15, 16,
-            19, 20, 21, 22, 23, 24, 25
-    };
-
-    // Border slots: everything else
-    private static final Material BORDER_MATERIAL = Material.BLACK_STAINED_GLASS_PANE;
 
     private final Level addon;
     private final World world;
     private final User user;
     private final Island island;
     private final Inventory inventory;
+    private final DonationPanelLayout layout;
+    private final Set<Integer> donationSlotSet;
     private boolean confirmed = false;
 
     private DonationPanel(Level addon, World world, User user, Island island) {
@@ -68,45 +59,66 @@ public class DonationPanel implements Listener {
         this.world = world;
         this.user = user;
         this.island = island;
+        this.layout = loadLayout(addon);
+        this.donationSlotSet = new HashSet<>(layout.donationSlots.length * 2);
+        for (int s : layout.donationSlots) {
+            donationSlotSet.add(s);
+        }
 
         // Create the inventory
         Component title = removeDefaultItalic(
                 Util.parseMiniMessageOrLegacy(user.getTranslation(TITLE_REF)));
-        this.inventory = Bukkit.createInventory(null, SIZE, title);
+        this.inventory = Bukkit.createInventory(null, layout.size, title);
 
-        // Fill borders
-        ItemStack border = createNamedItem(BORDER_MATERIAL, " ");
-        for (int i = 0; i < SIZE; i++) {
-            inventory.setItem(i, border);
-        }
-
-        // Clear donation slots
-        for (int slot : DONATION_SLOTS) {
-            inventory.setItem(slot, null);
+        // Fill borders if a border material is configured
+        if (layout.borderMaterial != null && layout.borderMaterial != Material.AIR) {
+            ItemStack border = createNamedItem(layout.borderMaterial, " ");
+            for (int i = 0; i < layout.size; i++) {
+                if (!donationSlotSet.contains(i)
+                        && i != layout.infoSlot && i != layout.cancelSlot
+                        && i != layout.previewSlot && i != layout.confirmSlot) {
+                    inventory.setItem(i, border);
+                }
+            }
         }
 
         // Info pane
         long currentDonated = addon.getManager().getDonatedPoints(island);
-        ItemStack info = createNamedItem(Material.BOOK,
+        ItemStack info = createNamedItem(layout.infoMaterial,
                 user.getTranslation("island.donate.gui-info",
                         POINTS_PLACEHOLDER, Utils.formatNumber(user, currentDonated)));
-        inventory.setItem(INFO_SLOT, info);
+        inventory.setItem(layout.infoSlot, info);
 
         // Cancel button
-        ItemStack cancel = createNamedItem(Material.RED_STAINED_GLASS_PANE,
-                user.getTranslation("island.donate.cancel"));
-        inventory.setItem(CANCEL_SLOT, cancel);
+        String cancelKey = layout.cancelTitleOverride != null
+                ? layout.cancelTitleOverride : "island.donate.cancel";
+        ItemStack cancel = createNamedItem(layout.cancelMaterial,
+                user.getTranslation(cancelKey));
+        inventory.setItem(layout.cancelSlot, cancel);
 
         // Preview pane (starts at 0)
         updatePreview();
 
         // Confirm button
-        ItemStack confirm = createNamedItem(Material.LIME_STAINED_GLASS_PANE,
-                user.getTranslation("island.donate.confirm"));
-        inventory.setItem(CONFIRM_SLOT, confirm);
+        String confirmKey = layout.confirmTitleOverride != null
+                ? layout.confirmTitleOverride : "island.donate.confirm";
+        ItemStack confirm = createNamedItem(layout.confirmMaterial,
+                user.getTranslation(confirmKey));
+        inventory.setItem(layout.confirmSlot, confirm);
 
         // Register listener
         Bukkit.getPluginManager().registerEvents(this, addon.getPlugin());
+    }
+
+    private static DonationPanelLayout loadLayout(Level addon) {
+        try {
+            File panelFolder = new File(addon.getDataFolder(), "panels");
+            PanelTemplateRecord template = TemplateReader.readTemplatePanel("donation_panel", panelFolder);
+            return DonationPanelLayout.fromTemplate(template);
+        } catch (Exception e) {
+            addon.logError("Could not load donation_panel template, using default layout: " + e.getMessage());
+            return DonationPanelLayout.defaults();
+        }
     }
 
     private void build() {
@@ -118,7 +130,7 @@ public class DonationPanel implements Listener {
      */
     private long calculateDonationValue() {
         long total = 0;
-        for (int slot : DONATION_SLOTS) {
+        for (int slot : layout.donationSlots) {
             ItemStack item = inventory.getItem(slot);
             if (item != null && !item.getType().isAir()) {
                 Integer value = addon.getBlockConfig().getValue(world, item.getType());
@@ -135,20 +147,17 @@ public class DonationPanel implements Listener {
      */
     private void updatePreview() {
         long points = calculateDonationValue();
-        ItemStack preview = createNamedItem(Material.EXPERIENCE_BOTTLE,
+        ItemStack preview = createNamedItem(layout.previewMaterial,
                 user.getTranslation("island.donate.preview",
                         POINTS_PLACEHOLDER, Utils.formatNumber(user, points)));
-        inventory.setItem(PREVIEW_SLOT, preview);
+        inventory.setItem(layout.previewSlot, preview);
     }
 
     /**
      * Check if a slot is a donation slot.
      */
     private boolean isDonationSlot(int slot) {
-        for (int s : DONATION_SLOTS) {
-            if (s == slot) return true;
-        }
-        return false;
+        return donationSlotSet.contains(slot);
     }
 
     /**
@@ -160,7 +169,7 @@ public class DonationPanel implements Listener {
         long totalPoints = 0;
         Player player = user.getPlayer();
 
-        for (int slot : DONATION_SLOTS) {
+        for (int slot : layout.donationSlots) {
             ItemStack item = inventory.getItem(slot);
             if (item != null && !item.getType().isAir()) {
                 Material mat = item.getType();
@@ -199,7 +208,7 @@ public class DonationPanel implements Listener {
      */
     private void returnItems() {
         Player player = user.getPlayer();
-        for (int slot : DONATION_SLOTS) {
+        for (int slot : layout.donationSlots) {
             ItemStack item = inventory.getItem(slot);
             if (item != null && !item.getType().isAir()) {
                 Map<Integer, ItemStack> overflow = player.getInventory().addItem(item);
@@ -224,15 +233,15 @@ public class DonationPanel implements Listener {
 
         int slot = event.getRawSlot();
 
-        if (slot >= SIZE) {
+        if (slot >= layout.size) {
             handlePlayerInventoryClick(event);
             return;
         }
-        if (slot == CANCEL_SLOT) {
+        if (slot == layout.cancelSlot) {
             handleCancel(event, player);
             return;
         }
-        if (slot == CONFIRM_SLOT) {
+        if (slot == layout.confirmSlot) {
             handleConfirm(event, player);
             return;
         }
@@ -268,8 +277,8 @@ public class DonationPanel implements Listener {
      */
     private ItemStack distributeIntoDonationSlots(ItemStack remaining) {
         int idx = 0;
-        while (idx < DONATION_SLOTS.length && remaining.getAmount() > 0) {
-            int ds = DONATION_SLOTS[idx];
+        while (idx < layout.donationSlots.length && remaining.getAmount() > 0) {
+            int ds = layout.donationSlots[idx];
             ItemStack existing = inventory.getItem(ds);
             if (existing == null || existing.getType().isAir()) {
                 inventory.setItem(ds, remaining.clone());
@@ -336,7 +345,7 @@ public class DonationPanel implements Listener {
         if (!event.getInventory().equals(inventory)) return;
         // Only allow drags into donation slots
         for (int slot : event.getRawSlots()) {
-            if (slot < SIZE && !isDonationSlot(slot)) {
+            if (slot < layout.size && !isDonationSlot(slot)) {
                 event.setCancelled(true);
                 return;
             }
