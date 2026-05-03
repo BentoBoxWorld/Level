@@ -13,14 +13,14 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for {@link CachedData}
  */
-public class CachedDataTest {
+class CachedDataTest {
 
     private Map<String, Long> initialMap;
     private Instant initialTime;
     private CachedData cachedData;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initialMap = new HashMap<>();
         initialMap.put("player1", 100L);
         initialMap.put("player2", 200L);
@@ -29,25 +29,25 @@ public class CachedDataTest {
     }
 
     @Test
-    public void testConstructorStoresMap() {
+    void testConstructorStoresMap() {
         assertNotNull(cachedData.getCachedMap());
         assertEquals(initialMap, cachedData.getCachedMap());
     }
 
     @Test
-    public void testConstructorStoresInstant() {
+    void testConstructorStoresInstant() {
         assertNotNull(cachedData.getLastUpdated());
         assertEquals(initialTime, cachedData.getLastUpdated());
     }
 
     @Test
-    public void testGetCachedMapReturnsCorrectEntries() {
+    void testGetCachedMapReturnsCorrectEntries() {
         assertEquals(100L, cachedData.getCachedMap().get("player1"));
         assertEquals(200L, cachedData.getCachedMap().get("player2"));
     }
 
     @Test
-    public void testUpdateCacheReplacesMap() {
+    void testUpdateCacheReplacesMap() {
         Map<String, Long> newMap = new HashMap<>();
         newMap.put("player3", 300L);
         Instant newTime = Instant.now().plusSeconds(60);
@@ -59,7 +59,7 @@ public class CachedDataTest {
     }
 
     @Test
-    public void testUpdateCacheReplacesInstant() {
+    void testUpdateCacheReplacesInstant() {
         Instant newTime = Instant.now().plusSeconds(120);
         cachedData.updateCache(new HashMap<>(), newTime);
 
@@ -67,7 +67,7 @@ public class CachedDataTest {
     }
 
     @Test
-    public void testUpdateCacheOldDataGone() {
+    void testUpdateCacheOldDataGone() {
         cachedData.updateCache(new HashMap<>(), Instant.now());
         assertEquals(0, cachedData.getCachedMap().size());
     }

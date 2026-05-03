@@ -23,7 +23,7 @@ import world.bentobox.level.panels.DetailsPanel;
 /**
  * Tests for {@link IslandDetailCommand}
  */
-public class IslandDetailCommandTest extends CommonTestSetup {
+class IslandDetailCommandTest extends CommonTestSetup {
 
     @Mock
     private User user;
@@ -32,7 +32,7 @@ public class IslandDetailCommandTest extends CommonTestSetup {
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         when(user.getUniqueId()).thenReturn(uuid);
         when(user.isPlayer()).thenReturn(true);
@@ -43,26 +43,26 @@ public class IslandDetailCommandTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     @Test
-    public void testSetup() {
+    void testSetup() {
         assertTrue(cmd.getPermission().contains("island.detail"));
         assertTrue(cmd.isOnlyPlayer());
         assertEquals("detail", cmd.getLabel());
     }
 
     @Test
-    public void testExecuteNoIsland() {
+    void testExecuteNoIsland() {
         when(im.getIsland(any(), any(User.class))).thenReturn(null);
         assertFalse(cmd.execute(user, "detail", Collections.emptyList()));
         verify(user).sendMessage("general.errors.player-has-no-island");
     }
 
     @Test
-    public void testExecuteWithIslandOpensPanelAndReturnsTrue() {
+    void testExecuteWithIslandOpensPanelAndReturnsTrue() {
         try (MockedStatic<DetailsPanel> mockedPanel = mockStatic(DetailsPanel.class)) {
             assertTrue(cmd.execute(user, "detail", Collections.emptyList()));
             mockedPanel.verify(() -> DetailsPanel.openPanel(any(), any(), any(User.class)));

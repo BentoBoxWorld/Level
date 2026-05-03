@@ -17,31 +17,31 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 /**
  * Tests for {@link IslandLevels}
  */
-public class IslandLevelsTest {
+class IslandLevelsTest {
 
     private static final String ISLAND_ID = "test-island-uuid";
     private IslandLevels islandLevels;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockBukkit.mock();
         islandLevels = new IslandLevels(ISLAND_ID);
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         MockBukkit.unmock();
     }
 
     // --- UniqueId ---
 
     @Test
-    public void testGetUniqueId() {
+    void testGetUniqueId() {
         assertEquals(ISLAND_ID, islandLevels.getUniqueId());
     }
 
     @Test
-    public void testSetUniqueId() {
+    void testSetUniqueId() {
         islandLevels.setUniqueId("new-id");
         assertEquals("new-id", islandLevels.getUniqueId());
     }
@@ -49,14 +49,14 @@ public class IslandLevelsTest {
     // --- Level with max tracking ---
 
     @Test
-    public void testSetLevelUpdatesMaxLevel() {
+    void testSetLevelUpdatesMaxLevel() {
         islandLevels.setLevel(5L);
         assertEquals(5L, islandLevels.getLevel());
         assertEquals(5L, islandLevels.getMaxLevel());
     }
 
     @Test
-    public void testMaxLevelDoesNotDecrease() {
+    void testMaxLevelDoesNotDecrease() {
         islandLevels.setLevel(10L);
         islandLevels.setLevel(3L);
         assertEquals(3L, islandLevels.getLevel());
@@ -64,14 +64,14 @@ public class IslandLevelsTest {
     }
 
     @Test
-    public void testMaxLevelUpdatesWhenHigher() {
+    void testMaxLevelUpdatesWhenHigher() {
         islandLevels.setLevel(5L);
         islandLevels.setLevel(8L);
         assertEquals(8L, islandLevels.getMaxLevel());
     }
 
     @Test
-    public void testDefaultLevelIsZero() {
+    void testDefaultLevelIsZero() {
         assertEquals(0L, islandLevels.getLevel());
         assertEquals(0L, islandLevels.getMaxLevel());
     }
@@ -79,7 +79,7 @@ public class IslandLevelsTest {
     // --- Points to next level ---
 
     @Test
-    public void testPointsToNextLevel() {
+    void testPointsToNextLevel() {
         islandLevels.setPointsToNextLevel(150L);
         assertEquals(150L, islandLevels.getPointsToNextLevel());
     }
@@ -87,7 +87,7 @@ public class IslandLevelsTest {
     // --- Total points ---
 
     @Test
-    public void testTotalPoints() {
+    void testTotalPoints() {
         islandLevels.setTotalPoints(9999L);
         assertEquals(9999L, islandLevels.getTotalPoints());
     }
@@ -95,13 +95,13 @@ public class IslandLevelsTest {
     // --- Initial count ---
 
     @Test
-    public void testInitialCount() {
+    void testInitialCount() {
         islandLevels.setInitialCount(500L);
         assertEquals(500L, islandLevels.getInitialCount());
     }
 
     @Test
-    public void testInitialCountDefaultNull() {
+    void testInitialCountDefaultNull() {
         // New island has null initial count (not yet set)
         assertEquals(null, islandLevels.getInitialCount());
     }
@@ -109,7 +109,7 @@ public class IslandLevelsTest {
     // --- convertMap via getMdCount / getUwCount ---
 
     @Test
-    public void testGetMdCountConvertsStringToMaterial() {
+    void testGetMdCountConvertsStringToMaterial() {
         Map<Object, Integer> map = new HashMap<>();
         map.put("STONE", 10);
         islandLevels.setMdCount(map);
@@ -120,7 +120,7 @@ public class IslandLevelsTest {
     }
 
     @Test
-    public void testGetMdCountConvertsStringToEntityType() {
+    void testGetMdCountConvertsStringToEntityType() {
         Map<Object, Integer> map = new HashMap<>();
         map.put("ZOMBIE", 5);
         islandLevels.setMdCount(map);
@@ -131,7 +131,7 @@ public class IslandLevelsTest {
     }
 
     @Test
-    public void testGetMdCountKeepsUnknownStringAsIs() {
+    void testGetMdCountKeepsUnknownStringAsIs() {
         Map<Object, Integer> map = new HashMap<>();
         map.put("unknown_xyz_block", 3);
         islandLevels.setMdCount(map);
@@ -142,7 +142,7 @@ public class IslandLevelsTest {
     }
 
     @Test
-    public void testGetMdCountKeepsNonStringKeyAsIs() {
+    void testGetMdCountKeepsNonStringKeyAsIs() {
         Map<Object, Integer> map = new HashMap<>();
         map.put(Material.DIRT, 7);
         islandLevels.setMdCount(map);
@@ -153,7 +153,7 @@ public class IslandLevelsTest {
     }
 
     @Test
-    public void testGetUwCountConvertsStringToMaterial() {
+    void testGetUwCountConvertsStringToMaterial() {
         Map<Object, Integer> map = new HashMap<>();
         map.put("SAND", 4);
         islandLevels.setUwCount(map);
@@ -166,36 +166,36 @@ public class IslandLevelsTest {
     // --- Donation API ---
 
     @Test
-    public void testGetDonatedBlocksReturnsEmptyMapByDefault() {
+    void testGetDonatedBlocksReturnsEmptyMapByDefault() {
         assertNotNull(islandLevels.getDonatedBlocks());
         assertTrue(islandLevels.getDonatedBlocks().isEmpty());
     }
 
     @Test
-    public void testGetDonationLogReturnsEmptyListByDefault() {
+    void testGetDonationLogReturnsEmptyListByDefault() {
         assertNotNull(islandLevels.getDonationLog());
         assertTrue(islandLevels.getDonationLog().isEmpty());
     }
 
     @Test
-    public void testGetDonatedPointsReturnsZeroByDefault() {
+    void testGetDonatedPointsReturnsZeroByDefault() {
         assertEquals(0L, islandLevels.getDonatedPoints());
     }
 
     @Test
-    public void testAddDonationAccumulatesBlocks() {
+    void testAddDonationAccumulatesBlocks() {
         islandLevels.addDonation("donor-uuid", "STONE", 5, 25L);
         assertEquals(5, islandLevels.getDonatedBlocks().get("STONE"));
     }
 
     @Test
-    public void testAddDonationAccumulatesPoints() {
+    void testAddDonationAccumulatesPoints() {
         islandLevels.addDonation("donor-uuid", "STONE", 5, 25L);
         assertEquals(25L, islandLevels.getDonatedPoints());
     }
 
     @Test
-    public void testAddDonationAppendsToLog() {
+    void testAddDonationAppendsToLog() {
         islandLevels.addDonation("donor-uuid", "STONE", 5, 25L);
         assertEquals(1, islandLevels.getDonationLog().size());
         IslandLevels.DonationRecord record = islandLevels.getDonationLog().get(0);
@@ -206,7 +206,7 @@ public class IslandLevelsTest {
     }
 
     @Test
-    public void testAddDonationMultipleCallsMergeCounts() {
+    void testAddDonationMultipleCallsMergeCounts() {
         islandLevels.addDonation("donor-uuid", "STONE", 3, 15L);
         islandLevels.addDonation("donor-uuid", "STONE", 7, 35L);
         assertEquals(10, islandLevels.getDonatedBlocks().get("STONE"));
@@ -215,7 +215,7 @@ public class IslandLevelsTest {
     }
 
     @Test
-    public void testAddDonationDifferentMaterials() {
+    void testAddDonationDifferentMaterials() {
         islandLevels.addDonation("donor-uuid", "STONE", 3, 15L);
         islandLevels.addDonation("donor-uuid", "DIRT", 2, 4L);
         assertEquals(3, islandLevels.getDonatedBlocks().get("STONE"));
@@ -226,7 +226,7 @@ public class IslandLevelsTest {
     // --- Deprecated initialLevel backwards-compat ---
 
     @Test
-    public void testDeprecatedInitialLevel() {
+    void testDeprecatedInitialLevel() {
         islandLevels.setInitialLevel(100L);
         assertEquals(100L, islandLevels.getInitialLevel());
     }

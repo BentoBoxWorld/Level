@@ -27,7 +27,7 @@ import world.bentobox.level.config.ConfigSettings;
 /**
  * Tests for {@link JoinLeaveListener}
  */
-public class JoinLeaveListenerTest extends CommonTestSetup {
+class JoinLeaveListenerTest extends CommonTestSetup {
 
     @Mock
     private LevelsManager manager;
@@ -44,7 +44,7 @@ public class JoinLeaveListenerTest extends CommonTestSetup {
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         when(addon.getManager()).thenReturn(manager);
         when(addon.getSettings()).thenReturn(settings);
@@ -71,12 +71,12 @@ public class JoinLeaveListenerTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     @Test
-    public void testCalcOnLoginFalseDoesNotCalculate() {
+    void testCalcOnLoginFalseDoesNotCalculate() {
         when(settings.isCalcOnLogin()).thenReturn(false);
         PlayerJoinEvent event = new PlayerJoinEvent(player, "joined");
         listener.onPlayerJoin(event);
@@ -84,7 +84,7 @@ public class JoinLeaveListenerTest extends CommonTestSetup {
     }
 
     @Test
-    public void testCalcOnLoginTrueWithIslandCalculates() {
+    void testCalcOnLoginTrueWithIslandCalculates() {
         when(settings.isCalcOnLogin()).thenReturn(true);
         PlayerJoinEvent event = new PlayerJoinEvent(player, "joined");
         listener.onPlayerJoin(event);
@@ -92,7 +92,7 @@ public class JoinLeaveListenerTest extends CommonTestSetup {
     }
 
     @Test
-    public void testCalcOnLoginTrueNoIslandDoesNotCalculate() {
+    void testCalcOnLoginTrueNoIslandDoesNotCalculate() {
         when(settings.isCalcOnLogin()).thenReturn(true);
         when(im.getIsland(any(World.class), any(UUID.class))).thenReturn(null);
         PlayerJoinEvent event = new PlayerJoinEvent(player, "joined");
@@ -101,7 +101,7 @@ public class JoinLeaveListenerTest extends CommonTestSetup {
     }
 
     @Test
-    public void testCalcOnLoginTrueExcludedGameModeSkips() {
+    void testCalcOnLoginTrueExcludedGameModeSkips() {
         when(settings.isCalcOnLogin()).thenReturn(true);
         when(settings.getGameModes()).thenReturn(List.of("BSkyBlock")); // exclude this game mode
         PlayerJoinEvent event = new PlayerJoinEvent(player, "joined");

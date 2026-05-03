@@ -23,7 +23,7 @@ import world.bentobox.level.LevelsManager;
 /**
  * Tests for {@link TopTenRequestHandler}
  */
-public class TopTenRequestHandlerTest extends CommonTestSetup {
+class TopTenRequestHandlerTest extends CommonTestSetup {
 
     @Mock
     private LevelsManager manager;
@@ -32,7 +32,7 @@ public class TopTenRequestHandlerTest extends CommonTestSetup {
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         when(addon.getManager()).thenReturn(manager);
         mockedBukkit.when(() -> org.bukkit.Bukkit.getWorld(any(String.class))).thenReturn(world);
@@ -41,26 +41,26 @@ public class TopTenRequestHandlerTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     @Test
-    public void testNullMapReturnsEmptyMap() {
+    void testNullMapReturnsEmptyMap() {
         Object result = handler.handle(null);
         assertTrue(result instanceof Map);
         assertTrue(((Map<?, ?>) result).isEmpty());
     }
 
     @Test
-    public void testEmptyMapReturnsEmptyMap() {
+    void testEmptyMapReturnsEmptyMap() {
         Object result = handler.handle(Collections.emptyMap());
         assertTrue(result instanceof Map);
         assertTrue(((Map<?, ?>) result).isEmpty());
     }
 
     @Test
-    public void testMissingWorldNameReturnsEmptyMap() {
+    void testMissingWorldNameReturnsEmptyMap() {
         Map<String, Object> map = new HashMap<>();
         Object result = handler.handle(map);
         assertTrue(result instanceof Map);
@@ -68,7 +68,7 @@ public class TopTenRequestHandlerTest extends CommonTestSetup {
     }
 
     @Test
-    public void testWorldNameWrongTypeReturnsEmptyMap() {
+    void testWorldNameWrongTypeReturnsEmptyMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("world-name", 123);
         Object result = handler.handle(map);
@@ -77,7 +77,7 @@ public class TopTenRequestHandlerTest extends CommonTestSetup {
     }
 
     @Test
-    public void testWorldNotFoundReturnsEmptyMap() {
+    void testWorldNotFoundReturnsEmptyMap() {
         mockedBukkit.when(() -> org.bukkit.Bukkit.getWorld(any(String.class))).thenReturn(null);
         Map<String, Object> map = new HashMap<>();
         map.put("world-name", "nonexistent_world");
@@ -87,7 +87,7 @@ public class TopTenRequestHandlerTest extends CommonTestSetup {
     }
 
     @Test
-    public void testValidInputDelegatesToManager() {
+    void testValidInputDelegatesToManager() {
         LinkedHashMap<String, Long> topTen = new LinkedHashMap<>();
         topTen.put("island-uuid-1", 500L);
         topTen.put("island-uuid-2", 400L);
@@ -101,7 +101,7 @@ public class TopTenRequestHandlerTest extends CommonTestSetup {
     }
 
     @Test
-    public void testHandlerLabel() {
+    void testHandlerLabel() {
         assertEquals("top-ten-level", handler.getLabel());
     }
 }

@@ -26,7 +26,7 @@ import world.bentobox.level.LevelsManager;
 /**
  * Tests for {@link AdminTopCommand}
  */
-public class AdminTopCommandTest extends CommonTestSetup {
+class AdminTopCommandTest extends CommonTestSetup {
 
     @Mock
     private User user;
@@ -39,7 +39,7 @@ public class AdminTopCommandTest extends CommonTestSetup {
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         when(addon.getManager()).thenReturn(manager);
         when(plugin.getPlayers()).thenReturn(pm);
@@ -50,26 +50,26 @@ public class AdminTopCommandTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     @Test
-    public void testSetup() {
+    void testSetup() {
         assertTrue(cmd.getPermission().contains("admin.top"));
         assertFalse(cmd.isOnlyPlayer());
         assertEquals("top", cmd.getLabel());
     }
 
     @Test
-    public void testExecuteEmptyTopTen() {
+    void testExecuteEmptyTopTen() {
         when(manager.getTopTen(any(), any(Integer.class))).thenReturn(Collections.emptyMap());
         assertTrue(cmd.execute(user, "top", Collections.emptyList()));
         verify(user).sendMessage("island.top.gui-title");
     }
 
     @Test
-    public void testExecuteWithTopTenEntries() {
+    void testExecuteWithTopTenEntries() {
         Map<String, Long> topTen = new LinkedHashMap<>();
         topTen.put(uuid.toString(), 100L);
         when(manager.getTopTen(any(), any(Integer.class))).thenReturn(topTen);
@@ -84,7 +84,7 @@ public class AdminTopCommandTest extends CommonTestSetup {
     }
 
     @Test
-    public void testExecuteSkipsIslandNotFound() {
+    void testExecuteSkipsIslandNotFound() {
         Map<String, Long> topTen = new LinkedHashMap<>();
         topTen.put("some-island-id", 100L);
         when(manager.getTopTen(any(), any(Integer.class))).thenReturn(topTen);

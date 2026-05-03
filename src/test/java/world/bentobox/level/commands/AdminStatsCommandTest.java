@@ -30,7 +30,7 @@ import world.bentobox.level.objects.TopTenData;
 /**
  * @author tastybento
  */
-public class AdminStatsCommandTest extends CommonTestSetup {
+class AdminStatsCommandTest extends CommonTestSetup {
 
     @Mock
     private LevelsManager manager;
@@ -44,7 +44,7 @@ public class AdminStatsCommandTest extends CommonTestSetup {
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
 
         // Player manager
@@ -69,7 +69,7 @@ public class AdminStatsCommandTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
@@ -78,7 +78,7 @@ public class AdminStatsCommandTest extends CommonTestSetup {
      * {@link world.bentobox.level.commands.AdminStatsCommand#setup()}.
      */
     @Test
-    public void testSetup() {
+    void testSetup() {
         assertEquals("bskyblock.admin.stats", asc.getPermission());
         assertFalse(asc.isOnlyPlayer());
         assertEquals("admin.stats.description", asc.getDescription());
@@ -90,7 +90,7 @@ public class AdminStatsCommandTest extends CommonTestSetup {
      * {@link world.bentobox.level.commands.AdminStatsCommand#execute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
      */
     @Test
-    public void testExecuteUserStringListOfString() {
+    void testExecuteUserStringListOfString() {
         assertFalse(asc.execute(user, "", List.of()));
         verify(user).sendMessage("admin.stats.title");
         verify(user).sendMessage("admin.stats.no-data");
@@ -101,7 +101,7 @@ public class AdminStatsCommandTest extends CommonTestSetup {
      * {@link world.bentobox.level.commands.AdminStatsCommand#execute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
      */
     @Test
-    public void testExecuteUserStringListOfStringLevels() {
+    void testExecuteUserStringListOfStringLevels() {
         Map<World, TopTenData> map = new HashMap<>();
         map.put(world, ttd);
         when(manager.getTopTenLists()).thenReturn(map);

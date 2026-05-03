@@ -21,7 +21,7 @@ import world.bentobox.level.LevelsManager;
 /**
  * Tests for {@link LevelRequestHandler}
  */
-public class LevelRequestHandlerTest extends CommonTestSetup {
+class LevelRequestHandlerTest extends CommonTestSetup {
 
     @Mock
     private LevelsManager manager;
@@ -30,7 +30,7 @@ public class LevelRequestHandlerTest extends CommonTestSetup {
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         when(addon.getManager()).thenReturn(manager);
         mockedBukkit.when(() -> org.bukkit.Bukkit.getWorld(any(String.class))).thenReturn(world);
@@ -39,29 +39,29 @@ public class LevelRequestHandlerTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     @Test
-    public void testNullMapReturnsZero() {
+    void testNullMapReturnsZero() {
         assertEquals(0L, handler.handle(null));
     }
 
     @Test
-    public void testEmptyMapReturnsZero() {
+    void testEmptyMapReturnsZero() {
         assertEquals(0L, handler.handle(Collections.emptyMap()));
     }
 
     @Test
-    public void testMissingWorldNameReturnsZero() {
+    void testMissingWorldNameReturnsZero() {
         Map<String, Object> map = new HashMap<>();
         map.put("player", UUID.randomUUID());
         assertEquals(0L, handler.handle(map));
     }
 
     @Test
-    public void testWorldNameWrongTypeReturnsZero() {
+    void testWorldNameWrongTypeReturnsZero() {
         Map<String, Object> map = new HashMap<>();
         map.put("world-name", 42);
         map.put("player", UUID.randomUUID());
@@ -69,7 +69,7 @@ public class LevelRequestHandlerTest extends CommonTestSetup {
     }
 
     @Test
-    public void testPlayerWrongTypeReturnsZero() {
+    void testPlayerWrongTypeReturnsZero() {
         Map<String, Object> map = new HashMap<>();
         map.put("world-name", "BSkyBlock_world");
         map.put("player", "not-a-uuid");
@@ -77,14 +77,14 @@ public class LevelRequestHandlerTest extends CommonTestSetup {
     }
 
     @Test
-    public void testMissingPlayerReturnsZero() {
+    void testMissingPlayerReturnsZero() {
         Map<String, Object> map = new HashMap<>();
         map.put("world-name", "BSkyBlock_world");
         assertEquals(0L, handler.handle(map));
     }
 
     @Test
-    public void testWorldNotFoundReturnsZero() {
+    void testWorldNotFoundReturnsZero() {
         mockedBukkit.when(() -> org.bukkit.Bukkit.getWorld(any(String.class))).thenReturn(null);
         Map<String, Object> map = new HashMap<>();
         map.put("world-name", "nonexistent_world");
@@ -93,7 +93,7 @@ public class LevelRequestHandlerTest extends CommonTestSetup {
     }
 
     @Test
-    public void testValidInputDelegatesToManager() {
+    void testValidInputDelegatesToManager() {
         UUID playerUUID = UUID.randomUUID();
         when(manager.getIslandLevel(any(World.class), any(UUID.class))).thenReturn(42L);
 
@@ -105,7 +105,7 @@ public class LevelRequestHandlerTest extends CommonTestSetup {
     }
 
     @Test
-    public void testHandlerLabel() {
+    void testHandlerLabel() {
         assertEquals("island-level", handler.getLabel());
     }
 }

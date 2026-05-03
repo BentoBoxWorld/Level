@@ -35,7 +35,7 @@ import world.bentobox.level.panels.ValuePanel;
 /**
  * Tests for {@link IslandValueCommand}
  */
-public class IslandValueCommandTest extends CommonTestSetup {
+class IslandValueCommandTest extends CommonTestSetup {
 
     @Mock
     private User user;
@@ -56,7 +56,7 @@ public class IslandValueCommandTest extends CommonTestSetup {
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         when(addon.getBlockConfig()).thenReturn(blockConfig);
         when(addon.getManager()).thenReturn(manager);
@@ -83,19 +83,19 @@ public class IslandValueCommandTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     @Test
-    public void testSetup() {
+    void testSetup() {
         assertTrue(cmd.getPermission().contains("island.value"));
         assertTrue(cmd.isOnlyPlayer());
         assertEquals("value", cmd.getLabel());
     }
 
     @Test
-    public void testExecuteNoArgsOpenValuePanel() {
+    void testExecuteNoArgsOpenValuePanel() {
         try (MockedStatic<ValuePanel> mockedPanel = mockStatic(ValuePanel.class)) {
             assertTrue(cmd.execute(user, "value", Collections.emptyList()));
             mockedPanel.verify(() -> ValuePanel.openPanel(any(), any(), any(User.class)));
@@ -103,19 +103,19 @@ public class IslandValueCommandTest extends CommonTestSetup {
     }
 
     @Test
-    public void testExecuteTooManyArgsShowsHelp() {
+    void testExecuteTooManyArgsShowsHelp() {
         assertFalse(cmd.execute(user, "value", List.of("STONE", "extra")));
     }
 
     @Test
-    public void testExecuteUnknownMaterial() {
+    void testExecuteUnknownMaterial() {
         assertTrue(cmd.execute(user, "value", List.of("NOTAMATERIAL")));
         // Sends unknown-item message via Utils.sendMessage
         verify(user, times(2)).getTranslation(anyString()); // keyword lookup + unknown item message
     }
 
     @Test
-    public void testTabCompleteEmptyArgsReturnsEmpty() {
+    void testTabCompleteEmptyArgsReturnsEmpty() {
         var result = cmd.tabComplete(user, "value", Collections.emptyList());
         assertFalse(result.isPresent());
     }
