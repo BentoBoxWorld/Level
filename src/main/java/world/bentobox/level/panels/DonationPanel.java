@@ -120,7 +120,7 @@ public class DonationPanel implements Listener {
             PanelTemplateRecord template = TemplateReader.readTemplatePanel("donation_panel", panelFolder);
             return DonationPanelLayout.fromTemplate(template);
         } catch (Exception e) {
-            addon.logError("Could not load donation_panel template, using default layout: " + e.getMessage());
+            addon.logError("Could not load donation_panel template, using default layout.");
             return DonationPanelLayout.defaults();
         }
     }
