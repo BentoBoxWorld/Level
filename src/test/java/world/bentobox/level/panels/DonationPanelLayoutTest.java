@@ -204,7 +204,7 @@ class DonationPanelLayoutTest {
         // template item, so it gets skipped from the donation slot set.
         assertNotEquals(0, layout.donationSlots.length);
         for (int s : layout.donationSlots) {
-            assertTrue(s != 10, "slot 10 must be reserved by the unknown template entry");
+            assertNotEquals(10, s, "slot 10 must be reserved by the unknown template entry");
         }
     }
 

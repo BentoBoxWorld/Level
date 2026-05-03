@@ -60,30 +60,22 @@ final class DonationPanelLayout {
      */
     final Map<Integer, ItemStack> decorativeItems;
 
-    private DonationPanelLayout(int size,
-            int infoSlot, int cancelSlot, int previewSlot, int confirmSlot,
-            int[] donationSlots,
-            Material borderMaterial,
-            Material infoMaterial, Material cancelMaterial,
-            Material previewMaterial, Material confirmMaterial,
-            String cancelTitleOverride, String confirmTitleOverride,
-            String panelTitle,
-            Map<Integer, ItemStack> decorativeItems) {
-        this.size = size;
-        this.infoSlot = infoSlot;
-        this.cancelSlot = cancelSlot;
-        this.previewSlot = previewSlot;
-        this.confirmSlot = confirmSlot;
-        this.donationSlots = donationSlots;
-        this.borderMaterial = borderMaterial;
-        this.infoMaterial = infoMaterial;
-        this.cancelMaterial = cancelMaterial;
-        this.previewMaterial = previewMaterial;
-        this.confirmMaterial = confirmMaterial;
-        this.cancelTitleOverride = cancelTitleOverride;
-        this.confirmTitleOverride = confirmTitleOverride;
-        this.panelTitle = panelTitle;
-        this.decorativeItems = Collections.unmodifiableMap(decorativeItems);
+    private DonationPanelLayout(Builder b) {
+        this.size = b.size;
+        this.infoSlot = b.infoSlot;
+        this.cancelSlot = b.cancelSlot;
+        this.previewSlot = b.previewSlot;
+        this.confirmSlot = b.confirmSlot;
+        this.donationSlots = b.donationSlots;
+        this.borderMaterial = b.borderMaterial;
+        this.infoMaterial = b.infoMaterial;
+        this.cancelMaterial = b.cancelMaterial;
+        this.previewMaterial = b.previewMaterial;
+        this.confirmMaterial = b.confirmMaterial;
+        this.cancelTitleOverride = b.cancelTitleOverride;
+        this.confirmTitleOverride = b.confirmTitleOverride;
+        this.panelTitle = b.panelTitle;
+        this.decorativeItems = Collections.unmodifiableMap(b.decorativeItems);
     }
 
     /**
@@ -91,16 +83,15 @@ final class DonationPanelLayout {
      * fallback when the template cannot be parsed.
      */
     static DonationPanelLayout defaults() {
-        return new DonationPanelLayout(
-                DEFAULT_SIZE,
-                DEFAULT_INFO_SLOT, DEFAULT_CANCEL_SLOT, DEFAULT_PREVIEW_SLOT, DEFAULT_CONFIRM_SLOT,
-                DEFAULT_DONATION_SLOTS.clone(),
-                DEFAULT_BORDER_MATERIAL,
-                Material.BOOK, Material.RED_STAINED_GLASS_PANE,
-                Material.EXPERIENCE_BOTTLE, Material.LIME_STAINED_GLASS_PANE,
-                null, null,
-                DEFAULT_TITLE_REF,
-                Collections.emptyMap());
+        Builder b = new Builder();
+        b.size = DEFAULT_SIZE;
+        b.infoSlot = DEFAULT_INFO_SLOT;
+        b.cancelSlot = DEFAULT_CANCEL_SLOT;
+        b.previewSlot = DEFAULT_PREVIEW_SLOT;
+        b.confirmSlot = DEFAULT_CONFIRM_SLOT;
+        b.donationSlots = DEFAULT_DONATION_SLOTS.clone();
+        b.borderMaterial = DEFAULT_BORDER_MATERIAL;
+        return new DonationPanelLayout(b);
     }
 
     /**
@@ -112,99 +103,83 @@ final class DonationPanelLayout {
         if (template == null) {
             return defaults();
         }
-
-        ItemTemplateRecord[][] content = template.content();
         int rowCount = computeRowCount(template);
         if (rowCount < 1) {
             return defaults();
         }
 
-        int infoSlot = -1, cancelSlot = -1, previewSlot = -1, confirmSlot = -1;
-        Material infoMat = Material.BOOK;
-        Material cancelMat = Material.RED_STAINED_GLASS_PANE;
-        Material previewMat = Material.EXPERIENCE_BOTTLE;
-        Material confirmMat = Material.LIME_STAINED_GLASS_PANE;
-        String cancelTitle = null, confirmTitle = null;
-
-        Set<Integer> occupied = new LinkedHashSet<>();
-        Map<Integer, ItemStack> decorativeItems = new LinkedHashMap<>();
+        Builder b = new Builder();
+        ItemTemplateRecord[][] content = template.content();
         for (int r = 0; r < rowCount; r++) {
             for (int c = 0; c < 9; c++) {
-                ItemTemplateRecord rec = content[r][c];
-                if (rec == null) continue;
-                int slot = r * 9 + c;
-                // Any non-null template entry reserves the slot, even if its
-                // data.type is unknown - admins shouldn't see decorative items
-                // overwritten by donated blocks.
-                occupied.add(slot);
-                Object typeObj = rec.dataMap().get(DATA_TYPE);
-                if (typeObj == null) {
-                    // No data.type: treat as a decorative item.
-                    ItemStack icon = rec.icon();
-                    if (icon != null) {
-                        decorativeItems.put(slot, icon.clone());
-                    }
-                    continue;
-                }
-                String type = String.valueOf(typeObj);
-                switch (type) {
-                case TYPE_INFO -> {
-                    infoSlot = slot;
-                    Material m = materialOf(rec.icon());
-                    if (m != null) infoMat = m;
-                }
-                case TYPE_CANCEL -> {
-                    cancelSlot = slot;
-                    Material m = materialOf(rec.icon());
-                    if (m != null) cancelMat = m;
-                    cancelTitle = rec.title();
-                }
-                case TYPE_PREVIEW -> {
-                    previewSlot = slot;
-                    Material m = materialOf(rec.icon());
-                    if (m != null) previewMat = m;
-                }
-                case TYPE_CONFIRM -> {
-                    confirmSlot = slot;
-                    Material m = materialOf(rec.icon());
-                    if (m != null) confirmMat = m;
-                    confirmTitle = rec.title();
-                }
-                default -> {
-                    // Unknown data.type: reserve the slot and render the icon
-                    // so admin-placed decorations are visible.
-                    ItemStack icon = rec.icon();
-                    if (icon != null) {
-                        decorativeItems.put(slot, icon.clone());
-                    }
-                }
-                }
+                processCell(b, r * 9 + c, content[r][c]);
             }
         }
 
-        if (infoSlot < 0 || cancelSlot < 0 || previewSlot < 0 || confirmSlot < 0) {
+        if (b.infoSlot < 0 || b.cancelSlot < 0 || b.previewSlot < 0 || b.confirmSlot < 0) {
             // A required button is missing - fall back rather than render a broken UI.
             return defaults();
         }
 
         Material borderMat = materialOf(template.border() == null ? null : template.border().icon());
         boolean hasBorder = borderMat != null && borderMat != Material.AIR;
-
-        // Use the template's title key if it's set; fall back to the default.
-        String titleKey = (template.title() != null && !template.title().isBlank())
+        b.borderMaterial = hasBorder ? borderMat : Material.AIR;
+        b.size = rowCount * 9;
+        b.donationSlots = computeDonationSlots(rowCount, b.occupied, hasBorder);
+        b.panelTitle = (template.title() != null && !template.title().isBlank())
                 ? template.title()
                 : DEFAULT_TITLE_REF;
+        return new DonationPanelLayout(b);
+    }
 
-        int size = rowCount * 9;
-        int[] donationSlots = computeDonationSlots(rowCount, occupied, hasBorder);
+    /**
+     * Apply a single template cell to the builder: reserve its slot, then either
+     * record it as a named button, decorative item, or unrecognised entry.
+     */
+    private static void processCell(Builder b, int slot, ItemTemplateRecord rec) {
+        if (rec == null) {
+            return;
+        }
+        // Any non-null template entry reserves the slot, even if its data.type is
+        // unknown - admins shouldn't see decorative items overwritten by donated blocks.
+        b.occupied.add(slot);
+        Object typeObj = rec.dataMap().get(DATA_TYPE);
+        if (typeObj == null) {
+            addDecorative(b, slot, rec);
+            return;
+        }
+        switch (String.valueOf(typeObj)) {
+        case TYPE_INFO -> {
+            b.infoSlot = slot;
+            Material m = materialOf(rec.icon());
+            if (m != null) b.infoMaterial = m;
+        }
+        case TYPE_CANCEL -> {
+            b.cancelSlot = slot;
+            Material m = materialOf(rec.icon());
+            if (m != null) b.cancelMaterial = m;
+            b.cancelTitleOverride = rec.title();
+        }
+        case TYPE_PREVIEW -> {
+            b.previewSlot = slot;
+            Material m = materialOf(rec.icon());
+            if (m != null) b.previewMaterial = m;
+        }
+        case TYPE_CONFIRM -> {
+            b.confirmSlot = slot;
+            Material m = materialOf(rec.icon());
+            if (m != null) b.confirmMaterial = m;
+            b.confirmTitleOverride = rec.title();
+        }
+        default -> addDecorative(b, slot, rec);
+        }
+    }
 
-        return new DonationPanelLayout(
-                size, infoSlot, cancelSlot, previewSlot, confirmSlot, donationSlots,
-                hasBorder ? borderMat : Material.AIR,
-                infoMat, cancelMat, previewMat, confirmMat,
-                cancelTitle, confirmTitle,
-                titleKey,
-                decorativeItems);
+    private static void addDecorative(Builder b, int slot, ItemTemplateRecord rec) {
+        ItemStack icon = rec.icon();
+        if (icon != null) {
+            b.decorativeItems.put(slot, icon.clone());
+        }
     }
 
     private static int computeRowCount(PanelTemplateRecord template) {
@@ -233,9 +208,11 @@ final class DonationPanelLayout {
         for (int r = 0; r < rowCount; r++) {
             for (int c = 0; c < 9; c++) {
                 int slot = r * 9 + c;
-                if (reserved.contains(slot)) continue;
-                if (hasBorder && (r == 0 || r == rowCount - 1 || c == 0 || c == 8)) continue;
-                tmp[n++] = slot;
+                boolean borderEdge = hasBorder
+                        && (r == 0 || r == rowCount - 1 || c == 0 || c == 8);
+                if (!reserved.contains(slot) && !borderEdge) {
+                    tmp[n++] = slot;
+                }
             }
         }
         return Arrays.copyOf(tmp, n);
@@ -243,5 +220,29 @@ final class DonationPanelLayout {
 
     private static Material materialOf(ItemStack icon) {
         return icon == null ? null : icon.getType();
+    }
+
+    /**
+     * Mutable accumulator used while resolving a template into a layout. Keeps
+     * the resolution code free of long parameter lists and cross-method state
+     * juggling.
+     */
+    private static final class Builder {
+        int size = DEFAULT_SIZE;
+        int infoSlot = -1;
+        int cancelSlot = -1;
+        int previewSlot = -1;
+        int confirmSlot = -1;
+        int[] donationSlots = DEFAULT_DONATION_SLOTS.clone();
+        Material borderMaterial = DEFAULT_BORDER_MATERIAL;
+        Material infoMaterial = Material.BOOK;
+        Material cancelMaterial = Material.RED_STAINED_GLASS_PANE;
+        Material previewMaterial = Material.EXPERIENCE_BOTTLE;
+        Material confirmMaterial = Material.LIME_STAINED_GLASS_PANE;
+        String cancelTitleOverride;
+        String confirmTitleOverride;
+        String panelTitle = DEFAULT_TITLE_REF;
+        final Set<Integer> occupied = new LinkedHashSet<>();
+        final Map<Integer, ItemStack> decorativeItems = new LinkedHashMap<>();
     }
 }

@@ -59,7 +59,7 @@ public class DonationPanel implements Listener {
         this.user = user;
         this.island = island;
         this.layout = loadLayout(addon);
-        this.donationSlotSet = new HashSet<>(layout.donationSlots.length * 2);
+        this.donationSlotSet = HashSet.newHashSet(layout.donationSlots.length);
         for (int s : layout.donationSlots) {
             donationSlotSet.add(s);
         }
@@ -84,7 +84,7 @@ public class DonationPanel implements Listener {
         }
 
         // Place decorative items from the template (non-button, non-border entries)
-        layout.decorativeItems.forEach((slot, item) -> inventory.setItem(slot, item));
+        layout.decorativeItems.forEach(inventory::setItem);
 
         // Info pane
         long currentDonated = addon.getManager().getDonatedPoints(island);
