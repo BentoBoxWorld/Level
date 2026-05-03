@@ -1,22 +1,22 @@
 package world.bentobox.level.calculators;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.text.ParseException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test the equation evaluation
  */
-public class EquationEvaluatorTest {
+class EquationEvaluatorTest {
 
     /**
      * Test method for {@link world.bentobox.level.calculators.EquationEvaluator#eval(java.lang.String)}.
-     * @throws ParseException 
+     * @throws ParseException
      */
     @Test
-    public void testEval() throws ParseException {
+    void testEval() throws ParseException {
         assertEquals(4D, EquationEvaluator.eval("2+2"), 0D);
         assertEquals(0D, EquationEvaluator.eval("2-2"), 0D);
         assertEquals(1D, EquationEvaluator.eval("2/2"), 0D);
