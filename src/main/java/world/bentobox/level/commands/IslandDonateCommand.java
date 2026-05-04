@@ -28,6 +28,9 @@ import world.bentobox.level.util.Utils;
  */
 public class IslandDonateCommand extends ConfirmableCommand {
 
+    private static final String MATERIAL_PLACEHOLDER = "[material]";
+    private static final String POINTS_PLACEHOLDER = "[points]";
+
     private final Level addon;
 
     public IslandDonateCommand(Level addon, CompositeCommand parent) {
@@ -120,8 +123,8 @@ public class IslandDonateCommand extends ConfirmableCommand {
 
         String prompt = user.getTranslation("island.donate.hand.confirm-prompt",
                 TextVariables.NUMBER, String.valueOf(previewAmount),
-                "[material]", Utils.prettifyObject(material, user),
-                "[points]", Utils.formatNumber(user, previewPoints));
+                MATERIAL_PLACEHOLDER, Utils.prettifyObject(material, user),
+                POINTS_PLACEHOLDER, Utils.formatNumber(user, previewPoints));
 
         askConfirmation(user, prompt, () -> performHandDonation(user, island, material, blockValue, finalRequested));
         return true;
@@ -147,8 +150,8 @@ public class IslandDonateCommand extends ConfirmableCommand {
 
         user.sendMessage("island.donate.hand.success",
                 TextVariables.NUMBER, String.valueOf(amount),
-                "[material]", Utils.prettifyObject(material, user),
-                "[points]", Utils.formatNumber(user, points));
+                MATERIAL_PLACEHOLDER, Utils.prettifyObject(material, user),
+                POINTS_PLACEHOLDER, Utils.formatNumber(user, points));
     }
 
     /**
@@ -174,11 +177,11 @@ public class IslandDonateCommand extends ConfirmableCommand {
             totalPoints += points;
             prompt.append('\n').append(user.getTranslation("island.donate.inv.confirm-line",
                     TextVariables.NUMBER, String.valueOf(e.getValue()),
-                    "[material]", Utils.prettifyObject(e.getKey(), user),
-                    "[points]", Utils.formatNumber(user, points)));
+                    MATERIAL_PLACEHOLDER, Utils.prettifyObject(e.getKey(), user),
+                    POINTS_PLACEHOLDER, Utils.formatNumber(user, points)));
         }
         prompt.append('\n').append(user.getTranslation("island.donate.inv.confirm-total",
-                "[points]", Utils.formatNumber(user, totalPoints)));
+                POINTS_PLACEHOLDER, Utils.formatNumber(user, totalPoints)));
 
         askConfirmation(user, prompt.toString(), () -> performInvDonation(user, island));
         return true;
@@ -211,7 +214,7 @@ public class IslandDonateCommand extends ConfirmableCommand {
         }
         int totalBlocks = donated.values().stream().mapToInt(Integer::intValue).sum();
         user.sendMessage("island.donate.success",
-                "[points]", Utils.formatNumber(user, totalPoints),
+                POINTS_PLACEHOLDER, Utils.formatNumber(user, totalPoints),
                 TextVariables.NUMBER, String.valueOf(totalBlocks));
         addon.getManager().recalculateAfterDonation(island);
     }
