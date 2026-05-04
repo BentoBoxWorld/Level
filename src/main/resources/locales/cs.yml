@@ -67,6 +67,11 @@ island:
       success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"
       not-block: "<red>You must be holding a placeable block to donate."
       confirm-prompt: "<red>About to DESTROY <gold>[number] x [material]<red> for <aqua>[points]<red> permanent points."
+    inv:
+      keyword: "inv"
+      confirm-header: "<red>Tyto bloky budou ZNIČENY z tvého inventáře:"
+      confirm-line: "<gold>[number] x [material] <gray>= <aqua>[points]<gray> bodů"
+      confirm-total: "<red>Celkem: <aqua>[points]<red> trvalých bodů."
   detail:
     description: "zobrazit podrobnosti o blocích vašeho ostrova"
   top:

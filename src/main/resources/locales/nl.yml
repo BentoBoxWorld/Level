@@ -65,6 +65,11 @@ island:
       success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"
       not-block: "<red>You must be holding a placeable block to donate."
       confirm-prompt: "<red>About to DESTROY <gold>[number] x [material]<red> for <aqua>[points]<red> permanent points."
+    inv:
+      keyword: "inv"
+      confirm-header: "<red>Deze blokken worden VERNIETIGD uit je inventaris:"
+      confirm-line: "<gold>[number] x [material] <gray>= <aqua>[points]<gray> punten"
+      confirm-total: "<red>Totaal: <aqua>[points]<red> permanente punten."
   top:
     description: Toon de Top tien
     gui-title: "<green> Top tien"

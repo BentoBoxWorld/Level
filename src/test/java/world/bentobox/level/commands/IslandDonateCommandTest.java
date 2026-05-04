@@ -4,14 +4,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.bukkit.Location;
@@ -65,6 +70,10 @@ class IslandDonateCommandTest extends CommonTestSetup {
         when(user.getTranslation(anyString(), anyString(), anyString())).thenAnswer(i -> i.getArgument(0, String.class));
         when(user.getTranslation(anyString(), anyString(), anyString(), anyString(), anyString())).thenAnswer(i -> i.getArgument(0, String.class));
         when(user.getTranslation("island.donate.hand.keyword")).thenReturn("hand");
+        when(user.getTranslation("island.donate.inv.keyword")).thenReturn("inv");
+        when(user.getTranslationOrNothing(anyString())).thenReturn("");
+        when(user.getTranslationOrNothing(anyString(), anyString(), anyString())).thenReturn("");
+        when(user.getLocale()).thenReturn(Locale.US);
         when(user.getLocation()).thenReturn(location);
 
         when(player.getInventory()).thenReturn(inventory);
@@ -156,9 +165,87 @@ class IslandDonateCommandTest extends CommonTestSetup {
 
     @Test
     void testTabCompleteNoArgs() {
-        // When no args, should suggest "hand"
+        // When no args, should suggest "hand" and "inv"
         var result = cmd.tabComplete(user, "donate", Collections.emptyList());
         assertTrue(result.isPresent());
         assertTrue(result.get().contains("hand"));
+        assertTrue(result.get().contains("inv"));
+    }
+
+    @Test
+    void testTabCompleteFirstArgFromBentoBoxFlow() {
+        // BentoBox passes the leaf command label as args.get(0); the partial first
+        // user arg sits in args.get(1). Empty string = bare "/island donate <TAB>".
+        var result = cmd.tabComplete(user, "donate", List.of("donate", ""));
+        assertTrue(result.isPresent());
+        assertTrue(result.get().contains("hand"));
+        assertTrue(result.get().contains("inv"));
+    }
+
+    @Test
+    void testTabCompleteSecondArgAfterHandSuggestsHeldAmount() {
+        ItemStack stack = mock(ItemStack.class);
+        when(stack.getAmount()).thenReturn(7);
+        when(inventory.getItemInMainHand()).thenReturn(stack);
+
+        var result = cmd.tabComplete(user, "donate", List.of("donate", "hand", ""));
+        assertTrue(result.isPresent());
+        assertTrue(result.get().contains("7"));
+    }
+
+    @Test
+    void testTabCompleteAfterInvSuggestsNothing() {
+        var result = cmd.tabComplete(user, "donate", List.of("donate", "inv", ""));
+        assertTrue(result.isPresent());
+        assertTrue(result.get().isEmpty());
+    }
+
+    @Test
+    void testExecuteInvEmptyInventory() {
+        when(inventory.getStorageContents()).thenReturn(new ItemStack[] { null, null, null });
+
+        assertFalse(cmd.execute(user, "donate", List.of("inv")));
+        verify(user).sendMessage("island.donate.empty");
+        verify(manager, never()).donateBlocks(any(), any(UUID.class), anyString(), anyInt(), anyLong());
+    }
+
+    @Test
+    void testExecuteInvNoValuableBlocks() {
+        // Stone with no value, sword (not a block)
+        ItemStack stone = mock(ItemStack.class);
+        when(stone.getType()).thenReturn(Material.STONE);
+        when(stone.getAmount()).thenReturn(5);
+        ItemStack sword = mock(ItemStack.class);
+        when(sword.getType()).thenReturn(Material.DIAMOND_SWORD);
+        when(inventory.getStorageContents()).thenReturn(new ItemStack[] { stone, sword });
+        when(blockConfig.getValue(any(), eq(Material.STONE))).thenReturn(null);
+
+        assertFalse(cmd.execute(user, "donate", List.of("inv")));
+        verify(user).sendMessage("island.donate.empty");
+        verify(manager, never()).donateBlocks(any(), any(UUID.class), anyString(), anyInt(), anyLong());
+    }
+
+    @Test
+    void testExecuteInvShowsConfirmationPrompt() {
+        ItemStack diamond = mock(ItemStack.class);
+        when(diamond.getType()).thenReturn(Material.DIAMOND_BLOCK);
+        when(diamond.getAmount()).thenReturn(2);
+        ItemStack gold = mock(ItemStack.class);
+        when(gold.getType()).thenReturn(Material.GOLD_BLOCK);
+        when(gold.getAmount()).thenReturn(3);
+        // Non-donatable item is ignored, not destroyed
+        ItemStack sword = mock(ItemStack.class);
+        when(sword.getType()).thenReturn(Material.DIAMOND_SWORD);
+
+        when(inventory.getStorageContents())
+                .thenReturn(new ItemStack[] { diamond, sword, gold });
+        when(blockConfig.getValue(any(), eq(Material.DIAMOND_BLOCK))).thenReturn(100);
+        when(blockConfig.getValue(any(), eq(Material.GOLD_BLOCK))).thenReturn(50);
+
+        assertTrue(cmd.execute(user, "donate", List.of("inv")));
+        // The confirmation header should have been requested via getTranslation
+        verify(user).getTranslation("island.donate.inv.confirm-header");
+        // No donation yet — only confirmation requested
+        verify(manager, never()).donateBlocks(any(), any(UUID.class), anyString(), anyInt(), anyLong());
     }
 }

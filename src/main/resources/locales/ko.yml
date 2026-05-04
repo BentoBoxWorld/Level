@@ -68,6 +68,11 @@ island:
       success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"
       not-block: "<red>You must be holding a placeable block to donate."
       confirm-prompt: "<red>About to DESTROY <gold>[number] x [material]<red> for <aqua>[points]<red> permanent points."
+    inv:
+      keyword: "inv"
+      confirm-header: "<red>인벤토리에서 다음 블록을 파괴합니다:"
+      confirm-line: "<gold>[number] x [material] <gray>= <aqua>[points]<gray> 점"
+      confirm-total: "<red>총: <aqua>[points]<red> 영구 점수."
   detail:
     description: "섬 블록의 세부 정보를 표시합니다"
   top:
