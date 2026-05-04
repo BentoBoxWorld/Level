@@ -65,6 +65,11 @@ island:
       success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"
       not-block: "<red>You must be holding a placeable block to donate."
       confirm-prompt: "<red>About to DESTROY <gold>[number] x [material]<red> for <aqua>[points]<red> permanent points."
+    inv:
+      keyword: "inv"
+      confirm-header: "<red>Akan MENGHANCURKAN blok-blok ini dari inventaris Anda:"
+      confirm-line: "<gold>[number] x [material] <gray>= <aqua>[points]<gray> poin"
+      confirm-total: "<red>Total: <aqua>[points]<red> poin permanen."
   top:
     description: menunjukkan Sepuluh Besar
     gui-title: "<green> Sepuluh Besar"

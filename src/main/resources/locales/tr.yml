@@ -72,6 +72,11 @@ island:
       success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"
       not-block: "<red>You must be holding a placeable block to donate."
       confirm-prompt: "<red>About to DESTROY <gold>[number] x [material]<red> for <aqua>[points]<red> permanent points."
+    inv:
+      keyword: "inv"
+      confirm-header: "<red>Envanterinizden bu bloklar YOK EDİLECEK:"
+      confirm-line: "<gold>[number] x [material] <gray>= <aqua>[points]<gray> puan"
+      confirm-total: "<red>Toplam: <aqua>[points]<red> kalıcı puan."
   detail:
     description: "adanın blok ayrıntılarını gösterir"
   top:
