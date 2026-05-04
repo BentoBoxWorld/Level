@@ -31,7 +31,7 @@ import world.bentobox.level.config.ConfigSettings;
 /**
  * Tests for {@link IslandActivitiesListeners}
  */
-public class IslandActivitiesListenersTest extends CommonTestSetup {
+class IslandActivitiesListenersTest extends CommonTestSetup {
 
     @Mock
     private LevelsManager manager;
@@ -44,7 +44,7 @@ public class IslandActivitiesListenersTest extends CommonTestSetup {
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         when(addon.getManager()).thenReturn(manager);
         when(addon.getPipeliner()).thenReturn(pipeliner);
@@ -65,14 +65,14 @@ public class IslandActivitiesListenersTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     // --- IslandCreatedEvent ---
 
     @Test
-    public void testOnNewIslandCreatedZeroNewIslandLevelsTrue() {
+    void testOnNewIslandCreatedZeroNewIslandLevelsTrue() {
         when(settings.isZeroNewIslandLevels()).thenReturn(true);
         IslandCreatedEvent event = new IslandCreatedEvent(island, uuid, false, location);
         listener.onNewIsland(event);
@@ -81,7 +81,7 @@ public class IslandActivitiesListenersTest extends CommonTestSetup {
     }
 
     @Test
-    public void testOnNewIslandCreatedZeroNewIslandLevelsFalse() {
+    void testOnNewIslandCreatedZeroNewIslandLevelsFalse() {
         when(settings.isZeroNewIslandLevels()).thenReturn(false);
         IslandCreatedEvent event = new IslandCreatedEvent(island, uuid, false, location);
         listener.onNewIsland(event);
@@ -91,7 +91,7 @@ public class IslandActivitiesListenersTest extends CommonTestSetup {
     // --- IslandResettedEvent ---
 
     @Test
-    public void testOnIslandResettedZeroNewIslandLevelsTrue() {
+    void testOnIslandResettedZeroNewIslandLevelsTrue() {
         when(settings.isZeroNewIslandLevels()).thenReturn(true);
         IslandResettedEvent event = new IslandResettedEvent(island, uuid, false, location, island);
         listener.onNewIsland(event);
@@ -99,7 +99,7 @@ public class IslandActivitiesListenersTest extends CommonTestSetup {
     }
 
     @Test
-    public void testOnIslandResettedZeroNewIslandLevelsFalse() {
+    void testOnIslandResettedZeroNewIslandLevelsFalse() {
         when(settings.isZeroNewIslandLevels()).thenReturn(false);
         IslandResettedEvent event = new IslandResettedEvent(island, uuid, false, location, island);
         listener.onNewIsland(event);
@@ -109,14 +109,14 @@ public class IslandActivitiesListenersTest extends CommonTestSetup {
     // --- IslandPreclearEvent (remove from top ten) ---
 
     @Test
-    public void testOnIslandDeleteRemovesFromTopTen() {
+    void testOnIslandDeleteRemovesFromTopTen() {
         IslandPreclearEvent event = new IslandPreclearEvent(island, uuid, false, location, island);
         listener.onIslandDelete(event);
         verify(manager).removeEntry(world, uuid.toString());
     }
 
     @Test
-    public void testOnIslandDeleteNoWorldNoAction() {
+    void testOnIslandDeleteNoWorldNoAction() {
         when(island.getWorld()).thenReturn(null);
         IslandPreclearEvent event = new IslandPreclearEvent(island, uuid, false, location, island);
         listener.onIslandDelete(event);
@@ -126,7 +126,7 @@ public class IslandActivitiesListenersTest extends CommonTestSetup {
     // --- IslandDeleteEvent ---
 
     @Test
-    public void testOnIslandDeletedCallsDeleteIsland() {
+    void testOnIslandDeletedCallsDeleteIsland() {
         IslandDeleteEvent event = new IslandDeleteEvent(island, uuid, false, location);
         listener.onIslandDeleted(event);
         verify(manager).deleteIsland(uuid.toString());
@@ -135,7 +135,7 @@ public class IslandActivitiesListenersTest extends CommonTestSetup {
     // --- IslandUnregisteredEvent ---
 
     @Test
-    public void testOnIslandUnregisteredRemovesFromTopTen() {
+    void testOnIslandUnregisteredRemovesFromTopTen() {
         IslandUnregisteredEvent event = new IslandUnregisteredEvent(island, uuid, false, location);
         listener.onIsland(event);
         verify(manager).removeEntry(world, uuid.toString());
@@ -144,7 +144,7 @@ public class IslandActivitiesListenersTest extends CommonTestSetup {
     // --- TeamSetownerEvent ---
 
     @Test
-    public void testOnNewIslandOwnerRemovesEntry() {
+    void testOnNewIslandOwnerRemovesEntry() {
         TeamSetownerEvent event = new TeamSetownerEvent(island, UUID.randomUUID(), false, location);
         listener.onNewIslandOwner(event);
         verify(manager).removeEntry(world, uuid.toString());

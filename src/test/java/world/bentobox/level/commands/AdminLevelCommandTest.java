@@ -32,7 +32,7 @@ import world.bentobox.level.config.ConfigSettings;
 /**
  * Tests for {@link AdminLevelCommand}
  */
-public class AdminLevelCommandTest extends CommonTestSetup {
+class AdminLevelCommandTest extends CommonTestSetup {
 
     @Mock
     private User user;
@@ -49,7 +49,7 @@ public class AdminLevelCommandTest extends CommonTestSetup {
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         when(plugin.getPlayers()).thenReturn(pm);
         when(addon.getManager()).thenReturn(manager);
@@ -79,30 +79,30 @@ public class AdminLevelCommandTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     @Test
-    public void testSetup() {
+    void testSetup() {
         assertTrue(cmd.getPermission().contains("admin.level"));
         assertFalse(cmd.isOnlyPlayer());
     }
 
     @Test
-    public void testExecuteConsoleScanIsland() {
+    void testExecuteConsoleScanIsland() {
         // Console with player name arg scans island
         assertTrue(cmd.execute(user, "level", List.of("tastybento")));
     }
 
     @Test
-    public void testTabCompleteNoArgs() {
+    void testTabCompleteNoArgs() {
         Optional<List<String>> result = cmd.tabComplete(user, "level", Collections.emptyList());
         assertFalse(result.isPresent()); // empty args => return empty Optional
     }
 
     @Test
-    public void testTabCompleteWithArgs() {
+    void testTabCompleteWithArgs() {
         // getOnlinePlayerList calls Bukkit.getOnlinePlayers() — stub it to return empty list
         mockedUtil.when(() -> Util.getOnlinePlayerList(any())).thenReturn(List.of());
         Optional<List<String>> result = cmd.tabComplete(user, "level", List.of("tas"));

@@ -22,7 +22,7 @@ import world.bentobox.level.panels.TopLevelPanel;
 /**
  * Tests for {@link IslandTopCommand}
  */
-public class IslandTopCommandTest extends CommonTestSetup {
+class IslandTopCommandTest extends CommonTestSetup {
 
     @Mock
     private User user;
@@ -31,7 +31,7 @@ public class IslandTopCommandTest extends CommonTestSetup {
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         when(user.getUniqueId()).thenReturn(uuid);
         when(user.isPlayer()).thenReturn(true);
@@ -41,19 +41,19 @@ public class IslandTopCommandTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     @Test
-    public void testSetup() {
+    void testSetup() {
         assertTrue(cmd.getPermission().contains("island.top"));
         assertTrue(cmd.isOnlyPlayer());
         assertEquals("top", cmd.getLabel());
     }
 
     @Test
-    public void testExecuteOpensPanelAndReturnsTrue() {
+    void testExecuteOpensPanelAndReturnsTrue() {
         try (MockedStatic<TopLevelPanel> mockedPanel = mockStatic(TopLevelPanel.class)) {
             assertTrue(cmd.execute(user, "top", Collections.emptyList()));
             mockedPanel.verify(() -> TopLevelPanel.openPanel(any(), any(User.class), any(), anyString()));

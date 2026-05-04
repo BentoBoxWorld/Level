@@ -16,26 +16,26 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for {@link TopTenData}
  */
-public class TopTenDataTest {
+class TopTenDataTest {
 
     private World world;
     private TopTenData topTenData;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         world = mock(World.class);
         when(world.getName()).thenReturn("BSkyBlock_world");
         topTenData = new TopTenData(world);
     }
 
     @Test
-    public void testTopTenStartsEmpty() {
+    void testTopTenStartsEmpty() {
         assertNotNull(topTenData.getTopTen());
         assertTrue(topTenData.getTopTen().isEmpty());
     }
 
     @Test
-    public void testSetAndGetTopTen() {
+    void testSetAndGetTopTen() {
         Map<String, Long> newMap = new ConcurrentHashMap<>();
         newMap.put("island-uuid-1", 100L);
         newMap.put("island-uuid-2", 200L);
@@ -48,13 +48,13 @@ public class TopTenDataTest {
     }
 
     @Test
-    public void testTopTenIsMutable() {
+    void testTopTenIsMutable() {
         topTenData.getTopTen().put("new-island", 50L);
         assertEquals(50L, topTenData.getTopTen().get("new-island"));
     }
 
     @Test
-    public void testSetTopTenReplacesExisting() {
+    void testSetTopTenReplacesExisting() {
         topTenData.getTopTen().put("old-island", 10L);
         Map<String, Long> newMap = new ConcurrentHashMap<>();
         newMap.put("new-island", 500L);

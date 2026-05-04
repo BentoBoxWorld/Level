@@ -17,12 +17,12 @@ import world.bentobox.bentobox.api.user.User;
 /**
  * Tests for {@link Utils}
  */
-public class UtilsTest {
+class UtilsTest {
 
     private User user;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         user = mock(User.class);
         when(user.isPlayer()).thenReturn(true);
     }
@@ -30,37 +30,37 @@ public class UtilsTest {
     // --- getNextValue ---
 
     @Test
-    public void testGetNextValueMidArray() {
+    void testGetNextValueMidArray() {
         String[] values = {"A", "B", "C"};
         assertEquals("B", Utils.getNextValue(values, "A"));
     }
 
     @Test
-    public void testGetNextValueLastWrapsToFirst() {
+    void testGetNextValueLastWrapsToFirst() {
         String[] values = {"A", "B", "C"};
         assertEquals("A", Utils.getNextValue(values, "C"));
     }
 
     @Test
-    public void testGetNextValueMiddleElement() {
+    void testGetNextValueMiddleElement() {
         String[] values = {"A", "B", "C"};
         assertEquals("C", Utils.getNextValue(values, "B"));
     }
 
     @Test
-    public void testGetNextValueNotFoundReturnsCurrent() {
+    void testGetNextValueNotFoundReturnsCurrent() {
         String[] values = {"A", "B", "C"};
         assertEquals("Z", Utils.getNextValue(values, "Z"));
     }
 
     @Test
-    public void testGetNextValueSingleElement() {
+    void testGetNextValueSingleElement() {
         String[] values = {"A"};
         assertEquals("A", Utils.getNextValue(values, "A"));
     }
 
     @Test
-    public void testGetNextValueWithEnums() {
+    void testGetNextValueWithEnums() {
         TestEnum[] values = TestEnum.values();
         assertEquals(TestEnum.TWO, Utils.getNextValue(values, TestEnum.ONE));
         assertEquals(TestEnum.ONE, Utils.getNextValue(values, TestEnum.THREE));
@@ -69,37 +69,37 @@ public class UtilsTest {
     // --- getPreviousValue ---
 
     @Test
-    public void testGetPreviousValueMidArray() {
+    void testGetPreviousValueMidArray() {
         String[] values = {"A", "B", "C"};
         assertEquals("A", Utils.getPreviousValue(values, "B"));
     }
 
     @Test
-    public void testGetPreviousValueFirstWrapsToLast() {
+    void testGetPreviousValueFirstWrapsToLast() {
         String[] values = {"A", "B", "C"};
         assertEquals("C", Utils.getPreviousValue(values, "A"));
     }
 
     @Test
-    public void testGetPreviousValueLastElement() {
+    void testGetPreviousValueLastElement() {
         String[] values = {"A", "B", "C"};
         assertEquals("B", Utils.getPreviousValue(values, "C"));
     }
 
     @Test
-    public void testGetPreviousValueNotFoundReturnsCurrent() {
+    void testGetPreviousValueNotFoundReturnsCurrent() {
         String[] values = {"A", "B", "C"};
         assertEquals("Z", Utils.getPreviousValue(values, "Z"));
     }
 
     @Test
-    public void testGetPreviousValueSingleElement() {
+    void testGetPreviousValueSingleElement() {
         String[] values = {"A"};
         assertEquals("A", Utils.getPreviousValue(values, "A"));
     }
 
     @Test
-    public void testGetPreviousValueWithEnums() {
+    void testGetPreviousValueWithEnums() {
         TestEnum[] values = TestEnum.values();
         assertEquals(TestEnum.THREE, Utils.getPreviousValue(values, TestEnum.ONE));
         assertEquals(TestEnum.TWO, Utils.getPreviousValue(values, TestEnum.THREE));
@@ -108,7 +108,7 @@ public class UtilsTest {
     // --- getPermissionValue ---
 
     @Test
-    public void testGetPermissionValueReturnsMatchingSuffix() {
+    void testGetPermissionValueReturnsMatchingSuffix() {
         PermissionAttachmentInfo perm = mock(PermissionAttachmentInfo.class);
         when(perm.getPermission()).thenReturn("island.level.5");
         when(user.getEffectivePermissions()).thenReturn(Set.of(perm));
@@ -118,7 +118,7 @@ public class UtilsTest {
     }
 
     @Test
-    public void testGetPermissionValueSkipsWildcard() {
+    void testGetPermissionValueSkipsWildcard() {
         PermissionAttachmentInfo wildcard = mock(PermissionAttachmentInfo.class);
         when(wildcard.getPermission()).thenReturn("island.level.*");
         when(user.getEffectivePermissions()).thenReturn(Set.of(wildcard));
@@ -128,7 +128,7 @@ public class UtilsTest {
     }
 
     @Test
-    public void testGetPermissionValueNoMatchReturnsDefault() {
+    void testGetPermissionValueNoMatchReturnsDefault() {
         when(user.getEffectivePermissions()).thenReturn(Set.of());
 
         String result = Utils.getPermissionValue(user, "island.level", "default");
@@ -136,7 +136,7 @@ public class UtilsTest {
     }
 
     @Test
-    public void testGetPermissionValueNotPlayerReturnsDefault() {
+    void testGetPermissionValueNotPlayerReturnsDefault() {
         when(user.isPlayer()).thenReturn(false);
 
         String result = Utils.getPermissionValue(user, "island.level", "default");
@@ -144,7 +144,7 @@ public class UtilsTest {
     }
 
     @Test
-    public void testGetPermissionValueStripsTrailingDot() {
+    void testGetPermissionValueStripsTrailingDot() {
         PermissionAttachmentInfo perm = mock(PermissionAttachmentInfo.class);
         when(perm.getPermission()).thenReturn("island.level.10");
         // Pass with trailing dot - method should strip it
@@ -155,7 +155,7 @@ public class UtilsTest {
     }
 
     @Test
-    public void testGetPermissionValuePrefixNotMatchingOtherPerms() {
+    void testGetPermissionValuePrefixNotMatchingOtherPerms() {
         PermissionAttachmentInfo perm = mock(PermissionAttachmentInfo.class);
         when(perm.getPermission()).thenReturn("island.other.5");
         when(user.getEffectivePermissions()).thenReturn(Set.of(perm));

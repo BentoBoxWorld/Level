@@ -32,7 +32,7 @@ import world.bentobox.level.config.ConfigSettings;
 /**
  * Tests for {@link IslandLevelCommand}
  */
-public class IslandLevelCommandTest extends CommonTestSetup {
+class IslandLevelCommandTest extends CommonTestSetup {
 
     @Mock
     private User user;
@@ -49,7 +49,7 @@ public class IslandLevelCommandTest extends CommonTestSetup {
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         when(plugin.getPlayers()).thenReturn(pm);
         when(addon.getManager()).thenReturn(manager);
@@ -75,31 +75,31 @@ public class IslandLevelCommandTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     @Test
-    public void testSetup() {
+    void testSetup() {
         assertTrue(cmd.getPermission().contains("island.level"));
     }
 
     @Test
-    public void testExecuteConsoleNoArgsShowsError() {
+    void testExecuteConsoleNoArgsShowsError() {
         when(user.isPlayer()).thenReturn(false);
         assertFalse(cmd.execute(user, "level", Collections.emptyList()));
         verify(user).sendMessage("general.errors.use-in-game");
     }
 
     @Test
-    public void testExecuteUnknownPlayerArg() {
+    void testExecuteUnknownPlayerArg() {
         when(pm.getUUID(anyString())).thenReturn(null);
         assertFalse(cmd.execute(user, "level", List.of("unknownplayer")));
         verify(user).sendMessage(eq("general.errors.unknown-player"), eq(TextVariables.NAME), anyString());
     }
 
     @Test
-    public void testExecuteOtherPlayerLevelRequest() {
+    void testExecuteOtherPlayerLevelRequest() {
         UUID otherUUID = UUID.randomUUID();
         when(pm.getUUID("otherguy")).thenReturn(otherUUID);
         when(manager.getIslandLevelString(any(), eq(otherUUID))).thenReturn("10");
@@ -109,14 +109,14 @@ public class IslandLevelCommandTest extends CommonTestSetup {
     }
 
     @Test
-    public void testExecuteSelfNoIsland() {
+    void testExecuteSelfNoIsland() {
         when(im.getIsland(any(), any(UUID.class))).thenReturn(null);
         assertFalse(cmd.execute(user, "level", Collections.emptyList()));
         verify(user).sendMessage("general.errors.player-has-no-island");
     }
 
     @Test
-    public void testExecuteSelfWithIslandSendsCalculating() {
+    void testExecuteSelfWithIslandSendsCalculating() {
         Results results = new Results(Result.AVAILABLE);
         when(manager.calculateLevel(any(), any())).thenReturn(CompletableFuture.completedFuture(results));
         when(manager.getIslandLevelString(any(), any())).thenReturn("5");
@@ -126,7 +126,7 @@ public class IslandLevelCommandTest extends CommonTestSetup {
     }
 
     @Test
-    public void testExecuteSelfResultInProgress() {
+    void testExecuteSelfResultInProgress() {
         Results results = new Results(Result.IN_PROGRESS);
         when(manager.calculateLevel(any(), any())).thenReturn(CompletableFuture.completedFuture(results));
 
@@ -135,7 +135,7 @@ public class IslandLevelCommandTest extends CommonTestSetup {
     }
 
     @Test
-    public void testExecuteSelfResultTimeout() {
+    void testExecuteSelfResultTimeout() {
         Results results = new Results(Result.TIMEOUT);
         when(manager.calculateLevel(any(), any())).thenReturn(CompletableFuture.completedFuture(results));
 
@@ -144,7 +144,7 @@ public class IslandLevelCommandTest extends CommonTestSetup {
     }
 
     @Test
-    public void testExecuteSelfNullResultIsIgnored() {
+    void testExecuteSelfNullResultIsIgnored() {
         when(manager.calculateLevel(any(), any())).thenReturn(CompletableFuture.completedFuture(null));
         // Should not throw
         assertTrue(cmd.execute(user, "level", Collections.emptyList()));

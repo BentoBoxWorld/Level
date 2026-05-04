@@ -24,7 +24,7 @@ import world.bentobox.level.calculators.Pipeliner;
 /**
  * Tests for {@link AdminLevelStatusCommand}
  */
-public class AdminLevelStatusCommandTest extends CommonTestSetup {
+class AdminLevelStatusCommandTest extends CommonTestSetup {
 
     @Mock
     private User user;
@@ -35,7 +35,7 @@ public class AdminLevelStatusCommandTest extends CommonTestSetup {
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         when(addon.getPipeliner()).thenReturn(pipeliner);
         when(user.getTranslation(any())).thenAnswer(i -> i.getArgument(0, String.class));
@@ -44,26 +44,26 @@ public class AdminLevelStatusCommandTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     @Test
-    public void testSetup() {
+    void testSetup() {
         assertTrue(cmd.getPermission().contains("admin.levelstatus"));
         assertFalse(cmd.isOnlyPlayer());
         assertEquals("levelstatus", cmd.getLabel());
     }
 
     @Test
-    public void testExecuteShowsQueueSizeZero() {
+    void testExecuteShowsQueueSizeZero() {
         when(pipeliner.getIslandsInQueue()).thenReturn(0);
         assertTrue(cmd.execute(user, "levelstatus", Collections.emptyList()));
         verify(user).sendMessage(eq("admin.levelstatus.islands-in-queue"), eq(TextVariables.NUMBER), eq("0"));
     }
 
     @Test
-    public void testExecuteShowsQueueSizeNonZero() {
+    void testExecuteShowsQueueSizeNonZero() {
         when(pipeliner.getIslandsInQueue()).thenReturn(5);
         assertTrue(cmd.execute(user, "levelstatus", Collections.emptyList()));
         verify(user).sendMessage(eq("admin.levelstatus.islands-in-queue"), eq(TextVariables.NUMBER), eq("5"));

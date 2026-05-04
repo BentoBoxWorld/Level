@@ -137,7 +137,7 @@ public abstract class CommonTestSetup {
 
 
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
         // Processes the @Mock annotations and initializes the field
         closeable = MockitoAnnotations.openMocks(this);
@@ -266,7 +266,7 @@ public abstract class CommonTestSetup {
      * @throws Exception
      */
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         // IMPORTANT: Explicitly close the mock to prevent leakage
         mockedBukkit.closeOnDemand();
         mockedUtil.closeOnDemand();

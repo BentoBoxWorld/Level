@@ -1,8 +1,8 @@
 package world.bentobox.level;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -23,9 +23,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -40,7 +40,6 @@ import world.bentobox.bentobox.database.AbstractDatabaseHandler;
 import world.bentobox.bentobox.database.DatabaseSetup;
 import world.bentobox.bentobox.database.DatabaseSetup.DatabaseType;
 import world.bentobox.bentobox.database.objects.Island;
-import world.bentobox.bentobox.managers.IslandWorldManager;
 import world.bentobox.bentobox.managers.PlayersManager;
 import world.bentobox.level.calculators.Pipeliner;
 import world.bentobox.level.calculators.Results;
@@ -52,7 +51,7 @@ import world.bentobox.level.objects.TopTenData;
  * @author tastybento
  *
  */
-public class LevelsManagerTest extends CommonTestSetup {
+class LevelsManagerTest extends CommonTestSetup {
 
     @Mock
     private AbstractDatabaseHandler<Object> handler;
@@ -75,8 +74,6 @@ public class LevelsManagerTest extends CommonTestSetup {
     @Mock
     private Inventory inv;
     @Mock
-    private IslandWorldManager iwm;
-    @Mock
     private IslandLevels levelsData;
     //@Mock
     //private BukkitScheduler scheduler;
@@ -87,7 +84,7 @@ public class LevelsManagerTest extends CommonTestSetup {
     @SuppressWarnings("unchecked")
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         
         handler = mock(AbstractDatabaseHandler.class);
@@ -176,8 +173,10 @@ public class LevelsManagerTest extends CommonTestSetup {
         // Inventory GUI
         mockedBukkit.when(() -> Bukkit.createInventory(any(), anyInt(), anyString())).thenReturn(inv);
 
+        // No online players — hasTopTenPerm short-circuits to true via the null check.
+        mockedBukkit.when(() -> Bukkit.getPlayer(any(UUID.class))).thenReturn(null);
+
         // IWM
-       // when(plugin.getIWM()).thenReturn(iwm);
         when(iwm.getPermissionPrefix(any())).thenReturn("bskyblock.");
 
         lm = new LevelsManager(addon);
@@ -189,7 +188,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      */
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
         deleteAll(new File("database"));
         User.clearUsers();
@@ -201,7 +200,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.LevelsManager#calculateLevel(UUID, world.bentobox.bentobox.database.objects.Island)}.
      */
     @Test
-    public void testCalculateLevel() {
+    void testCalculateLevel() {
         Results results = new Results();
         results.setLevel(10000);
         results.setInitialCount(300L);
@@ -227,7 +226,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.LevelsManager#getInitialCount(world.bentobox.bentobox.database.objects.Island)}.
      */
     @Test
-    public void testGetInitialCount() {
+    void testGetInitialCount() {
         assertEquals(2614500L, lm.getInitialCount(island));
     }
 
@@ -236,7 +235,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.LevelsManager#getIslandLevel(org.bukkit.World, java.util.UUID)}.
      */
     @Test
-    public void testGetIslandLevel() {
+    void testGetIslandLevel() {
         assertEquals(-5, lm.getIslandLevel(world, uuid));
     }
 
@@ -245,7 +244,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.LevelsManager#getPointsToNextString(org.bukkit.World, java.util.UUID)}.
      */
     @Test
-    public void testGetPointsToNextString() {
+    void testGetPointsToNextString() {
         // No island player
         assertEquals("", lm.getPointsToNextString(world, UUID.randomUUID()));
         // Player has island
@@ -257,7 +256,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.LevelsManager#getIslandLevelString(org.bukkit.World, java.util.UUID)}.
      */
     @Test
-    public void testGetIslandLevelString() {
+    void testGetIslandLevelString() {
         assertEquals("-5", lm.getIslandLevelString(world, uuid));
     }
 
@@ -266,7 +265,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.LevelsManager#getLevelsData(java.util.UUID)}.
      */
     @Test
-    public void testGetLevelsData() {
+    void testGetLevelsData() {
         assertEquals(levelsData, lm.getLevelsData(island));
 
     }
@@ -275,7 +274,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * Test method for {@link world.bentobox.level.LevelsManager#formatLevel(long)}.
      */
     @Test
-    public void testFormatLevel() {
+    void testFormatLevel() {
         assertEquals("123456789", lm.formatLevel(123456789L));
         settings.setShorthand(true);
         assertEquals("123.5M", lm.formatLevel(123456789L));
@@ -291,7 +290,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.LevelsManager#getTopTen(org.bukkit.World, int)}.
      */
     @Test
-    public void testGetTopTenEmpty() {
+    void testGetTopTenEmpty() {
         Map<String, Long> tt = lm.getTopTen(world, Level.TEN);
         assertTrue(tt.isEmpty());
     }
@@ -301,7 +300,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.LevelsManager#getTopTen(org.bukkit.World, int)}.
      */
     @Test
-    public void testGetTopTen() {
+    void testGetTopTen() {
         testLoadTopTens();
         Map<String, Long> tt = lm.getTopTen(world, Level.TEN);
         assertFalse(tt.isEmpty());
@@ -314,7 +313,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.LevelsManager#getWeightedTopTen(org.bukkit.World, int)}.
      */
     @Test
-    public void testGetWeightedTopTen() {
+    void testGetWeightedTopTen() {
         testLoadTopTens();
         Map<Island, Long> tt = lm.getWeightedTopTen(world, Level.TEN);
         assertFalse(tt.isEmpty());
@@ -327,7 +326,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.LevelsManager#hasTopTenPerm(org.bukkit.World, java.util.UUID)}.
      */
     @Test
-    public void testHasTopTenPerm() {
+    void testHasTopTenPerm() {
         assertTrue(lm.hasTopTenPerm(world, uuid));
     }
 
@@ -335,7 +334,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * Test method for {@link world.bentobox.level.LevelsManager#loadTopTens()}.
      */
     @Test
-    public void testLoadTopTens() {
+    void testLoadTopTens() {
         ArgumentCaptor<Runnable> task = ArgumentCaptor.forClass(Runnable.class);
         lm.loadTopTens();
         mockedBukkit.verify(() -> Bukkit.getScheduler());
@@ -351,7 +350,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.LevelsManager#removeEntry(org.bukkit.World, java.util.UUID)}.
      */
     @Test
-    public void testRemoveEntry() {
+    void testRemoveEntry() {
         testLoadTopTens();
         Map<String, Long> tt = lm.getTopTen(world, Level.TEN);
         assertTrue(tt.containsKey(uuid.toString()));
@@ -365,7 +364,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.LevelsManager#setInitialIslandLevel(world.bentobox.bentobox.database.objects.Island, long)}.
      */
     @Test
-    public void testSetInitialIslandLevel() {
+    void testSetInitialIslandLevel() {
         lm.setInitialIslandCount(island, Level.TEN);
         assertEquals(Level.TEN, lm.getInitialCount(island));
     }
@@ -375,7 +374,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.LevelsManager#setIslandLevel(org.bukkit.World, java.util.UUID, long)}.
      */
     @Test
-    public void testSetIslandLevel() {
+    void testSetIslandLevel() {
         lm.setIslandLevel(world, uuid, 1234);
         assertEquals(1234, lm.getIslandLevel(world, uuid));
 
@@ -387,7 +386,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * Verifies that the top ten is sorted in descending order by level.
      */
     @Test
-    public void testGetTopTenSortOrder() {
+    void testGetTopTenSortOrder() {
         lm.createAndCleanRankings(world);
         Map<World, TopTenData> ttl = lm.getTopTenLists();
         Map<String, Long> tt = ttl.get(world).getTopTen();
@@ -410,8 +409,8 @@ public class LevelsManagerTest extends CommonTestSetup {
         // Verify descending order
         long previousLevel = Long.MAX_VALUE;
         for (Long level : topTen.values()) {
-            assertTrue("Top ten not in descending order: " + level + " should be <= " + previousLevel,
-                    level <= previousLevel);
+            assertTrue(level <= previousLevel,
+                    "Top ten not in descending order: " + level + " should be <= " + previousLevel);
             previousLevel = level;
         }
         // Verify highest is first
@@ -423,7 +422,7 @@ public class LevelsManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.LevelsManager#getRank(World, UUID)}
      */
     @Test
-    public void testGetRank() {
+    void testGetRank() {
         lm.createAndCleanRankings(world);
         Map<World, TopTenData> ttl = lm.getTopTenLists();
         Map<String, Long> tt = ttl.get(world).getTopTen();

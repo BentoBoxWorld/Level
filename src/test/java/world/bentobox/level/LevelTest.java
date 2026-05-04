@@ -58,7 +58,7 @@ import world.bentobox.level.listeners.JoinLeaveListener;
  * @author tastybento
  *
  */
-public class LevelTest extends CommonTestSetup {
+class LevelTest extends CommonTestSetup {
 
 	private static File jFile;
 	@Mock
@@ -91,7 +91,7 @@ public class LevelTest extends CommonTestSetup {
     private MockedStatic<ItemsAdderHook> itemsAdderMock;
 
 	@BeforeAll
-	public static void beforeClass() throws IOException {
+	protected static void beforeClass() throws IOException {
 		// Make the addon jar
 		jFile = new File("addon.jar");
 		// Copy over config file from src folder
@@ -121,7 +121,7 @@ public class LevelTest extends CommonTestSetup {
 	 */
 	@Override
     @BeforeEach
-	public void setUp() throws Exception {
+	protected void setUp() throws Exception {
         super.setUp();
         when(plugin.getHooks()).thenReturn(hm);
 
@@ -198,13 +198,13 @@ public class LevelTest extends CommonTestSetup {
 	 */
 	@Override
 	@AfterEach
-	public void tearDown() throws Exception {
+	protected void tearDown() throws Exception {
         super.tearDown();
 		deleteAll(new File("database"));
 	}
 
 	@AfterAll
-	public static void cleanUp() throws Exception {
+	protected static void cleanUp() throws Exception {
 		new File("addon.jar").delete();
 		new File("config.yml").delete();
 		new File("blockconfig.yml").delete();
@@ -215,7 +215,7 @@ public class LevelTest extends CommonTestSetup {
      * Test method for {@link world.bentobox.level.Level#allLoaded()
      */
 	@Test
-    public void testAllLoaded() {
+    void testAllLoaded() {
 	    mockedBukkit.when(() -> Bukkit.getWorld("acidisland_world")).thenReturn(null);
         addon.allLoaded();
 		verify(plugin).log("[Level] Level hooking into BSkyBlock");
@@ -241,7 +241,7 @@ public class LevelTest extends CommonTestSetup {
 	 * Test method for {@link world.bentobox.level.Level#getSettings()}.
 	 */
 	@Test
-	public void testGetSettings() {
+	void testGetSettings() {
 		addon.onEnable();
 		ConfigSettings s = addon.getSettings();
 		assertEquals(100, s.getLevelCost());

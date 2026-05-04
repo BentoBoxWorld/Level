@@ -102,6 +102,7 @@ public class Level extends Addon {
         this.saveResource("panels/top_panel.yml", false);
         this.saveResource("panels/detail_panel.yml", false);
         this.saveResource("panels/value_panel.yml", false);
+        this.saveResource("panels/donation_panel.yml", false);
     }
 
     private boolean loadSettings() {

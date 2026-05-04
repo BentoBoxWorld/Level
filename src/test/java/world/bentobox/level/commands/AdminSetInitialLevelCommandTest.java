@@ -26,7 +26,7 @@ import world.bentobox.level.LevelsManager;
 /**
  * Tests for {@link AdminSetInitialLevelCommand}
  */
-public class AdminSetInitialLevelCommandTest extends CommonTestSetup {
+class AdminSetInitialLevelCommandTest extends CommonTestSetup {
 
     @Mock
     private User user;
@@ -39,7 +39,7 @@ public class AdminSetInitialLevelCommandTest extends CommonTestSetup {
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         when(plugin.getPlayers()).thenReturn(pm);
         when(addon.getManager()).thenReturn(manager);
@@ -57,60 +57,60 @@ public class AdminSetInitialLevelCommandTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     @Test
-    public void testSetup() {
+    void testSetup() {
         assertTrue(cmd.getPermission().contains("admin.level.sethandicap"));
         assertFalse(cmd.isOnlyPlayer());
         assertEquals("sethandicap", cmd.getLabel());
     }
 
     @Test
-    public void testCanExecuteWrongArgCount() {
+    void testCanExecuteWrongArgCount() {
         assertFalse(cmd.canExecute(user, "sethandicap", List.of("player1")));
         verify(user).sendMessage(eq("commands.help.header"), anyString(), anyString());
     }
 
     @Test
-    public void testCanExecuteUnknownPlayer() {
+    void testCanExecuteUnknownPlayer() {
         when(pm.getUUID("unknown")).thenReturn(null);
         assertFalse(cmd.canExecute(user, "sethandicap", List.of("unknown", "100")));
         verify(user).sendMessage(eq("general.errors.unknown-player"), eq(TextVariables.NAME), eq("unknown"));
     }
 
     @Test
-    public void testCanExecuteInvalidNumber() {
+    void testCanExecuteInvalidNumber() {
         assertFalse(cmd.canExecute(user, "sethandicap", List.of("tastybento", "notanumber")));
         verify(user).sendMessage("admin.level.sethandicap.invalid-level");
     }
 
     @Test
-    public void testCanExecutePlayerNoIsland() {
+    void testCanExecutePlayerNoIsland() {
         when(im.getIsland(any(), any(UUID.class))).thenReturn(null);
         assertFalse(cmd.canExecute(user, "sethandicap", List.of("tastybento", "100")));
         verify(user).sendMessage("general.errors.player-has-no-island");
     }
 
     @Test
-    public void testCanExecuteValid() {
+    void testCanExecuteValid() {
         assertTrue(cmd.canExecute(user, "sethandicap", List.of("tastybento", "100")));
     }
 
     @Test
-    public void testCanExecuteValidWithPlus() {
+    void testCanExecuteValidWithPlus() {
         assertTrue(cmd.canExecute(user, "sethandicap", List.of("tastybento", "+50")));
     }
 
     @Test
-    public void testCanExecuteValidWithMinus() {
+    void testCanExecuteValidWithMinus() {
         assertTrue(cmd.canExecute(user, "sethandicap", List.of("tastybento", "-20")));
     }
 
     @Test
-    public void testExecuteSetAbsolute() {
+    void testExecuteSetAbsolute() {
         when(manager.getInitialCount(island)).thenReturn(50L);
         cmd.canExecute(user, "sethandicap", List.of("tastybento", "100"));
         assertTrue(cmd.execute(user, "sethandicap", List.of("tastybento", "100")));
@@ -118,7 +118,7 @@ public class AdminSetInitialLevelCommandTest extends CommonTestSetup {
     }
 
     @Test
-    public void testExecuteSetPlus() {
+    void testExecuteSetPlus() {
         when(manager.getInitialCount(island)).thenReturn(50L);
         cmd.canExecute(user, "sethandicap", List.of("tastybento", "+10"));
         assertTrue(cmd.execute(user, "sethandicap", List.of("tastybento", "+10")));
@@ -126,7 +126,7 @@ public class AdminSetInitialLevelCommandTest extends CommonTestSetup {
     }
 
     @Test
-    public void testExecuteSetMinus() {
+    void testExecuteSetMinus() {
         when(manager.getInitialCount(island)).thenReturn(50L);
         cmd.canExecute(user, "sethandicap", List.of("tastybento", "-20"));
         assertTrue(cmd.execute(user, "sethandicap", List.of("tastybento", "-20")));

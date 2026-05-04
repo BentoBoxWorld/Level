@@ -15,7 +15,7 @@ import world.bentobox.level.LevelsManager;
 /**
  * Tests for {@link MigrationListener}
  */
-public class MigrationListenerTest extends CommonTestSetup {
+class MigrationListenerTest extends CommonTestSetup {
 
     @Mock
     private LevelsManager manager;
@@ -24,7 +24,7 @@ public class MigrationListenerTest extends CommonTestSetup {
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         when(addon.getManager()).thenReturn(manager);
         listener = new MigrationListener(addon);
@@ -32,12 +32,12 @@ public class MigrationListenerTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     @Test
-    public void testOnBentoBoxReadyCallsLoadTopTens() {
+    void testOnBentoBoxReadyCallsLoadTopTens() {
         BentoBoxReadyEvent event = new BentoBoxReadyEvent();
         listener.onBentoBoxReady(event);
         verify(manager).loadTopTens();

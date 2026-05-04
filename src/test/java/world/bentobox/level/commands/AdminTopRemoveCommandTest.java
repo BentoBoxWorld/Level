@@ -28,7 +28,7 @@ import world.bentobox.level.objects.TopTenData;
  * @author tastybento
  *
  */
-public class AdminTopRemoveCommandTest extends CommonTestSetup {
+class AdminTopRemoveCommandTest extends CommonTestSetup {
 
     @Mock
     private User user;
@@ -43,7 +43,7 @@ public class AdminTopRemoveCommandTest extends CommonTestSetup {
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         // Player manager
         when(plugin.getPlayers()).thenReturn(pm);
@@ -65,7 +65,7 @@ public class AdminTopRemoveCommandTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
@@ -74,7 +74,7 @@ public class AdminTopRemoveCommandTest extends CommonTestSetup {
      * {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#AdminTopRemoveCommand(world.bentobox.level.Level, world.bentobox.bentobox.api.commands.CompositeCommand)}.
      */
     @Test
-    public void testAdminTopRemoveCommand() {
+    void testAdminTopRemoveCommand() {
         assertEquals("remove", atrc.getLabel());
         assertEquals("delete", atrc.getAliases().get(0));
     }
@@ -84,7 +84,7 @@ public class AdminTopRemoveCommandTest extends CommonTestSetup {
      * {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#setup()}.
      */
     @Test
-    public void testSetup() {
+    void testSetup() {
         assertEquals("bskyblock.admin.top.remove", atrc.getPermission());
         assertEquals("admin.top.remove.parameters", atrc.getParameters());
         assertEquals("admin.top.remove.description", atrc.getDescription());
@@ -97,7 +97,7 @@ public class AdminTopRemoveCommandTest extends CommonTestSetup {
      * {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#canExecute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
      */
     @Test
-    public void testCanExecuteWrongArgs() {
+    void testCanExecuteWrongArgs() {
         assertFalse(atrc.canExecute(user, "delete", Collections.emptyList()));
         verify(user).sendMessage("commands.help.header", TextVariables.LABEL, "BSkyBlock");
     }
@@ -106,7 +106,7 @@ public class AdminTopRemoveCommandTest extends CommonTestSetup {
      * Test method for {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#canExecute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
      */
     @Test
-    public void testCanExecuteUnknown() {
+    void testCanExecuteUnknown() {
         when(pm.getUser(anyString())).thenReturn(null);
         assertFalse(atrc.canExecute(user, "delete", Collections.singletonList("tastybento")));
         verify(user).sendMessage("general.errors.unknown-player", TextVariables.NAME, "tastybento");
@@ -117,7 +117,7 @@ public class AdminTopRemoveCommandTest extends CommonTestSetup {
      * {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#canExecute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
      */
     @Test
-    public void testCanExecuteKnown() {
+    void testCanExecuteKnown() {
         assertTrue(atrc.canExecute(user, "delete", Collections.singletonList("tastybento")));
     }
 
@@ -126,7 +126,7 @@ public class AdminTopRemoveCommandTest extends CommonTestSetup {
      * {@link world.bentobox.level.commands.admin.AdminTopRemoveCommand#execute(world.bentobox.bentobox.api.user.User, java.lang.String, java.util.List)}.
      */
     @Test
-    public void testExecuteUserStringListOfString() {
+    void testExecuteUserStringListOfString() {
         testCanExecuteKnown();
         assertTrue(atrc.execute(user, "delete", Collections.singletonList("tastybento")));
         verify(manager).removeEntry(world, uuid.toString());

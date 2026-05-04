@@ -42,7 +42,7 @@ import world.bentobox.level.objects.IslandLevels;
  * @author tastybento
  *
  */
-public class PlaceholderManagerTest extends CommonTestSetup {
+class PlaceholderManagerTest extends CommonTestSetup {
 
     @Mock
     private GameModeAddon gm;
@@ -81,7 +81,7 @@ public class PlaceholderManagerTest extends CommonTestSetup {
      */
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
 
         // Addon
@@ -148,7 +148,7 @@ public class PlaceholderManagerTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
@@ -157,7 +157,7 @@ public class PlaceholderManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.PlaceholderManager#PlaceholderManager(world.bentobox.level.Level)}.
      */
     @Test
-    public void testPlaceholderManager() {
+    void testPlaceholderManager() {
         verify(addon).getPlugin();
     }
 
@@ -166,7 +166,7 @@ public class PlaceholderManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.PlaceholderManager#registerPlaceholders(world.bentobox.bentobox.api.addons.GameModeAddon)}.
      */
     @Test
-    public void testRegisterPlaceholders() {
+    void testRegisterPlaceholders() {
         phm.registerPlaceholders(gm);
         // Island Level
         verify(bpm).registerPlaceholder(eq(addon), eq("aoneblock_island_level"), any());
@@ -201,7 +201,7 @@ public class PlaceholderManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.PlaceholderManager#getRankName(org.bukkit.World, int)}.
      */
     @Test
-    public void testGetRankName() {
+    void testGetRankName() {
         // Test extremes
         assertEquals("tasty", phm.getRankName(world, 0, false));
         assertEquals("vicky", phm.getRankName(world, 100, false));
@@ -218,7 +218,7 @@ public class PlaceholderManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.PlaceholderManager#getRankIslandName(org.bukkit.World, int)}.
      */
     @Test
-    public void testGetRankIslandName() {
+    void testGetRankIslandName() {
         // Test extremes
         assertEquals("tasty's island", phm.getRankIslandName(world, 0, false));
         assertEquals("vicky's island", phm.getRankIslandName(world, 100, false));
@@ -235,7 +235,7 @@ public class PlaceholderManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.PlaceholderManager#getRankMembers(org.bukkit.World, int)}.
      */
     @Test
-    public void testGetRankMembers() {
+    void testGetRankMembers() {
         // Test extremes
         check(1, phm.getRankMembers(world, 0, false));
         check(2, phm.getRankMembers(world, 100, false));
@@ -256,7 +256,7 @@ public class PlaceholderManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.PlaceholderManager#getRankLevel(org.bukkit.World, int)}.
      */
     @Test
-    public void testGetRankLevel() {
+    void testGetRankLevel() {
         // Test extremes
         assertEquals("100", phm.getRankLevel(world, 0, false));
         assertEquals("91", phm.getRankLevel(world, 100, false));
@@ -272,7 +272,7 @@ public class PlaceholderManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.PlaceholderManager#getRankLevel(org.bukkit.World, int)}.
      */
     @Test
-    public void testGetWeightedRankLevel() {
+    void testGetWeightedRankLevel() {
         // Test extremes
         assertEquals("100", phm.getRankLevel(world, 0, true));
         assertEquals("91", phm.getRankLevel(world, 100, true));
@@ -288,7 +288,7 @@ public class PlaceholderManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.PlaceholderManager#getVisitedIslandLevel(world.bentobox.bentobox.api.addons.GameModeAddon, world.bentobox.bentobox.api.user.User)}.
      */
     @Test
-    public void testGetVisitedIslandLevelNullUser() {
+    void testGetVisitedIslandLevelNullUser() {
         assertEquals("", phm.getVisitedIslandLevel(gm, null));
 
     }
@@ -297,7 +297,7 @@ public class PlaceholderManagerTest extends CommonTestSetup {
      * Test method for {@link world.bentobox.level.PlaceholderManager#getVisitedIslandLevel(world.bentobox.bentobox.api.addons.GameModeAddon, world.bentobox.bentobox.api.user.User)}.
      */
     @Test
-    public void testGetVisitedIslandLevelUserNotInWorld() {
+    void testGetVisitedIslandLevelUserNotInWorld() {
         // Another world
         when(user.getWorld()).thenReturn(mock(World.class));
         assertEquals("", phm.getVisitedIslandLevel(gm, user));
@@ -309,7 +309,7 @@ public class PlaceholderManagerTest extends CommonTestSetup {
      * {@link world.bentobox.level.PlaceholderManager#getVisitedIslandLevel(world.bentobox.bentobox.api.addons.GameModeAddon, world.bentobox.bentobox.api.user.User)}.
      */
     @Test
-    public void testGetVisitedIslandLevel() {
+    void testGetVisitedIslandLevel() {
         assertEquals("1234567", phm.getVisitedIslandLevel(gm, user));
 
     }
@@ -318,7 +318,7 @@ public class PlaceholderManagerTest extends CommonTestSetup {
      * Test method for {@link world.bentobox.level.PlaceholderManager#getVisitedIslandLevel(world.bentobox.bentobox.api.addons.GameModeAddon, world.bentobox.bentobox.api.user.User)}.
      */
     @Test
-    public void testGetVisitedIslandLevelNoIsland() {
+    void testGetVisitedIslandLevelNoIsland() {
         when(im.getIslandAt(any(Location.class))).thenReturn(Optional.empty());
         assertEquals("0", phm.getVisitedIslandLevel(gm, user));
 

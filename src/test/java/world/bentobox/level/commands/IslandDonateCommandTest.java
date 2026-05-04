@@ -36,7 +36,7 @@ import world.bentobox.level.panels.DonationPanel;
 /**
  * Tests for {@link IslandDonateCommand}
  */
-public class IslandDonateCommandTest extends CommonTestSetup {
+class IslandDonateCommandTest extends CommonTestSetup {
 
     @Mock
     private User user;
@@ -53,7 +53,7 @@ public class IslandDonateCommandTest extends CommonTestSetup {
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         when(addon.getManager()).thenReturn(manager);
         when(addon.getBlockConfig()).thenReturn(blockConfig);
@@ -81,40 +81,40 @@ public class IslandDonateCommandTest extends CommonTestSetup {
 
     @Override
     @AfterEach
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     @Test
-    public void testSetup() {
+    void testSetup() {
         assertTrue(cmd.getPermission().contains("island.donate"));
         assertTrue(cmd.isOnlyPlayer());
         assertEquals("donate", cmd.getLabel());
     }
 
     @Test
-    public void testExecuteNoIsland() {
+    void testExecuteNoIsland() {
         when(im.getIsland(any(), any(User.class))).thenReturn(null);
         assertFalse(cmd.execute(user, "donate", Collections.emptyList()));
         verify(user).sendMessage("general.errors.no-island");
     }
 
     @Test
-    public void testExecuteNotOnIsland() {
+    void testExecuteNotOnIsland() {
         when(island.onIsland(any())).thenReturn(false);
         assertFalse(cmd.execute(user, "donate", Collections.emptyList()));
         verify(user).sendMessage("island.donate.must-be-on-island");
     }
 
     @Test
-    public void testExecuteFlagDenied() {
+    void testExecuteFlagDenied() {
         when(island.isAllowed(any(User.class), any(Flag.class))).thenReturn(false);
         assertFalse(cmd.execute(user, "donate", Collections.emptyList()));
         verify(user).sendMessage("island.donate.no-permission");
     }
 
     @Test
-    public void testExecuteNoArgsOpensDonationPanel() {
+    void testExecuteNoArgsOpensDonationPanel() {
         try (MockedStatic<DonationPanel> mockedPanel = mockStatic(DonationPanel.class)) {
             assertTrue(cmd.execute(user, "donate", Collections.emptyList()));
             mockedPanel.verify(() -> DonationPanel.openPanel(any(), any(), any(User.class), any()));
@@ -122,7 +122,7 @@ public class IslandDonateCommandTest extends CommonTestSetup {
     }
 
     @Test
-    public void testExecuteHandAirItem() {
+    void testExecuteHandAirItem() {
         ItemStack airStack = mock(ItemStack.class);
         when(airStack.getType()).thenReturn(Material.AIR);
         when(inventory.getItemInMainHand()).thenReturn(airStack);
@@ -132,7 +132,7 @@ public class IslandDonateCommandTest extends CommonTestSetup {
     }
 
     @Test
-    public void testExecuteHandNonBlockItem() {
+    void testExecuteHandNonBlockItem() {
         ItemStack swordStack = mock(ItemStack.class);
         when(swordStack.getType()).thenReturn(Material.DIAMOND_SWORD);
         when(inventory.getItemInMainHand()).thenReturn(swordStack);
@@ -142,7 +142,7 @@ public class IslandDonateCommandTest extends CommonTestSetup {
     }
 
     @Test
-    public void testExecuteHandBlockNoValue() {
+    void testExecuteHandBlockNoValue() {
         // Material.STONE is a real block (isBlock()=true, isAir()=false) so no stubbing needed for those
         ItemStack stoneStack = mock(ItemStack.class);
         when(stoneStack.getType()).thenReturn(Material.STONE);
@@ -155,7 +155,7 @@ public class IslandDonateCommandTest extends CommonTestSetup {
     }
 
     @Test
-    public void testTabCompleteNoArgs() {
+    void testTabCompleteNoArgs() {
         // When no args, should suggest "hand"
         var result = cmd.tabComplete(user, "donate", Collections.emptyList());
         assertTrue(result.isPresent());
