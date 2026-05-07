@@ -742,31 +742,12 @@ public class DetailsPanel {
                     Utils.prettifyObject(key, this.user),
                     this.user.getTranslation(this.world, "level.gui.buttons.spawner.block-name"));
         } else if (key instanceof String s) {
-            ItemStack icon = new ItemStack(Material.PAPER);
-            String disp = Utils.prettifyObject(s, this.user);
-
-            if (s.startsWith("oraxen:") && BentoBox.getInstance().getHooks().getHook("Oraxen").isPresent()) {
-                Optional<io.th0rgal.oraxen.items.ItemBuilder> opt = OraxenHook.getOptionalItemById(s.substring(7));
-                if (opt.isPresent()) {
-                    icon = opt.get().build();
-                    if (icon.getItemMeta() != null && icon.getItemMeta().hasDisplayName()) {
-                        disp = icon.getItemMeta().getDisplayName();
-                    }
-                }
-            } else if (s.startsWith("nexo:") && addon.isNexo()) {
-                com.nexomc.nexo.items.ItemBuilder nexoItem = NexoItems.itemFromId(s.substring(5));
-                if (nexoItem != null) {
-                    icon = nexoItem.build();
-                    if (icon.getItemMeta() != null && icon.getItemMeta().hasDisplayName()) {
-                        disp = icon.getItemMeta().getDisplayName();
-                    }
-                }
-            } else if (addon.isItemsAdder() && ItemsAdderHook.isInRegistry(s)) {
-                Optional<ItemStack> opt = ItemsAdderHook.getItemStack(s);
-                icon = opt.orElse(new ItemStack(Material.PAPER));
-                disp = opt.filter(is -> is.getItemMeta() != null && is.getItemMeta().hasDisplayName())
-                        .map(is -> is.getItemMeta().getDisplayName()).orElse(Utils.prettifyObject(s, this.user));
-            }
+            Optional<ItemStack> optItem = getCustomBlockItemStack(s);
+            ItemStack icon = optItem.orElse(new ItemStack(Material.PAPER));
+            String disp = optItem
+                    .filter(is -> is.getItemMeta() != null && is.getItemMeta().hasDisplayName())
+                    .map(is -> is.getItemMeta().getDisplayName())
+                    .orElse(Utils.prettifyObject(s, this.user));
 
             return new BlockDataRec(icon,
                     this.user.getTranslationOrNothing(ref + "id", "[id]", s),
@@ -775,6 +756,28 @@ public class DetailsPanel {
                     disp, "");
         }
         return new BlockDataRec(new ItemStack(Material.PAPER), "", 0, 0, Utils.prettifyObject(key, this.user), "");
+    }
+
+    /**
+     * Returns the best available ItemStack for a custom-block string ID.
+     * Checks Oraxen, Nexo, and ItemsAdder in order; returns empty when none matches.
+     *
+     * @param id the custom block ID (e.g. "oraxen:my_block", "nexo:my_block", or an ItemsAdder ID)
+     * @return an Optional containing the representative ItemStack, or empty
+     */
+    private Optional<ItemStack> getCustomBlockItemStack(String id) {
+        if (id.startsWith("oraxen:") && BentoBox.getInstance().getHooks().getHook("Oraxen").isPresent()) {
+            return OraxenHook.getOptionalItemById(id.substring(7))
+                    .map(ib -> ib.build());
+        }
+        if (id.startsWith("nexo:") && addon.isNexo()) {
+            com.nexomc.nexo.items.ItemBuilder nexoItem = NexoItems.itemFromId(id.substring(5));
+            return nexoItem != null ? Optional.of(nexoItem.build()) : Optional.empty();
+        }
+        if (addon.isItemsAdder() && ItemsAdderHook.isInRegistry(id)) {
+            return ItemsAdderHook.getItemStack(id);
+        }
+        return Optional.empty();
     }
 
 

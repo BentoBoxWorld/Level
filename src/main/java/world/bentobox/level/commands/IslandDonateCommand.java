@@ -188,12 +188,14 @@ public class IslandDonateCommand extends ConfirmableCommand {
         StringBuilder prompt = new StringBuilder(
                 user.getTranslation("island.donate.inv.confirm-header"));
         for (Map.Entry<String, Integer> e : totals.entrySet()) {
-            // Resolve back to Material when possible for a nicer display label
-            Object displayKey;
+            // Resolve back to Material when possible for correct key-casing in getValue()
+            // (vanilla keys are stored uppercase by material.name(), but blockValues uses lowercase).
+            // For custom blocks the key is already the right namespaced string.
             Material mat = Material.matchMaterial(e.getKey());
-            displayKey = mat != null ? mat : e.getKey();
-            int value = addon.getBlockConfig().getValue(getWorld(), displayKey);
-            long points = (long) value * e.getValue();
+            Object displayKey = mat != null ? mat : e.getKey();
+            Integer rawValue = addon.getBlockConfig().getValue(getWorld(), displayKey);
+            if (rawValue == null) continue;
+            long points = (long) rawValue * e.getValue();
             totalPoints += points;
             prompt.append('\n').append(user.getTranslation("island.donate.inv.confirm-line",
                     TextVariables.NUMBER, String.valueOf(e.getValue()),
