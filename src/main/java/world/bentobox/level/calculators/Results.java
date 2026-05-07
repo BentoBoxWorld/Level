@@ -48,6 +48,14 @@ public class Results {
     AtomicLong level = new AtomicLong(0);
     AtomicInteger deathHandicap = new AtomicInteger(0);
     AtomicLong pointsToNextLevel = new AtomicLong(0);
+    /**
+     * Points already accumulated within the current level (i.e. how far past the
+     * start-of-current-level threshold the island has progressed). Combined with
+     * {@link #pointsToNextLevel} this gives the actual size of the current level
+     * interval — which is what should be shown to players when the configured
+     * level formula is non-linear.
+     */
+    AtomicLong pointsFromCurrentLevel = new AtomicLong(0);
     //AtomicLong initialLevel = new AtomicLong(0);
     AtomicLong initialCount = new AtomicLong(0);
     /**
@@ -113,6 +121,21 @@ public class Results {
      */
     public void setPointsToNextLevel(long points) {
         pointsToNextLevel.set(points);
+    }
+
+    /**
+     * @return the points already accumulated within the current level
+     */
+    public long getPointsFromCurrentLevel() {
+        return pointsFromCurrentLevel.get();
+    }
+
+    /**
+     * Set the points already accumulated within the current level
+     * @param points
+     */
+    public void setPointsFromCurrentLevel(long points) {
+        pointsFromCurrentLevel.set(points);
     }
 
     /**
