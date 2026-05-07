@@ -137,7 +137,10 @@ public class DonationPanel implements Listener {
         for (int slot : layout.donationSlots) {
             ItemStack item = inventory.getItem(slot);
             if (item != null && !item.getType().isAir()) {
-                Integer value = addon.getBlockConfig().getValue(world, item.getType());
+                String customId = addon.getCustomBlockId(item);
+                Integer value = customId != null
+                        ? addon.getBlockConfig().getValue(world, customId)
+                        : addon.getBlockConfig().getValue(world, item.getType());
                 if (value != null && value > 0) {
                     total += (long) value * item.getAmount();
                 }
@@ -176,15 +179,24 @@ public class DonationPanel implements Listener {
         for (int slot : layout.donationSlots) {
             ItemStack item = inventory.getItem(slot);
             if (item != null && !item.getType().isAir()) {
-                Material mat = item.getType();
-                Integer value = addon.getBlockConfig().getValue(world, mat);
+                String customId = addon.getCustomBlockId(item);
+                String donationId;
+                Integer value;
+                if (customId != null) {
+                    value = addon.getBlockConfig().getValue(world, customId);
+                    donationId = customId;
+                } else {
+                    Material mat = item.getType();
+                    value = addon.getBlockConfig().getValue(world, mat);
+                    donationId = mat.name();
+                }
                 if (value != null && value > 0) {
                     int count = item.getAmount();
                     long points = (long) value * count;
-                    donations.merge(mat.name(), count, Integer::sum);
+                    donations.merge(donationId, count, Integer::sum);
                     totalPoints += points;
                     // Record each material type as a separate donation log entry
-                    addon.getManager().donateBlocks(island, user.getUniqueId(), mat.name(), count, points);
+                    addon.getManager().donateBlocks(island, user.getUniqueId(), donationId, count, points);
                     // Clear the slot - items are consumed
                     inventory.setItem(slot, null);
                 } else {
@@ -337,7 +349,17 @@ public class DonationPanel implements Listener {
     }
 
     private boolean isValidDonationItem(ItemStack item) {
-        if (item == null || item.getType().isAir() || !item.getType().isBlock()) {
+        if (item == null || item.getType().isAir()) {
+            return false;
+        }
+        // Check custom block plugins first (Oraxen, Nexo, ItemsAdder)
+        String customId = addon.getCustomBlockId(item);
+        if (customId != null) {
+            Integer value = addon.getBlockConfig().getValue(world, customId);
+            return value != null && value > 0;
+        }
+        // Fall back to vanilla block check
+        if (!item.getType().isBlock()) {
             return false;
         }
         Integer value = addon.getBlockConfig().getValue(world, item.getType());

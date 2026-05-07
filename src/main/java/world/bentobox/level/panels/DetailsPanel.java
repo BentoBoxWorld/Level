@@ -12,8 +12,10 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.common.base.Enums;
+import com.nexomc.nexo.api.NexoItems;
 
 import lv.id.bonne.panelutils.PanelUtils;
+import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.TemplatedPanel;
@@ -23,6 +25,7 @@ import world.bentobox.bentobox.api.panels.reader.ItemTemplateRecord;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.hooks.ItemsAdderHook;
+import world.bentobox.bentobox.hooks.OraxenHook;
 import world.bentobox.level.Level;
 import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.util.Utils;
@@ -738,14 +741,38 @@ public class DetailsPanel {
                     Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(e), 0),
                     Utils.prettifyObject(key, this.user),
                     this.user.getTranslation(this.world, "level.gui.buttons.spawner.block-name"));
-        } else if (key instanceof String s && addon.isItemsAdder()) {
-            Optional<ItemStack> opt = ItemsAdderHook.getItemStack(s);
-            ItemStack icon = opt.orElse(new ItemStack(Material.PAPER));
-            String disp = opt.filter(is -> is.getItemMeta().hasDisplayName())
-                    .map(is -> is.getItemMeta().getDisplayName()).orElse(Utils.prettifyObject(key, this.user));
-            return new BlockDataRec(icon, this.user.getTranslationOrNothing(ref + "id", "[id]", s),
+        } else if (key instanceof String s) {
+            ItemStack icon = new ItemStack(Material.PAPER);
+            String disp = Utils.prettifyObject(s, this.user);
+
+            if (s.startsWith("oraxen:") && BentoBox.getInstance().getHooks().getHook("Oraxen").isPresent()) {
+                Optional<io.th0rgal.oraxen.items.ItemBuilder> opt = OraxenHook.getOptionalItemById(s.substring(7));
+                if (opt.isPresent()) {
+                    icon = opt.get().build();
+                    if (icon.getItemMeta() != null && icon.getItemMeta().hasDisplayName()) {
+                        disp = icon.getItemMeta().getDisplayName();
+                    }
+                }
+            } else if (s.startsWith("nexo:") && addon.isNexo()) {
+                com.nexomc.nexo.items.ItemBuilder nexoItem = NexoItems.itemFromId(s.substring(5));
+                if (nexoItem != null) {
+                    icon = nexoItem.build();
+                    if (icon.getItemMeta() != null && icon.getItemMeta().hasDisplayName()) {
+                        disp = icon.getItemMeta().getDisplayName();
+                    }
+                }
+            } else if (addon.isItemsAdder() && ItemsAdderHook.isInRegistry(s)) {
+                Optional<ItemStack> opt = ItemsAdderHook.getItemStack(s);
+                icon = opt.orElse(new ItemStack(Material.PAPER));
+                disp = opt.filter(is -> is.getItemMeta() != null && is.getItemMeta().hasDisplayName())
+                        .map(is -> is.getItemMeta().getDisplayName()).orElse(Utils.prettifyObject(s, this.user));
+            }
+
+            return new BlockDataRec(icon,
+                    this.user.getTranslationOrNothing(ref + "id", "[id]", s),
                     this.addon.getBlockConfig().getBlockValues().getOrDefault(s, 0),
-                    Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(s), 0), disp, "");
+                    Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(s), 0),
+                    disp, "");
         }
         return new BlockDataRec(new ItemStack(Material.PAPER), "", 0, 0, Utils.prettifyObject(key, this.user), "");
     }

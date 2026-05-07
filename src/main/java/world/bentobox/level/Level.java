@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -11,9 +12,12 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.nexomc.nexo.api.NexoItems;
 
 import world.bentobox.bentobox.api.addons.Addon;
 import world.bentobox.bentobox.api.addons.GameModeAddon;
@@ -21,6 +25,8 @@ import world.bentobox.bentobox.api.configuration.Config;
 import world.bentobox.bentobox.api.flags.Flag;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.bentobox.hooks.ItemsAdderHook;
+import world.bentobox.bentobox.hooks.OraxenHook;
 import world.bentobox.bentobox.managers.RanksManager;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.calculators.Pipeliner;
@@ -506,6 +512,44 @@ public class Level extends Addon {
 
     public boolean isItemsAdder() {
         return !getSettings().isDisableItemsAdder() && getPlugin().getHooks().getHook("ItemsAdder").isPresent();
+    }
+
+    /**
+     * Returns the custom-block plugin ID for an ItemStack, checking Oraxen, Nexo,
+     * and ItemsAdder in that order. Returns {@code null} when the item is not
+     * recognized as a custom block by any supported plugin.
+     *
+     * @param item the ItemStack to check (may be null)
+     * @return a namespaced custom-block ID such as {@code "oraxen:my_block"},
+     *         {@code "nexo:my_block"}, or an ItemsAdder ID, or {@code null}
+     */
+    @Nullable
+    public String getCustomBlockId(ItemStack item) {
+        if (item == null || item.getType().isAir()) {
+            return null;
+        }
+        // Check Oraxen
+        if (getPlugin().getHooks().getHook("Oraxen").isPresent()) {
+            String id = OraxenHook.getIdByItem(item);
+            if (id != null) {
+                return "oraxen:" + id;
+            }
+        }
+        // Check Nexo
+        if (isNexo()) {
+            String id = NexoItems.idFromItem(item);
+            if (id != null) {
+                return "nexo:" + id;
+            }
+        }
+        // Check ItemsAdder
+        if (isItemsAdder()) {
+            Optional<String> id = ItemsAdderHook.getNamespacedId(item);
+            if (id.isPresent()) {
+                return id.get();
+            }
+        }
+        return null;
     }
 
     /**
