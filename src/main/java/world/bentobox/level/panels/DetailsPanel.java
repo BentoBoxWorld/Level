@@ -768,11 +768,11 @@ public class DetailsPanel {
     private Optional<ItemStack> getCustomBlockItemStack(String id) {
         if (id.startsWith("oraxen:") && BentoBox.getInstance().getHooks().getHook("Oraxen").isPresent()) {
             return OraxenHook.getOptionalItemById(id.substring(7))
-                    .map(ib -> ib.build());
+                    .map(itemBuilder -> itemBuilder.build());
         }
         if (id.startsWith("nexo:") && addon.isNexo()) {
-            com.nexomc.nexo.items.ItemBuilder nexoItem = NexoItems.itemFromId(id.substring(5));
-            return nexoItem != null ? Optional.of(nexoItem.build()) : Optional.empty();
+            com.nexomc.nexo.items.ItemBuilder nexoBuilder = NexoItems.itemFromId(id.substring(5));
+            return nexoBuilder != null ? Optional.of(nexoBuilder.build()) : Optional.empty();
         }
         if (addon.isItemsAdder() && ItemsAdderHook.isInRegistry(id)) {
             return ItemsAdderHook.getItemStack(id);

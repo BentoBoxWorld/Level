@@ -188,9 +188,11 @@ public class IslandDonateCommand extends ConfirmableCommand {
         StringBuilder prompt = new StringBuilder(
                 user.getTranslation("island.donate.inv.confirm-header"));
         for (Map.Entry<String, Integer> e : totals.entrySet()) {
-            // Resolve back to Material when possible for correct key-casing in getValue()
-            // (vanilla keys are stored uppercase by material.name(), but blockValues uses lowercase).
-            // For custom blocks the key is already the right namespaced string.
+            // Vanilla keys are stored as Material.name() (e.g. "STONE"), but blockValues uses
+            // the lowercase namespaced key (e.g. "stone"). Resolving to a Material first lets
+            // getValue() derive the correct lowercase key via material.getKey().getKey().
+            // Custom-block keys (e.g. "oraxen:my_block") do not match any Material, so they
+            // are passed through as Strings and match blockValues directly.
             Material mat = Material.matchMaterial(e.getKey());
             Object displayKey = mat != null ? mat : e.getKey();
             Integer rawValue = addon.getBlockConfig().getValue(getWorld(), displayKey);
