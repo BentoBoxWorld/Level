@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -668,6 +669,16 @@ public class ValuePanel
         return this.createMaterialButton(template, this.elementList.get(index));
     }
 
+    private static String stripCustomPrefix(String key) {
+        if (key.startsWith("oraxen:")) {
+            return key.substring(7);
+        }
+        if (key.startsWith("nexo:")) {
+            return key.substring(5);
+        }
+        return key;
+    }
+
     private Material getIcon(String key) {
         // Filter out some names
         key = key.replaceAll("wall_", "");
@@ -773,18 +784,21 @@ public class ValuePanel
                 ? this.user.getTranslationOrNothing(baseKey + "limit", TextVariables.NUMBER, String.valueOf(blockLimit))
                         : "";
 
-        // Determine icon and display material text
-        Material icon = getIcon(key);
-        builder.icon((icon == null || icon == Material.AIR) ? Material.PAPER : icon);
-        if (key.startsWith("oraxen:")) {
-            key = key.substring(7);
-        } else if (key.startsWith("nexo:")) {
-            key = key.substring(5);
-        }
-        String displayMaterial = (icon == null) ? Util.prettifyText(key) : Utils.prettifyObject(key, user);
-        // Special handling for spawn eggs
-        if (icon != null && icon.name().endsWith("_SPAWN_EGG")) {
-            displayMaterial = Util.prettifyText(key);
+        // Prefer the actual custom-block ItemStack (real texture + display name) over a fallback Material icon.
+        Optional<ItemStack> customStack = Utils.getCustomBlockItemStack(addon, key);
+        String displayMaterial;
+        if (customStack.isPresent()) {
+            builder.icon(customStack.get().clone());
+            displayMaterial = Utils.getCustomBlockDisplayName(customStack, stripCustomPrefix(key), user);
+        } else {
+            Material icon = getIcon(key);
+            builder.icon((icon == null || icon == Material.AIR) ? Material.PAPER : icon);
+            String stripped = stripCustomPrefix(key);
+            displayMaterial = (icon == null) ? Util.prettifyText(stripped) : Utils.prettifyObject(stripped, user);
+            // Special handling for spawn eggs
+            if (icon != null && icon.name().endsWith("_SPAWN_EGG")) {
+                displayMaterial = Util.prettifyText(stripped);
+            }
         }
 
         // Set button title if available
