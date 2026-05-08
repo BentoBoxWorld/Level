@@ -751,12 +751,29 @@ public class IslandLevelCalculator {
         this.results.level.set(calculateLevel(blockAndDeathPoints));
 
         // Calculate how many points are required to get to the next level
-        long nextLevel = this.results.level.get();
+        long currentLevel = this.results.level.get();
+        long nextLevel = currentLevel;
         long blocks = blockAndDeathPoints;
-        while (nextLevel < this.results.level.get() + 1 && blocks - blockAndDeathPoints < MAX_AMOUNT) {
+        while (nextLevel < currentLevel + 1 && blocks - blockAndDeathPoints < MAX_AMOUNT) {
             nextLevel = calculateLevel(++blocks);
         }
         this.results.pointsToNextLevel.set(blocks - blockAndDeathPoints);
+
+        // Calculate how many points have been accumulated within the current level by
+        // walking back to the smallest block count that still yields the current level.
+        // For non-linear level formulas the per-level interval is not equal to the
+        // configured level cost, so we derive the actual interval here.
+        // Floor the probe at initialCount when zeroing new island levels: calculateLevel
+        // subtracts initialCount internally, so probing below it produces negative
+        // modifiedPoints which yield NaN (sqrt, log) or negative fractions that truncate
+        // to 0 — both compare >= to a level-0 island and would walk the loop to MAX_AMOUNT.
+        long minBlocks = addon.getSettings().isZeroNewIslandLevels() ? results.initialCount.get() : 0;
+        long lowerBlocks = blockAndDeathPoints;
+        while (lowerBlocks > minBlocks && blockAndDeathPoints - lowerBlocks < MAX_AMOUNT
+                && calculateLevel(lowerBlocks - 1) >= currentLevel) {
+            lowerBlocks--;
+        }
+        this.results.pointsFromCurrentLevel.set(blockAndDeathPoints - lowerBlocks);
 
         // Report
         results.report = getReport();
