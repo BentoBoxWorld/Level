@@ -12,10 +12,8 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.common.base.Enums;
-import com.nexomc.nexo.api.NexoItems;
 
 import lv.id.bonne.panelutils.PanelUtils;
-import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.panels.PanelItem;
 import world.bentobox.bentobox.api.panels.TemplatedPanel;
@@ -24,8 +22,6 @@ import world.bentobox.bentobox.api.panels.builders.TemplatedPanelBuilder;
 import world.bentobox.bentobox.api.panels.reader.ItemTemplateRecord;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
-import world.bentobox.bentobox.hooks.ItemsAdderHook;
-import world.bentobox.bentobox.hooks.OraxenHook;
 import world.bentobox.level.Level;
 import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.util.Utils;
@@ -742,12 +738,9 @@ public class DetailsPanel {
                     Utils.prettifyObject(key, this.user),
                     this.user.getTranslation(this.world, "level.gui.buttons.spawner.block-name"));
         } else if (key instanceof String s) {
-            Optional<ItemStack> optItem = getCustomBlockItemStack(s);
+            Optional<ItemStack> optItem = Utils.getCustomBlockItemStack(addon, s);
             ItemStack icon = optItem.orElse(new ItemStack(Material.PAPER));
-            String disp = optItem
-                    .filter(is -> is.getItemMeta() != null && is.getItemMeta().hasDisplayName())
-                    .map(is -> is.getItemMeta().getDisplayName())
-                    .orElse(Utils.prettifyObject(s, this.user));
+            String disp = Utils.getCustomBlockDisplayName(optItem, s, this.user);
 
             return new BlockDataRec(icon,
                     this.user.getTranslationOrNothing(ref + "id", "[id]", s),
@@ -757,29 +750,6 @@ public class DetailsPanel {
         }
         return new BlockDataRec(new ItemStack(Material.PAPER), "", 0, 0, Utils.prettifyObject(key, this.user), "");
     }
-
-    /**
-     * Returns the best available ItemStack for a custom-block string ID.
-     * Checks Oraxen, Nexo, and ItemsAdder in order; returns empty when none matches.
-     *
-     * @param id the custom block ID (e.g. "oraxen:my_block", "nexo:my_block", or an ItemsAdder ID)
-     * @return an Optional containing the representative ItemStack, or empty
-     */
-    private Optional<ItemStack> getCustomBlockItemStack(String id) {
-        if (id.startsWith("oraxen:") && BentoBox.getInstance().getHooks().getHook("Oraxen").isPresent()) {
-            return OraxenHook.getOptionalItemById(id.substring(7))
-                    .map(itemBuilder -> itemBuilder.build());
-        }
-        if (id.startsWith("nexo:") && addon.isNexo()) {
-            com.nexomc.nexo.items.ItemBuilder nexoBuilder = NexoItems.itemFromId(id.substring(5));
-            return nexoBuilder != null ? Optional.of(nexoBuilder.build()) : Optional.empty();
-        }
-        if (addon.isItemsAdder() && ItemsAdderHook.isInRegistry(id)) {
-            return ItemsAdderHook.getItemStack(id);
-        }
-        return Optional.empty();
-    }
-
 
     // ---------------------------------------------------------------------
     // Section: Other Methods
