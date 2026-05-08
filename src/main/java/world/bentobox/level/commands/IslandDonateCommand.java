@@ -1,6 +1,6 @@
 package world.bentobox.level.commands;
 
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -87,13 +87,20 @@ public class IslandDonateCommand extends ConfirmableCommand {
      */
     private boolean handleHandDonation(User user, Island island, List<String> args) {
         ItemStack hand = user.getPlayer().getInventory().getItemInMainHand();
-        if (hand.getType().isAir() || !hand.getType().isBlock()) {
+
+        // Check for a custom block (Oraxen, Nexo, ItemsAdder) first
+        final String customId = addon.getCustomBlockId(hand);
+
+        // If not a custom block, require a vanilla block
+        if (customId == null && (hand.getType().isAir() || !hand.getType().isBlock())) {
             user.sendMessage("island.donate.hand.not-block");
             return false;
         }
 
         final Material material = hand.getType();
-        final Integer blockValue = addon.getBlockConfig().getValue(getWorld(), material);
+        final Integer blockValue = customId != null
+                ? addon.getBlockConfig().getValue(getWorld(), customId)
+                : addon.getBlockConfig().getValue(getWorld(), material);
         if (blockValue == null || blockValue <= 0) {
             user.sendMessage("island.donate.no-value");
             return false;
@@ -121,18 +128,25 @@ public class IslandDonateCommand extends ConfirmableCommand {
         final long previewPoints = (long) previewAmount * blockValue;
         final int finalRequested = requested;
 
+        Object displayKey = customId != null ? customId : material;
         String prompt = user.getTranslation("island.donate.hand.confirm-prompt",
                 TextVariables.NUMBER, String.valueOf(previewAmount),
-                MATERIAL_PLACEHOLDER, Utils.prettifyObject(material, user),
+                MATERIAL_PLACEHOLDER, Utils.prettifyObject(displayKey, user),
                 POINTS_PLACEHOLDER, Utils.formatNumber(user, previewPoints));
 
-        askConfirmation(user, prompt, () -> performHandDonation(user, island, material, blockValue, finalRequested));
+        askConfirmation(user, prompt, () -> performHandDonation(user, island, material, customId, blockValue, finalRequested));
         return true;
     }
 
-    private void performHandDonation(User user, Island island, Material material, int blockValue, int requested) {
+    private void performHandDonation(User user, Island island, Material material, String customId, int blockValue, int requested) {
         ItemStack currentHand = user.getPlayer().getInventory().getItemInMainHand();
-        if (currentHand.getType() != material || currentHand.getAmount() == 0) {
+        // Verify the item in hand is still the same
+        if (customId != null) {
+            if (!customId.equals(addon.getCustomBlockId(currentHand)) || currentHand.getAmount() == 0) {
+                user.sendMessage("island.donate.hand.not-block");
+                return;
+            }
+        } else if (currentHand.getType() != material || currentHand.getAmount() == 0) {
             user.sendMessage("island.donate.hand.not-block");
             return;
         }
@@ -145,12 +159,14 @@ public class IslandDonateCommand extends ConfirmableCommand {
             currentHand.setAmount(currentHand.getAmount() - amount);
         }
 
-        addon.getManager().donateBlocks(island, user.getUniqueId(), material.name(), amount, points);
+        String donationId = customId != null ? customId : material.name();
+        addon.getManager().donateBlocks(island, user.getUniqueId(), donationId, amount, points);
         addon.getManager().recalculateAfterDonation(island);
 
+        Object displayKey = customId != null ? customId : material;
         user.sendMessage("island.donate.hand.success",
                 TextVariables.NUMBER, String.valueOf(amount),
-                MATERIAL_PLACEHOLDER, Utils.prettifyObject(material, user),
+                MATERIAL_PLACEHOLDER, Utils.prettifyObject(displayKey, user),
                 POINTS_PLACEHOLDER, Utils.formatNumber(user, points));
     }
 
@@ -161,7 +177,7 @@ public class IslandDonateCommand extends ConfirmableCommand {
      * donatable blocks remain in the inventory.
      */
     private boolean handleInvDonation(User user, Island island) {
-        Map<Material, Integer> totals = collectDonatableTotals(user.getPlayer().getInventory());
+        Map<String, Integer> totals = collectDonatableTotals(user.getPlayer().getInventory());
 
         if (totals.isEmpty()) {
             user.sendMessage("island.donate.empty");
@@ -171,13 +187,21 @@ public class IslandDonateCommand extends ConfirmableCommand {
         long totalPoints = 0L;
         StringBuilder prompt = new StringBuilder(
                 user.getTranslation("island.donate.inv.confirm-header"));
-        for (Map.Entry<Material, Integer> e : totals.entrySet()) {
-            int value = addon.getBlockConfig().getValue(getWorld(), e.getKey());
-            long points = (long) value * e.getValue();
+        for (Map.Entry<String, Integer> e : totals.entrySet()) {
+            // Vanilla keys are stored as Material.name() (e.g. "STONE"), but blockValues uses
+            // the lowercase namespaced key (e.g. "stone"). Resolving to a Material first lets
+            // getValue() derive the correct lowercase key via material.getKey().getKey().
+            // Custom-block keys (e.g. "oraxen:my_block") do not match any Material, so they
+            // are passed through as Strings and match blockValues directly.
+            Material mat = Material.matchMaterial(e.getKey());
+            Object displayKey = mat != null ? mat : e.getKey();
+            Integer rawValue = addon.getBlockConfig().getValue(getWorld(), displayKey);
+            if (rawValue == null) continue;
+            long points = (long) rawValue * e.getValue();
             totalPoints += points;
             prompt.append('\n').append(user.getTranslation("island.donate.inv.confirm-line",
                     TextVariables.NUMBER, String.valueOf(e.getValue()),
-                    MATERIAL_PLACEHOLDER, Utils.prettifyObject(e.getKey(), user),
+                    MATERIAL_PLACEHOLDER, Utils.prettifyObject(displayKey, user),
                     POINTS_PLACEHOLDER, Utils.formatNumber(user, points)));
         }
         prompt.append('\n').append(user.getTranslation("island.donate.inv.confirm-total",
@@ -190,7 +214,7 @@ public class IslandDonateCommand extends ConfirmableCommand {
     private void performInvDonation(User user, Island island) {
         PlayerInventory pInv = user.getPlayer().getInventory();
         ItemStack[] contents = pInv.getStorageContents();
-        Map<Material, Integer> donated = new EnumMap<>(Material.class);
+        Map<String, Integer> donated = new HashMap<>();
         long totalPoints = 0L;
 
         for (int i = 0; i < contents.length; i++) {
@@ -201,9 +225,11 @@ public class IslandDonateCommand extends ConfirmableCommand {
             }
             int amount = item.getAmount();
             long points = (long) value * amount;
-            donated.merge(item.getType(), amount, Integer::sum);
+            String customId = addon.getCustomBlockId(item);
+            String donationId = customId != null ? customId : item.getType().name();
+            donated.merge(donationId, amount, Integer::sum);
             totalPoints += points;
-            addon.getManager().donateBlocks(island, user.getUniqueId(), item.getType().name(), amount, points);
+            addon.getManager().donateBlocks(island, user.getUniqueId(), donationId, amount, points);
             contents[i] = null;
         }
         pInv.setStorageContents(contents);
@@ -219,11 +245,13 @@ public class IslandDonateCommand extends ConfirmableCommand {
         addon.getManager().recalculateAfterDonation(island);
     }
 
-    private Map<Material, Integer> collectDonatableTotals(PlayerInventory pInv) {
-        Map<Material, Integer> totals = new EnumMap<>(Material.class);
+    private Map<String, Integer> collectDonatableTotals(PlayerInventory pInv) {
+        Map<String, Integer> totals = new HashMap<>();
         for (ItemStack item : pInv.getStorageContents()) {
             if (donationValue(item) != null) {
-                totals.merge(item.getType(), item.getAmount(), Integer::sum);
+                String customId = addon.getCustomBlockId(item);
+                String key = customId != null ? customId : item.getType().name();
+                totals.merge(key, item.getAmount(), Integer::sum);
             }
         }
         return totals;
@@ -234,7 +262,17 @@ public class IslandDonateCommand extends ConfirmableCommand {
      *         positive configured value, or null otherwise
      */
     private Integer donationValue(ItemStack item) {
-        if (item == null || item.getType().isAir() || !item.getType().isBlock()) {
+        if (item == null || item.getType().isAir()) {
+            return null;
+        }
+        // Check custom block plugins first (Oraxen, Nexo, ItemsAdder)
+        String customId = addon.getCustomBlockId(item);
+        if (customId != null) {
+            Integer value = addon.getBlockConfig().getValue(getWorld(), customId);
+            return (value != null && value > 0) ? value : null;
+        }
+        // Fall back to vanilla block check
+        if (!item.getType().isBlock()) {
             return null;
         }
         Integer value = addon.getBlockConfig().getValue(getWorld(), item.getType());

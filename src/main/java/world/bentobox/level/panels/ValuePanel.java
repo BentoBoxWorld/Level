@@ -28,6 +28,7 @@ import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;
 import world.bentobox.bentobox.api.panels.builders.TemplatedPanelBuilder;
 import world.bentobox.bentobox.api.panels.reader.ItemTemplateRecord;
 import world.bentobox.bentobox.api.user.User;
+import world.bentobox.bentobox.hooks.CraftEngineHook;
 import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
@@ -735,6 +736,14 @@ public class ValuePanel
         if (key.startsWith("oraxen:") && BentoBox.getInstance().getHooks().getHook("Oraxen").isPresent()) {
             return Material.PAPER;
         }
+        // Try Nexo
+        if (key.startsWith("nexo:") && addon.isNexo()) {
+            return Material.PAPER;
+        }
+        // Try CraftEngine — IDs are already namespaced (e.g. "mynamespace:my_block")
+        if (addon.isCraftEngine() && CraftEngineHook.exists(key)) {
+            return Material.PAPER;
+        }
         return null;
     }
 
@@ -769,6 +778,8 @@ public class ValuePanel
         builder.icon((icon == null || icon == Material.AIR) ? Material.PAPER : icon);
         if (key.startsWith("oraxen:")) {
             key = key.substring(7);
+        } else if (key.startsWith("nexo:")) {
+            key = key.substring(5);
         }
         String displayMaterial = (icon == null) ? Util.prettifyText(key) : Utils.prettifyObject(key, user);
         // Special handling for spawn eggs
