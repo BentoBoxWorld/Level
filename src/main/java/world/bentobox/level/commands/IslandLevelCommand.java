@@ -110,11 +110,7 @@ public class IslandLevelCommand extends CompositeCommand {
             if (addon.getSettings().getDeathPenalty() != 0) {
                 user.sendMessage("island.level.deaths", "[number]", String.valueOf(results.getDeathHandicap()));
             }
-            // Send player how many points are required to reach next island level.
-            // Use the actual interval between the current and next level so the progress
-            // ratio is correct for non-linear level formulas (log/sqrt/etc.) — the
-            // configured level_cost only matches the interval for the default linear
-            // formula and would otherwise yield negative or misleading values.
+            // Send player how many points are required to reach next island level
             if (results.getPointsToNextLevel() >= 0) {
                 long interval = results.getPointsFromCurrentLevel() + results.getPointsToNextLevel();
                 if (interval <= 0) {

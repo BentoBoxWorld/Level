@@ -750,30 +750,34 @@ public class IslandLevelCalculator {
         }
         this.results.level.set(calculateLevel(blockAndDeathPoints));
 
-        // Calculate how many points are required to get to the next level
+        // Binary search for points to next level (first point count that exceeds currentLevel)
         long currentLevel = this.results.level.get();
-        long nextLevel = currentLevel;
-        long blocks = blockAndDeathPoints;
-        while (nextLevel < currentLevel + 1 && blocks - blockAndDeathPoints < MAX_AMOUNT) {
-            nextLevel = calculateLevel(++blocks);
+        long lo = blockAndDeathPoints + 1;
+        long hi = blockAndDeathPoints + MAX_AMOUNT;
+        while (lo < hi) {
+            long mid = lo + (hi - lo) / 2;
+            if (calculateLevel(mid) > currentLevel) {
+                hi = mid;
+            } else {
+                lo = mid + 1;
+            }
         }
-        this.results.pointsToNextLevel.set(blocks - blockAndDeathPoints);
+        this.results.pointsToNextLevel.set(lo - blockAndDeathPoints);
 
-        // Calculate how many points have been accumulated within the current level by
-        // walking back to the smallest block count that still yields the current level.
-        // For non-linear level formulas the per-level interval is not equal to the
-        // configured level cost, so we derive the actual interval here.
-        // Floor the probe at initialCount when zeroing new island levels: calculateLevel
-        // subtracts initialCount internally, so probing below it produces negative
-        // modifiedPoints which yield NaN (sqrt, log) or negative fractions that truncate
-        // to 0 — both compare >= to a level-0 island and would walk the loop to MAX_AMOUNT.
+        // Binary search for points accumulated within the current level.
+        // Floor at initialCount when zeroing new islands to avoid negative/NaN in non-linear formulas.
         long minBlocks = addon.getSettings().isZeroNewIslandLevels() ? results.initialCount.get() : 0;
-        long lowerBlocks = blockAndDeathPoints;
-        while (lowerBlocks > minBlocks && blockAndDeathPoints - lowerBlocks < MAX_AMOUNT
-                && calculateLevel(lowerBlocks - 1) >= currentLevel) {
-            lowerBlocks--;
+        lo = Math.max(minBlocks, blockAndDeathPoints - MAX_AMOUNT);
+        hi = blockAndDeathPoints;
+        while (lo < hi) {
+            long mid = lo + (hi - lo) / 2;
+            if (calculateLevel(mid) >= currentLevel) {
+                hi = mid;
+            } else {
+                lo = mid + 1;
+            }
         }
-        this.results.pointsFromCurrentLevel.set(blockAndDeathPoints - lowerBlocks);
+        this.results.pointsFromCurrentLevel.set(blockAndDeathPoints - lo);
 
         // Report
         results.report = getReport();
