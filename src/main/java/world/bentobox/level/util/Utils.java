@@ -20,6 +20,7 @@ import com.nexomc.nexo.api.NexoItems;
 
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.user.User;
+import world.bentobox.bentobox.hooks.CraftEngineHook;
 import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.bentobox.hooks.LangUtilsHook;
 import world.bentobox.bentobox.hooks.OraxenHook;
@@ -226,10 +227,11 @@ public class Utils
 
     /**
      * Returns the best available ItemStack for a custom-block string ID.
-     * Checks Oraxen, Nexo, and ItemsAdder in order; returns empty when none matches.
+     * Checks Oraxen, Nexo, ItemsAdder, and CraftEngine in order; returns empty when none matches.
      *
      * @param addon the Level addon
-     * @param id    the custom block ID (e.g. "oraxen:my_block", "nexo:my_block", or an ItemsAdder ID)
+     * @param id    the custom block ID (e.g. "oraxen:my_block", "nexo:my_block", an ItemsAdder ID,
+     *              or a CraftEngine ID such as "default:my_block")
      * @return an Optional containing the representative ItemStack, or empty
      */
     public static Optional<ItemStack> getCustomBlockItemStack(Level addon, String id) {
@@ -246,12 +248,18 @@ public class Utils
         if (addon.isItemsAdder() && ItemsAdderHook.isInRegistry(id)) {
             return ItemsAdderHook.getItemStack(id);
         }
+        if (addon.isCraftEngine()) {
+            return CraftEngineHook.getItemStack(id);
+        }
         return Optional.empty();
     }
 
     /**
      * Returns the display name from an ItemStack's meta when present, otherwise falls back to
      * {@link #prettifyObject(Object, User)} on the original key.
+     * <p>
+     * Checks the legacy {@code display.Name} (used by Oraxen, Nexo, ItemsAdder) and then the
+     * modern {@code minecraft:item_name} component (used by CraftEngine and other 1.20.5+ items).
      *
      * @param itemStack the optional ItemStack (typically from a custom-block plugin)
      * @param key       the raw key used as a fallback for prettification
@@ -259,8 +267,17 @@ public class Utils
      * @return the human-readable display name
      */
     public static String getCustomBlockDisplayName(Optional<ItemStack> itemStack, String key, User user) {
-        return itemStack.filter(is -> is.getItemMeta() != null && is.getItemMeta().hasDisplayName())
-                .map(is -> is.getItemMeta().getDisplayName()).orElse(prettifyObject(key, user));
+        if (itemStack.isEmpty() || itemStack.get().getItemMeta() == null) {
+            return prettifyObject(key, user);
+        }
+        org.bukkit.inventory.meta.ItemMeta meta = itemStack.get().getItemMeta();
+        if (meta.hasDisplayName()) {
+            return meta.getDisplayName();
+        }
+        if (meta.hasItemName()) {
+            return meta.getItemName();
+        }
+        return prettifyObject(key, user);
     }
 
     public static String prettifyDescription(Object object, User user) {

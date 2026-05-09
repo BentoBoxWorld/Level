@@ -107,14 +107,18 @@ public class IslandValueCommand extends CompositeCommand
 
         if (value != null)
         {
+            String displayName = (material instanceof String id)
+                    ? Utils.getCustomBlockDisplayName(Utils.getCustomBlockItemStack(addon, id), id, user)
+                    : Utils.prettifyObject(material, user);
+
             Utils.sendMessage(user, user.getTranslation(this.getWorld(), "level.conversations.value", "[value]",
-                    String.valueOf(value), MATERIAL, Utils.prettifyObject(material, user)));
+                    String.valueOf(value), MATERIAL, displayName));
 
             double underWater = this.addon.getSettings().getUnderWaterMultiplier();
 
             if (underWater > 1.0) {
                 Utils.sendMessage(user, user.getTranslation(this.getWorld(), "level.conversations.success-underwater",
-                        "[value]", (underWater * value) + ""), MATERIAL, Utils.prettifyObject(material, user));
+                        "[value]", (underWater * value) + ""), MATERIAL, displayName);
             }
 
             // Show how many have been placed and how many are allowed
