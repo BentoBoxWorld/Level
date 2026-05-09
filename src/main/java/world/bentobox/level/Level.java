@@ -25,6 +25,7 @@ import world.bentobox.bentobox.api.configuration.Config;
 import world.bentobox.bentobox.api.flags.Flag;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.bentobox.hooks.CraftEngineHook;
 import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.bentobox.hooks.OraxenHook;
 import world.bentobox.bentobox.managers.RanksManager;
@@ -516,12 +517,13 @@ public class Level extends Addon {
 
     /**
      * Returns the custom-block plugin ID for an ItemStack, checking Oraxen, Nexo,
-     * and ItemsAdder in that order. Returns {@code null} when the item is not
-     * recognized as a custom block by any supported plugin.
+     * ItemsAdder, and CraftEngine in that order. Returns {@code null} when the item
+     * is not recognized as a custom block by any supported plugin.
      *
      * @param item the ItemStack to check (may be null)
      * @return a namespaced custom-block ID such as {@code "oraxen:my_block"},
-     *         {@code "nexo:my_block"}, or an ItemsAdder ID, or {@code null}
+     *         {@code "nexo:my_block"}, an ItemsAdder ID, or a CraftEngine ID
+     *         (e.g. {@code "default:my_block"}), or {@code null}
      */
     @Nullable
     public String getCustomBlockId(ItemStack item) {
@@ -547,6 +549,13 @@ public class Level extends Addon {
             Optional<String> id = ItemsAdderHook.getNamespacedId(item);
             if (id.isPresent()) {
                 return id.get();
+            }
+        }
+        // Check CraftEngine — IDs are already namespaced (e.g. "mynamespace:my_block")
+        if (isCraftEngine()) {
+            String id = CraftEngineHook.getItemId(item);
+            if (id != null) {
+                return id;
             }
         }
         return null;
