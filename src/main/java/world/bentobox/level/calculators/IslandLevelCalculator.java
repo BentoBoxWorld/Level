@@ -801,9 +801,14 @@ public class IslandLevelCalculator {
     }
 
     public void scanIsland(Pipeliner pipeliner) {
-        // In donations-only mode, skip the chunk scan entirely. tidyUp() will add
-        // the donated points and compute the level from those alone.
-        if (addon.getSettings().isDonationsOnly()) {
+        // In donations-only mode, skip the chunk scan for regular level calcs:
+        // tidyUp() will add the donated points and compute the level from those
+        // alone. Zero-island scans (run on island create/reset when
+        // zero-new-island-levels is true) still run the full scan so the
+        // initial-count handicap is recorded — this lets an admin later
+        // disable donations-only without losing the handicap that would
+        // otherwise need to be subtracted from the scanned block total.
+        if (addon.getSettings().isDonationsOnly() && !zeroIsland) {
             pipeliner.getInProcessQueue().remove(this);
             this.tidyUp();
             this.getR().complete(getResults());
