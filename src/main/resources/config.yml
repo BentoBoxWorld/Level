@@ -20,13 +20,22 @@ concurrent-island-calcs: 1
 # If an island takes longer that this time to calculate, then the calculation will abort.
 # Generally, calculation should only take a few seconds, so if this ever triggers then something is not right.
 calculation-timeout: 5
-# 
+#
 # Zero island levels on new island or island reset
 # If true, Level will calculate the starter island's level and remove it from any future level calculations.
 # If false, the player's starter island blocks will count towards their level.
 # This will reduce CPU if false.
 zero-new-island-levels: true
-# 
+#
+# Donations-only mode
+# If true, the island block scan is skipped entirely and the island level
+# is computed only from blocks donated via /island donate. This removes the
+# per-recalculation CPU cost of scanning the island.
+# The /island detail command is not registered in this mode, since there
+# are no scanned blocks to break down. /island level still works and reports
+# the level based on donated blocks.
+donations-only: false
+#
 # Calculate island level on login
 # This silently calculates the player's island level when they login
 # This applies to all islands the player has on the server, e.g., BSkyBlock, AcidIsland
