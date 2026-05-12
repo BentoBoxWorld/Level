@@ -247,4 +247,19 @@ class LevelTest extends CommonTestSetup {
 		assertEquals(100, s.getLevelCost());
 	}
 
+	/**
+	 * Donations-only mode must not register the IslandDetailCommand, so we expect
+	 * four player commands instead of the usual five.
+	 */
+	@Test
+	void testAllLoadedDonationsOnlySkipsDetailCommand() {
+		mockedBukkit.when(() -> Bukkit.getWorld("acidisland_world")).thenReturn(null);
+		addon.getSettings().setDonationsOnly(true);
+		addon.allLoaded();
+		// 4 player commands (level, top, value, donate) — no detail
+		verify(cmd, times(4)).getAddon();
+		// Admin command count is unchanged
+		verify(adminCmd, times(5)).getAddon();
+	}
+
 }

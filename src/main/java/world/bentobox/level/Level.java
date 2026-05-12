@@ -275,7 +275,11 @@ public class Level extends Addon {
             new IslandLevelCommand(this, playerCmd);
             new IslandTopCommand(this, playerCmd);
             new IslandValueCommand(this, playerCmd);
-            new IslandDetailCommand(this, playerCmd);
+            // In donations-only mode, there are no scanned blocks to break down,
+            // so the detail command is not registered.
+            if (!getSettings().isDonationsOnly()) {
+                new IslandDetailCommand(this, playerCmd);
+            }
             new IslandDonateCommand(this, playerCmd);
         });
     }

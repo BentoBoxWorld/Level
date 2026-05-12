@@ -794,6 +794,14 @@ public class IslandLevelCalculator {
     }
 
     public void scanIsland(Pipeliner pipeliner) {
+        // In donations-only mode, skip the chunk scan entirely. tidyUp() will add
+        // the donated points and compute the level from those alone.
+        if (addon.getSettings().isDonationsOnly()) {
+            pipeliner.getInProcessQueue().remove(this);
+            this.tidyUp();
+            this.getR().complete(getResults());
+            return;
+        }
         // Scan the next chunk
         scanNextChunk().thenAccept(result -> {
             if (!Bukkit.isPrimaryThread()) {
