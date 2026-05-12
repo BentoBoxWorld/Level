@@ -133,9 +133,14 @@ public class IslandLevelCalculator {
      */
     private long calculateLevel(final long rawPoints) {
         String calcString = addon.getSettings().getLevelCalc();
-        // Reduce count by initial count, if zeroing is done
+        // Reduce count by initial count, if zeroing is done. In donations-only
+        // mode the initial count is ignored — it was recorded from a one-off
+        // scan of the starter island and would push the level wildly negative
+        // when subtracted from donation-only points (e.g. when an admin enables
+        // this mode mid-game on islands that already have an initial count).
         long modifiedPoints = rawPoints
-                - (addon.getSettings().isZeroNewIslandLevels() ? results.initialCount.get() : 0);
+                - (addon.getSettings().isZeroNewIslandLevels() && !addon.getSettings().isDonationsOnly()
+                        ? results.initialCount.get() : 0);
         // Paste in the values to the formula
         // Use Math.max(1, ...) to prevent division by zero if island_members is used in the formula
         int memberCount = Math.max(1, this.island.getMemberSet().size());
@@ -262,7 +267,7 @@ public class IslandLevelCalculator {
         if (addon.getSettings().isZeroNewIslandLevels()) {
             reportLines.add("Initial island level = " + (0L - addon.getManager().getInitialLevel(island)));
         }*/
-        if (addon.getSettings().isZeroNewIslandLevels()) {
+        if (addon.getSettings().isZeroNewIslandLevels() && !addon.getSettings().isDonationsOnly()) {
             reportLines.add("Initial island count = " + (0L - addon.getManager().getInitialCount(island)));
         }
         reportLines.add("Previous level = " + addon.getManager().getIslandLevel(island.getWorld(), island.getOwner()));
@@ -766,7 +771,9 @@ public class IslandLevelCalculator {
 
         // Binary search for points accumulated within the current level.
         // Floor at initialCount when zeroing new islands to avoid negative/NaN in non-linear formulas.
-        long minBlocks = addon.getSettings().isZeroNewIslandLevels() ? results.initialCount.get() : 0;
+        // In donations-only mode, the initial count is ignored (see calculateLevel).
+        long minBlocks = addon.getSettings().isZeroNewIslandLevels() && !addon.getSettings().isDonationsOnly()
+                ? results.initialCount.get() : 0;
         lo = Math.max(minBlocks, blockAndDeathPoints - MAX_AMOUNT);
         hi = blockAndDeathPoints;
         while (lo < hi) {
@@ -794,9 +801,14 @@ public class IslandLevelCalculator {
     }
 
     public void scanIsland(Pipeliner pipeliner) {
-        // In donations-only mode, skip the chunk scan entirely. tidyUp() will add
-        // the donated points and compute the level from those alone.
-        if (addon.getSettings().isDonationsOnly()) {
+        // In donations-only mode, skip the chunk scan for regular level calcs:
+        // tidyUp() will add the donated points and compute the level from those
+        // alone. Zero-island scans (run on island create/reset when
+        // zero-new-island-levels is true) still run the full scan so the
+        // initial-count handicap is recorded — this lets an admin later
+        // disable donations-only without losing the handicap that would
+        // otherwise need to be subtracted from the scanned block total.
+        if (addon.getSettings().isDonationsOnly() && !zeroIsland) {
             pipeliner.getInProcessQueue().remove(this);
             this.tidyUp();
             this.getR().complete(getResults());
