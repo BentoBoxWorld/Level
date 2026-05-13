@@ -57,7 +57,7 @@
         <mock-bukkit.version>v1.21-SNAPSHOT</mock-bukkit.version>
         <!-- More visible way how to change dependency versions -->
         <paper.version>1.21.11-R0.1-SNAPSHOT</paper.version>
-        <bentobox.version>3.15.0-SNAPSHOT</bentobox.version>
+        <bentobox.version>3.15.1-SNAPSHOT</bentobox.version>
         <!-- Warps addon version -->
         <warps.version>1.12.0</warps.version>
         <!-- Visit addon version -->
@@ -69,7 +69,7 @@
         <!-- Do not change unless you want different name for local builds. -->
         <build.number>-LOCAL</build.number>
         <!-- This allows to change between versions. -->
-        <build.version>2.26.0</build.version>
+        <build.version>2.27.0</build.version>
         <sonar.projectKey>BentoBoxWorld_Level</sonar.projectKey>
         <sonar.organization>bentobox-world</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>

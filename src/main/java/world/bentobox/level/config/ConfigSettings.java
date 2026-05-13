@@ -54,6 +54,17 @@ public class ConfigSettings implements ConfigObject {
     @ConfigEntry(path = "zero-new-island-levels")
     private boolean zeroNewIslandLevels = true;
 
+    @ConfigComment("")
+    @ConfigComment("Donations-only mode")
+    @ConfigComment("If true, the island block scan is skipped entirely and the island level")
+    @ConfigComment("is computed only from blocks donated via /island donate. This removes the")
+    @ConfigComment("per-recalculation CPU cost of scanning the island.")
+    @ConfigComment("The /island detail command is not registered in this mode, since there")
+    @ConfigComment("are no scanned blocks to break down. /island level still works and reports")
+    @ConfigComment("the level based on donated blocks.")
+    @ConfigEntry(path = "donations-only")
+    private boolean donationsOnly = false;
+
 
     @ConfigComment("")
     @ConfigComment("Calculate island level on login")
@@ -508,5 +519,20 @@ public class ConfigSettings implements ConfigObject {
      */
     public void setDisableItemsAdder(boolean disableItemsAdder) {
         this.disableItemsAdder = disableItemsAdder;
+    }
+
+    /**
+     * @return true if donations-only mode is enabled (block scan skipped, level
+     *         computed from donations only, /island detail disabled)
+     */
+    public boolean isDonationsOnly() {
+        return donationsOnly;
+    }
+
+    /**
+     * @param donationsOnly the donationsOnly to set
+     */
+    public void setDonationsOnly(boolean donationsOnly) {
+        this.donationsOnly = donationsOnly;
     }
 }

@@ -94,6 +94,19 @@ class ResultsTest {
         assertEquals(0, results.getDeathHandicap());
     }
 
+    // --- Points from current level ---
+
+    @Test
+    void testSetAndGetPointsFromCurrentLevel() {
+        results.setPointsFromCurrentLevel(75L);
+        assertEquals(75L, results.getPointsFromCurrentLevel());
+    }
+
+    @Test
+    void testDefaultPointsFromCurrentLevelIsZero() {
+        assertEquals(0L, results.getPointsFromCurrentLevel());
+    }
+
     // --- Donated points ---
 
     @Test

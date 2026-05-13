@@ -65,6 +65,11 @@ island:
       success: "<green>Пожертвовано [number] x [material] за <aqua>[points]<green> постійних очок!"
       not-block: "<red>Ви повинні тримати блок, який можна розмістити."
       confirm-prompt: "<red>Буде ЗНИЩЕНО <gold>[number] x [material]<red> за <aqua>[points]<red> постійних очок."
+    inv:
+      keyword: "inv"
+      confirm-header: "<red>Ці блоки будуть ЗНИЩЕНІ з вашого інвентарю:"
+      confirm-line: "<gold>[number] x [material] <gray>= <aqua>[points]<gray> очок"
+      confirm-total: "<red>Всього: <aqua>[points]<red> постійних очок."
   top:
     description: показати першу десятку
     gui-title: "& Десятка Кращих"

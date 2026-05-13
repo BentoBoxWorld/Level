@@ -180,7 +180,11 @@ public class TopLevelPanel {
                     || !this.addon.getVisitHook().getAddonManager().preprocessTeleportation(this.user, island, true);
 	    }
 	    case "VIEW" -> {
-		return island.getOwner() == null
+		// In donations-only mode there is no detail panel to view, so this
+		// action is filtered out — that also drops the "click to view"
+		// tooltip from the rendered button.
+		return this.addon.getSettings().isDonationsOnly()
+			|| island.getOwner() == null
 			|| !island.getMemberSet(RanksManager.MEMBER_RANK).contains(this.user.getUniqueId());
 	    }
 	    default -> {

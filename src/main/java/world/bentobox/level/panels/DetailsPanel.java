@@ -22,7 +22,6 @@ import world.bentobox.bentobox.api.panels.builders.TemplatedPanelBuilder;
 import world.bentobox.bentobox.api.panels.reader.ItemTemplateRecord;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
-import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.level.Level;
 import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.util.Utils;
@@ -738,18 +737,19 @@ public class DetailsPanel {
                     Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(e), 0),
                     Utils.prettifyObject(key, this.user),
                     this.user.getTranslation(this.world, "level.gui.buttons.spawner.block-name"));
-        } else if (key instanceof String s && addon.isItemsAdder()) {
-            Optional<ItemStack> opt = ItemsAdderHook.getItemStack(s);
-            ItemStack icon = opt.orElse(new ItemStack(Material.PAPER));
-            String disp = opt.filter(is -> is.getItemMeta().hasDisplayName())
-                    .map(is -> is.getItemMeta().getDisplayName()).orElse(Utils.prettifyObject(key, this.user));
-            return new BlockDataRec(icon, this.user.getTranslationOrNothing(ref + "id", "[id]", s),
+        } else if (key instanceof String s) {
+            Optional<ItemStack> optItem = Utils.getCustomBlockItemStack(addon, s);
+            ItemStack icon = optItem.orElse(new ItemStack(Material.PAPER));
+            String disp = Utils.getCustomBlockDisplayName(optItem, s, this.user);
+
+            return new BlockDataRec(icon,
+                    this.user.getTranslationOrNothing(ref + "id", "[id]", s),
                     this.addon.getBlockConfig().getBlockValues().getOrDefault(s, 0),
-                    Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(s), 0), disp, "");
+                    Objects.requireNonNullElse(this.addon.getBlockConfig().getLimit(s), 0),
+                    disp, "");
         }
         return new BlockDataRec(new ItemStack(Material.PAPER), "", 0, 0, Utils.prettifyObject(key, this.user), "");
     }
-
 
     // ---------------------------------------------------------------------
     // Section: Other Methods
