@@ -305,7 +305,7 @@ public class IslandLevelCalculator {
             donatedBlocks.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .forEach(entry -> {
-                    Integer value = addon.getBlockConfig().getBlockValues().getOrDefault(entry.getKey().toLowerCase(java.util.Locale.ENGLISH), 0);
+                    Integer value = Objects.requireNonNullElse(addon.getBlockConfig().getValue(island.getWorld(), entry.getKey().toLowerCase(java.util.Locale.ENGLISH)), 0);
                     long totalValue = (long) value * entry.getValue();
                     reportLines.add("  " + Util.prettifyText(entry.getKey()) + " x "
                             + String.format("%,d", entry.getValue())
@@ -730,8 +730,17 @@ public class IslandLevelCalculator {
         results.rawBlockCount
         .addAndGet((long) (results.underWaterBlockCount.get() * addon.getSettings().getUnderWaterMultiplier()));
 
-        // Add donated block points (permanent contributions that persist across recalculations)
-        long donatedPoints = addon.getManager().getDonatedPoints(island);
+        // Add donated block points (permanent contributions that persist across recalculations).
+        // Recalculate from the donated blocks map using current block config values so the
+        // level always reflects the current configuration, even if block values changed since donation.
+        Map<String, Integer> donatedBlocksMap = addon.getManager().getDonatedBlocks(island);
+        long donatedPoints = donatedBlocksMap.entrySet().stream()
+                .mapToLong(entry -> {
+                    Integer value = addon.getBlockConfig().getValue(island.getWorld(),
+                            entry.getKey().toLowerCase(java.util.Locale.ENGLISH));
+                    return (long) Objects.requireNonNullElse(value, 0) * entry.getValue();
+                })
+                .sum();
         results.rawBlockCount.addAndGet(donatedPoints);
         results.donatedPoints.set(donatedPoints);
 
