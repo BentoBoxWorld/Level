@@ -305,7 +305,7 @@ public class IslandLevelCalculator {
             donatedBlocks.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .forEach(entry -> {
-                    Integer value = addon.getBlockConfig().getBlockValues().getOrDefault(entry.getKey().toLowerCase(java.util.Locale.ENGLISH), 0);
+                    Integer value = Objects.requireNonNullElse(addon.getBlockConfig().getValue(island.getWorld(), entry.getKey().toLowerCase(java.util.Locale.ENGLISH)), 0);
                     long totalValue = (long) value * entry.getValue();
                     reportLines.add("  " + Util.prettifyText(entry.getKey()) + " x "
                             + String.format("%,d", entry.getValue())
@@ -366,8 +366,14 @@ public class IslandLevelCalculator {
             return;
         }
         Pair<Integer, Integer> p = pairList.poll();
-        // We need to generate now all the time because some game modes are not voids
-        Util.getChunkAtAsync(world, p.x, p.z, true).thenAccept(chunk -> {
+        // For zero-island scans, do not force chunk generation. Forcing the
+        // generator for every chunk in a large protection range (e.g. 1000 →
+        // ~16k chunks/dim) blows past the calculation timeout. Generator
+        // blocks that appear later (sea floor, nether ceiling, etc.) are
+        // picked up incrementally by NewChunkListener as chunks generate
+        // during normal play. Regular scans still generate, because some game
+        // modes are not voids.
+        Util.getChunkAtAsync(world, p.x, p.z, !zeroIsland).thenAccept(chunk -> {
             if (chunk != null) {
                 chunkList.add(chunk);
                 roseStackerCheck(chunk);
@@ -730,23 +736,19 @@ public class IslandLevelCalculator {
         results.rawBlockCount
         .addAndGet((long) (results.underWaterBlockCount.get() * addon.getSettings().getUnderWaterMultiplier()));
 
-        // Add donated block points (permanent contributions that persist across recalculations)
-        // Apply blockconfig limits so that donated blocks beyond the limit do not raise the level
-        long cappedDonatedPoints = 0L;
+        // Add donated block points (permanent contributions that persist across recalculations).
+        // Recalculate from the donated blocks map using current block config values so the
+        // level always reflects the current configuration, even if block values changed since donation.
         Map<String, Integer> donatedBlocksMap = addon.getManager().getDonatedBlocks(island);
-        for (Map.Entry<String, Integer> entry : donatedBlocksMap.entrySet()) {
-            String blockId = entry.getKey();
-            int count = entry.getValue();
-            // Resolve to a Material (vanilla) or leave as String (custom block)
-            Material mat = Material.matchMaterial(blockId);
-            Object blockObj = mat != null ? mat : blockId;
-            int value = getValue(blockObj);
-            Integer limit = addon.getBlockConfig().getLimit(blockObj);
-            int cappedCount = (limit != null) ? Math.min(count, limit) : count;
-            cappedDonatedPoints += (long) cappedCount * value;
-        }
-        results.rawBlockCount.addAndGet(cappedDonatedPoints);
-        results.donatedPoints.set(cappedDonatedPoints);
+        long donatedPoints = donatedBlocksMap.entrySet().stream()
+                .mapToLong(entry -> {
+                    Integer value = addon.getBlockConfig().getValue(island.getWorld(),
+                            entry.getKey().toLowerCase(java.util.Locale.ENGLISH));
+                    return (long) Objects.requireNonNullElse(value, 0) * entry.getValue();
+                })
+                .sum();
+        results.rawBlockCount.addAndGet(donatedPoints);
+        results.donatedPoints.set(donatedPoints);
 
         // Set the death penalty
         if (this.addon.getSettings().isSumTeamDeaths()) {
