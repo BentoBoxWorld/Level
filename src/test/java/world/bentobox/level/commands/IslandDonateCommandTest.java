@@ -248,4 +248,86 @@ class IslandDonateCommandTest extends CommonTestSetup {
         // No donation yet — only confirmation requested
         verify(manager, never()).donateBlocks(any(), any(UUID.class), anyString(), anyInt(), anyLong());
     }
+
+    @Test
+    void testExecuteInvPromptShowsLimitNoticeWhenCapped() {
+        // 441 cobblestone in inventory, blockconfig limit of 100, nothing donated yet
+        ItemStack cobble = mock(ItemStack.class);
+        when(cobble.getType()).thenReturn(Material.COBBLESTONE);
+        when(cobble.getAmount()).thenReturn(441);
+
+        when(inventory.getStorageContents()).thenReturn(new ItemStack[] { cobble });
+        when(blockConfig.getValue(any(), eq(Material.COBBLESTONE))).thenReturn(1);
+        when(blockConfig.getLimit(Material.COBBLESTONE)).thenReturn(100);
+        when(manager.getDonatedBlocks(island)).thenReturn(java.util.Collections.emptyMap());
+
+        assertTrue(cmd.execute(user, "donate", List.of("inv")));
+
+        // limit-notice should be requested because 441 > limit of 100
+        verify(user).getTranslation("island.donate.limit-notice");
+        // confirm-line should be built using the limited amount (100), not the raw 441
+        verify(user).getTranslation(eq("island.donate.inv.confirm-line"),
+                eq("[number]"), eq("100"),
+                eq("[material]"), anyString(),
+                eq("[points]"), anyString());
+    }
+
+    @Test
+    void testExecuteHandPromptShowsLimitNoticeWhenCapped() {
+        // 64 cobblestone in hand, limit 100, already donated 64 -> only 36 can be donated
+        ItemStack cobble = mock(ItemStack.class);
+        when(cobble.getType()).thenReturn(Material.COBBLESTONE);
+        when(cobble.getAmount()).thenReturn(64);
+        when(inventory.getItemInMainHand()).thenReturn(cobble);
+        when(blockConfig.getValue(any(), eq(Material.COBBLESTONE))).thenReturn(1);
+        when(blockConfig.getLimit(Material.COBBLESTONE)).thenReturn(100);
+        when(manager.getDonatedBlocks(island)).thenReturn(java.util.Map.of("COBBLESTONE", 64));
+
+        assertTrue(cmd.execute(user, "donate", List.of("hand")));
+
+        // The confirm prompt should be built using the limited amount (36), not the raw 64
+        verify(user).getTranslation(eq("island.donate.hand.confirm-prompt"),
+                eq("[number]"), eq("36"),
+                eq("[material]"), anyString(),
+                eq("[points]"), anyString());
+        verify(user).getTranslation("island.donate.limit-notice");
+        // No donation yet — only confirmation requested
+        verify(manager, never()).donateBlocks(any(), any(UUID.class), anyString(), anyInt(), anyLong());
+    }
+
+    @Test
+    void testExecuteHandRejectsWhenLimitAlreadyReached() {
+        // limit 100, already donated 100 -> no prompt, immediate limit-reached message
+        ItemStack cobble = mock(ItemStack.class);
+        when(cobble.getType()).thenReturn(Material.COBBLESTONE);
+        when(cobble.getAmount()).thenReturn(64);
+        when(inventory.getItemInMainHand()).thenReturn(cobble);
+        when(blockConfig.getValue(any(), eq(Material.COBBLESTONE))).thenReturn(1);
+        when(blockConfig.getLimit(Material.COBBLESTONE)).thenReturn(100);
+        when(manager.getDonatedBlocks(island)).thenReturn(java.util.Map.of("COBBLESTONE", 100));
+
+        assertFalse(cmd.execute(user, "donate", List.of("hand")));
+
+        verify(user).sendMessage(eq("island.donate.limit-reached"),
+                eq("[material]"), anyString());
+        verify(user, never()).getTranslation(eq("island.donate.hand.confirm-prompt"),
+                anyString(), anyString(), anyString(), anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void testExecuteInvPromptNoLimitNoticeWhenUnderCap() {
+        // 50 cobblestone, limit 100, nothing donated yet — no notice
+        ItemStack cobble = mock(ItemStack.class);
+        when(cobble.getType()).thenReturn(Material.COBBLESTONE);
+        when(cobble.getAmount()).thenReturn(50);
+
+        when(inventory.getStorageContents()).thenReturn(new ItemStack[] { cobble });
+        when(blockConfig.getValue(any(), eq(Material.COBBLESTONE))).thenReturn(1);
+        when(blockConfig.getLimit(Material.COBBLESTONE)).thenReturn(100);
+        when(manager.getDonatedBlocks(island)).thenReturn(java.util.Collections.emptyMap());
+
+        assertTrue(cmd.execute(user, "donate", List.of("inv")));
+
+        verify(user, never()).getTranslation("island.donate.limit-notice");
+    }
 }

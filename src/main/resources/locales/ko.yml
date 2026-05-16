@@ -63,6 +63,8 @@ island:
     gui-title: "<black><bold>Donate Blocks"
     gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
     preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    limit-reached: "<red>[material]의 기부 한도에 도달했습니다."
+    limit-notice: "<gold>일부 블록에는 제한이 있으며|<gold>기부되지 않습니다"
     hand:
       keyword: "hand"
       success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"

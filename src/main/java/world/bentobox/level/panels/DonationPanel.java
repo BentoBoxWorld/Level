@@ -130,33 +130,69 @@ public class DonationPanel implements Listener {
     }
 
     /**
-     * Calculate the total point value of items in the donation slots.
+     * Per-material donation totals with blockconfig limits applied.
      */
-    private long calculateDonationValue() {
-        long total = 0;
-        for (int slot : layout.donationSlots) {
-            ItemStack item = inventory.getItem(slot);
-            if (item != null && !item.getType().isAir()) {
-                String customId = addon.getCustomBlockId(item);
-                Integer value = customId != null
-                        ? addon.getBlockConfig().getValue(world, customId)
-                        : addon.getBlockConfig().getValue(world, item.getType());
-                if (value != null && value > 0) {
-                    total += (long) value * item.getAmount();
-                }
-            }
-        }
-        return total;
+    private static final class DonationTotals {
+        final Map<String, Integer> accepted = new HashMap<>();
+        long acceptedPoints = 0;
+        boolean limited = false;
     }
 
     /**
-     * Update the preview pane to show current point value.
+     * Walk the donation slots, total each material's items, and cap each total
+     * by the remaining capacity allowed by the blockconfig limit. The accepted
+     * counts and resulting point value drive both the preview and the actual
+     * donation; the {@code limited} flag triggers the limit-notice lore line.
+     */
+    private DonationTotals computeDonationTotals() {
+        DonationTotals result = new DonationTotals();
+        Map<String, Integer> rawTotals = new HashMap<>();
+        Map<String, Integer> values = new HashMap<>();
+        for (int slot : layout.donationSlots) {
+            ItemStack item = inventory.getItem(slot);
+            if (item == null || item.getType().isAir()) continue;
+            String customId = addon.getCustomBlockId(item);
+            String donationId = customId != null ? customId : item.getType().name();
+            Object blockObj = customId != null ? customId : item.getType();
+            Integer value = addon.getBlockConfig().getValue(world, blockObj);
+            if (value == null || value <= 0) continue;
+            rawTotals.merge(donationId, item.getAmount(), Integer::sum);
+            values.putIfAbsent(donationId, value);
+        }
+        Map<String, Integer> donated = addon.getManager().getDonatedBlocks(island);
+        for (Map.Entry<String, Integer> e : rawTotals.entrySet()) {
+            String donationId = e.getKey();
+            int total = e.getValue();
+            Object blockObj = donationId.contains(":") ? donationId : Material.matchMaterial(donationId);
+            if (blockObj == null) blockObj = donationId;
+            Integer limit = addon.getBlockConfig().getLimit(blockObj);
+            int accept = total;
+            if (limit != null) {
+                int already = donated.getOrDefault(donationId, 0);
+                int remaining = Math.max(0, limit - already);
+                accept = Math.min(total, remaining);
+                if (accept < total) {
+                    result.limited = true;
+                }
+            }
+            result.accepted.put(donationId, accept);
+            result.acceptedPoints += (long) accept * values.get(donationId);
+        }
+        return result;
+    }
+
+    /**
+     * Update the preview pane to show the limited point value, with an extra
+     * lore line when any material exceeds its blockconfig limit.
      */
     private void updatePreview() {
-        long points = calculateDonationValue();
-        ItemStack preview = createNamedItem(layout.previewMaterial,
-                user.getTranslation("island.donate.preview",
-                        POINTS_PLACEHOLDER, Utils.formatNumber(user, points)));
+        DonationTotals totals = computeDonationTotals();
+        String text = user.getTranslation("island.donate.preview",
+                POINTS_PLACEHOLDER, Utils.formatNumber(user, totals.acceptedPoints));
+        if (totals.limited) {
+            text = text + "|" + user.getTranslation("island.donate.limit-notice");
+        }
+        ItemStack preview = createNamedItem(layout.previewMaterial, text);
         inventory.setItem(layout.previewSlot, preview);
     }
 
@@ -168,52 +204,61 @@ public class DonationPanel implements Listener {
     }
 
     /**
-     * Process the donation - consume items and record them. Items with no
-     * configured value are returned to the player rather than consumed.
+     * Process the donation - consume items up to each material's blockconfig
+     * limit and record them. Items beyond the limit (and valueless items) are
+     * returned to the player rather than consumed.
      */
     private void processDonation() {
-        Map<String, Integer> donations = new HashMap<>();
+        DonationTotals totals = computeDonationTotals();
+        Map<String, Integer> remaining = new HashMap<>(totals.accepted);
+        Map<String, Integer> donatedThisCall = new HashMap<>();
         long totalPoints = 0;
         Player player = user.getPlayer();
 
         for (int slot : layout.donationSlots) {
             ItemStack item = inventory.getItem(slot);
-            if (item != null && !item.getType().isAir()) {
-                String customId = addon.getCustomBlockId(item);
-                String donationId;
-                Integer value;
-                if (customId != null) {
-                    value = addon.getBlockConfig().getValue(world, customId);
-                    donationId = customId;
-                } else {
-                    Material mat = item.getType();
-                    value = addon.getBlockConfig().getValue(world, mat);
-                    donationId = mat.name();
-                }
-                if (value != null && value > 0) {
-                    int count = item.getAmount();
-                    long points = (long) value * count;
-                    donations.merge(donationId, count, Integer::sum);
-                    totalPoints += points;
-                    // Record each material type as a separate donation log entry
-                    addon.getManager().donateBlocks(island, user.getUniqueId(), donationId, count, points);
-                    // Clear the slot - items are consumed
-                    inventory.setItem(slot, null);
-                } else {
-                    // Return valueless items to the player rather than consuming them
-                    inventory.setItem(slot, null);
-                    Map<Integer, ItemStack> overflow = player.getInventory().addItem(item);
-                    overflow.values().forEach(drop -> player.getWorld().dropItemNaturally(player.getLocation(), drop));
-                }
+            if (item == null || item.getType().isAir()) continue;
+            String customId = addon.getCustomBlockId(item);
+            String donationId = customId != null ? customId : item.getType().name();
+            Object blockObj = customId != null ? customId : item.getType();
+            Integer value = addon.getBlockConfig().getValue(world, blockObj);
+
+            if (value == null || value <= 0) {
+                // Return valueless items to the player rather than consuming them
+                inventory.setItem(slot, null);
+                Map<Integer, ItemStack> overflow = player.getInventory().addItem(item);
+                overflow.values().forEach(drop -> player.getWorld().dropItemNaturally(player.getLocation(), drop));
+                continue;
+            }
+
+            int slotCount = item.getAmount();
+            int canAccept = remaining.getOrDefault(donationId, 0);
+            int take = Math.min(slotCount, canAccept);
+            int leftover = slotCount - take;
+
+            if (take > 0) {
+                long points = (long) value * take;
+                totalPoints += points;
+                donatedThisCall.merge(donationId, take, Integer::sum);
+                addon.getManager().donateBlocks(island, user.getUniqueId(), donationId, take, points);
+                remaining.put(donationId, canAccept - take);
+            }
+
+            inventory.setItem(slot, null);
+            if (leftover > 0) {
+                ItemStack ret = item.clone();
+                ret.setAmount(leftover);
+                Map<Integer, ItemStack> overflow = player.getInventory().addItem(ret);
+                overflow.values().forEach(drop -> player.getWorld().dropItemNaturally(player.getLocation(), drop));
             }
         }
 
-        if (donations.isEmpty()) {
+        if (donatedThisCall.isEmpty()) {
             user.sendMessage("island.donate.empty");
         } else {
             user.sendMessage("island.donate.success",
                     POINTS_PLACEHOLDER, Utils.formatNumber(user, totalPoints),
-                    TextVariables.NUMBER, String.valueOf(donations.values().stream().mapToInt(Integer::intValue).sum()));
+                    TextVariables.NUMBER, String.valueOf(donatedThisCall.values().stream().mapToInt(Integer::intValue).sum()));
             // Queue a full level recalculation so the donation is reflected immediately
             addon.getManager().recalculateAfterDonation(island);
         }
@@ -322,7 +367,7 @@ public class DonationPanel implements Listener {
 
     private void handleConfirm(InventoryClickEvent event, Player player) {
         event.setCancelled(true);
-        if (calculateDonationValue() <= 0) {
+        if (computeDonationTotals().acceptedPoints <= 0) {
             user.sendMessage("island.donate.empty");
             return;
         }

@@ -60,6 +60,8 @@ island:
     gui-title: "<black><bold>Пожертвувати блоки"
     gui-info: "<gold>Пожертвуйте блоки своєму острову|<gray>Пожертвовано: <gold>[points]<gray> очок|<red>Увага: пожертвувані предмети|<red>знищуються і не можуть бути повернуті!"
     preview: "<yellow>Очок буде додано: <gold>[points]|<red>Ці предмети будуть знищені!"
+    limit-reached: "<red>Ліміт пожертвування для [material] досягнуто."
+    limit-notice: "<gold>Деякі блоки підлягають обмеженням|<gold>і не будуть пожертвувані"
     hand:
       keyword: "рука"
       success: "<green>Пожертвовано [number] x [material] за <aqua>[points]<green> постійних очок!"

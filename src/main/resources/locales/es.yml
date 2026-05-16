@@ -60,6 +60,8 @@ island:
     gui-title: "<black><bold>Donate Blocks"
     gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
     preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    limit-reached: "<red>Se ha alcanzado el límite de donación para [material]."
+    limit-notice: "<gold>Algunos bloques están sujetos a límites|<gold>y no serán donados"
     hand:
       keyword: "mano"
       success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"

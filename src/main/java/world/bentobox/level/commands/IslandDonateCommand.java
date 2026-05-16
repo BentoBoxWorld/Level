@@ -124,15 +124,41 @@ public class IslandDonateCommand extends ConfirmableCommand {
             }
         }
 
-        final int previewAmount = Math.min(requested, hand.getAmount());
-        final long previewPoints = (long) previewAmount * blockValue;
+        int previewAmount = Math.min(requested, hand.getAmount());
         final int finalRequested = requested;
 
+        // Apply blockconfig limit to the preview so the confirm prompt shows the
+        // amount that will actually be destroyed, not the raw request.
         Object displayKey = customId != null ? customId : material;
+        String donationId = customId != null ? customId : material.name();
+        Object blockObj = customId != null ? (Object) customId : material;
+        Integer limit = addon.getBlockConfig().getLimit(blockObj);
+        boolean limited = false;
+        if (limit != null) {
+            int already = addon.getManager().getDonatedBlocks(island).getOrDefault(donationId, 0);
+            int remaining = Math.max(0, limit - already);
+            if (remaining == 0) {
+                user.sendMessage("island.donate.limit-reached",
+                        MATERIAL_PLACEHOLDER, Utils.prettifyObject(displayKey, user));
+                return false;
+            }
+            if (previewAmount > remaining) {
+                previewAmount = remaining;
+                limited = true;
+            }
+        }
+
+        long previewPoints = (long) previewAmount * blockValue;
         String prompt = user.getTranslation("island.donate.hand.confirm-prompt",
                 TextVariables.NUMBER, String.valueOf(previewAmount),
                 MATERIAL_PLACEHOLDER, Utils.prettifyObject(displayKey, user),
                 POINTS_PLACEHOLDER, Utils.formatNumber(user, previewPoints));
+        if (limited) {
+            // The limit-notice locale uses '|' as a lore line-break for the GUI;
+            // translate to '\n' here so the chat confirmation prompt wraps cleanly.
+            prompt = prompt + "\n"
+                    + user.getTranslation("island.donate.limit-notice").replace('|', '\n');
+        }
 
         askConfirmation(user, prompt, () -> performHandDonation(user, island, material, customId, blockValue, finalRequested));
         return true;
@@ -199,7 +225,9 @@ public class IslandDonateCommand extends ConfirmableCommand {
             return false;
         }
 
+        Map<String, Integer> alreadyDonated = addon.getManager().getDonatedBlocks(island);
         long totalPoints = 0L;
+        boolean limited = false;
         StringBuilder prompt = new StringBuilder(
                 user.getTranslation("island.donate.inv.confirm-header"));
         for (Map.Entry<String, Integer> e : totals.entrySet()) {
@@ -212,12 +240,34 @@ public class IslandDonateCommand extends ConfirmableCommand {
             Object displayKey = mat != null ? mat : e.getKey();
             Integer rawValue = addon.getBlockConfig().getValue(getWorld(), displayKey);
             if (rawValue == null) continue;
-            long points = (long) rawValue * e.getValue();
+
+            String donationId = mat != null ? mat.name() : e.getKey();
+            Object blockObj = mat != null ? mat : e.getKey();
+            int amount = e.getValue();
+            Integer limit = addon.getBlockConfig().getLimit(blockObj);
+            if (limit != null) {
+                int remaining = Math.max(0, limit - alreadyDonated.getOrDefault(donationId, 0));
+                int accepted = Math.min(amount, remaining);
+                if (accepted < amount) {
+                    limited = true;
+                }
+                amount = accepted;
+            }
+            if (amount <= 0) {
+                continue;
+            }
+            long points = (long) rawValue * amount;
             totalPoints += points;
             prompt.append('\n').append(user.getTranslation("island.donate.inv.confirm-line",
-                    TextVariables.NUMBER, String.valueOf(e.getValue()),
+                    TextVariables.NUMBER, String.valueOf(amount),
                     MATERIAL_PLACEHOLDER, Utils.prettifyObject(displayKey, user),
                     POINTS_PLACEHOLDER, Utils.formatNumber(user, points)));
+        }
+        if (limited) {
+            // The limit-notice locale uses '|' as a lore line-break for the GUI;
+            // translate to '\n' here so the chat confirmation prompt wraps cleanly.
+            prompt.append('\n').append(
+                    user.getTranslation("island.donate.limit-notice").replace('|', '\n'));
         }
         prompt.append('\n').append(user.getTranslation("island.donate.inv.confirm-total",
                 POINTS_PLACEHOLDER, Utils.formatNumber(user, totalPoints)));
