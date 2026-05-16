@@ -31,6 +31,16 @@ import world.bentobox.level.Level;
  */
 public class NewChunkListener implements Listener {
 
+    /**
+     * Snapshot of the main-thread state needed to score one chunk on a worker
+     * thread. Bundled into a record so the async scan helpers don't need to
+     * carry a dozen parameters each.
+     */
+    private record ScanContext(World world, int chunkBlockX, int chunkBlockZ, int minHeight, int maxHeight,
+            int minProtectedX, int maxProtectedX, int minProtectedZ, int maxProtectedZ,
+            int seaHeight, double underwaterMultiplier) {
+    }
+
     private final Level addon;
 
     public NewChunkListener(Level addon) {
@@ -51,29 +61,25 @@ public class NewChunkListener implements Listener {
             return;
         }
         // Use the chunk centre to look up the island that owns it.
-        Location centre = new Location(world, (chunk.getX() << 4) + 8, world.getMinHeight(),
-                (chunk.getZ() << 4) + 8);
+        // The + 8.0 keeps the addition in double arithmetic so SonarQube does not
+        // flag a theoretical int-overflow before the implicit widening.
+        Location centre = new Location(world, (chunk.getX() << 4) + 8.0, world.getMinHeight(),
+                (chunk.getZ() << 4) + 8.0);
         Island island = addon.getIslands().getIslandAt(centre).orElse(null);
         if (island == null || island.getOwner() == null) {
             return;
         }
         // Capture all main-thread state before going async.
         ChunkSnapshot snapshot = chunk.getChunkSnapshot();
-        int seaHeight = addon.getPlugin().getIWM().getSeaHeight(world);
-        double underwaterMultiplier = addon.getSettings().getUnderWaterMultiplier();
-        int minProtectedX = island.getMinProtectedX();
-        int maxProtectedX = island.getMaxProtectedX();
-        int minProtectedZ = island.getMinProtectedZ();
-        int maxProtectedZ = island.getMaxProtectedZ();
-        int minHeight = world.getMinHeight();
-        int maxHeight = world.getMaxHeight();
-        int chunkBlockX = chunk.getX() << 4;
-        int chunkBlockZ = chunk.getZ() << 4;
+        ScanContext ctx = new ScanContext(world, chunk.getX() << 4, chunk.getZ() << 4,
+                world.getMinHeight(), world.getMaxHeight(),
+                island.getMinProtectedX(), island.getMaxProtectedX(),
+                island.getMinProtectedZ(), island.getMaxProtectedZ(),
+                addon.getPlugin().getIWM().getSeaHeight(world),
+                addon.getSettings().getUnderWaterMultiplier());
 
         Bukkit.getScheduler().runTaskAsynchronously(addon.getPlugin(), () -> {
-            long total = scanSnapshot(snapshot, world, chunkBlockX, chunkBlockZ, minHeight, maxHeight,
-                    minProtectedX, maxProtectedX, minProtectedZ, maxProtectedZ, seaHeight,
-                    underwaterMultiplier);
+            long total = scanSnapshot(snapshot, ctx);
             if (total != 0L) {
                 Bukkit.getScheduler().runTask(addon.getPlugin(),
                         () -> addon.getManager().addToInitialCount(island, total));
@@ -81,37 +87,48 @@ public class NewChunkListener implements Listener {
         });
     }
 
-    private long scanSnapshot(ChunkSnapshot snapshot, World world, int chunkBlockX, int chunkBlockZ,
-            int minHeight, int maxHeight, int minProtectedX, int maxProtectedX, int minProtectedZ,
-            int maxProtectedZ, int seaHeight, double underwaterMultiplier) {
+    private long scanSnapshot(ChunkSnapshot snapshot, ScanContext ctx) {
         long total = 0L;
         for (int x = 0; x < 16; x++) {
-            int globalX = chunkBlockX + x;
-            if (globalX < minProtectedX || globalX >= maxProtectedX) {
-                continue;
-            }
-            for (int z = 0; z < 16; z++) {
-                int globalZ = chunkBlockZ + z;
-                if (globalZ < minProtectedZ || globalZ >= maxProtectedZ) {
-                    continue;
-                }
-                for (int y = minHeight; y < maxHeight; y++) {
-                    Material mat = snapshot.getBlockType(x, y, z);
-                    if (mat.isAir()) {
-                        continue;
-                    }
-                    Integer value = addon.getBlockConfig().getValue(world, mat);
-                    if (value == null || value == 0) {
-                        continue;
-                    }
-                    if (seaHeight > 0 && y <= seaHeight) {
-                        total += (long) (value * underwaterMultiplier);
-                    } else {
-                        total += value;
-                    }
-                }
+            int globalX = ctx.chunkBlockX + x;
+            if (globalX >= ctx.minProtectedX && globalX < ctx.maxProtectedX) {
+                total += scanRow(snapshot, x, ctx);
             }
         }
         return total;
+    }
+
+    private long scanRow(ChunkSnapshot snapshot, int x, ScanContext ctx) {
+        long total = 0L;
+        for (int z = 0; z < 16; z++) {
+            int globalZ = ctx.chunkBlockZ + z;
+            if (globalZ >= ctx.minProtectedZ && globalZ < ctx.maxProtectedZ) {
+                total += scanColumn(snapshot, x, z, ctx);
+            }
+        }
+        return total;
+    }
+
+    private long scanColumn(ChunkSnapshot snapshot, int x, int z, ScanContext ctx) {
+        long total = 0L;
+        for (int y = ctx.minHeight; y < ctx.maxHeight; y++) {
+            total += valueAt(snapshot, x, y, z, ctx);
+        }
+        return total;
+    }
+
+    private long valueAt(ChunkSnapshot snapshot, int x, int y, int z, ScanContext ctx) {
+        Material mat = snapshot.getBlockType(x, y, z);
+        if (mat.isAir()) {
+            return 0L;
+        }
+        Integer value = addon.getBlockConfig().getValue(ctx.world, mat);
+        if (value == null || value == 0) {
+            return 0L;
+        }
+        if (ctx.seaHeight > 0 && y <= ctx.seaHeight) {
+            return (long) (value * ctx.underwaterMultiplier);
+        }
+        return value;
     }
 }
