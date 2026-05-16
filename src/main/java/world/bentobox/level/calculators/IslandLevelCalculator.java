@@ -731,9 +731,22 @@ public class IslandLevelCalculator {
         .addAndGet((long) (results.underWaterBlockCount.get() * addon.getSettings().getUnderWaterMultiplier()));
 
         // Add donated block points (permanent contributions that persist across recalculations)
-        long donatedPoints = addon.getManager().getDonatedPoints(island);
-        results.rawBlockCount.addAndGet(donatedPoints);
-        results.donatedPoints.set(donatedPoints);
+        // Apply blockconfig limits so that donated blocks beyond the limit do not raise the level
+        long cappedDonatedPoints = 0L;
+        Map<String, Integer> donatedBlocksMap = addon.getManager().getDonatedBlocks(island);
+        for (Map.Entry<String, Integer> entry : donatedBlocksMap.entrySet()) {
+            String blockId = entry.getKey();
+            int count = entry.getValue();
+            // Resolve to a Material (vanilla) or leave as String (custom block)
+            Material mat = Material.matchMaterial(blockId);
+            Object blockObj = mat != null ? mat : blockId;
+            int value = getValue(blockObj);
+            Integer limit = addon.getBlockConfig().getLimit(blockObj);
+            int cappedCount = (limit != null) ? Math.min(count, limit) : count;
+            cappedDonatedPoints += (long) cappedCount * value;
+        }
+        results.rawBlockCount.addAndGet(cappedDonatedPoints);
+        results.donatedPoints.set(cappedDonatedPoints);
 
         // Set the death penalty
         if (this.addon.getSettings().isSumTeamDeaths()) {

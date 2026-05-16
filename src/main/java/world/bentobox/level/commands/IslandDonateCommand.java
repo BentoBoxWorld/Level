@@ -151,6 +151,23 @@ public class IslandDonateCommand extends ConfirmableCommand {
             return;
         }
         int amount = Math.min(requested, currentHand.getAmount());
+
+        // Apply blockconfig donation limit
+        String donationId = customId != null ? customId : material.name();
+        Object blockObj = customId != null ? (Object) customId : material;
+        Object displayKey = customId != null ? customId : material;
+        Integer limit = addon.getBlockConfig().getLimit(blockObj);
+        if (limit != null) {
+            int currentDonated = addon.getManager().getDonatedBlocks(island).getOrDefault(donationId, 0);
+            int remaining = Math.max(0, limit - currentDonated);
+            if (remaining == 0) {
+                user.sendMessage("island.donate.limit-reached",
+                        MATERIAL_PLACEHOLDER, Utils.prettifyObject(displayKey, user));
+                return;
+            }
+            amount = Math.min(amount, remaining);
+        }
+
         long points = (long) amount * blockValue;
 
         if (amount >= currentHand.getAmount()) {
@@ -159,11 +176,9 @@ public class IslandDonateCommand extends ConfirmableCommand {
             currentHand.setAmount(currentHand.getAmount() - amount);
         }
 
-        String donationId = customId != null ? customId : material.name();
         addon.getManager().donateBlocks(island, user.getUniqueId(), donationId, amount, points);
         addon.getManager().recalculateAfterDonation(island);
 
-        Object displayKey = customId != null ? customId : material;
         user.sendMessage("island.donate.hand.success",
                 TextVariables.NUMBER, String.valueOf(amount),
                 MATERIAL_PLACEHOLDER, Utils.prettifyObject(displayKey, user),
@@ -223,14 +238,35 @@ public class IslandDonateCommand extends ConfirmableCommand {
             if (value == null) {
                 continue;
             }
-            int amount = item.getAmount();
-            long points = (long) value * amount;
             String customId = addon.getCustomBlockId(item);
             String donationId = customId != null ? customId : item.getType().name();
+            Object blockObj = customId != null ? (Object) customId : item.getType();
+
+            // Apply blockconfig donation limit: only take up to the remaining capacity
+            int amount = item.getAmount();
+            Integer limit = addon.getBlockConfig().getLimit(blockObj);
+            if (limit != null) {
+                // getDonatedBlocks returns the live cached map, already updated by earlier donateBlocks calls
+                int alreadyDonated = addon.getManager().getDonatedBlocks(island).getOrDefault(donationId, 0);
+                int remaining = Math.max(0, limit - alreadyDonated);
+                if (remaining == 0) {
+                    // Limit already reached for this material — leave item in inventory
+                    continue;
+                }
+                amount = Math.min(amount, remaining);
+            }
+
+            // Remove accepted amount from inventory slot
+            if (amount >= item.getAmount()) {
+                contents[i] = null;
+            } else {
+                item.setAmount(item.getAmount() - amount);
+            }
+
+            long points = (long) value * amount;
             donated.merge(donationId, amount, Integer::sum);
             totalPoints += points;
             addon.getManager().donateBlocks(island, user.getUniqueId(), donationId, amount, points);
-            contents[i] = null;
         }
         pInv.setStorageContents(contents);
 
