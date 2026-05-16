@@ -480,13 +480,34 @@ public class LevelsManager {
 
     /**
      * Set an initial island count
-     * 
+     *
      * @param island - the island to set.
      * @param lv     - initial island count
      */
     public void setInitialIslandCount(@NonNull Island island, long lv) {
         levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new).setInitialCount(lv);
         handler.saveObjectAsync(levelsCache.get(island.getUniqueId()));
+    }
+
+    /**
+     * Add a delta to the island's initial-count handicap. Used by the new-chunk
+     * listener to accumulate generator block points (sea floor, nether ceiling,
+     * etc.) into the initial count as chunks are generated during normal play.
+     * The initial count is subtracted from the live block total in the level
+     * calc, so generator blocks do not inflate the level.
+     *
+     * @param island the island
+     * @param delta  the points to add (no-op when zero)
+     */
+    public void addToInitialCount(@NonNull Island island, long delta) {
+        if (delta == 0) {
+            return;
+        }
+        // Use getInitialCount so any legacy initialLevel is migrated first.
+        long current = getInitialCount(island);
+        IslandLevels data = getLevelsData(island);
+        data.setInitialCount(current + delta);
+        handler.saveObjectAsync(data);
     }
 
     /**
