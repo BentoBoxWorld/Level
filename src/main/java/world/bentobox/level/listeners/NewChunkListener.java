@@ -1,5 +1,10 @@
 package world.bentobox.level.listeners;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
@@ -42,6 +47,20 @@ public class NewChunkListener implements Listener {
     }
 
     private final Level addon;
+    /**
+     * Per-island set of chunk keys (x:z packed into a long) that have already
+     * contributed to the initial-count handicap during this server run.
+     * Defends against ChunkLoadEvent firing isNewChunk=true more than once for
+     * the same chunk under heavy chunk activity (Paper ticket churn, parallel
+     * level-scan loads, plugin re-triggers). Without this, every duplicate
+     * firing inflated the handicap by another chunk's worth of value.
+     * <p>
+     * Indexed by island uniqueId. Entries persist for the lifetime of the JVM.
+     * After a restart Paper reports isNewChunk=false for already-generated
+     * chunks, so chunks counted in earlier runs are not at risk of being
+     * recounted on the next run.
+     */
+    private final Map<String, Set<Long>> countedChunks = new HashMap<>();
 
     public NewChunkListener(Level addon) {
         this.addon = addon;
@@ -69,6 +88,12 @@ public class NewChunkListener implements Listener {
         if (island == null || island.getOwner() == null) {
             return;
         }
+        // Dedup: only credit each chunk to an island once per server run.
+        long key = chunkKey(chunk.getX(), chunk.getZ());
+        Set<Long> seen = countedChunks.computeIfAbsent(island.getUniqueId(), k -> new HashSet<>());
+        if (!seen.add(key)) {
+            return;
+        }
         // Capture all main-thread state before going async.
         ChunkSnapshot snapshot = chunk.getChunkSnapshot();
         ScanContext ctx = new ScanContext(world, chunk.getX() << 4, chunk.getZ() << 4,
@@ -87,37 +112,51 @@ public class NewChunkListener implements Listener {
         });
     }
 
+    /**
+     * Pack chunk (x, z) into a single 64-bit key. Negative coordinates are
+     * preserved by masking to 32 bits before shifting.
+     */
+    private static long chunkKey(int x, int z) {
+        return ((long) x & 0xFFFFFFFFL) << 32 | ((long) z & 0xFFFFFFFFL);
+    }
+
     private long scanSnapshot(ChunkSnapshot snapshot, ScanContext ctx) {
         long total = 0L;
+        // Per-chunk material counts so we can apply the same limits the regular
+        // scan applies. Without this, value-bearing limited blocks (cobblestone,
+        // stone with non-zero value, etc.) inflate the handicap past anything
+        // the regular scan would ever credit.
+        Map<Material, Integer> perMaterial = new HashMap<>();
         for (int x = 0; x < 16; x++) {
             int globalX = ctx.chunkBlockX + x;
             if (globalX >= ctx.minProtectedX && globalX < ctx.maxProtectedX) {
-                total += scanRow(snapshot, x, ctx);
+                total += scanRow(snapshot, x, ctx, perMaterial);
             }
         }
         return total;
     }
 
-    private long scanRow(ChunkSnapshot snapshot, int x, ScanContext ctx) {
+    private long scanRow(ChunkSnapshot snapshot, int x, ScanContext ctx, Map<Material, Integer> perMaterial) {
         long total = 0L;
         for (int z = 0; z < 16; z++) {
             int globalZ = ctx.chunkBlockZ + z;
             if (globalZ >= ctx.minProtectedZ && globalZ < ctx.maxProtectedZ) {
-                total += scanColumn(snapshot, x, z, ctx);
+                total += scanColumn(snapshot, x, z, ctx, perMaterial);
             }
         }
         return total;
     }
 
-    private long scanColumn(ChunkSnapshot snapshot, int x, int z, ScanContext ctx) {
+    private long scanColumn(ChunkSnapshot snapshot, int x, int z, ScanContext ctx, Map<Material, Integer> perMaterial) {
         long total = 0L;
         for (int y = ctx.minHeight; y < ctx.maxHeight; y++) {
-            total += valueAt(snapshot, x, y, z, ctx);
+            total += valueAt(snapshot, x, y, z, ctx, perMaterial);
         }
         return total;
     }
 
-    private long valueAt(ChunkSnapshot snapshot, int x, int y, int z, ScanContext ctx) {
+    private long valueAt(ChunkSnapshot snapshot, int x, int y, int z, ScanContext ctx,
+            Map<Material, Integer> perMaterial) {
         Material mat = snapshot.getBlockType(x, y, z);
         if (mat.isAir()) {
             return 0L;
@@ -125,6 +164,20 @@ public class NewChunkListener implements Listener {
         Integer value = addon.getBlockConfig().getValue(ctx.world, mat);
         if (value == null || value == 0) {
             return 0L;
+        }
+        // Respect per-material limits so the listener can never credit more
+        // than the regular scan would. Counts are local to this chunk; the
+        // listener does not (yet) share state with prior chunks for an island,
+        // so the cap is applied per chunk. This still drops infinite handicap
+        // accumulation from terrain-rich blocks far below what an uncapped
+        // listener would record.
+        Integer limit = addon.getBlockConfig().getLimit(mat);
+        if (limit != null) {
+            int count = perMaterial.getOrDefault(mat, 0);
+            if (count >= limit) {
+                return 0L;
+            }
+            perMaterial.put(mat, count + 1);
         }
         if (ctx.seaHeight > 0 && y <= ctx.seaHeight) {
             return (long) (value * ctx.underwaterMultiplier);
