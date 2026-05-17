@@ -10,6 +10,10 @@ admin:
   levelstatus:
     description: 显示等级计算队列中的岛屿
     islands-in-queue: '<green>列队中的岛屿: [number]'
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, 已用时 <yellow>[elapsed]<gray>, 区块 <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(等待中)"
+    type-zero: "<gold>清零"
+    type-regular: "<green>常规"
   top:
     description: 显示前十名
     unknown-world: '<red>未知的世界!'

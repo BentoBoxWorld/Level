@@ -15,6 +15,10 @@ admin:
   levelstatus:
     description: rāda, cik salu ir skenēšanas rindā
     islands-in-queue: "<green> Salas rindā: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, pagājis <yellow>[elapsed]<gray>, chunki <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(gaida)"
+    type-zero: "<gold>nulle"
+    type-regular: "<green>parasts"
   top:
     description: rādīt labākās 10 salas
     display: "<white>[rank]. <green>[name] <gray>- <aqua>[level]"

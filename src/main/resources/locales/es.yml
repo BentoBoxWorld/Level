@@ -12,6 +12,10 @@ admin:
   levelstatus:
     description: Muestra cuantas islas hay en la cola para escanear
     islands-in-queue: "<green>Islas en cola: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, transcurrido <yellow>[elapsed]<gray>, chunks <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(en espera)"
+    type-zero: "<gold>cero"
+    type-regular: "<green>regular"
   top:
     description: Muestra la lista de las diez primeras islas
     unknown-world: "<red>¡Mundo desconocido!"

@@ -19,6 +19,10 @@ admin:
   levelstatus:
     description: tarama için kaç adanın kuyrukta olduğunu göster
     islands-in-queue: "<green> Kuyrukta bulunan adalar: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, geçen <yellow>[elapsed]<gray>, parçalar <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(bekliyor)"
+    type-zero: "<gold>sıfır"
+    type-regular: "<green>normal"
   top:
     description: "İlk 10 adayı sırala"
     unknown-world: "<red> Bilinmeyen dünya!"

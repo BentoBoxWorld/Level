@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.scheduler.BukkitTask;
 
 import world.bentobox.bentobox.BentoBox;
@@ -49,7 +50,7 @@ public class Pipeliner {
                 // Ignore deleted or unowned islands
                 if (!iD.getIsland().isDeleted() && !iD.getIsland().isUnowned()) {
                     inProcessQueue.put(iD, System.currentTimeMillis());
-                    BentoBox.getInstance().log("Starting to scan island level at " + iD.getIsland().getCenter());
+                    BentoBox.getInstance().log("Starting to scan island level at " + formatCenter(iD.getIsland().getCenter()));
                     // Start the scanning of a island with the first chunk
                     scanIsland(iD);
                 }
@@ -96,8 +97,20 @@ public class Pipeliner {
                 .map(IslandLevelCalculator::getIsland).anyMatch(island::equals)) {
             return CompletableFuture.completedFuture(new Results(Result.IN_PROGRESS));
         }
-        BentoBox.getInstance().log("Added island to Level queue: " + island.getCenter());
+        BentoBox.getInstance().log("Added island to Level queue: " + formatCenter(island.getCenter()));
         return addToQueue(island, false);
+    }
+
+    /**
+     * Render an island centre as "<world_name> x,y,z" for log lines instead of
+     * Bukkit's verbose Location.toString().
+     */
+    static String formatCenter(Location loc) {
+        if (loc == null) {
+            return "?";
+        }
+        String worldName = loc.getWorld() == null ? "?" : loc.getWorld().getName();
+        return worldName + " " + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
     }
 
     /**
@@ -106,7 +119,7 @@ public class Pipeliner {
      * @return CompletableFuture of the results
      */
     public CompletableFuture<Results> zeroIsland(Island island) {
-        BentoBox.getInstance().log("Zeroing island level for island at " + island.getCenter());
+        BentoBox.getInstance().log("Zeroing island level for island at " + formatCenter(island.getCenter()));
         return addToQueue(island, true);
     }
 
@@ -147,8 +160,15 @@ public class Pipeliner {
     /**
      * @return the inProcessQueue
      */
-    protected Map<IslandLevelCalculator, Long> getInProcessQueue() {
+    public Map<IslandLevelCalculator, Long> getInProcessQueue() {
         return inProcessQueue;
+    }
+
+    /**
+     * @return the queue of islands waiting to start scanning
+     */
+    public Queue<IslandLevelCalculator> getToProcessQueue() {
+        return toProcessQueue;
     }
 
     /**

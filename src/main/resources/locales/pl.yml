@@ -11,6 +11,10 @@ admin:
   levelstatus:
     description: pokazuje ile wysp znajduje się w kolejce do skanowania
     islands-in-queue: "<green> Wyspy w kolejce: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, upłynęło <yellow>[elapsed]<gray>, chunki <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(oczekuje)"
+    type-zero: "<gold>zero"
+    type-regular: "<green>regularne"
   top:
     description: pokazuje Top 10 wysp
     unknown-world: "<red>Nieznany świat!"

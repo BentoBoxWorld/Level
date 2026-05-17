@@ -11,6 +11,10 @@ admin:
   levelstatus:
     description: показати, скільки островів у черзі на сканування
     islands-in-queue: "<green> Острови в черзі: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, минуло <yellow>[elapsed]<gray>, чанки <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(чекає)"
+    type-zero: "<gold>обнулення"
+    type-regular: "<green>звичайне"
   top:
     description: показати першу десятку списку
     unknown-world: "<red> Невідомий світ!"
