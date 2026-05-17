@@ -11,6 +11,11 @@ admin:
   levelstatus:
     description: показати, скільки островів у черзі на сканування
     islands-in-queue: "<green> Острови в черзі: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, минуло <yellow>[elapsed]<gray>, чанки <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(чекає)"
+    type-zero: "<gold>обнулення"
+    type-regular: "<green>звичайне"
+    pending-zeros: "<gray>Очікувані нульові сканування (відкладені знімки чанків): <yellow>[number]"
   top:
     description: показати першу десятку списку
     unknown-world: "<red> Невідомий світ!"
@@ -60,6 +65,8 @@ island:
     gui-title: "<black><bold>Пожертвувати блоки"
     gui-info: "<gold>Пожертвуйте блоки своєму острову|<gray>Пожертвовано: <gold>[points]<gray> очок|<red>Увага: пожертвувані предмети|<red>знищуються і не можуть бути повернуті!"
     preview: "<yellow>Очок буде додано: <gold>[points]|<red>Ці предмети будуть знищені!"
+    limit-reached: "<red>Ліміт пожертвування для [material] досягнуто."
+    limit-notice: "<gold>Деякі блоки підлягають обмеженням|<gold>і не будуть пожертвувані"
     hand:
       keyword: "рука"
       success: "<green>Пожертвовано [number] x [material] за <aqua>[points]<green> постійних очок!"

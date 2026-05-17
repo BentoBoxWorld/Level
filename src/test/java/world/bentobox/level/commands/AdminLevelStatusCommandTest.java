@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.LinkedList;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,6 +59,8 @@ class AdminLevelStatusCommandTest extends CommonTestSetup {
     @Test
     void testExecuteShowsQueueSizeZero() {
         when(pipeliner.getIslandsInQueue()).thenReturn(0);
+        when(pipeliner.getInProcessQueue()).thenReturn(Collections.emptyMap());
+        when(pipeliner.getToProcessQueue()).thenReturn(new LinkedList<>());
         assertTrue(cmd.execute(user, "levelstatus", Collections.emptyList()));
         verify(user).sendMessage(eq("admin.levelstatus.islands-in-queue"), eq(TextVariables.NUMBER), eq("0"));
     }
@@ -65,6 +68,10 @@ class AdminLevelStatusCommandTest extends CommonTestSetup {
     @Test
     void testExecuteShowsQueueSizeNonZero() {
         when(pipeliner.getIslandsInQueue()).thenReturn(5);
+        // The command iterates the in-process and waiting queues for diagnostics.
+        // Empty maps/queues are enough to prove non-zero output reaches sendMessage.
+        when(pipeliner.getInProcessQueue()).thenReturn(Collections.emptyMap());
+        when(pipeliner.getToProcessQueue()).thenReturn(new LinkedList<>());
         assertTrue(cmd.execute(user, "levelstatus", Collections.emptyList()));
         verify(user).sendMessage(eq("admin.levelstatus.islands-in-queue"), eq(TextVariables.NUMBER), eq("5"));
     }

@@ -11,6 +11,11 @@ admin:
   levelstatus:
     description: menunjukkan berapa banyak pulau dalam antrian untuk pemindaian
     islands-in-queue: "<green> Pulau di dalam antrian: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, berlalu <yellow>[elapsed]<gray>, chunk <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(menunggu)"
+    type-zero: "<gold>nol"
+    type-regular: "<green>reguler"
+    pending-zeros: "<gray>Pemindaian nol tertunda (penangkapan chunk yang tertunda): <yellow>[number]"
   top:
     description: menunjukkan daftar sepuluh besar
     unknown-world: "<red> Dunia tidak ditemukan!"
@@ -60,6 +65,8 @@ island:
     gui-title: "<black><bold>Donate Blocks"
     gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
     preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    limit-reached: "<red>Batas donasi untuk [material] telah tercapai."
+    limit-notice: "<gold>Beberapa blok memiliki batasan|<gold>dan tidak akan didonasikan"
     hand:
       keyword: "tangan"
       success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"

@@ -12,6 +12,11 @@ admin:
   levelstatus:
     description: laat zien hoeveel eilanden er in de wachtrij staan voor het scannen
     islands-in-queue: "<green> Aantal eilanden in de wachtrij: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, verstreken <yellow>[elapsed]<gray>, chunks <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(wacht)"
+    type-zero: "<gold>nul"
+    type-regular: "<green>normaal"
+    pending-zeros: "<gray>Wachtende nul-scans (vertraagde chunk-opnames): <yellow>[number]"
   top:
     description: Laat de top tien zien
     unknown-world: "<red> Ongeldige wereld!"
@@ -60,6 +65,8 @@ island:
     gui-title: "<black><bold>Donate Blocks"
     gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
     preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    limit-reached: "<red>De donatielimiet voor [material] is bereikt."
+    limit-notice: "<gold>Sommige blokken zijn onderworpen aan limieten|<gold>en worden niet gedoneerd"
     hand:
       keyword: "hand"
       success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"

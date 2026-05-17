@@ -15,6 +15,11 @@ admin:
   levelstatus:
     description: megmutatja, hogy hány sziget van a szkennelési sorban
     islands-in-queue: "<green> Szigetek a sorban: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, eltelt <yellow>[elapsed]<gray>, chunkok <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(várakozik)"
+    type-zero: "<gold>nulla"
+    type-regular: "<green>normál"
+    pending-zeros: "<gray>Függőben lévő nulla-szkennelések (késleltetett chunk-rögzítések): <yellow>[number]"
   top:
     description: Top Tíz lista megtekintése
     unknown-world: "<red>Ismeretlen világ!"
@@ -63,6 +68,8 @@ island:
     gui-title: "<black><bold>Donate Blocks"
     gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
     preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    limit-reached: "<red>A(z) [material] adományozási limitje elérve."
+    limit-notice: "<gold>Néhány blokkra korlátozás vonatkozik|<gold>és nem lesznek adományozva"
     hand:
       keyword: "kez"
       success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"

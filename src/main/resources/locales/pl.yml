@@ -11,6 +11,11 @@ admin:
   levelstatus:
     description: pokazuje ile wysp znajduje się w kolejce do skanowania
     islands-in-queue: "<green> Wyspy w kolejce: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, upłynęło <yellow>[elapsed]<gray>, chunki <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(oczekuje)"
+    type-zero: "<gold>zero"
+    type-regular: "<green>regularne"
+    pending-zeros: "<gray>Oczekujące skany zerowe (opóźnione przechwytywania chunków): <yellow>[number]"
   top:
     description: pokazuje Top 10 wysp
     unknown-world: "<red>Nieznany świat!"
@@ -60,6 +65,8 @@ island:
     gui-title: "<black><bold>Donate Blocks"
     gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
     preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    limit-reached: "<red>Limit darowizn dla [material] został osiągnięty."
+    limit-notice: "<gold>Niektóre bloki podlegają limitom|<gold>i nie zostaną przekazane"
     hand:
       keyword: "reka"
       success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"

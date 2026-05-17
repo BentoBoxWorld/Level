@@ -13,9 +13,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.TreeMap;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,6 +52,34 @@ public class LevelsManager {
     private final Map<World, TopTenData> topTenLists;
     // Cache for top tens
     private Map<World, CachedData> cache = new HashMap<>();
+    /**
+     * Per-island in-flight zero-scan counter. Incremented when
+     * {@link NewChunkListener} schedules a delayed snapshot for a freshly
+     * generated chunk, decremented when that snapshot has been processed and
+     * its value folded into {@link #addToInitialCount}. The level scan calls
+     * {@link #awaitPendingZeros} so it never returns a result while there is
+     * unaccounted-for handicap value still queued.
+     */
+    private final Map<String, AtomicInteger> pendingZeros = new ConcurrentHashMap<>();
+    /**
+     * Per-island record of chunk positions visited by the active zero-island
+     * scan. Populated as the scan reads each chunk's snapshot; used by the
+     * post-scan drain to skip chunks that the scan already credited in
+     * {@code totalPoints} (preventing double-counting when the chunk listener
+     * also fires for the same chunk during the scan window).
+     */
+    private final Map<String, Set<Long>> zeroScanVisitedChunks = new ConcurrentHashMap<>();
+    /**
+     * Per-island deferred listener credits captured while a zero-island scan
+     * is in progress. Without this, listener {@code addToInitialCount} calls
+     * for chunks the scan SKIPPED (ungenerated at poll time, generated
+     * mid-scan) would be wiped by the post-scan
+     * {@link #setInitialIslandCount setInitialIslandCount(totalPoints)}, and
+     * those chunks' values would appear in future scan totals with no
+     * matching handicap — producing a stable positive level on a fresh
+     * island.
+     */
+    private final Map<String, Map<Long, Long>> zeroScanDeferredCredits = new ConcurrentHashMap<>();
 
     public LevelsManager(Level addon) {
         this.addon = addon;
@@ -480,13 +510,169 @@ public class LevelsManager {
 
     /**
      * Set an initial island count
-     * 
+     *
      * @param island - the island to set.
      * @param lv     - initial island count
      */
     public void setInitialIslandCount(@NonNull Island island, long lv) {
         levelsCache.computeIfAbsent(island.getUniqueId(), IslandLevels::new).setInitialCount(lv);
         handler.saveObjectAsync(levelsCache.get(island.getUniqueId()));
+    }
+
+    /**
+     * Add a delta to the island's initial-count handicap. Used by the new-chunk
+     * listener to accumulate generator block points (sea floor, nether ceiling,
+     * etc.) into the initial count as chunks are generated during normal play.
+     * The initial count is subtracted from the live block total in the level
+     * calc, so generator blocks do not inflate the level.
+     *
+     * @param island the island
+     * @param delta  the points to add (no-op when zero)
+     */
+    public void addToInitialCount(@NonNull Island island, long delta) {
+        if (delta == 0) {
+            return;
+        }
+        // Use getInitialCount so any legacy initialLevel is migrated first.
+        long current = getInitialCount(island);
+        IslandLevels data = getLevelsData(island);
+        data.setInitialCount(current + delta);
+        handler.saveObjectAsync(data);
+    }
+
+    // ---- Pending zero-scan tracking ----
+
+    /**
+     * Mark that one more lazy-zero snapshot is queued for {@code island}.
+     * Paired with {@link #completePendingZero(Island)} when the snapshot has
+     * been processed.
+     */
+    public void addPendingZero(@NonNull Island island) {
+        pendingZeros.computeIfAbsent(island.getUniqueId(), k -> new AtomicInteger()).incrementAndGet();
+    }
+
+    /**
+     * Mark that a previously {@link #addPendingZero queued} snapshot has
+     * finished. Safe to call from any thread.
+     */
+    public void completePendingZero(@NonNull Island island) {
+        AtomicInteger c = pendingZeros.get(island.getUniqueId());
+        if (c != null) {
+            c.decrementAndGet();
+        }
+    }
+
+    /**
+     * @return the number of zero-scan snapshots still queued for this island
+     */
+    public int getPendingZeroCount(@NonNull Island island) {
+        AtomicInteger c = pendingZeros.get(island.getUniqueId());
+        return c == null ? 0 : Math.max(0, c.get());
+    }
+
+    /**
+     * Return a future that completes once every queued zero-scan snapshot for
+     * {@code island} has been processed (counter reached zero), or after
+     * {@code timeoutMs} milliseconds — whichever happens first. The level
+     * scan awaits this before computing the final report so the handicap is
+     * never out of date with the chunks that have actually generated.
+     */
+    public CompletableFuture<Void> awaitPendingZeros(@NonNull Island island, long timeoutMs) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        long deadline = System.currentTimeMillis() + timeoutMs;
+        pollPendingZeros(island, future, deadline);
+        return future;
+    }
+
+    private void pollPendingZeros(Island island, CompletableFuture<Void> future, long deadline) {
+        if (getPendingZeroCount(island) == 0) {
+            future.complete(null);
+            return;
+        }
+        if (System.currentTimeMillis() >= deadline) {
+            addon.logWarning("Pending zero-scan snapshots did not complete within timeout for island "
+                    + island.getUniqueId() + "; level result may be slightly stale.");
+            future.complete(null);
+            return;
+        }
+        // Re-check at every 5 ticks (250 ms). Cheap, and the scan's outer
+        // timeout (calculation-timeout) provides the upper bound.
+        Bukkit.getScheduler().runTaskLater(addon.getPlugin(),
+                () -> pollPendingZeros(island, future, deadline), 5L);
+    }
+
+    // ---- Zero-scan visited/deferred tracking ----
+
+    /**
+     * Pack chunk (x, z) into a single 64-bit key. Negative coordinates are
+     * preserved by masking to 32 bits before shifting. Kept in sync with
+     * NewChunkListener's identical helper.
+     */
+    public static long chunkKey(int x, int z) {
+        return ((long) x & 0xFFFFFFFFL) << 32 | ((long) z & 0xFFFFFFFFL);
+    }
+
+    /**
+     * Mark the start of a zero-island scan for {@code island}. Creates the
+     * visited-chunks set and the deferred-credits map so concurrent listener
+     * processing during the scan can be tracked and folded in after the scan
+     * sets the initial-count baseline.
+     */
+    public void beginZeroScan(@NonNull Island island) {
+        String id = island.getUniqueId();
+        zeroScanVisitedChunks.put(id, ConcurrentHashMap.newKeySet());
+        zeroScanDeferredCredits.put(id, new ConcurrentHashMap<>());
+    }
+
+    /**
+     * Record that the zero-island scan visited (counted blocks for) a chunk.
+     * Called from the scanner on the worker thread.
+     */
+    public void recordScanVisitedChunk(@NonNull Island island, int chunkX, int chunkZ) {
+        Set<Long> set = zeroScanVisitedChunks.get(island.getUniqueId());
+        if (set != null) {
+            set.add(chunkKey(chunkX, chunkZ));
+        }
+    }
+
+    /**
+     * Try to record a listener credit during an active zero scan. If no
+     * scan is active for this island, returns false and the caller should
+     * fall back to {@link #addToInitialCount}. If a scan is active, the
+     * credit is stored against the chunk key for later processing by
+     * {@link #drainZeroScanDeferred}.
+     */
+    public boolean tryDeferZeroScanCredit(@NonNull Island island, int chunkX, int chunkZ, long value) {
+        Map<Long, Long> deferred = zeroScanDeferredCredits.get(island.getUniqueId());
+        if (deferred == null) {
+            return false;
+        }
+        deferred.put(chunkKey(chunkX, chunkZ), value);
+        return true;
+    }
+
+    /**
+     * End the active zero scan for {@code island} and return the sum of
+     * deferred listener credits for chunks the scan did NOT visit. The
+     * caller should add this sum to the initial count immediately after
+     * {@link #setInitialIslandCount}, so chunks that the scan skipped
+     * (ungenerated at poll time, generated mid-scan) are preserved instead
+     * of being wiped by the baseline reset.
+     */
+    public long drainZeroScanDeferred(@NonNull Island island) {
+        String id = island.getUniqueId();
+        Set<Long> visited = zeroScanVisitedChunks.remove(id);
+        Map<Long, Long> deferred = zeroScanDeferredCredits.remove(id);
+        if (deferred == null || deferred.isEmpty()) {
+            return 0L;
+        }
+        long sum = 0L;
+        for (Map.Entry<Long, Long> e : deferred.entrySet()) {
+            if (visited == null || !visited.contains(e.getKey())) {
+                sum += e.getValue();
+            }
+        }
+        return sum;
     }
 
     /**

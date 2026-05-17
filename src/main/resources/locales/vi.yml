@@ -18,6 +18,11 @@ admin:
   levelstatus:
     description: xem bao nhiêu đảo đang trong hàng chờ được quét
     islands-in-queue: '<green> Đảo đang chờ: [number]'
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, đã trôi qua <yellow>[elapsed]<gray>, chunks <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(đang chờ)"
+    type-zero: "<gold>về 0"
+    type-regular: "<green>thường"
+    pending-zeros: "<gray>Quét về 0 đang chờ (chụp chunk bị trễ): <yellow>[number]"
   top:
     description: xem bảng xếp hạng TOP 10
     unknown-world: '<red> Thế giới không xác định!'
@@ -66,6 +71,8 @@ island:
     gui-title: "<black><bold>Donate Blocks"
     gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
     preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    limit-reached: "<red>Đã đạt đến giới hạn quyên góp cho [material]."
+    limit-notice: "<gold>Một số khối có giới hạn|<gold>và sẽ không được quyên góp"
     hand:
       keyword: "tay"
       success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"

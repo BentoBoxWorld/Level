@@ -10,6 +10,11 @@ admin:
   levelstatus:
     description: 显示等级计算队列中的岛屿
     islands-in-queue: '<green>列队中的岛屿: [number]'
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, 已用时 <yellow>[elapsed]<gray>, 区块 <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(等待中)"
+    type-zero: "<gold>清零"
+    type-regular: "<green>常规"
+    pending-zeros: "<gray>等待中的清零扫描（延迟的区块快照）: <yellow>[number]"
   top:
     description: 显示前十名
     unknown-world: '<red>未知的世界!'
@@ -58,6 +63,8 @@ island:
     gui-title: "<black><bold>Donate Blocks"
     gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
     preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    limit-reached: "<red>[material] 的捐赠限额已达到。"
+    limit-notice: "<gold>某些方块受到限制|<gold>将不会被捐赠"
     hand:
       keyword: "hand"
       success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"

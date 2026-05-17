@@ -15,6 +15,11 @@ admin:
   levelstatus:
     description: Zeige wie viele Inseln in der Warteschlange für den Scan sind
     islands-in-queue: "<green> Inseln in der Warteschlange: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, verstrichen <yellow>[elapsed]<gray>, Chunks <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(wartend)"
+    type-zero: "<gold>Null"
+    type-regular: "<green>Regulär"
+    pending-zeros: "<gray>Ausstehende Null-Scans (verzögerte Chunk-Erfassungen): <yellow>[number]"
   top:
     description: Zeige die Top-10 Liste
     unknown-world: "<red> Unbekannte Welt!"
@@ -63,6 +68,8 @@ island:
     gui-title: "<black><bold>Donate Blocks"
     gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
     preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    limit-reached: "<red>Das Spendenlimit für [material] wurde erreicht."
+    limit-notice: "<gold>Einige Blöcke unterliegen Limits|<gold>und werden nicht gespendet"
     hand:
       keyword: "hand"
       success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"

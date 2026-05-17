@@ -15,6 +15,11 @@ admin:
   levelstatus:
     description: 스캔 대기열에 있는 섬 수를 표시합니다
     islands-in-queue: "<green> 대기열에 있는 섬: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, 경과 <yellow>[elapsed]<gray>, 청크 <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(대기 중)"
+    type-zero: "<gold>영"
+    type-regular: "<green>일반"
+    pending-zeros: "<gray>대기 중인 제로 스캔 (지연된 청크 캡처): <yellow>[number]"
   top:
     description: 상위 10개 목록을 표시합니다
     unknown-world: "<red> 알 수 없는 세계입니다!"
@@ -63,6 +68,8 @@ island:
     gui-title: "<black><bold>Donate Blocks"
     gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
     preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
+    limit-reached: "<red>[material]의 기부 한도에 도달했습니다."
+    limit-notice: "<gold>일부 블록에는 제한이 있으며|<gold>기부되지 않습니다"
     hand:
       keyword: "hand"
       success: "<green>Donated [number] x [material] for <aqua>[points]<green> permanent points!"
