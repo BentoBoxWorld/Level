@@ -832,22 +832,34 @@ public class IslandLevelCalculator {
         }
         this.results.pointsToNextLevel.set(lo - blockAndDeathPoints);
 
-        // Binary search for points accumulated within the current level.
+        // Points accumulated within the current level.
         // Floor at initialCount when zeroing new islands to avoid negative/NaN in non-linear formulas.
         // In donations-only mode, the initial count is ignored (see calculateLevel).
         long minBlocks = addon.getSettings().isZeroNewIslandLevels() && !addon.getSettings().isDonationsOnly()
                 ? results.initialCount.get() : 0;
-        lo = Math.max(minBlocks, blockAndDeathPoints - MAX_AMOUNT);
-        hi = blockAndDeathPoints;
-        while (lo < hi) {
-            long mid = lo + (hi - lo) / 2;
-            if (calculateLevel(mid) >= currentLevel) {
-                hi = mid;
-            } else {
-                lo = mid + 1;
+        long lowerBlocks;
+        if (currentLevel == 0) {
+            // Anchor to the level-0 floor so progress goes negative when blocks drop below
+            // the starting count (e.g. 0/130 → -8/130 instead of 0/122). Searching below the
+            // floor is also unsafe: calculateLevel subtracts initialCount internally, so
+            // probing below it produces negative modifiedPoints that yield NaN (sqrt, log)
+            // or fractions that truncate to 0 — both satisfy >= 0 and would mislead a search.
+            lowerBlocks = minBlocks;
+        } else {
+            // Binary search for the smallest block count that still yields the current level.
+            lo = Math.max(minBlocks, blockAndDeathPoints - MAX_AMOUNT);
+            hi = blockAndDeathPoints;
+            while (lo < hi) {
+                long mid = lo + (hi - lo) / 2;
+                if (calculateLevel(mid) >= currentLevel) {
+                    hi = mid;
+                } else {
+                    lo = mid + 1;
+                }
             }
+            lowerBlocks = lo;
         }
-        this.results.pointsFromCurrentLevel.set(blockAndDeathPoints - lo);
+        this.results.pointsFromCurrentLevel.set(blockAndDeathPoints - lowerBlocks);
 
         // Report
         results.report = getReport();
