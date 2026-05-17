@@ -11,6 +11,11 @@ admin:
   levelstatus:
     description: menunjukkan berapa banyak pulau dalam antrian untuk pemindaian
     islands-in-queue: "<green> Pulau di dalam antrian: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, berlalu <yellow>[elapsed]<gray>, chunk <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(menunggu)"
+    type-zero: "<gold>nol"
+    type-regular: "<green>reguler"
+    pending-zeros: "<gray>Pemindaian nol tertunda (penangkapan chunk yang tertunda): <yellow>[number]"
   top:
     description: menunjukkan daftar sepuluh besar
     unknown-world: "<red> Dunia tidak ditemukan!"

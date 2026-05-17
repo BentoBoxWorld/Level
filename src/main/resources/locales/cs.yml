@@ -14,6 +14,11 @@ admin:
   levelstatus:
     description: Ukažte, kolik ostrovů je ve frontě pro skenování
     islands-in-queue: '<green> Ostrovy ve frontě: [number]'
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, uplynulo <yellow>[elapsed]<gray>, chunky <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(čekající)"
+    type-zero: "<gold>nula"
+    type-regular: "<green>běžné"
+    pending-zeros: "<gray>Čekající nulové skeny (zpožděné zachycení chunků): <yellow>[number]"
   top:
     description: ukázat seznam TOP 10
     unknown-world: '<red>Neznámý svět!'

@@ -418,6 +418,40 @@ class LevelsManagerTest extends CommonTestSetup {
     }
 
     /**
+     * Test method for the zero-scan deferred-credit drain. Pins down the
+     * contract that the chunk listener relies on: while a zero scan is
+     * active, listener credits are routed into the deferred map; at drain
+     * time, chunks the scan visited are dropped (already in totalPoints)
+     * and chunks the scan missed are summed and returned for the caller
+     * to add to the initial count.
+     */
+    @Test
+    void testZeroScanDeferralAndDrain() {
+        // Before beginZeroScan: tryDefer returns false (no active scan), so
+        // the listener takes the normal addToInitialCount path.
+        assertFalse(lm.tryDeferZeroScanCredit(island, 0, 0, 99L));
+
+        lm.beginZeroScan(island);
+
+        // While scan is active: tryDefer returns true, capturing the value.
+        assertTrue(lm.tryDeferZeroScanCredit(island, 1, 1, 50L));
+        assertTrue(lm.tryDeferZeroScanCredit(island, 2, 2, 30L));
+        assertTrue(lm.tryDeferZeroScanCredit(island, 3, 3, 20L));
+
+        // Scan visits chunk (1,1) and (3,3). The drain should drop those
+        // and only return the value for (2,2) which the scan missed.
+        lm.recordScanVisitedChunk(island, 1, 1);
+        lm.recordScanVisitedChunk(island, 3, 3);
+
+        assertEquals(30L, lm.drainZeroScanDeferred(island));
+
+        // After drain: scan state is cleared, tryDefer falls back to false.
+        assertFalse(lm.tryDeferZeroScanCredit(island, 4, 4, 100L));
+        // Drain on a non-active scan returns 0 (no map entry).
+        assertEquals(0L, lm.drainZeroScanDeferred(island));
+    }
+
+    /**
      * Test method for
      * {@link world.bentobox.level.LevelsManager#getRank(World, UUID)}
      */

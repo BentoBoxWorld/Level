@@ -19,6 +19,11 @@ admin:
   levelstatus:
     description: "show how many islands are in the queue for scanning"
     islands-in-queue: "<green>Islands in queue: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, elapsed <yellow>[elapsed]<gray>, chunks <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(waiting)"
+    type-zero: "<gold>zero"
+    type-regular: "<green>regular"
+    pending-zeros: "<gray>Pending zero-scans (delayed chunk captures): <yellow>[number]"
   top:
     description: "show the top ten list"
     unknown-world: "<red>Unknown world!"

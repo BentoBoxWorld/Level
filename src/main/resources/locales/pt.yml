@@ -15,6 +15,11 @@ admin:
   levelstatus:
     description: mostrar quantas ilhas estão na fila para escaneamento.
     islands-in-queue: "<green> Ilhas na fila: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, decorrido <yellow>[elapsed]<gray>, chunks <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(aguardando)"
+    type-zero: "<gold>zero"
+    type-regular: "<green>regular"
+    pending-zeros: "<gray>Verificações zero pendentes (capturas de chunks atrasadas): <yellow>[number]"
   top:
     description: Mostra a lista dos dez primeiros
     unknown-world: "<red> Mundo desconhecido!"

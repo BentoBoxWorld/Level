@@ -15,6 +15,11 @@ admin:
   levelstatus:
     description: megmutatja, hogy hány sziget van a szkennelési sorban
     islands-in-queue: "<green> Szigetek a sorban: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, eltelt <yellow>[elapsed]<gray>, chunkok <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(várakozik)"
+    type-zero: "<gold>nulla"
+    type-regular: "<green>normál"
+    pending-zeros: "<gray>Függőben lévő nulla-szkennelések (késleltetett chunk-rögzítések): <yellow>[number]"
   top:
     description: Top Tíz lista megtekintése
     unknown-world: "<red>Ismeretlen világ!"

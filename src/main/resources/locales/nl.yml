@@ -12,6 +12,11 @@ admin:
   levelstatus:
     description: laat zien hoeveel eilanden er in de wachtrij staan voor het scannen
     islands-in-queue: "<green> Aantal eilanden in de wachtrij: [number]"
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, verstreken <yellow>[elapsed]<gray>, chunks <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(wacht)"
+    type-zero: "<gold>nul"
+    type-regular: "<green>normaal"
+    pending-zeros: "<gray>Wachtende nul-scans (vertraagde chunk-opnames): <yellow>[number]"
   top:
     description: Laat de top tien zien
     unknown-world: "<red> Ongeldige wereld!"

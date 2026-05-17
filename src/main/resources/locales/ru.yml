@@ -15,6 +15,11 @@ admin:
   levelstatus:
     description: показать, сколько островов находится в очереди на сканирование
     islands-in-queue: '<green>Островов в очереди: [number]</green>'
+    island-detail: "<gray>- [type] <aqua>[world] [xyz]<gray>, прошло <yellow>[elapsed]<gray>, чанки <yellow>[scanned]/[total]"
+    island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(ожидает)"
+    type-zero: "<gold>обнуление"
+    type-regular: "<green>обычное"
+    pending-zeros: "<gray>Ожидающие нулевые сканирования (отложенные снимки чанков): <yellow>[number]"
   top:
     description: открывает панель с десяткой лучших по уровню острова
     unknown-world: '<red>Неизвестный мир!</red>'
