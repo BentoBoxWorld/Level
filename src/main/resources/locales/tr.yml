@@ -23,6 +23,7 @@ admin:
     island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(bekliyor)"
     type-zero: "<gold>sıfır"
     type-regular: "<green>normal"
+    pending-zeros: "<gray>Bekleyen sıfır taramalar (geciktirilmiş yığın yakalamaları): <yellow>[number]"
   top:
     description: "İlk 10 adayı sırala"
     unknown-world: "<red> Bilinmeyen dünya!"

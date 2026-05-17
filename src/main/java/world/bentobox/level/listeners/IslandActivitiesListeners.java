@@ -57,7 +57,28 @@ public class IslandActivitiesListeners implements Listener {
         // Clear the island setting
         if (island.getOwner() != null && island.getWorld() != null) {
             addon.getPipeliner().zeroIsland(island)
-                    .thenAccept(results -> addon.getManager().setInitialIslandCount(island, results.getTotalPoints()));
+                    .thenAccept(results -> {
+                        if (results == null) {
+                            // Scan was aborted (island deleted/unowned mid-flight).
+                            // Drop the tracking maps so the next zero scan
+                            // for this island starts clean.
+                            addon.getManager().drainZeroScanDeferred(island);
+                            return;
+                        }
+                        addon.getManager().setInitialIslandCount(island, results.getTotalPoints());
+                        // Fold in any listener credits captured during the
+                        // scan for chunks the scan didn't visit (e.g.
+                        // chunks generated mid-scan after their position
+                        // was already polled). Without this, those chunks
+                        // would later appear in level scan totals with no
+                        // matching handicap entry and the island would
+                        // show a stable non-zero level despite the player
+                        // having placed nothing.
+                        long missed = addon.getManager().drainZeroScanDeferred(island);
+                        if (missed != 0L) {
+                            addon.getManager().addToInitialCount(island, missed);
+                        }
+                    });
         }
     }
 

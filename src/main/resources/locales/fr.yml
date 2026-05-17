@@ -16,6 +16,7 @@ admin:
     island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(en attente)"
     type-zero: "<gold>zéro"
     type-regular: "<green>régulier"
+    pending-zeros: "<gray>Scans zéro en attente (captures de chunks différées) : <yellow>[number]"
   top:
     description: affiche le top 10 des îles
     unknown-world: "<red>Monde inconnu."

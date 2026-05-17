@@ -19,6 +19,7 @@ admin:
     island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(대기 중)"
     type-zero: "<gold>영"
     type-regular: "<green>일반"
+    pending-zeros: "<gray>대기 중인 제로 스캔 (지연된 청크 캡처): <yellow>[number]"
   top:
     description: 상위 10개 목록을 표시합니다
     unknown-world: "<red> 알 수 없는 세계입니다!"

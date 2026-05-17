@@ -14,6 +14,7 @@ admin:
     island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(等待中)"
     type-zero: "<gold>清零"
     type-regular: "<green>常规"
+    pending-zeros: "<gray>等待中的清零扫描（延迟的区块快照）: <yellow>[number]"
   top:
     description: 显示前十名
     unknown-world: '<red>未知的世界!'

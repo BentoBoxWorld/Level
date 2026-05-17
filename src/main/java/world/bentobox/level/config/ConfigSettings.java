@@ -55,6 +55,23 @@ public class ConfigSettings implements ConfigObject {
     private boolean zeroNewIslandLevels = true;
 
     @ConfigComment("")
+    @ConfigComment("Delay (in ticks) between a chunk being freshly generated and that chunk")
+    @ConfigComment("being scanned for the lazy-zero handicap. The delay lets neighbouring")
+    @ConfigComment("chunks finish their decoration phase (obsidian from lava-water, ore")
+    @ConfigComment("patches that spill across borders, broken nether portal spawns, etc.)")
+    @ConfigComment("so the captured snapshot matches what a regular level scan would later")
+    @ConfigComment("find. The level scan also waits for any in-flight delayed captures to")
+    @ConfigComment("complete before returning the result, so the handicap is always up to")
+    @ConfigComment("date with the chunks that have generated. 20 ticks = 1 second.")
+    @ConfigComment("Underwater obsidian on AcidIsland needs lava sources to flow into")
+    @ConfigComment("adjacent water before they convert — that can take 20-30 seconds, so")
+    @ConfigComment("the default is set high enough to catch it. Lower if you don't care")
+    @ConfigComment("about slow-forming terrain and want /level to settle faster after a")
+    @ConfigComment("burst of exploration.")
+    @ConfigEntry(path = "zero-scan-delay-ticks")
+    private int zeroScanDelayTicks = 600;
+
+    @ConfigComment("")
     @ConfigComment("Donations-only mode")
     @ConfigComment("If true, the island block scan is skipped entirely and the island level")
     @ConfigComment("is computed only from blocks donated via /island donate. This removes the")
@@ -395,6 +412,20 @@ public class ConfigSettings implements ConfigObject {
      */
     public void setZeroNewIslandLevels(boolean zeroNewIslandLevels) {
         this.zeroNewIslandLevels = zeroNewIslandLevels;
+    }
+
+    /**
+     * @return the zeroScanDelayTicks
+     */
+    public int getZeroScanDelayTicks() {
+        return zeroScanDelayTicks;
+    }
+
+    /**
+     * @param zeroScanDelayTicks the zeroScanDelayTicks to set
+     */
+    public void setZeroScanDelayTicks(int zeroScanDelayTicks) {
+        this.zeroScanDelayTicks = zeroScanDelayTicks;
     }
 
 

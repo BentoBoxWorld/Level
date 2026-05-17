@@ -18,6 +18,7 @@ admin:
     island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(čekající)"
     type-zero: "<gold>nula"
     type-regular: "<green>běžné"
+    pending-zeros: "<gray>Čekající nulové skeny (zpožděné zachycení chunků): <yellow>[number]"
   top:
     description: ukázat seznam TOP 10
     unknown-world: '<red>Neznámý svět!'

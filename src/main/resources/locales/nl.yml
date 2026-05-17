@@ -16,6 +16,7 @@ admin:
     island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(wacht)"
     type-zero: "<gold>nul"
     type-regular: "<green>normaal"
+    pending-zeros: "<gray>Wachtende nul-scans (vertraagde chunk-opnames): <yellow>[number]"
   top:
     description: Laat de top tien zien
     unknown-world: "<red> Ongeldige wereld!"

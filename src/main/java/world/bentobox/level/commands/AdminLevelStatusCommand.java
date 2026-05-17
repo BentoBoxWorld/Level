@@ -31,18 +31,22 @@ public class AdminLevelStatusCommand extends CompositeCommand {
     public boolean execute(User user, String label, List<String> args) {
         int total = addon.getPipeliner().getIslandsInQueue();
         user.sendMessage("admin.levelstatus.islands-in-queue", TextVariables.NUMBER, String.valueOf(total));
-        if (total == 0) {
-            return true;
-        }
         long now = System.currentTimeMillis();
         Map<IslandLevelCalculator, Long> inProcess = addon.getPipeliner().getInProcessQueue();
-        inProcess.forEach((calc, started) -> user.sendMessage(buildDetailKey(calc),
-                "[world]", worldName(calc),
-                "[xyz]", xyz(calc),
-                "[type]", typeKey(user, calc),
-                "[elapsed]", formatElapsed(now - started),
-                "[scanned]", String.valueOf(calc.getScannedChunks()),
-                "[total]", String.valueOf(calc.getTotalChunksToScan())));
+        inProcess.forEach((calc, started) -> {
+            user.sendMessage(buildDetailKey(calc),
+                    "[world]", worldName(calc),
+                    "[xyz]", xyz(calc),
+                    "[type]", typeKey(user, calc),
+                    "[elapsed]", formatElapsed(now - started),
+                    "[scanned]", String.valueOf(calc.getScannedChunks()),
+                    "[total]", String.valueOf(calc.getTotalChunksToScan()));
+            int pending = addon.getManager().getPendingZeroCount(calc.getIsland());
+            if (pending > 0) {
+                user.sendMessage("admin.levelstatus.pending-zeros",
+                        TextVariables.NUMBER, String.valueOf(pending));
+            }
+        });
         for (IslandLevelCalculator calc : addon.getPipeliner().getToProcessQueue()) {
             user.sendMessage("admin.levelstatus.island-queued",
                     "[world]", worldName(calc),

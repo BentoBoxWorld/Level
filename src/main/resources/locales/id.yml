@@ -15,6 +15,7 @@ admin:
     island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(menunggu)"
     type-zero: "<gold>nol"
     type-regular: "<green>reguler"
+    pending-zeros: "<gray>Pemindaian nol tertunda (penangkapan chunk yang tertunda): <yellow>[number]"
   top:
     description: menunjukkan daftar sepuluh besar
     unknown-world: "<red> Dunia tidak ditemukan!"

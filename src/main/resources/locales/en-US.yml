@@ -23,6 +23,7 @@ admin:
     island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(waiting)"
     type-zero: "<gold>zero"
     type-regular: "<green>regular"
+    pending-zeros: "<gray>Pending zero-scans (delayed chunk captures): <yellow>[number]"
   top:
     description: "show the top ten list"
     unknown-world: "<red>Unknown world!"

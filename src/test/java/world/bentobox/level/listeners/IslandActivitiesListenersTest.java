@@ -99,6 +99,33 @@ class IslandActivitiesListenersTest extends CommonTestSetup {
     }
 
     @Test
+    void testZeroIslandFoldsInDeferredListenerCredits() {
+        // Pin down the post-scan drain: setInitialIslandCount is called with
+        // scan.totalPoints, then any listener-during-scan credits for chunks
+        // the scan didn't visit are folded in via addToInitialCount. Without
+        // this, mid-scan chunk generation would silently leave a positive
+        // delta and the island would never read level=0 right after reset.
+        when(settings.isZeroNewIslandLevels()).thenReturn(true);
+        when(manager.drainZeroScanDeferred(island)).thenReturn(42L);
+        IslandResettedEvent event = new IslandResettedEvent(island, uuid, false, location, island);
+        listener.onNewIsland(event);
+        verify(manager).setInitialIslandCount(island, 100L);
+        verify(manager).addToInitialCount(island, 42L);
+    }
+
+    @Test
+    void testZeroIslandSkipsAddWhenNoDeferredCredits() {
+        // Drain returns 0 → no addToInitialCount, since the +0 noop would
+        // otherwise pad the database write path with a no-op save.
+        when(settings.isZeroNewIslandLevels()).thenReturn(true);
+        when(manager.drainZeroScanDeferred(island)).thenReturn(0L);
+        IslandResettedEvent event = new IslandResettedEvent(island, uuid, false, location, island);
+        listener.onNewIsland(event);
+        verify(manager).setInitialIslandCount(island, 100L);
+        verify(manager, never()).addToInitialCount(any(), anyLong());
+    }
+
+    @Test
     void testOnIslandResettedZeroNewIslandLevelsFalse() {
         when(settings.isZeroNewIslandLevels()).thenReturn(false);
         IslandResettedEvent event = new IslandResettedEvent(island, uuid, false, location, island);

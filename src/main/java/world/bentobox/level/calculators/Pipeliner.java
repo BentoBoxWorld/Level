@@ -120,6 +120,11 @@ public class Pipeliner {
      */
     public CompletableFuture<Results> zeroIsland(Island island) {
         BentoBox.getInstance().log("Zeroing island level for island at " + formatCenter(island.getCenter()));
+        // Begin tracking listener events during the scan so chunks that
+        // generate after the scan polls their position (and are therefore
+        // missed by the scan) keep their listener-credited handicap instead
+        // of being wiped by the post-scan baseline reset.
+        addon.getManager().beginZeroScan(island);
         return addToQueue(island, true);
     }
 

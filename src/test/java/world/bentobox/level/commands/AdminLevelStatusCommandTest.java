@@ -59,6 +59,8 @@ class AdminLevelStatusCommandTest extends CommonTestSetup {
     @Test
     void testExecuteShowsQueueSizeZero() {
         when(pipeliner.getIslandsInQueue()).thenReturn(0);
+        when(pipeliner.getInProcessQueue()).thenReturn(Collections.emptyMap());
+        when(pipeliner.getToProcessQueue()).thenReturn(new LinkedList<>());
         assertTrue(cmd.execute(user, "levelstatus", Collections.emptyList()));
         verify(user).sendMessage(eq("admin.levelstatus.islands-in-queue"), eq(TextVariables.NUMBER), eq("0"));
     }

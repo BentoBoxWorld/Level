@@ -399,8 +399,6 @@ public class IslandLevelCalculator {
         while (!pairList.isEmpty() && batch.size() < PARALLEL_CHUNK_FETCH) {
             Pair<Integer, Integer> p = pairList.poll();
             if (!world.isChunkGenerated(p.x, p.z)) {
-                // Position counts toward progress but contributes nothing.
-                scannedChunks.incrementAndGet();
                 continue;
             }
             batch.add(Util.getChunkAtAsync(world, p.x, p.z, false));
@@ -414,8 +412,11 @@ public class IslandLevelCalculator {
         CompletableFuture.allOf(batch.toArray(new CompletableFuture[0])).thenRun(() -> {
             for (CompletableFuture<Chunk> cf : batch) {
                 Chunk chunk = cf.getNow(null);
-                scannedChunks.incrementAndGet();
                 if (chunk != null) {
+                    // Only count chunks the scan actually reads block data
+                    // for, so the report's "X/Y" gives a useful generated-
+                    // vs-total ratio instead of always reading 100%.
+                    scannedChunks.incrementAndGet();
                     chunkList.add(chunk);
                     roseStackerCheck(chunk);
                 }
@@ -593,6 +594,11 @@ public class IslandLevelCalculator {
                     }
                 }
             }
+        }
+        // Record that the zero scan visited this chunk so the post-scan drain
+        // skips any listener credit that was deferred for the same chunk.
+        if (zeroIsland) {
+            addon.getManager().recordScanVisitedChunk(island, cp.chunk.getX(), cp.chunk.getZ());
         }
     }
 
@@ -943,6 +949,14 @@ public class IslandLevelCalculator {
                 handleStackedBlocks().thenCompose(v -> handleSpawners()).thenCompose(v -> handleChests())
                 .thenCompose(v -> handleOraxenFurniture())
                 .thenCompose(v -> handleNexoFurniture())
+                // Wait for any delayed-snapshot zero scans queued by
+                // NewChunkListener for this island. The level can't be
+                // finalised until those add their value to initialCount or
+                // the per-scan timeout (configured calculation-timeout) is
+                // reached — otherwise the handicap is out of date and the
+                // player sees a temporarily inflated level.
+                .thenCompose(v -> addon.getManager().awaitPendingZeros(island,
+                        (long) addon.getSettings().getCalculationTimeout() * 60_000L))
                 .thenRun(() -> {
                     this.tidyUp();
                     this.getR().complete(getResults());

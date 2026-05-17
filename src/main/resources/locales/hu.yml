@@ -19,6 +19,7 @@ admin:
     island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(várakozik)"
     type-zero: "<gold>nulla"
     type-regular: "<green>normál"
+    pending-zeros: "<gray>Függőben lévő nulla-szkennelések (késleltetett chunk-rögzítések): <yellow>[number]"
   top:
     description: Top Tíz lista megtekintése
     unknown-world: "<red>Ismeretlen világ!"

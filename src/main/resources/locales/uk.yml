@@ -15,6 +15,7 @@ admin:
     island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(чекає)"
     type-zero: "<gold>обнулення"
     type-regular: "<green>звичайне"
+    pending-zeros: "<gray>Очікувані нульові сканування (відкладені знімки чанків): <yellow>[number]"
   top:
     description: показати першу десятку списку
     unknown-world: "<red> Невідомий світ!"

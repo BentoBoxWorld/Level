@@ -22,6 +22,7 @@ admin:
     island-queued: "<gray>- [type] <aqua>[world] [xyz] <gray>(đang chờ)"
     type-zero: "<gold>về 0"
     type-regular: "<green>thường"
+    pending-zeros: "<gray>Quét về 0 đang chờ (chụp chunk bị trễ): <yellow>[number]"
   top:
     description: xem bảng xếp hạng TOP 10
     unknown-world: '<red> Thế giới không xác định!'
