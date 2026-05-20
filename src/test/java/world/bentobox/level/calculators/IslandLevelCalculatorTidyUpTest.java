@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.bukkit.Location;
@@ -182,5 +183,73 @@ class IslandLevelCalculatorTidyUpTest extends CommonTestSetup {
         // and the "remaining to next" not negative.
         long remaining = r.getPointsToNextLevel();
         assertEquals(true, remaining > 0, "pointsToNextLevel should be positive, got " + remaining);
+    }
+
+    @Test
+    @DisplayName("Donated blocks under limit: full donation count is used")
+    void donatedBlocksUnderLimit() {
+        // Player donated 500 iron blocks; limit is 1000; block value is 3.
+        // Expected donated points = 500 * 3 = 1500.
+        when(manager.getDonatedBlocks(any(Island.class))).thenReturn(Map.of("IRON_BLOCK", 500));
+        when(blockConfig.getValue(any(), any(String.class))).thenAnswer(inv -> {
+            String key = inv.getArgument(1);
+            return "iron_block".equals(key) ? 3 : 0;
+        });
+        when(blockConfig.getLimit(any(String.class))).thenAnswer(inv -> {
+            String key = inv.getArgument(0);
+            return "iron_block".equals(key) ? 1000 : null;
+        });
+
+        IslandLevelCalculator calc = newCalculator();
+        Results r = calc.getResults();
+        r.rawBlockCount.set(INITIAL_COUNT);
+        calc.tidyUp();
+
+        assertEquals(1500L, r.getDonatedPoints(), "donated points should equal 500 * 3 = 1500");
+    }
+
+    @Test
+    @DisplayName("Donated blocks exceed limit: only blocks up to the current limit count")
+    void donatedBlocksExceedLimit() {
+        // Player donated 1000 iron blocks; limit was later changed to 500; block value is 3.
+        // Expected donated points = 500 * 3 = 1500 (NOT 1000 * 3 = 3000).
+        when(manager.getDonatedBlocks(any(Island.class))).thenReturn(Map.of("IRON_BLOCK", 1000));
+        when(blockConfig.getValue(any(), any(String.class))).thenAnswer(inv -> {
+            String key = inv.getArgument(1);
+            return "iron_block".equals(key) ? 3 : 0;
+        });
+        when(blockConfig.getLimit(any(String.class))).thenAnswer(inv -> {
+            String key = inv.getArgument(0);
+            return "iron_block".equals(key) ? 500 : null;
+        });
+
+        IslandLevelCalculator calc = newCalculator();
+        Results r = calc.getResults();
+        r.rawBlockCount.set(INITIAL_COUNT);
+        calc.tidyUp();
+
+        assertEquals(1500L, r.getDonatedPoints(),
+                "donated points should be capped at 500 * 3 = 1500, not 1000 * 3 = 3000");
+    }
+
+    @Test
+    @DisplayName("Donated blocks with no limit: full count is used")
+    void donatedBlocksNoLimit() {
+        // Player donated 1000 iron blocks; no limit configured; block value is 3.
+        // Expected donated points = 1000 * 3 = 3000.
+        when(manager.getDonatedBlocks(any(Island.class))).thenReturn(Map.of("IRON_BLOCK", 1000));
+        when(blockConfig.getValue(any(), any(String.class))).thenAnswer(inv -> {
+            String key = inv.getArgument(1);
+            return "iron_block".equals(key) ? 3 : 0;
+        });
+        when(blockConfig.getLimit(any(String.class))).thenReturn(null);
+
+        IslandLevelCalculator calc = newCalculator();
+        Results r = calc.getResults();
+        r.rawBlockCount.set(INITIAL_COUNT);
+        calc.tidyUp();
+
+        assertEquals(3000L, r.getDonatedPoints(),
+                "donated points should equal 1000 * 3 = 3000 when no limit is configured");
     }
 }
