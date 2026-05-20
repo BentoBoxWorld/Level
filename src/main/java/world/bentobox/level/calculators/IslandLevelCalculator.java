@@ -787,12 +787,19 @@ public class IslandLevelCalculator {
         // Add donated block points (permanent contributions that persist across recalculations).
         // Recalculate from the donated blocks map using current block config values so the
         // level always reflects the current configuration, even if block values changed since donation.
+        // Also apply the current block limit: if the limit was lowered after donation, only count
+        // up to the current limit (donated blocks over the limit are silently ignored).
         Map<String, Integer> donatedBlocksMap = addon.getManager().getDonatedBlocks(island);
         long donatedPoints = donatedBlocksMap.entrySet().stream()
                 .mapToLong(entry -> {
-                    Integer value = addon.getBlockConfig().getValue(island.getWorld(),
-                            entry.getKey().toLowerCase(java.util.Locale.ENGLISH));
-                    return (long) Objects.requireNonNullElse(value, 0) * entry.getValue();
+                    String key = entry.getKey().toLowerCase(java.util.Locale.ENGLISH);
+                    Integer value = addon.getBlockConfig().getValue(island.getWorld(), key);
+                    int count = entry.getValue();
+                    Integer limit = addon.getBlockConfig().getLimit(key);
+                    if (limit != null) {
+                        count = Math.min(count, limit);
+                    }
+                    return (long) Objects.requireNonNullElse(value, 0) * count;
                 })
                 .sum();
         results.rawBlockCount.addAndGet(donatedPoints);
