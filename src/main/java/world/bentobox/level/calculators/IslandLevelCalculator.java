@@ -865,13 +865,24 @@ public class IslandLevelCalculator {
         // doesn't already know about is added to both the map and the
         // initialCount — that's what catches chunks pregenerated before the
         // island existed, async-load misses at zero-scan time, and late
-        // chunk decoration. The returned delta is folded into the in-memory
-        // results so the level math below sees the up-to-date baseline.
+        // chunk decoration.
         if (addon.getSettings().isZeroNewIslandLevels() && !addon.getSettings().isDonationsOnly()
                 && !scannedChunkValues.isEmpty()) {
-            long delta = addon.getManager().reconcileHandicapChunks(island, scannedChunkValues, zeroIsland);
-            if (delta != 0L && !zeroIsland) {
-                results.initialCount.addAndGet(delta);
+            addon.getManager().reconcileHandicapChunks(island, scannedChunkValues, zeroIsland);
+            if (!zeroIsland) {
+                // Race-safe refresh of the in-memory baseline. Between the
+                // constructor's snapshot and now, two updates can land on the
+                // database that this calculator instance won't otherwise see:
+                // (a) a still-in-flight zero scan's setInitialIslandCount —
+                //     happens when the player runs /level seconds after island
+                //     creation while the zero scan is parked on
+                //     awaitPendingZeros for newly-generated chunks;
+                // (b) the reconcile call above, which folds chunks the scan
+                //     just discovered into the initialCount.
+                // The level math below uses results.initialCount, so reading
+                // the DB value back here keeps the live computation aligned
+                // with the actual persisted baseline.
+                results.initialCount.set(addon.getInitialIslandCount(island));
             }
         }
 

@@ -233,6 +233,31 @@ class IslandLevelCalculatorTidyUpTest extends CommonTestSetup {
     }
 
     @Test
+    @DisplayName("Race: zero scan setInitialIslandCount lands after constructor — refresh keeps level math honest")
+    void initialCountRefreshAfterReconcile() {
+        // Constructor reads 0 (zero scan still in flight, hasn't called
+        // setInitialIslandCount yet). By the time tidyUp runs, the zero scan
+        // has finished and the DB has 130. Without the refresh, results
+        // .initialCount stays at 0 from the constructor and the level math
+        // computes 200/100=2 instead of the correct (200-130)/100=0. The
+        // refresh inside tidyUp picks up the updated DB value, producing the
+        // expected level.
+        when(addon.getInitialIslandCount(any(Island.class))).thenReturn(0L, INITIAL_COUNT);
+        when(manager.getInitialCount(any(Island.class))).thenReturn(INITIAL_COUNT);
+
+        IslandLevelCalculator calc = newCalculator();
+        Results r = calc.getResults();
+        // Force a non-empty scanned-chunk map so the reconcile/refresh branch fires.
+        calc.getScannedChunkValues().put("world:1", 200L);
+        r.rawBlockCount.set(200L);
+        calc.tidyUp();
+
+        assertEquals(0L, r.getLevel(),
+                "level should be 0 — refresh pulls the up-to-date initialCount=130 from the DB, "
+                        + "so modifiedPoints = 200 - 130 = 70 → 0 levels");
+    }
+
+    @Test
     @DisplayName("Donated blocks with no limit: full count is used")
     void donatedBlocksNoLimit() {
         // Player donated 1000 iron blocks; no limit configured; block value is 3.
