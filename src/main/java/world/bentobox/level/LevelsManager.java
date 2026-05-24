@@ -66,9 +66,11 @@ public class LevelsManager {
      * scan. Populated as the scan reads each chunk's snapshot; used by the
      * post-scan drain to skip chunks that the scan already credited in
      * {@code totalPoints} (preventing double-counting when the chunk listener
-     * also fires for the same chunk during the scan window).
+     * also fires for the same chunk during the scan window). Keys are full
+     * {@code worldName:chunkKey} strings so chunks at the same {@code (x,z)}
+     * in different dimensions don't collide.
      */
-    private final Map<String, Set<Long>> zeroScanVisitedChunks = new ConcurrentHashMap<>();
+    private final Map<String, Set<String>> zeroScanVisitedChunks = new ConcurrentHashMap<>();
     /**
      * Per-island deferred listener credits captured while a zero-island scan
      * is in progress. Without this, listener {@code addToInitialCount} calls
@@ -77,9 +79,11 @@ public class LevelsManager {
      * {@link #setInitialIslandCount setInitialIslandCount(totalPoints)}, and
      * those chunks' values would appear in future scan totals with no
      * matching handicap — producing a stable positive level on a fresh
-     * island.
+     * island. Keys mirror {@link #zeroScanVisitedChunks} —
+     * {@code worldName:chunkKey} — so the same chunk position in different
+     * dimensions is tracked separately.
      */
-    private final Map<String, Map<Long, Long>> zeroScanDeferredCredits = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, Long>> zeroScanDeferredCredits = new ConcurrentHashMap<>();
 
     public LevelsManager(Level addon) {
         this.addon = addon;
@@ -545,21 +549,43 @@ public class LevelsManager {
     /**
      * Mark that one more lazy-zero snapshot is queued for {@code island}.
      * Paired with {@link #completePendingZero(Island)} when the snapshot has
-     * been processed.
+     * been processed. The increment runs inside {@code compute} so it is
+     * atomic with the removal done by {@code completePendingZero} — a
+     * decrement that empties the entry cannot race a concurrent add into
+     * leaving an orphaned counter outside the map.
      */
     public void addPendingZero(@NonNull Island island) {
-        pendingZeros.computeIfAbsent(island.getUniqueId(), k -> new AtomicInteger()).incrementAndGet();
+        pendingZeros.compute(island.getUniqueId(), (k, c) -> {
+            if (c == null) {
+                c = new AtomicInteger();
+            }
+            c.incrementAndGet();
+            return c;
+        });
     }
 
     /**
      * Mark that a previously {@link #addPendingZero queued} snapshot has
-     * finished. Safe to call from any thread.
+     * finished. Safe to call from any thread. Clamps at zero (an extra
+     * complete with no matching add is a no-op rather than producing a
+     * negative count that would let {@link #getPendingZeroCount} read 0 and
+     * release a scan early) and drops the per-island map entry once the
+     * counter reaches zero so the map size stays bounded by the number of
+     * islands with in-flight work, not the total number of zero scans ever.
      */
     public void completePendingZero(@NonNull Island island) {
-        AtomicInteger c = pendingZeros.get(island.getUniqueId());
-        if (c != null) {
-            c.decrementAndGet();
-        }
+        pendingZeros.compute(island.getUniqueId(), (k, c) -> {
+            if (c == null) {
+                return null;
+            }
+            if (c.get() <= 0) {
+                // No matching add — drop the orphaned entry instead of
+                // letting it drift negative.
+                return null;
+            }
+            int v = c.decrementAndGet();
+            return v <= 0 ? null : c;
+        });
     }
 
     /**
@@ -625,54 +651,167 @@ public class LevelsManager {
     }
 
     /**
-     * Record that the zero-island scan visited (counted blocks for) a chunk.
-     * Called from the scanner on the worker thread.
+     * Record that the zero-island scan visited (counted blocks for) a chunk
+     * in the given world. Called from the scanner on the worker thread.
      */
-    public void recordScanVisitedChunk(@NonNull Island island, int chunkX, int chunkZ) {
-        Set<Long> set = zeroScanVisitedChunks.get(island.getUniqueId());
+    public void recordScanVisitedChunk(@NonNull Island island, @NonNull String worldName,
+            int chunkX, int chunkZ) {
+        Set<String> set = zeroScanVisitedChunks.get(island.getUniqueId());
         if (set != null) {
-            set.add(chunkKey(chunkX, chunkZ));
+            set.add(worldName + ":" + chunkKey(chunkX, chunkZ));
         }
     }
 
     /**
      * Try to record a listener credit during an active zero scan. If no
      * scan is active for this island, returns false and the caller should
-     * fall back to {@link #addToInitialCount}. If a scan is active, the
-     * credit is stored against the chunk key for later processing by
-     * {@link #drainZeroScanDeferred}.
+     * fall back to {@link #addHandicapChunk}. If a scan is active, the
+     * credit is stored against the {@code worldName:chunkKey} for later
+     * processing by {@link #drainZeroScanDeferred}.
      */
-    public boolean tryDeferZeroScanCredit(@NonNull Island island, int chunkX, int chunkZ, long value) {
-        Map<Long, Long> deferred = zeroScanDeferredCredits.get(island.getUniqueId());
+    public boolean tryDeferZeroScanCredit(@NonNull Island island, @NonNull String worldName,
+            int chunkX, int chunkZ, long value) {
+        Map<String, Long> deferred = zeroScanDeferredCredits.get(island.getUniqueId());
         if (deferred == null) {
             return false;
         }
-        deferred.put(chunkKey(chunkX, chunkZ), value);
+        deferred.put(worldName + ":" + chunkKey(chunkX, chunkZ), value);
         return true;
     }
 
     /**
-     * End the active zero scan for {@code island} and return the sum of
-     * deferred listener credits for chunks the scan did NOT visit. The
-     * caller should add this sum to the initial count immediately after
-     * {@link #setInitialIslandCount}, so chunks that the scan skipped
-     * (ungenerated at poll time, generated mid-scan) are preserved instead
-     * of being wiped by the baseline reset.
+     * End the active zero scan for {@code island} and return the deferred
+     * listener credits for chunks the scan did NOT visit, keyed by
+     * {@code worldName:chunkKey}. The caller passes this map to {@link
+     * #reconcileHandicapChunks} so the missed chunks become part of the
+     * persisted per-chunk handicap and are added to the initial count in one
+     * atomic save. Chunks the scan visited are dropped because their values
+     * are already in {@code results.totalPoints}.
      */
-    public long drainZeroScanDeferred(@NonNull Island island) {
+    public Map<String, Long> drainZeroScanDeferred(@NonNull Island island) {
         String id = island.getUniqueId();
-        Set<Long> visited = zeroScanVisitedChunks.remove(id);
-        Map<Long, Long> deferred = zeroScanDeferredCredits.remove(id);
+        Set<String> visited = zeroScanVisitedChunks.remove(id);
+        Map<String, Long> deferred = zeroScanDeferredCredits.remove(id);
         if (deferred == null || deferred.isEmpty()) {
-            return 0L;
+            return Collections.emptyMap();
         }
-        long sum = 0L;
-        for (Map.Entry<Long, Long> e : deferred.entrySet()) {
+        Map<String, Long> missed = new HashMap<>();
+        for (Map.Entry<String, Long> e : deferred.entrySet()) {
             if (visited == null || !visited.contains(e.getKey())) {
-                sum += e.getValue();
+                missed.put(e.getKey(), e.getValue());
             }
         }
-        return sum;
+        return missed;
+    }
+
+    // ---- Per-chunk handicap reconciliation ----
+
+    /**
+     * Fold per-chunk scan results into the island's persistent handicap-chunks
+     * map and return the net delta to add to the initial-count handicap.
+     * <p>
+     * Behaviour:
+     * <ul>
+     * <li><b>Zero scan</b>: the map is overwritten with {@code scannedChunkValues}.
+     * The caller is expected to {@code setInitialIslandCount(island, totalPoints)}
+     * (a hard reset of the baseline), so the delta returned here is 0 — the new
+     * baseline is conveyed via the totalPoints write, not added on top.</li>
+     * <li><b>Regular scan, empty existing map, non-zero initialCount</b>: legacy
+     * migration. Seed the map with the current scan values without touching
+     * initialCount — the player's existing level progress is preserved, and
+     * from this scan onward the map is the source of truth. Returns 0.</li>
+     * <li><b>Regular scan, normal case</b>: for every chunk in
+     * {@code scannedChunkValues} whose key is not already in the persisted map,
+     * add the value to the map and accumulate it into the return delta. The
+     * caller adds that delta to initialCount, which is what makes the handicap
+     * self-healing: chunks the lazy-zero listener missed get credited the
+     * first time a regular level scan visits them.</li>
+     * </ul>
+     * Once a chunk is in the map its value is frozen — subsequent growth
+     * (player builds) increases the live scan total without changing the
+     * handicap, which is the intended behaviour. Subsequent shrinkage (player
+     * breaks naturally-generated blocks) likewise leaves the handicap alone;
+     * the negative {@code totalPoints - initialCount} delta correctly drags
+     * the level below zero.
+     *
+     * @param island               the island being reconciled
+     * @param scannedChunkValues   per-chunk values from the calculator, keyed
+     *                             by {@code worldName:chunkKey}
+     * @param zeroScan             true when this is a zero-island handicap
+     *                             scan (overwrites the map)
+     * @return the number of points to add to the island's initial count; 0
+     *         for zero scans and legacy-migration scans
+     */
+    public long reconcileHandicapChunks(@NonNull Island island,
+            @NonNull Map<String, Long> scannedChunkValues, boolean zeroScan) {
+        IslandLevels data = getLevelsData(island);
+        Map<String, Long> persisted = data.getHandicapChunks();
+        if (zeroScan) {
+            // Hard reset — the new baseline is everything the scan saw. The
+            // initial count is rewritten separately by the caller, since a
+            // zero scan is meant to be the canonical re-baseline.
+            persisted.clear();
+            persisted.putAll(scannedChunkValues);
+            handler.saveObjectAsync(data);
+            return 0L;
+        }
+        if (persisted.isEmpty()) {
+            Long existingCount = data.getInitialCount();
+            if (existingCount != null && existingCount > 0L) {
+                // Legacy migration: an island that was zeroed before this
+                // feature existed. The existing initialCount already covers
+                // every chunk currently on disk, so seeding the map without
+                // touching initialCount keeps the level stable while moving
+                // future drift detection onto the per-chunk path.
+                persisted.putAll(scannedChunkValues);
+                handler.saveObjectAsync(data);
+                return 0L;
+            }
+        }
+        long delta = 0L;
+        for (Map.Entry<String, Long> e : scannedChunkValues.entrySet()) {
+            if (!persisted.containsKey(e.getKey())) {
+                long value = e.getValue() == null ? 0L : e.getValue();
+                persisted.put(e.getKey(), value);
+                delta += value;
+            }
+        }
+        if (delta != 0L) {
+            // Self-heal: any chunk the scan saw but the persisted map didn't
+            // know about gets folded into both the map and the initialCount
+            // in the same write, so the next scan reads a level of zero for
+            // that previously-missing terrain.
+            long existing = data.getInitialCount() == null ? 0L : data.getInitialCount();
+            data.setInitialCount(existing + delta);
+            handler.saveObjectAsync(data);
+        }
+        return delta;
+    }
+
+    /**
+     * Record a single chunk's handicap value and add its value to {@link
+     * IslandLevels#getInitialCount initialCount} in one atomic save. Used by
+     * {@link world.bentobox.level.listeners.NewChunkListener} when no zero
+     * scan is active. If the chunk is already in the map, this is a no-op
+     * (frozen-once semantics — see {@link #reconcileHandicapChunks}). The
+     * deferred path used during an active zero scan goes through {@link
+     * #tryDeferZeroScanCredit} and {@link #drainZeroScanDeferred} →
+     * {@link #reconcileHandicapChunks} instead, so the same chunk is never
+     * credited twice.
+     *
+     * @return true if the chunk was newly added (and initialCount adjusted)
+     */
+    public boolean addHandicapChunk(@NonNull Island island, @NonNull String key, long value) {
+        IslandLevels data = getLevelsData(island);
+        Map<String, Long> persisted = data.getHandicapChunks();
+        if (persisted.containsKey(key)) {
+            return false;
+        }
+        persisted.put(key, value);
+        long existing = data.getInitialCount() == null ? 0L : data.getInitialCount();
+        data.setInitialCount(existing + value);
+        handler.saveObjectAsync(data);
+        return true;
     }
 
     /**

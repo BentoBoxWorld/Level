@@ -60,6 +60,7 @@ import world.bentobox.bentobox.hooks.OraxenHook;
 import world.bentobox.bentobox.util.Pair;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
+import world.bentobox.level.LevelsManager;
 import world.bentobox.level.calculators.Results.Result;
 import world.bentobox.level.config.BlockConfig;
 
@@ -75,6 +76,16 @@ public class IslandLevelCalculator {
             new java.util.concurrent.atomic.AtomicInteger();
     private final Island island;
     private final Map<Object, Integer> limitCount;
+    /**
+     * Captured value per chunk visited during this scan, keyed by
+     * {@code worldName:chunkKey}. Filled by {@link #scanAsync} so {@link
+     * world.bentobox.level.LevelsManager#reconcileHandicapChunks} can
+     * fold any not-yet-known chunks into the per-chunk handicap map
+     * after the scan completes. Concurrent because furniture/spawner
+     * follow-up handlers may overlap with the main scan path.
+     */
+    private final java.util.concurrent.ConcurrentMap<String, Long> scannedChunkValues =
+            new java.util.concurrent.ConcurrentHashMap<>();
     private final CompletableFuture<Results> r;
 
     private final Results results;
@@ -568,7 +579,55 @@ public class IslandLevelCalculator {
     }
 
     private void scanAsync(ChunkPair cp) {
-// Track chunks for furniture entity scanning (Oraxen and Nexo are entity-based)
+        // Bracket the AtomicLong counters around this chunk so we can
+        // capture exactly what this chunk contributed. Safe because the
+        // batch path in scanChunk runs scanAsync calls sequentially on the
+        // worker thread — there's no overlap of scanAsync invocations for
+        // different chunks to interleave the counters.
+        long preMd = results.rawBlockCount.get();
+        long preUw = results.underWaterBlockCount.get();
+        scanChunkBlocks(cp);
+        long deltaMd = results.rawBlockCount.get() - preMd;
+        long deltaUw = results.underWaterBlockCount.get() - preUw;
+        long value = deltaMd + (long) (deltaUw * addon.getSettings().getUnderWaterMultiplier());
+        scannedChunkValues.put(handicapKey(cp.world, cp.chunk.getX(), cp.chunk.getZ()), value);
+        // Record that the zero scan visited this chunk so the post-scan drain
+        // skips any listener credit that was deferred for the same chunk.
+        if (zeroIsland) {
+            addon.getManager().recordScanVisitedChunk(island, cp.world.getName(),
+                    cp.chunk.getX(), cp.chunk.getZ());
+        }
+    }
+
+    /**
+     * Compose the per-chunk handicap key — {@code worldName:chunkKey} — used
+     * to disambiguate chunks across the overworld, nether and end. Kept in
+     * sync with {@link world.bentobox.level.listeners.NewChunkListener}.
+     */
+    public static String handicapKey(World world, int chunkX, int chunkZ) {
+        return world.getName() + ":" + LevelsManager.chunkKey(chunkX, chunkZ);
+    }
+
+    /**
+     * @return per-chunk scored values captured during this scan, for the
+     *         post-scan reconciliation done by {@link
+     *         world.bentobox.level.LevelsManager#reconcileHandicapChunks}.
+     */
+    public java.util.Map<String, Long> getScannedChunkValues() {
+        return scannedChunkValues;
+    }
+
+    /**
+     * Iterate every block in {@code cp}'s intersection with the island's
+     * protected area and dispatch it through {@link #processBlock} — the same
+     * path the regular scan uses, so custom blocks, double slabs,
+     * spawners-as-blocks, and configured per-block values are all counted
+     * identically. Package-private so the new-chunk listener can score a
+     * freshly generated chunk via {@link #scoreNewChunkSnapshot} without
+     * touching the visited-chunk tracking owned by the active scan.
+     */
+    void scanChunkBlocks(ChunkPair cp) {
+        // Track chunks for furniture entity scanning (Oraxen and Nexo are entity-based)
         if (BentoBox.getInstance().getHooks().getHook("Oraxen").isPresent() || addon.isNexo()) {
             furnitureChunks.add(cp.chunk);
         }
@@ -595,11 +654,31 @@ public class IslandLevelCalculator {
                 }
             }
         }
-        // Record that the zero scan visited this chunk so the post-scan drain
-        // skips any listener credit that was deferred for the same chunk.
-        if (zeroIsland) {
-            addon.getManager().recordScanVisitedChunk(island, cp.chunk.getX(), cp.chunk.getZ());
-        }
+    }
+
+    /**
+     * One-shot scoring of a single chunk snapshot for {@link
+     * world.bentobox.level.listeners.NewChunkListener}. Builds a throwaway
+     * calculator and runs {@link #scanChunkBlocks} on it so the per-block
+     * logic (custom blocks, double slabs, configured values, limit handling)
+     * is exactly what the regular scan uses — no parallel hand-rolled scan.
+     * <p>
+     * The returned value already includes the underwater multiplier and is
+     * ready to be added to the island's initial-count handicap. Per-material
+     * limits are applied per call (each new chunk gets a fresh limit budget),
+     * since the listener has no shared state with the island-wide scan; the
+     * resulting handicap can be slightly higher than a full scan would credit
+     * for islands with many limited blocks, which simply makes the level-0
+     * floor more durable for fresh islands.
+     */
+    public static long scoreNewChunkSnapshot(Level addon, Island island, ChunkSnapshot snapshot,
+            Chunk chunk, World world) {
+        IslandLevelCalculator calc = new IslandLevelCalculator(addon, island,
+                new CompletableFuture<>(), true);
+        calc.scanChunkBlocks(new ChunkPair(world, chunk, snapshot));
+        long md = calc.results.rawBlockCount.get();
+        long uw = calc.results.underWaterBlockCount.get();
+        return md + (long) (uw * addon.getSettings().getUnderWaterMultiplier());
     }
 
     /**
@@ -780,6 +859,22 @@ public class IslandLevelCalculator {
      * Finalizes the calculations and makes the report
      */
     public void tidyUp() {
+        // Self-healing handicap reconciliation. For zero scans this overwrites
+        // the per-chunk map with what we just saw (the new baseline). For
+        // regular scans, any chunk the scan visited that the persisted map
+        // doesn't already know about is added to both the map and the
+        // initialCount — that's what catches chunks pregenerated before the
+        // island existed, async-load misses at zero-scan time, and late
+        // chunk decoration. The returned delta is folded into the in-memory
+        // results so the level math below sees the up-to-date baseline.
+        if (addon.getSettings().isZeroNewIslandLevels() && !addon.getSettings().isDonationsOnly()
+                && !scannedChunkValues.isEmpty()) {
+            long delta = addon.getManager().reconcileHandicapChunks(island, scannedChunkValues, zeroIsland);
+            if (delta != 0L && !zeroIsland) {
+                results.initialCount.addAndGet(delta);
+            }
+        }
+
         // Finalize calculations
         results.rawBlockCount
         .addAndGet((long) (results.underWaterBlockCount.get() * addon.getSettings().getUnderWaterMultiplier()));

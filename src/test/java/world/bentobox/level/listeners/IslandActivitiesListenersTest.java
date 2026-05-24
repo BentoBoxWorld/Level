@@ -1,6 +1,7 @@
 package world.bentobox.level.listeners;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -8,6 +9,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -102,27 +105,29 @@ class IslandActivitiesListenersTest extends CommonTestSetup {
     void testZeroIslandFoldsInDeferredListenerCredits() {
         // Pin down the post-scan drain: setInitialIslandCount is called with
         // scan.totalPoints, then any listener-during-scan credits for chunks
-        // the scan didn't visit are folded in via addToInitialCount. Without
-        // this, mid-scan chunk generation would silently leave a positive
-        // delta and the island would never read level=0 right after reset.
+        // the scan didn't visit are reconciled into the per-chunk handicap
+        // map (which also updates initialCount). Without this, mid-scan chunk
+        // generation would silently leave a positive delta and the island
+        // would never read level=0 right after reset.
         when(settings.isZeroNewIslandLevels()).thenReturn(true);
-        when(manager.drainZeroScanDeferred(island)).thenReturn(42L);
+        Map<String, Long> missed = Map.of("world:42", 42L);
+        when(manager.drainZeroScanDeferred(island)).thenReturn(missed);
         IslandResettedEvent event = new IslandResettedEvent(island, uuid, false, location, island);
         listener.onNewIsland(event);
         verify(manager).setInitialIslandCount(island, 100L);
-        verify(manager).addToInitialCount(island, 42L);
+        verify(manager).reconcileHandicapChunks(island, missed, false);
     }
 
     @Test
     void testZeroIslandSkipsAddWhenNoDeferredCredits() {
-        // Drain returns 0 → no addToInitialCount, since the +0 noop would
-        // otherwise pad the database write path with a no-op save.
+        // Empty drain → no reconciliation call, since the no-op would
+        // otherwise pad the database write path with a redundant save.
         when(settings.isZeroNewIslandLevels()).thenReturn(true);
-        when(manager.drainZeroScanDeferred(island)).thenReturn(0L);
+        when(manager.drainZeroScanDeferred(island)).thenReturn(Collections.emptyMap());
         IslandResettedEvent event = new IslandResettedEvent(island, uuid, false, location, island);
         listener.onNewIsland(event);
         verify(manager).setInitialIslandCount(island, 100L);
-        verify(manager, never()).addToInitialCount(any(), anyLong());
+        verify(manager, never()).reconcileHandicapChunks(any(), any(), anyBoolean());
     }
 
     @Test

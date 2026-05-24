@@ -65,18 +65,23 @@ public class IslandActivitiesListeners implements Listener {
                             addon.getManager().drainZeroScanDeferred(island);
                             return;
                         }
+                        // Hard reset the baseline. The calculator already
+                        // overwrote the per-chunk handicap map with the
+                        // scanned values via reconcileHandicapChunks(...,
+                        // zeroScan=true) inside tidyUp; this aligns the
+                        // initialCount with that same baseline.
                         addon.getManager().setInitialIslandCount(island, results.getTotalPoints());
                         // Fold in any listener credits captured during the
                         // scan for chunks the scan didn't visit (e.g.
                         // chunks generated mid-scan after their position
-                        // was already polled). Without this, those chunks
-                        // would later appear in level scan totals with no
-                        // matching handicap entry and the island would
-                        // show a stable non-zero level despite the player
-                        // having placed nothing.
-                        long missed = addon.getManager().drainZeroScanDeferred(island);
-                        if (missed != 0L) {
-                            addon.getManager().addToInitialCount(island, missed);
+                        // was already polled). Reconciling these as a
+                        // non-zero scan adds them to both the per-chunk
+                        // map and the initialCount in one atomic write,
+                        // so subsequent scans see those chunks as fully
+                        // accounted for.
+                        java.util.Map<String, Long> missed = addon.getManager().drainZeroScanDeferred(island);
+                        if (!missed.isEmpty()) {
+                            addon.getManager().reconcileHandicapChunks(island, missed, false);
                         }
                     });
         }
