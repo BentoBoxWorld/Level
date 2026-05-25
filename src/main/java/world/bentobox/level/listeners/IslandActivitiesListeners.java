@@ -41,8 +41,15 @@ public class IslandActivitiesListeners implements Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onNewIsland(IslandCreatedEvent e) {
         if (addon.getSettings().isZeroNewIslandLevels()) {
-            // Wait a few seconds before performing the zero
-            Bukkit.getScheduler().runTaskLater(addon.getPlugin(), () -> zeroIsland(e.getIsland()), 150L);
+            // Delay the zero scan so decoration (fluid simulation,
+            // late-arriving obsidian/portal frames, trial-spawner setup,
+            // chunk-border ore patches) has time to settle before we
+            // snapshot the baseline. Reuses the listener's decoration-settle
+            // setting (zero-scan-delay-ticks, default 600 = 30s) so both
+            // paths honour the same "give the world a chance to finish
+            // generating" window.
+            long delay = Math.max(150L, addon.getSettings().getZeroScanDelayTicks());
+            Bukkit.getScheduler().runTaskLater(addon.getPlugin(), () -> zeroIsland(e.getIsland()), delay);
         }
     }
 

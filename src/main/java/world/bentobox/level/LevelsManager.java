@@ -769,21 +769,58 @@ public class LevelsManager {
             }
         }
         long delta = 0L;
+        int newChunks = 0;
+        int growingChunks = 0;
+        int shrinkingChunks = 0;
+        long totalGrowth = 0L;
+        long totalShrinkage = 0L;
+        java.util.List<java.util.Map.Entry<String, Long>> topDiffs = new java.util.ArrayList<>();
         for (Map.Entry<String, Long> e : scannedChunkValues.entrySet()) {
-            if (!persisted.containsKey(e.getKey())) {
-                long value = e.getValue() == null ? 0L : e.getValue();
-                persisted.put(e.getKey(), value);
-                delta += value;
+            long scanned = e.getValue() == null ? 0L : e.getValue();
+            Long current = persisted.get(e.getKey());
+            if (current == null) {
+                // Self-heal: any chunk the scan saw but the persisted map
+                // didn't know about gets folded into both the map and the
+                // initialCount in the same write, so the next scan reads a
+                // level of zero for that previously-missing terrain.
+                persisted.put(e.getKey(), scanned);
+                delta += scanned;
+                newChunks++;
+            } else {
+                long diff = scanned - current;
+                if (diff > 0) {
+                    growingChunks++;
+                    totalGrowth += diff;
+                    topDiffs.add(new java.util.AbstractMap.SimpleEntry<>(e.getKey(), diff));
+                } else if (diff < 0) {
+                    shrinkingChunks++;
+                    totalShrinkage += -diff;
+                }
             }
         }
         if (delta != 0L) {
-            // Self-heal: any chunk the scan saw but the persisted map didn't
-            // know about gets folded into both the map and the initialCount
-            // in the same write, so the next scan reads a level of zero for
-            // that previously-missing terrain.
             long existing = data.getInitialCount() == null ? 0L : data.getInitialCount();
             data.setInitialCount(existing + delta);
             handler.saveObjectAsync(data);
+        }
+        // Diagnostic: surface any drift between what the live scan saw and
+        // what the persisted handicap says. Growing chunks usually mean
+        // decoration evolution (lava+water → obsidian forming late, fluid
+        // simulation spreading, trial spawners activating, chunk-border ore
+        // patches completing); shrinking chunks mean a player broke
+        // naturally-generated blocks. Only logged when a delta exists so
+        // routine /level commands don't spam.
+        if (newChunks + growingChunks + shrinkingChunks > 0) {
+            addon.log(String.format(
+                    "Handicap diagnostic for island %s: new=%d (+%,d) growing=%d (+%,d) shrinking=%d (-%,d)",
+                    island.getUniqueId(), newChunks, delta, growingChunks, totalGrowth,
+                    shrinkingChunks, totalShrinkage));
+            topDiffs.sort((a, b) -> Long.compare(b.getValue(), a.getValue()));
+            int top = Math.min(5, topDiffs.size());
+            for (int i = 0; i < top; i++) {
+                addon.log(String.format("  Top growth chunk #%d: %s +%,d",
+                        i + 1, topDiffs.get(i).getKey(), topDiffs.get(i).getValue()));
+            }
         }
         return delta;
     }
