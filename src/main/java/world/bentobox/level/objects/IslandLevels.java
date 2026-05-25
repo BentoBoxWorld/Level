@@ -120,22 +120,6 @@ public class IslandLevels implements DataObject {
     private Map<String, Long> handicapChunks;
 
     /**
-     * Set to {@code true} when a zero scan has just populated the handicap
-     * map but the player hasn't run {@code /level} yet; the next regular
-     * scan adopts its live total as the canonical baseline, absorbing any
-     * decoration evolution, listener-deferred chunks, and spawner/chest
-     * follow-up values that fell outside the per-chunk capture. Cleared
-     * back to {@code false} on that overwrite so subsequent scans see the
-     * normal frozen-once handicap.
-     * <p>
-     * Null on legacy data — treated as false, so existing islands aren't
-     * accidentally rebaselined on upgrade (which would wipe player
-     * progress).
-     */
-    @Expose
-    private Boolean handicapPending;
-
-    /**
      * Constructor for new island
      * @param islandUUID - island UUID
      */
@@ -407,22 +391,6 @@ public class IslandLevels implements DataObject {
      */
     public void setHandicapChunks(Map<String, Long> handicapChunks) {
         this.handicapChunks = handicapChunks;
-    }
-
-    /**
-     * @return {@code true} if a zero scan has just finished and the next
-     *         regular scan should adopt its live total as the baseline.
-     *         Null on legacy data (treated as false by callers).
-     */
-    public Boolean getHandicapPending() {
-        return handicapPending;
-    }
-
-    /**
-     * @param handicapPending the handicapPending to set
-     */
-    public void setHandicapPending(Boolean handicapPending) {
-        this.handicapPending = handicapPending;
     }
 
     /**

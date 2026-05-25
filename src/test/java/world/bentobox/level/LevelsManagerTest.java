@@ -529,45 +529,6 @@ class LevelsManagerTest extends CommonTestSetup {
     }
 
     /**
-     * Pin down that zero-scan reconcile sets handicapPending=true and a
-     * fresh-island reconcile (empty map + zero initialCount) does the same.
-     * tidyUp will then adopt the live scan total as the canonical baseline.
-     * Legacy migration (empty map + positive initialCount) must NOT set the
-     * flag — flipping it on an old island would wipe established player
-     * progress on the next /level.
-     */
-    @Test
-    void testReconcileSetsHandicapPendingForBaselineFinalisation() throws Exception {
-        // Zero scan: pending=true so first regular scan overwrites.
-        IslandLevels zeroScanData = new IslandLevels(uuid.toString());
-        when(handler.loadObject(uuid.toString())).thenReturn(zeroScanData);
-        lm.reconcileHandicapChunks(island, Map.of("world:1", 100L), true);
-        assertEquals(Boolean.TRUE, zeroScanData.getHandicapPending(),
-                "zero scan flags the next regular scan for baseline overwrite");
-
-        // Fresh island, no prior scan: pending=true so the very first regular
-        // scan establishes the baseline correctly even if zero scan raced.
-        UUID otherId = UUID.randomUUID();
-        when(island.getUniqueId()).thenReturn(otherId.toString());
-        IslandLevels freshData = new IslandLevels(otherId.toString());
-        when(handler.loadObject(otherId.toString())).thenReturn(freshData);
-        lm.reconcileHandicapChunks(island, Map.of("world:1", 100L), false);
-        assertEquals(Boolean.TRUE, freshData.getHandicapPending(),
-                "fresh-island regular scan flags itself for baseline overwrite");
-
-        // Legacy migration: pending stays null. Old islands keep their
-        // established progress across the upgrade.
-        UUID legacyId = UUID.randomUUID();
-        when(island.getUniqueId()).thenReturn(legacyId.toString());
-        IslandLevels legacyData = new IslandLevels(legacyId.toString());
-        legacyData.setInitialCount(5000L);
-        when(handler.loadObject(legacyId.toString())).thenReturn(legacyData);
-        lm.reconcileHandicapChunks(island, Map.of("world:1", 100L), false);
-        assertEquals(null, legacyData.getHandicapPending(),
-                "legacy migration does NOT flag baseline overwrite");
-    }
-
-    /**
      * Zero-scan reconciliation hard-resets the map and returns 0 (the caller
      * rewrites initialCount separately via setInitialIslandCount).
      */
