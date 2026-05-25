@@ -925,6 +925,28 @@ public class IslandLevelCalculator {
         long blockAndDeathPoints = this.results.rawBlockCount.get();
         this.results.totalPoints.set(blockAndDeathPoints);
 
+        // First regular scan after a zero scan: adopt the live total as the
+        // canonical baseline. The zero scan set handicapPending=true; this
+        // overwrite absorbs decoration evolution, listener-deferred chunks,
+        // spawner/chest follow-up values, and any race between zero scan
+        // and regular scan into one consistent number, so the player sees
+        // level=0 on a fresh island. Subsequent regular scans see
+        // handicapPending=false and use the normal frozen-once handicap so
+        // player builds count toward level.
+        if (!zeroIsland && addon.getSettings().isZeroNewIslandLevels()
+                && !addon.getSettings().isDonationsOnly()) {
+            world.bentobox.level.objects.IslandLevels data =
+                    addon.getManager().getLevelsData(island);
+            if (data != null && Boolean.TRUE.equals(data.getHandicapPending())) {
+                long total = this.results.totalPoints.get();
+                addon.getManager().setInitialIslandCount(island, total);
+                data.setHandicapPending(Boolean.FALSE);
+                results.initialCount.set(total);
+                addon.log("Handicap baseline finalised at " + total
+                        + " for island " + island.getUniqueId());
+            }
+        }
+
         if (this.addon.getSettings().getDeathPenalty() > 0) {
             // Proper death penalty calculation.
             blockAndDeathPoints -= this.results.deathHandicap.get() * this.addon.getSettings().getDeathPenalty();

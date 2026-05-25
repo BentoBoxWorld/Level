@@ -749,9 +749,14 @@ public class LevelsManager {
         if (zeroScan) {
             // Hard reset — the new baseline is everything the scan saw. The
             // initial count is rewritten separately by the caller, since a
-            // zero scan is meant to be the canonical re-baseline.
+            // zero scan is meant to be the canonical re-baseline. Flag
+            // handicapPending so the next regular scan adopts its live total
+            // as the final baseline — that's what absorbs decoration
+            // evolution, spawner/chest follow-up values, and any
+            // listener-deferred chunks the per-chunk capture missed.
             persisted.clear();
             persisted.putAll(scannedChunkValues);
+            data.setHandicapPending(Boolean.TRUE);
             handler.saveObjectAsync(data);
             return 0L;
         }
@@ -762,11 +767,22 @@ public class LevelsManager {
                 // feature existed. The existing initialCount already covers
                 // every chunk currently on disk, so seeding the map without
                 // touching initialCount keeps the level stable while moving
-                // future drift detection onto the per-chunk path.
+                // future drift detection onto the per-chunk path. Don't
+                // flip handicapPending here — that would wipe established
+                // player progress on the next /level.
                 persisted.putAll(scannedChunkValues);
                 handler.saveObjectAsync(data);
                 return 0L;
             }
+            // Fresh island whose zero scan either hasn't run yet, hasn't
+            // finalised yet (waiting on awaitPendingZeros), or finished
+            // out-of-order with this regular scan. Flag handicapPending so
+            // tidyUp's baseline finalisation adopts the live total as the
+            // canonical baseline. Without this, the per-chunk reconcile
+            // below seeds the map with block-only values, leaving the
+            // spawner/chest follow-up values floating in totalPoints and
+            // appearing as level on a fresh island.
+            data.setHandicapPending(Boolean.TRUE);
         }
         long delta = 0L;
         int newChunks = 0;
