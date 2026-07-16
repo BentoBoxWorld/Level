@@ -120,6 +120,59 @@ public class IslandLevels implements DataObject {
     private Map<String, Long> handicapChunks;
 
     /**
+     * Schema version of the zeroing/handicap engine that owns this island's
+     * level data. Drives the grandfather contract:
+     * <ul>
+     * <li><b>null / 0 (legacy):</b> the island was last calculated by the
+     * original whole-island engine. Its {@link #initialCount} is an opaque
+     * lump handicap with no per-chunk breakdown and MUST be honoured exactly
+     * — these islands keep the legacy lump-subtract path so an addon upgrade
+     * never moves an established level.</li>
+     * <li><b>{@link #CURRENT_ZERO_VERSION} (per-chunk):</b> the island was
+     * established by the per-chunk engine. Its handicap is the sum of
+     * {@link #handicapChunks} and the level is computed per-chunk.</li>
+     * </ul>
+     * Never auto-migrated: a legacy island only becomes versioned via an
+     * explicit, opt-in admin rescan (which the admin accepts may move the
+     * level). Null on legacy data — see {@link #getZeroVersion()}.
+     */
+    @Expose
+    private Integer zeroVersion;
+
+    /**
+     * Bounded, human-facing audit trail of changes to the per-chunk handicap,
+     * newest last. This is explainability metadata only — the level math
+     * never reads it — so it is capped (see
+     * {@link #addZeroEvent(ZeroEvent, int)}) to keep the stored object small
+     * on large islands. Answers "what recently moved the handicap?" for
+     * admins. Null on legacy data; initialised lazily.
+     */
+    @Expose
+    private List<ZeroEvent> zeroLog;
+
+    /**
+     * The per-chunk zeroing engine version written by this build. Bump only
+     * when the on-disk meaning of {@link #handicapChunks} changes in a way
+     * that needs a distinct migration path.
+     */
+    public static final int CURRENT_ZERO_VERSION = 1;
+
+    /**
+     * One change to the per-chunk handicap, recorded for transparency.
+     *
+     * @param timestamp when it happened (epoch millis)
+     * @param chunkKey  {@code worldName:chunkKey} of the affected chunk
+     * @param reason    why the handicap changed (e.g. INITIAL_SCAN,
+     *                  CHUNK_GENERATED, STRUCTURE_EVENT, BLOCK_FORM,
+     *                  ADMIN_MIGRATE) — stored as a String for forward
+     *                  compatibility
+     * @param oldValue  the chunk's prior stored zero value (0 if new)
+     * @param newValue  the chunk's new stored zero value
+     */
+    public record ZeroEvent(long timestamp, String chunkKey, String reason, long oldValue, long newValue) {
+    }
+
+    /**
      * Constructor for new island
      * @param islandUUID - island UUID
      */
@@ -391,6 +444,74 @@ public class IslandLevels implements DataObject {
      */
     public void setHandicapChunks(Map<String, Long> handicapChunks) {
         this.handicapChunks = handicapChunks;
+    }
+
+    // ---- Zeroing schema version (null-safe; null/0 == legacy) ----
+
+    /**
+     * @return the zeroing engine version that owns this island's data;
+     *         {@code 0} for legacy islands (null on disk). Compare against
+     *         {@link #CURRENT_ZERO_VERSION}.
+     */
+    public int getZeroVersion() {
+        return zeroVersion == null ? 0 : zeroVersion;
+    }
+
+    /**
+     * @param zeroVersion the zeroVersion to set
+     */
+    public void setZeroVersion(int zeroVersion) {
+        this.zeroVersion = zeroVersion;
+    }
+
+    /**
+     * @return true if this island is still on the legacy lump-handicap engine
+     *         and must be calculated exactly as the original addon did.
+     */
+    public boolean isLegacyZeroing() {
+        return getZeroVersion() < CURRENT_ZERO_VERSION;
+    }
+
+    // ---- Handicap audit log (null-safe; explainability only) ----
+
+    /**
+     * @return the bounded handicap audit log, never null. Newest entries are
+     *         last.
+     */
+    public List<ZeroEvent> getZeroLog() {
+        if (zeroLog == null) {
+            zeroLog = new ArrayList<>();
+        }
+        return zeroLog;
+    }
+
+    /**
+     * @param zeroLog the zeroLog to set
+     */
+    public void setZeroLog(List<ZeroEvent> zeroLog) {
+        this.zeroLog = zeroLog;
+    }
+
+    /**
+     * Append a handicap-change event, trimming the oldest entries so at most
+     * {@code cap} are retained. A {@code cap <= 0} disables the log (clears
+     * it). The level math never reads this — it exists purely so an admin can
+     * see what recently moved the handicap.
+     *
+     * @param event the event to record
+     * @param cap   the maximum number of events to retain
+     */
+    public void addZeroEvent(ZeroEvent event, int cap) {
+        if (cap <= 0) {
+            getZeroLog().clear();
+            return;
+        }
+        List<ZeroEvent> log = getZeroLog();
+        log.add(event);
+        // Trim from the front so the newest `cap` events survive.
+        while (log.size() > cap) {
+            log.remove(0);
+        }
     }
 
     /**

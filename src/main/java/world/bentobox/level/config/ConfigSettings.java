@@ -72,6 +72,16 @@ public class ConfigSettings implements ConfigObject {
     private int zeroScanDelayTicks = 600;
 
     @ConfigComment("")
+    @ConfigComment("Per-island handicap audit-log cap.")
+    @ConfigComment("The per-chunk zeroing engine keeps a small, human-readable log of what")
+    @ConfigComment("recently changed an island's handicap (initial scan, a chunk generating,")
+    @ConfigComment("a structure forming, etc.) so admins can answer \"why is this level X?\".")
+    @ConfigComment("This is explainability only — it never affects the level math. Only the")
+    @ConfigComment("newest this-many events are kept per island. Set to 0 to disable the log.")
+    @ConfigEntry(path = "handicap-audit-log-cap")
+    private int handicapAuditLogCap = 50;
+
+    @ConfigComment("")
     @ConfigComment("Donations-only mode")
     @ConfigComment("If true, the island block scan is skipped entirely and the island level")
     @ConfigComment("is computed only from blocks donated via /island donate. This removes the")
@@ -426,6 +436,20 @@ public class ConfigSettings implements ConfigObject {
      */
     public void setZeroScanDelayTicks(int zeroScanDelayTicks) {
         this.zeroScanDelayTicks = zeroScanDelayTicks;
+    }
+
+    /**
+     * @return the per-island handicap audit-log cap (0 disables the log)
+     */
+    public int getHandicapAuditLogCap() {
+        return handicapAuditLogCap;
+    }
+
+    /**
+     * @param handicapAuditLogCap the handicapAuditLogCap to set
+     */
+    public void setHandicapAuditLogCap(int handicapAuditLogCap) {
+        this.handicapAuditLogCap = handicapAuditLogCap;
     }
 
 

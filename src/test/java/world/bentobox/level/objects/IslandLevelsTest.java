@@ -1,6 +1,7 @@
 package world.bentobox.level.objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -229,5 +230,58 @@ class IslandLevelsTest {
     void testDeprecatedInitialLevel() {
         islandLevels.setInitialLevel(100L);
         assertEquals(100L, islandLevels.getInitialLevel());
+    }
+
+    // --- Zeroing schema version (grandfather contract) ---
+
+    @Test
+    void testNewIslandDefaultsToLegacyZeroing() {
+        // Null on disk reads as version 0 and must be treated as legacy so an
+        // upgrade never moves an established level.
+        assertEquals(0, islandLevels.getZeroVersion());
+        assertTrue(islandLevels.isLegacyZeroing());
+    }
+
+    @Test
+    void testCurrentVersionIsNotLegacy() {
+        islandLevels.setZeroVersion(IslandLevels.CURRENT_ZERO_VERSION);
+        assertEquals(IslandLevels.CURRENT_ZERO_VERSION, islandLevels.getZeroVersion());
+        assertFalse(islandLevels.isLegacyZeroing());
+    }
+
+    // --- Handicap audit log ---
+
+    @Test
+    void testZeroLogEmptyByDefault() {
+        assertNotNull(islandLevels.getZeroLog());
+        assertTrue(islandLevels.getZeroLog().isEmpty());
+    }
+
+    @Test
+    void testAddZeroEventAppends() {
+        islandLevels.addZeroEvent(new IslandLevels.ZeroEvent(1L, "world:1", "INITIAL_SCAN", 0L, 10L), 50);
+        assertEquals(1, islandLevels.getZeroLog().size());
+        IslandLevels.ZeroEvent e = islandLevels.getZeroLog().get(0);
+        assertEquals("world:1", e.chunkKey());
+        assertEquals("INITIAL_SCAN", e.reason());
+        assertEquals(10L, e.newValue());
+    }
+
+    @Test
+    void testAddZeroEventTrimsToCapKeepingNewest() {
+        for (int i = 0; i < 10; i++) {
+            islandLevels.addZeroEvent(new IslandLevels.ZeroEvent(i, "world:" + i, "CHUNK_GENERATED", 0L, i), 3);
+        }
+        assertEquals(3, islandLevels.getZeroLog().size());
+        // Oldest dropped: the three newest (7,8,9) survive, in order.
+        assertEquals("world:7", islandLevels.getZeroLog().get(0).chunkKey());
+        assertEquals("world:9", islandLevels.getZeroLog().get(2).chunkKey());
+    }
+
+    @Test
+    void testAddZeroEventCapZeroDisablesLog() {
+        islandLevels.addZeroEvent(new IslandLevels.ZeroEvent(1L, "world:1", "INITIAL_SCAN", 0L, 10L), 50);
+        islandLevels.addZeroEvent(new IslandLevels.ZeroEvent(2L, "world:2", "INITIAL_SCAN", 0L, 10L), 0);
+        assertTrue(islandLevels.getZeroLog().isEmpty(), "cap 0 clears and disables the log");
     }
 }

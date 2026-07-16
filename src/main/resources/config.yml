@@ -27,6 +27,14 @@ calculation-timeout: 5
 # This will reduce CPU if false.
 zero-new-island-levels: true
 #
+# Per-island handicap audit-log cap.
+# The per-chunk zeroing engine keeps a small, human-readable log of what
+# recently changed an island's handicap (initial scan, a chunk generating,
+# a structure forming, etc.) so admins can answer "why is this level X?".
+# This is explainability only - it never affects the level math. Only the
+# newest this-many events are kept per island. Set to 0 to disable the log.
+handicap-audit-log-cap: 50
+#
 # Donations-only mode
 # If true, the island block scan is skipped entirely and the island level
 # is computed only from blocks donated via /island donate. This removes the
