@@ -41,15 +41,8 @@ public class IslandActivitiesListeners implements Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onNewIsland(IslandCreatedEvent e) {
         if (addon.getSettings().isZeroNewIslandLevels()) {
-            // Delay the zero scan so decoration (fluid simulation,
-            // late-arriving obsidian/portal frames, trial-spawner setup,
-            // chunk-border ore patches) has time to settle before we
-            // snapshot the baseline. Reuses the listener's decoration-settle
-            // setting (zero-scan-delay-ticks, default 600 = 30s) so both
-            // paths honour the same "give the world a chance to finish
-            // generating" window.
-            long delay = Math.max(150L, addon.getSettings().getZeroScanDelayTicks());
-            Bukkit.getScheduler().runTaskLater(addon.getPlugin(), () -> zeroIsland(e.getIsland()), delay);
+            // Wait a few seconds before performing the zero
+            Bukkit.getScheduler().runTaskLater(addon.getPlugin(), () -> zeroIsland(e.getIsland()), 150L);
         }
     }
 
@@ -64,33 +57,7 @@ public class IslandActivitiesListeners implements Listener {
         // Clear the island setting
         if (island.getOwner() != null && island.getWorld() != null) {
             addon.getPipeliner().zeroIsland(island)
-                    .thenAccept(results -> {
-                        if (results == null) {
-                            // Scan was aborted (island deleted/unowned mid-flight).
-                            // Drop the tracking maps so the next zero scan
-                            // for this island starts clean.
-                            addon.getManager().drainZeroScanDeferred(island);
-                            return;
-                        }
-                        // Hard reset the baseline. The calculator already
-                        // overwrote the per-chunk handicap map with the
-                        // scanned values via reconcileHandicapChunks(...,
-                        // zeroScan=true) inside tidyUp; this aligns the
-                        // initialCount with that same baseline.
-                        addon.getManager().setInitialIslandCount(island, results.getTotalPoints());
-                        // Fold in any listener credits captured during the
-                        // scan for chunks the scan didn't visit (e.g.
-                        // chunks generated mid-scan after their position
-                        // was already polled). Reconciling these as a
-                        // non-zero scan adds them to both the per-chunk
-                        // map and the initialCount in one atomic write,
-                        // so subsequent scans see those chunks as fully
-                        // accounted for.
-                        java.util.Map<String, Long> missed = addon.getManager().drainZeroScanDeferred(island);
-                        if (!missed.isEmpty()) {
-                            addon.getManager().reconcileHandicapChunks(island, missed, false);
-                        }
-                    });
+                    .thenAccept(results -> addon.getManager().setInitialIslandCount(island, results.getTotalPoints()));
         }
     }
 

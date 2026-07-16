@@ -46,7 +46,6 @@ import world.bentobox.level.config.ConfigSettings;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
 import world.bentobox.level.listeners.MigrationListener;
-import world.bentobox.level.listeners.NewChunkListener;
 import world.bentobox.level.requests.LevelRequestHandler;
 import world.bentobox.level.requests.TopTenRequestHandler;
 import world.bentobox.visit.VisitAddon;
@@ -155,10 +154,6 @@ public class Level extends Addon {
         registerListener(new IslandActivitiesListeners(this));
         registerListener(new JoinLeaveListener(this));
         registerListener(new MigrationListener(this));
-        // Accumulates generator block points into initialCount as new chunks
-        // are generated, so large protection ranges work with zero-new-island
-        // mode without forcing the initial scan to generate the whole area.
-        registerListener(new NewChunkListener(this));
     }
 
     private void registerGameModeCommands() {

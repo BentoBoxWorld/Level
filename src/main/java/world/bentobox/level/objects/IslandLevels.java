@@ -99,27 +99,6 @@ public class IslandLevels implements DataObject {
     private List<DonationRecord> donationLog;
 
     /**
-     * Per-chunk "natural baseline" map for the lazy-zero handicap. Key is
-     * {@code worldName:chunkKey} (see {@link world.bentobox.level.LevelsManager#chunkKey})
-     * and value is the chunk's scored contribution at the time it was first
-     * folded into the handicap. The map exists so the handicap is
-     * self-healing: any time a level scan visits a chunk that is not in the
-     * map yet, the chunk's value is added to both the map and {@link
-     * #initialCount}, which catches chunks the lazy-zero listener missed
-     * (chunks pregenerated before the island existed, async-load misses at
-     * zero-scan time, late chunk decoration). Once a chunk is in the map its
-     * value is frozen — subsequent block changes are attributed to player
-     * activity.
-     * <p>
-     * Null on legacy data; treated as an empty map by callers. An empty map
-     * with a non-zero {@link #initialCount} is the legacy-migration state —
-     * the next scan seeds the map without re-crediting the existing count
-     * so player progress is preserved across the upgrade.
-     */
-    @Expose
-    private Map<String, Long> handicapChunks;
-
-    /**
      * Constructor for new island
      * @param islandUUID - island UUID
      */
@@ -371,26 +350,6 @@ public class IslandLevels implements DataObject {
         getDonatedBlocks().merge(material, count, Integer::sum);
         this.donatedPoints = getDonatedPoints() + points;
         getDonationLog().add(new DonationRecord(System.currentTimeMillis(), donorUUID, material, count, points));
-    }
-
-    // ---- Handicap chunks (null-safe for backwards compatibility) ----
-
-    /**
-     * Per-chunk handicap map. Never null — initialised lazily so callers
-     * can iterate or {@code put} without a null check.
-     */
-    public Map<String, Long> getHandicapChunks() {
-        if (handicapChunks == null) {
-            handicapChunks = new HashMap<>();
-        }
-        return handicapChunks;
-    }
-
-    /**
-     * @param handicapChunks the handicapChunks to set
-     */
-    public void setHandicapChunks(Map<String, Long> handicapChunks) {
-        this.handicapChunks = handicapChunks;
     }
 
     /**

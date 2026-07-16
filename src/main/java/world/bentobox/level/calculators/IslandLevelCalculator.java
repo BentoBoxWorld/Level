@@ -60,7 +60,6 @@ import world.bentobox.bentobox.hooks.OraxenHook;
 import world.bentobox.bentobox.util.Pair;
 import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
-import world.bentobox.level.LevelsManager;
 import world.bentobox.level.calculators.Results.Result;
 import world.bentobox.level.config.BlockConfig;
 
@@ -71,21 +70,8 @@ public class IslandLevelCalculator {
     private static final int CHUNKS_TO_SCAN = 100;
     private final Level addon;
     private final Queue<Pair<Integer, Integer>> chunksToCheck;
-    private final int initialChunkCount;
-    private final java.util.concurrent.atomic.AtomicInteger scannedChunks =
-            new java.util.concurrent.atomic.AtomicInteger();
     private final Island island;
     private final Map<Object, Integer> limitCount;
-    /**
-     * Captured value per chunk visited during this scan, keyed by
-     * {@code worldName:chunkKey}. Filled by {@link #scanAsync} so {@link
-     * world.bentobox.level.LevelsManager#reconcileHandicapChunks} can
-     * fold any not-yet-known chunks into the per-chunk handicap map
-     * after the scan completes. Concurrent because furniture/spawner
-     * follow-up handlers may overlap with the main scan path.
-     */
-    private final java.util.concurrent.ConcurrentMap<String, Long> scannedChunkValues =
-            new java.util.concurrent.ConcurrentHashMap<>();
     private final CompletableFuture<Results> r;
 
     private final Results results;
@@ -115,7 +101,6 @@ public class IslandLevelCalculator {
         results = new Results();
         duration = System.currentTimeMillis();
         chunksToCheck = getChunksToScan(island);
-        initialChunkCount = chunksToCheck.size();
         this.limitCount = new HashMap<>();
         // Get the initial island level
         // TODO: results.initialLevel.set(addon.getInitialIslandLevel(island));
@@ -285,13 +270,6 @@ public class IslandLevelCalculator {
         if (addon.getSettings().isZeroNewIslandLevels() && !addon.getSettings().isDonationsOnly()) {
             reportLines.add("Initial island count = " + (0L - addon.getManager().getInitialCount(island)));
         }
-        // Total chunk positions visited across all enabled dimensions. At the
-        // end of a scan this equals the total — ungenerated chunks count as
-        // visited too (gen=false makes them null and skipped, but the
-        // position is still checked off). Lazy zeroing via NewChunkListener
-        // fills in the missing block data as players explore.
-        reportLines.add("Chunks scanned = " + String.format("%,d", scannedChunks.get())
-                + "/" + String.format("%,d", getTotalChunksToScan()));
         reportLines.add("Previous level = " + addon.getManager().getIslandLevel(island.getWorld(), island.getOwner()));
         reportLines.add("New level = " + results.getLevel());
         reportLines.add(LINE_BREAK);
@@ -381,58 +359,20 @@ public class IslandLevelCalculator {
         return CompletableFuture.completedFuture(Collections.emptyList());
     }
 
-    /**
-     * Maximum number of chunk fetches issued in parallel per batch. Higher
-     * values reduce wall time when most chunks are ungenerated but increase
-     * concurrent pressure on the chunk system. 32 is a practical sweet spot.
-     */
-    private static final int PARALLEL_CHUNK_FETCH = 32;
-
     private void loadChunks(CompletableFuture<List<Chunk>> r2, World world, Queue<Pair<Integer, Integer>> pairList,
             List<Chunk> chunkList) {
         if (pairList.isEmpty()) {
             r2.complete(chunkList);
             return;
         }
-        // Build a batch of up to PARALLEL_CHUNK_FETCH async fetches. Before
-        // each async dispatch, fast-path-skip positions whose chunk has never
-        // been generated: World.isChunkGenerated() is a synchronous region
-        // file lookup that avoids the async-scheduler hop entirely. On a
-        // large protection range this drops the dominant cost — most chunks
-        // are ungenerated, and each saved round-trip is ~10 ms.
-        //
-        // We never force chunk generation (gen=false). Generator blocks in
-        // ungenerated chunks (sea floor, nether ceiling, etc.) are picked up
-        // incrementally by NewChunkListener as chunks generate during normal
-        // play — the initial-count handicap and the scanned block total grow
-        // together, keeping the level stable.
-        List<CompletableFuture<Chunk>> batch = new ArrayList<>(PARALLEL_CHUNK_FETCH);
-        while (!pairList.isEmpty() && batch.size() < PARALLEL_CHUNK_FETCH) {
-            Pair<Integer, Integer> p = pairList.poll();
-            if (!world.isChunkGenerated(p.x, p.z)) {
-                continue;
+        Pair<Integer, Integer> p = pairList.poll();
+        // We need to generate now all the time because some game modes are not voids
+        Util.getChunkAtAsync(world, p.x, p.z, true).thenAccept(chunk -> {
+            if (chunk != null) {
+                chunkList.add(chunk);
+                roseStackerCheck(chunk);
             }
-            batch.add(Util.getChunkAtAsync(world, p.x, p.z, false));
-        }
-        if (batch.isEmpty()) {
-            // All positions in this slice were ungenerated — keep draining
-            // without paying for an empty CompletableFuture.allOf.
-            loadChunks(r2, world, pairList, chunkList);
-            return;
-        }
-        CompletableFuture.allOf(batch.toArray(new CompletableFuture[0])).thenRun(() -> {
-            for (CompletableFuture<Chunk> cf : batch) {
-                Chunk chunk = cf.getNow(null);
-                if (chunk != null) {
-                    // Only count chunks the scan actually reads block data
-                    // for, so the report's "X/Y" gives a useful generated-
-                    // vs-total ratio instead of always reading 100%.
-                    scannedChunks.incrementAndGet();
-                    chunkList.add(chunk);
-                    roseStackerCheck(chunk);
-                }
-            }
-            loadChunks(r2, world, pairList, chunkList);
+            loadChunks(r2, world, pairList, chunkList); // Iteration
         });
     }
 
@@ -579,55 +519,7 @@ public class IslandLevelCalculator {
     }
 
     private void scanAsync(ChunkPair cp) {
-        // Bracket the AtomicLong counters around this chunk so we can
-        // capture exactly what this chunk contributed. Safe because the
-        // batch path in scanChunk runs scanAsync calls sequentially on the
-        // worker thread — there's no overlap of scanAsync invocations for
-        // different chunks to interleave the counters.
-        long preMd = results.rawBlockCount.get();
-        long preUw = results.underWaterBlockCount.get();
-        scanChunkBlocks(cp);
-        long deltaMd = results.rawBlockCount.get() - preMd;
-        long deltaUw = results.underWaterBlockCount.get() - preUw;
-        long value = deltaMd + (long) (deltaUw * addon.getSettings().getUnderWaterMultiplier());
-        scannedChunkValues.put(handicapKey(cp.world, cp.chunk.getX(), cp.chunk.getZ()), value);
-        // Record that the zero scan visited this chunk so the post-scan drain
-        // skips any listener credit that was deferred for the same chunk.
-        if (zeroIsland) {
-            addon.getManager().recordScanVisitedChunk(island, cp.world.getName(),
-                    cp.chunk.getX(), cp.chunk.getZ());
-        }
-    }
-
-    /**
-     * Compose the per-chunk handicap key — {@code worldName:chunkKey} — used
-     * to disambiguate chunks across the overworld, nether and end. Kept in
-     * sync with {@link world.bentobox.level.listeners.NewChunkListener}.
-     */
-    public static String handicapKey(World world, int chunkX, int chunkZ) {
-        return world.getName() + ":" + LevelsManager.chunkKey(chunkX, chunkZ);
-    }
-
-    /**
-     * @return per-chunk scored values captured during this scan, for the
-     *         post-scan reconciliation done by {@link
-     *         world.bentobox.level.LevelsManager#reconcileHandicapChunks}.
-     */
-    public java.util.Map<String, Long> getScannedChunkValues() {
-        return scannedChunkValues;
-    }
-
-    /**
-     * Iterate every block in {@code cp}'s intersection with the island's
-     * protected area and dispatch it through {@link #processBlock} — the same
-     * path the regular scan uses, so custom blocks, double slabs,
-     * spawners-as-blocks, and configured per-block values are all counted
-     * identically. Package-private so the new-chunk listener can score a
-     * freshly generated chunk via {@link #scoreNewChunkSnapshot} without
-     * touching the visited-chunk tracking owned by the active scan.
-     */
-    void scanChunkBlocks(ChunkPair cp) {
-        // Track chunks for furniture entity scanning (Oraxen and Nexo are entity-based)
+// Track chunks for furniture entity scanning (Oraxen and Nexo are entity-based)
         if (BentoBox.getInstance().getHooks().getHook("Oraxen").isPresent() || addon.isNexo()) {
             furnitureChunks.add(cp.chunk);
         }
@@ -654,31 +546,6 @@ public class IslandLevelCalculator {
                 }
             }
         }
-    }
-
-    /**
-     * One-shot scoring of a single chunk snapshot for {@link
-     * world.bentobox.level.listeners.NewChunkListener}. Builds a throwaway
-     * calculator and runs {@link #scanChunkBlocks} on it so the per-block
-     * logic (custom blocks, double slabs, configured values, limit handling)
-     * is exactly what the regular scan uses — no parallel hand-rolled scan.
-     * <p>
-     * The returned value already includes the underwater multiplier and is
-     * ready to be added to the island's initial-count handicap. Per-material
-     * limits are applied per call (each new chunk gets a fresh limit budget),
-     * since the listener has no shared state with the island-wide scan; the
-     * resulting handicap can be slightly higher than a full scan would credit
-     * for islands with many limited blocks, which simply makes the level-0
-     * floor more durable for fresh islands.
-     */
-    public static long scoreNewChunkSnapshot(Level addon, Island island, ChunkSnapshot snapshot,
-            Chunk chunk, World world) {
-        IslandLevelCalculator calc = new IslandLevelCalculator(addon, island,
-                new CompletableFuture<>(), true);
-        calc.scanChunkBlocks(new ChunkPair(world, chunk, snapshot));
-        long md = calc.results.rawBlockCount.get();
-        long uw = calc.results.underWaterBlockCount.get();
-        return md + (long) (uw * addon.getSettings().getUnderWaterMultiplier());
     }
 
     /**
@@ -859,33 +726,6 @@ public class IslandLevelCalculator {
      * Finalizes the calculations and makes the report
      */
     public void tidyUp() {
-        // Self-healing handicap reconciliation. For zero scans this overwrites
-        // the per-chunk map with what we just saw (the new baseline). For
-        // regular scans, any chunk the scan visited that the persisted map
-        // doesn't already know about is added to both the map and the
-        // initialCount — that's what catches chunks pregenerated before the
-        // island existed, async-load misses at zero-scan time, and late
-        // chunk decoration.
-        if (addon.getSettings().isZeroNewIslandLevels() && !addon.getSettings().isDonationsOnly()
-                && !scannedChunkValues.isEmpty()) {
-            addon.getManager().reconcileHandicapChunks(island, scannedChunkValues, zeroIsland);
-            if (!zeroIsland) {
-                // Race-safe refresh of the in-memory baseline. Between the
-                // constructor's snapshot and now, two updates can land on the
-                // database that this calculator instance won't otherwise see:
-                // (a) a still-in-flight zero scan's setInitialIslandCount —
-                //     happens when the player runs /level seconds after island
-                //     creation while the zero scan is parked on
-                //     awaitPendingZeros for newly-generated chunks;
-                // (b) the reconcile call above, which folds chunks the scan
-                //     just discovered into the initialCount.
-                // The level math below uses results.initialCount, so reading
-                // the DB value back here keeps the live computation aligned
-                // with the actual persisted baseline.
-                results.initialCount.set(addon.getInitialIslandCount(island));
-            }
-        }
-
         // Finalize calculations
         results.rawBlockCount
         .addAndGet((long) (results.underWaterBlockCount.get() * addon.getSettings().getUnderWaterMultiplier()));
@@ -976,42 +816,6 @@ public class IslandLevelCalculator {
         return !zeroIsland;
     }
 
-    /**
-     * @return true if this is a zero-island (handicap) scan
-     */
-    public boolean isZeroIsland() {
-        return zeroIsland;
-    }
-
-    /**
-     * @return the number of chunks in the queue at construction time
-     */
-    public int getInitialChunkCount() {
-        return initialChunkCount;
-    }
-
-    /**
-     * @return the number of chunks remaining to scan (per dimension)
-     */
-    public int getChunksRemaining() {
-        return chunksToCheck.size();
-    }
-
-    /**
-     * @return the number of chunks scanned so far across all dimensions
-     */
-    public int getScannedChunks() {
-        return scannedChunks.get();
-    }
-
-    /**
-     * @return the total number of chunks that will be visited during the
-     *         scan: XZ positions × enabled dimensions
-     */
-    public int getTotalChunksToScan() {
-        return initialChunkCount * Math.max(1, worlds.size());
-    }
-
     public void scanIsland(Pipeliner pipeliner) {
         // In donations-only mode, skip the chunk scan for regular level calcs:
         // tidyUp() will add the donated points and compute the level from those
@@ -1050,26 +854,12 @@ public class IslandLevelCalculator {
             } else {
                 // Done
                 pipeliner.getInProcessQueue().remove(this);
-                if (zeroIsland) {
-                    BentoBox.getInstance().log(
-                            "Initial zero scan complete for island at " + Pipeliner.formatCenter(island.getCenter())
-                                    + ". Lazy zeroing will continue as new chunks generate.");
-                } else {
-                    BentoBox.getInstance().log("Completed Level scan.");
-                }
+                BentoBox.getInstance().log("Completed Level scan.");
                 // Chunk finished
                 // This was the last chunk. Handle stacked blocks, spawners, chests and exit
                 handleStackedBlocks().thenCompose(v -> handleSpawners()).thenCompose(v -> handleChests())
                 .thenCompose(v -> handleOraxenFurniture())
                 .thenCompose(v -> handleNexoFurniture())
-                // Wait for any delayed-snapshot zero scans queued by
-                // NewChunkListener for this island. The level can't be
-                // finalised until those add their value to initialCount or
-                // the per-scan timeout (configured calculation-timeout) is
-                // reached — otherwise the handicap is out of date and the
-                // player sees a temporarily inflated level.
-                .thenCompose(v -> addon.getManager().awaitPendingZeros(island,
-                        (long) addon.getSettings().getCalculationTimeout() * 60_000L))
                 .thenRun(() -> {
                     this.tidyUp();
                     this.getR().complete(getResults());
