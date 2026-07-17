@@ -263,6 +263,11 @@ public class IslandDonateCommand extends ConfirmableCommand {
                     MATERIAL_PLACEHOLDER, Utils.prettifyObject(displayKey, user),
                     POINTS_PLACEHOLDER, Utils.formatNumber(user, points)));
         }
+        if (totalPoints == 0 && limited) {
+            // Everything offered is already at its donation limit — nothing to confirm
+            user.sendMessage("island.donate.limit-reached-all");
+            return false;
+        }
         if (limited) {
             // The limit-notice locale uses '|' as a lore line-break for the GUI;
             // translate to '\n' here so the chat confirmation prompt wraps cleanly.

@@ -67,6 +67,7 @@ island:
     gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
     preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
     limit-reached: "<red>Đã đạt đến giới hạn quyên góp cho [material]."
+    limit-reached-all: "<red>Tất cả các khối này đã đạt đến giới hạn quyên góp."
     limit-notice: "<gold>Một số khối có giới hạn|<gold>và sẽ không được quyên góp"
     hand:
       keyword: "tay"
