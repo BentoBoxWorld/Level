@@ -1,6 +1,7 @@
 package world.bentobox.level.calculators;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -182,7 +183,7 @@ class IslandLevelCalculatorTidyUpTest extends CommonTestSetup {
         // The exact interval isn't the point — we just want progress + remaining to be self-consistent
         // and the "remaining to next" not negative.
         long remaining = r.getPointsToNextLevel();
-        assertEquals(true, remaining > 0, "pointsToNextLevel should be positive, got " + remaining);
+        assertTrue(remaining > 0, "pointsToNextLevel should be positive, got " + remaining);
     }
 
     @Test

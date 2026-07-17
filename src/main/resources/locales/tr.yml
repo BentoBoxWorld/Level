@@ -68,6 +68,7 @@ island:
     gui-info: "<gold>Donate blocks to your island|<gray>Currently donated: <gold>[points]<gray> points|<red>Warning: donated items are|<red>destroyed and cannot be returned!"
     preview: "<yellow>Points to add: <gold>[points]|<red>These items will be destroyed!"
     limit-reached: "<red>[material] için bağış limitine ulaşıldı."
+    limit-reached-all: "<red>Bu blokların tümü bağış limitlerine ulaştı."
     limit-notice: "<gold>Bazı bloklar limitlere tabidir|<gold>ve bağışlanmayacaktır"
     hand:
       keyword: "el"

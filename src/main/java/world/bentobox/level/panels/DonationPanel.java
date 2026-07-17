@@ -86,8 +86,10 @@ public class DonationPanel implements Listener {
         // Place decorative items from the template (non-button, non-border entries)
         layout.decorativeItems.forEach(inventory::setItem);
 
-        // Info pane
-        long currentDonated = addon.getManager().getDonatedPoints(island);
+        // Info pane — show the effective donated points (current values, limits applied),
+        // the same figure tidyUp() adds to the level, not the stored donation-time total.
+        long currentDonated = Utils.calculateDonatedPoints(addon.getBlockConfig(), world,
+                addon.getManager().getDonatedBlocks(island));
         ItemStack info = createNamedItem(layout.infoMaterial,
                 user.getTranslation("island.donate.gui-info",
                         POINTS_PLACEHOLDER, Utils.formatNumber(user, currentDonated)));
@@ -148,6 +150,7 @@ public class DonationPanel implements Listener {
         DonationTotals result = new DonationTotals();
         Map<String, Integer> rawTotals = new HashMap<>();
         Map<String, Integer> values = new HashMap<>();
+        Map<String, Object> blockObjs = new HashMap<>();
         for (int slot : layout.donationSlots) {
             ItemStack item = inventory.getItem(slot);
             if (item == null || item.getType().isAir()) continue;
@@ -158,14 +161,13 @@ public class DonationPanel implements Listener {
             if (value == null || value <= 0) continue;
             rawTotals.merge(donationId, item.getAmount(), Integer::sum);
             values.putIfAbsent(donationId, value);
+            blockObjs.putIfAbsent(donationId, blockObj);
         }
         Map<String, Integer> donated = addon.getManager().getDonatedBlocks(island);
         for (Map.Entry<String, Integer> e : rawTotals.entrySet()) {
             String donationId = e.getKey();
             int total = e.getValue();
-            Object blockObj = donationId.contains(":") ? donationId : Material.matchMaterial(donationId);
-            if (blockObj == null) blockObj = donationId;
-            Integer limit = addon.getBlockConfig().getLimit(blockObj);
+            Integer limit = addon.getBlockConfig().getLimit(blockObjs.get(donationId));
             int accept = total;
             if (limit != null) {
                 int already = donated.getOrDefault(donationId, 0);
@@ -367,8 +369,10 @@ public class DonationPanel implements Listener {
 
     private void handleConfirm(InventoryClickEvent event, Player player) {
         event.setCancelled(true);
-        if (computeDonationTotals().acceptedPoints <= 0) {
-            user.sendMessage("island.donate.empty");
+        DonationTotals totals = computeDonationTotals();
+        if (totals.acceptedPoints <= 0) {
+            // Distinguish "nothing offered" from "everything offered is at its limit"
+            user.sendMessage(totals.limited ? "island.donate.limit-reached-all" : "island.donate.empty");
             return;
         }
         confirmed = true;

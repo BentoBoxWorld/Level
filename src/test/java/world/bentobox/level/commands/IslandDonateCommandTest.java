@@ -62,6 +62,9 @@ class IslandDonateCommandTest extends CommonTestSetup {
         super.setUp();
         when(addon.getManager()).thenReturn(manager);
         when(addon.getBlockConfig()).thenReturn(blockConfig);
+        // Mockito returns 0 (not null) for unstubbed Integer-returning methods, which would
+        // read as "limit of 0" — the real BlockConfig returns null when no limit is configured.
+        when(blockConfig.getLimit(any())).thenReturn(null);
 
         when(user.getUniqueId()).thenReturn(uuid);
         when(user.isPlayer()).thenReturn(true);
@@ -329,5 +332,26 @@ class IslandDonateCommandTest extends CommonTestSetup {
         assertTrue(cmd.execute(user, "donate", List.of("inv")));
 
         verify(user, never()).getTranslation("island.donate.limit-notice");
+    }
+
+    @Test
+    void testExecuteInvRejectsWhenEverythingAtLimit() {
+        // 64 cobblestone in inventory, limit 100, already donated 100 -> nothing donatable,
+        // no zero-point confirmation prompt, immediate limit-reached-all message
+        ItemStack cobble = mock(ItemStack.class);
+        when(cobble.getType()).thenReturn(Material.COBBLESTONE);
+        when(cobble.getAmount()).thenReturn(64);
+
+        when(inventory.getStorageContents()).thenReturn(new ItemStack[] { cobble });
+        when(blockConfig.getValue(any(), eq(Material.COBBLESTONE))).thenReturn(1);
+        when(blockConfig.getLimit(Material.COBBLESTONE)).thenReturn(100);
+        when(manager.getDonatedBlocks(island)).thenReturn(java.util.Map.of("COBBLESTONE", 100));
+
+        assertFalse(cmd.execute(user, "donate", List.of("inv")));
+
+        verify(user).sendMessage("island.donate.limit-reached-all");
+        verify(user, never()).getTranslation(eq("island.donate.inv.confirm-total"),
+                anyString(), anyString());
+        verify(manager, never()).donateBlocks(any(), any(UUID.class), anyString(), anyInt(), anyLong());
     }
 }
