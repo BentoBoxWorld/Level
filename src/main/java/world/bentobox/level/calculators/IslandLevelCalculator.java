@@ -62,6 +62,7 @@ import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
 import world.bentobox.level.calculators.Results.Result;
 import world.bentobox.level.config.BlockConfig;
+import world.bentobox.level.util.Utils;
 
 public class IslandLevelCalculator {
     private final UUID calcId = UUID.randomUUID();  // ID for hashing
@@ -305,10 +306,15 @@ public class IslandLevelCalculator {
             donatedBlocks.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .forEach(entry -> {
-                    Integer value = addon.getBlockConfig().getBlockValues().getOrDefault(entry.getKey().toLowerCase(java.util.Locale.ENGLISH), 0);
-                    long totalValue = (long) value * entry.getValue();
+                    String key = entry.getKey().toLowerCase(java.util.Locale.ENGLISH);
+                    Integer value = Objects.requireNonNullElse(addon.getBlockConfig().getValue(island.getWorld(), key), 0);
+                    // Cap at the current blockconfig limit so the lines sum to the donated total
+                    Integer limit = addon.getBlockConfig().getLimit(key);
+                    int counted = limit == null ? entry.getValue() : Math.min(entry.getValue(), limit);
+                    long totalValue = (long) value * counted;
                     reportLines.add("  " + Util.prettifyText(entry.getKey()) + " x "
                             + String.format("%,d", entry.getValue())
+                            + (counted < entry.getValue() ? " (capped at " + String.format("%,d", counted) + ")" : "")
                             + " = " + String.format("%,d", totalValue) + " points");
                 });
             reportLines.add(LINE_BREAK);
@@ -730,8 +736,13 @@ public class IslandLevelCalculator {
         results.rawBlockCount
         .addAndGet((long) (results.underWaterBlockCount.get() * addon.getSettings().getUnderWaterMultiplier()));
 
-        // Add donated block points (permanent contributions that persist across recalculations)
-        long donatedPoints = addon.getManager().getDonatedPoints(island);
+        // Add donated block points (permanent contributions that persist across recalculations).
+        // Recalculate from the donated blocks map using current block config values so the
+        // level always reflects the current configuration, even if block values changed since donation.
+        // Also apply the current block limit: if the limit was lowered after donation, only count
+        // up to the current limit (donated blocks over the limit are silently ignored).
+        long donatedPoints = Utils.calculateDonatedPoints(addon.getBlockConfig(), island.getWorld(),
+                addon.getManager().getDonatedBlocks(island));
         results.rawBlockCount.addAndGet(donatedPoints);
         results.donatedPoints.set(donatedPoints);
 

@@ -9,9 +9,13 @@ package world.bentobox.level.util;
 
 import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachmentInfo;
@@ -25,6 +29,7 @@ import world.bentobox.bentobox.hooks.ItemsAdderHook;
 import world.bentobox.bentobox.hooks.LangUtilsHook;
 import world.bentobox.bentobox.hooks.OraxenHook;
 import world.bentobox.level.Level;
+import world.bentobox.level.config.BlockConfig;
 
 
 public class Utils
@@ -37,6 +42,33 @@ public class Utils
      */
     public static String formatNumber(User user, long value) {
         return NumberFormat.getInstance(user.getLocale()).format(value);
+    }
+
+    /**
+     * Calculate the effective point value of a donated-blocks map using current block config
+     * values (world-specific where set) and capping each block type at its current blockconfig
+     * limit. This is the single source of truth for how donated blocks contribute to the level;
+     * the level calculation and any display of the donated total must use it so they agree.
+     *
+     * @param blockConfig the block config to read values and limits from
+     * @param world the world whose value overrides apply
+     * @param donatedBlocks map of donation id (Material name or custom block id) to count
+     * @return total donated points after value lookup and limit capping
+     */
+    public static long calculateDonatedPoints(BlockConfig blockConfig, World world,
+            Map<String, Integer> donatedBlocks) {
+        return donatedBlocks.entrySet().stream()
+                .mapToLong(entry -> {
+                    String key = entry.getKey().toLowerCase(Locale.ENGLISH);
+                    Integer value = blockConfig.getValue(world, key);
+                    int count = entry.getValue();
+                    Integer limit = blockConfig.getLimit(key);
+                    if (limit != null) {
+                        count = Math.min(count, limit);
+                    }
+                    return (long) Objects.requireNonNullElse(value, 0) * count;
+                })
+                .sum();
     }
 
     /**

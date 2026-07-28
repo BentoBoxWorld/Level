@@ -57,7 +57,8 @@ public class BlockConfig {
             for (String key : limits.getKeys(false)) {
                 // Convert old materials to namespaced keys
                 key = convertKey(limits, key);
-                blockLimits.put(key, limits.getInt(key));
+                // Store lowercased so lookups are case-insensitive, matching blockValues
+                blockLimits.put(key.toLowerCase(Locale.ENGLISH), limits.getInt(key));
             }
         }
         // The blocks section can include blocks, spawners, and namespacedIDs
@@ -199,7 +200,7 @@ public class BlockConfig {
             return blockLimits.get(et.name().toLowerCase(Locale.ENGLISH).concat(SPAWNER));
         }
         if (obj instanceof String s) {
-            return blockLimits.get(s);
+            return blockLimits.get(s.toLowerCase(Locale.ENGLISH));
         }
 
         return null;
