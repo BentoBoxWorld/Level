@@ -43,6 +43,16 @@ public class ConversationUtils
             @NonNull String question,
             @Nullable String successMessage)
     {
+        if (user.getPlayer().isConversing())
+        {
+            // Bukkit queues conversations per player, so starting another one here would
+            // stack prompts that later replay as cancel/prompt spam (#451). Repeat the
+            // question for the pending conversation instead.
+            user.closeInventory();
+            user.getPlayer().sendRawMessage(user.getTranslation("level.conversations.prefix") + question);
+            return;
+        }
+
         // Text input message.
         StringPrompt stringPrompt = new StringPrompt()
         {
