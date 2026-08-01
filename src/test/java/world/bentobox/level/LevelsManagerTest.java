@@ -439,4 +439,119 @@ class LevelsManagerTest extends CommonTestSetup {
         assertEquals(52, lm.getRank(world, UUID.randomUUID()));
     }
 
+    // --- Per-island death tracking ---
+
+    /**
+     * Make a real IslandLevels object for this island and put it in the manager's cache
+     * via the database handler.
+     * @param migrated whether the object should already be marked as migrated
+     * @return the levels object the manager will use
+     */
+    private IslandLevels deathData(boolean migrated) throws Exception {
+        IslandLevels data = new IslandLevels(uuid.toString());
+        data.setDeathsMigrated(migrated);
+        when(handler.loadObject(uuid.toString())).thenReturn(data);
+        return data;
+    }
+
+    /**
+     * Test method for
+     * {@link world.bentobox.level.LevelsManager#checkDeathsMigration(Island)}
+     */
+    @Test
+    void testCheckDeathsMigrationSeedsOwnerDeaths() throws Exception {
+        // Legacy record, sumteamdeaths false (default) - owner's world deaths are the seed
+        IslandLevels data = deathData(false);
+        when(pm.getDeaths(world, uuid)).thenReturn(7);
+
+        lm.checkDeathsMigration(island);
+
+        assertTrue(data.isDeathsMigrated());
+        assertEquals(7L, data.getAnonymousDeaths());
+        // A second call must not re-seed
+        when(pm.getDeaths(world, uuid)).thenReturn(99);
+        lm.checkDeathsMigration(island);
+        assertEquals(7L, data.getAnonymousDeaths());
+    }
+
+    /**
+     * Test method for
+     * {@link world.bentobox.level.LevelsManager#checkDeathsMigration(Island)}
+     */
+    @Test
+    void testCheckDeathsMigrationSeedsTeamDeathsWhenSumTeamDeaths() throws Exception {
+        settings.setSumTeamDeaths(true);
+        UUID mate = UUID.randomUUID();
+        when(island.getMemberSet()).thenReturn(ImmutableSet.of(uuid, mate));
+        IslandLevels data = deathData(false);
+        when(pm.getDeaths(world, uuid)).thenReturn(3);
+        when(pm.getDeaths(world, mate)).thenReturn(4);
+
+        lm.checkDeathsMigration(island);
+
+        assertEquals(7L, data.getAnonymousDeaths());
+    }
+
+    /**
+     * Test method for
+     * {@link world.bentobox.level.LevelsManager#addDeath(Island, UUID)}
+     */
+    @Test
+    void testAddDeathCapsAtDeathsMax() throws Exception {
+        IslandLevels data = deathData(true);
+        when(iwm.getDeathsMax(world)).thenReturn(3);
+
+        for (int i = 0; i < 5; i++) {
+            lm.addDeath(island, uuid);
+        }
+
+        assertEquals(3, data.getMemberDeaths().get(uuid.toString()).intValue());
+        assertEquals(3L, data.getTotalDeaths());
+    }
+
+    /**
+     * Test method for
+     * {@link world.bentobox.level.LevelsManager#addDeath(Island, UUID)}
+     */
+    @Test
+    void testAddDeathMaxZeroRecordsNothing() throws Exception {
+        IslandLevels data = deathData(true);
+        when(iwm.getDeathsMax(world)).thenReturn(0);
+
+        lm.addDeath(island, uuid);
+
+        assertTrue(data.getMemberDeaths().isEmpty());
+    }
+
+    /**
+     * Test method for
+     * {@link world.bentobox.level.LevelsManager#rollDeathsToAnonymous(Island, UUID)}
+     */
+    @Test
+    void testRollDeathsToAnonymousKeepsIslandTotal() throws Exception {
+        IslandLevels data = deathData(true);
+        data.setAnonymousDeaths(2);
+        data.getMemberDeaths().put(uuid.toString(), 4);
+
+        lm.rollDeathsToAnonymous(island, uuid);
+
+        assertFalse(data.getMemberDeaths().containsKey(uuid.toString()));
+        assertEquals(6L, data.getAnonymousDeaths());
+        assertEquals(6, lm.getDeathHandicap(island));
+    }
+
+    /**
+     * Test method for
+     * {@link world.bentobox.level.LevelsManager#getDeathHandicap(Island)}
+     */
+    @Test
+    void testGetDeathHandicapSumsAnonymousAndMembers() throws Exception {
+        IslandLevels data = deathData(true);
+        data.setAnonymousDeaths(2);
+        data.getMemberDeaths().put(uuid.toString(), 3);
+        data.getMemberDeaths().put(UUID.randomUUID().toString(), 1);
+
+        assertEquals(6, lm.getDeathHandicap(island));
+    }
+
 }

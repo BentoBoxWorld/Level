@@ -74,13 +74,17 @@ level-calc: blocks / level_cost
 levelwait: 60
 # 
 # Death penalty
-# How many block values a player will lose per death.
-# Default value of 100 means that for every death, the player will lose 1 level (if levelcost is 100)
+# How many block values the island will lose per death.
+# Default value of 100 means that for every death, the island will lose 1 level (if levelcost is 100)
+# Deaths are tracked per island: only deaths that happen in the island's space count against it,
+# and they stay with the island even if the player later leaves the team.
+# The per-player count is capped by the deaths max setting in the GameModeAddon's config.yml,
+# and deaths are only recorded if deaths counted is enabled there.
 # Set to zero to not use this feature
 deathpenalty: 100
-# Sum team deaths - if true, all the teams deaths are summed
-# If false, only the leader's deaths counts
-# For other death related settings, see the GameModeAddon's config.yml settings.
+# Deprecated - no longer used for level calculation, which now always counts all deaths
+# that occurred on the island. Only read once, when migrating legacy per-world death counts:
+# if true the migrated count is the sum of all team members' deaths, otherwise the owner's deaths.
 sumteamdeaths: false
 # Shorthand island level
 # Shows large level values rounded down, e.g., 10,345 -> 10k

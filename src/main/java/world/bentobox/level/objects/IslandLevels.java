@@ -99,6 +99,30 @@ public class IslandLevels implements DataObject {
     private List<DonationRecord> donationLog;
 
     /**
+     * Deaths on this island by current members. Key is the player's UUID as a string,
+     * value is the number of times they died in this island's space.
+     * Null-safe for backwards compatibility with legacy data.
+     */
+    @Expose
+    private Map<String, Integer> memberDeaths;
+
+    /**
+     * Deaths that count against this island but are no longer attributable to a current
+     * member: the one-time migration seed from the legacy per-world death counts, plus
+     * the balances of members who have since left the team.
+     */
+    @Expose
+    private long anonymousDeaths;
+
+    /**
+     * Whether the legacy per-world death counts have been folded into this island's
+     * death data. Legacy records load as false and are seeded on first touch; new
+     * islands start migrated with zero deaths.
+     */
+    @Expose
+    private boolean deathsMigrated;
+
+    /**
      * Constructor for new island
      * @param islandUUID - island UUID
      */
@@ -106,6 +130,8 @@ public class IslandLevels implements DataObject {
         uniqueId = islandUUID;
         uwCount = new HashMap<>();
         mdCount = new HashMap<>();
+        // A brand-new record has no legacy death history to import
+        deathsMigrated = true;
     }
 
     /**
@@ -350,6 +376,65 @@ public class IslandLevels implements DataObject {
         getDonatedBlocks().merge(material, count, Integer::sum);
         this.donatedPoints = getDonatedPoints() + points;
         getDonationLog().add(new DonationRecord(System.currentTimeMillis(), donorUUID, material, count, points));
+    }
+
+    // ---- Death tracking fields (null-safe for backwards compatibility) ----
+
+    /**
+     * Get the deaths of current members in this island's space.
+     * @return map of player UUID string to death count, never null
+     */
+    public Map<String, Integer> getMemberDeaths() {
+        if (memberDeaths == null) {
+            memberDeaths = new HashMap<>();
+        }
+        return memberDeaths;
+    }
+
+    /**
+     * @param memberDeaths the memberDeaths to set
+     */
+    public void setMemberDeaths(Map<String, Integer> memberDeaths) {
+        this.memberDeaths = memberDeaths;
+    }
+
+    /**
+     * Get the deaths not attributable to a current member (migration seed plus
+     * balances of former members).
+     * @return the anonymousDeaths
+     */
+    public long getAnonymousDeaths() {
+        return anonymousDeaths;
+    }
+
+    /**
+     * @param anonymousDeaths the anonymousDeaths to set
+     */
+    public void setAnonymousDeaths(long anonymousDeaths) {
+        this.anonymousDeaths = anonymousDeaths;
+    }
+
+    /**
+     * @return true if the legacy per-world death counts have been folded into this island
+     */
+    public boolean isDeathsMigrated() {
+        return deathsMigrated;
+    }
+
+    /**
+     * @param deathsMigrated the deathsMigrated to set
+     */
+    public void setDeathsMigrated(boolean deathsMigrated) {
+        this.deathsMigrated = deathsMigrated;
+    }
+
+    /**
+     * Get the total number of deaths counting against this island: anonymous deaths
+     * plus all current member deaths.
+     * @return total deaths for this island
+     */
+    public long getTotalDeaths() {
+        return anonymousDeaths + getMemberDeaths().values().stream().mapToLong(Integer::longValue).sum();
     }
 
     /**

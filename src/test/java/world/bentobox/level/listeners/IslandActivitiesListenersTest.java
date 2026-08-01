@@ -4,10 +4,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -16,11 +19,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
+import com.google.common.collect.ImmutableSet;
+
+import world.bentobox.bentobox.api.configuration.WorldSettings;
 import world.bentobox.bentobox.api.events.island.IslandCreatedEvent;
 import world.bentobox.bentobox.api.events.island.IslandDeleteEvent;
 import world.bentobox.bentobox.api.events.island.IslandPreclearEvent;
 import world.bentobox.bentobox.api.events.island.IslandResettedEvent;
 import world.bentobox.bentobox.api.events.island.IslandUnregisteredEvent;
+import world.bentobox.bentobox.api.events.team.TeamKickEvent;
+import world.bentobox.bentobox.api.events.team.TeamLeaveEvent;
 import world.bentobox.bentobox.api.events.team.TeamSetownerEvent;
 import world.bentobox.level.CommonTestSetup;
 import world.bentobox.level.LevelsManager;
@@ -148,5 +156,67 @@ class IslandActivitiesListenersTest extends CommonTestSetup {
         TeamSetownerEvent event = new TeamSetownerEvent(island, UUID.randomUUID(), false, location);
         listener.onNewIslandOwner(event);
         verify(manager).removeEntry(world, uuid.toString());
+    }
+
+    // --- TeamLeaveEvent / TeamKickEvent (deaths stay with the island) ---
+
+    @Test
+    void testOnTeamLeaveRollsDeathsToAnonymous() {
+        UUID leaver = UUID.randomUUID();
+        TeamLeaveEvent event = new TeamLeaveEvent(island, leaver, false, location);
+        listener.onIsland(event);
+        verify(manager).rollDeathsToAnonymous(island, leaver);
+    }
+
+    @Test
+    void testOnTeamKickRollsDeathsToAnonymous() {
+        UUID kicked = UUID.randomUUID();
+        TeamKickEvent event = new TeamKickEvent(island, kicked, false, location);
+        listener.onIsland(event);
+        verify(manager).rollDeathsToAnonymous(island, kicked);
+    }
+
+    // --- PlayerDeathEvent (per-island death counting) ---
+
+    @Test
+    void testOnPlayerDeathOnOwnIslandCountsDeath() {
+        when(addon.isRegisteredGameModeWorld(world)).thenReturn(true);
+        when(im.getIslandAt(location)).thenReturn(Optional.of(island));
+        listener.onPlayerDeath(getPlayerDeathEvent(p, Collections.emptyList(), 0, 0, 0, 0, null));
+        verify(manager).addDeath(island, uuid);
+    }
+
+    @Test
+    void testOnPlayerDeathNotAMemberNoCount() {
+        when(addon.isRegisteredGameModeWorld(world)).thenReturn(true);
+        when(island.getMemberSet()).thenReturn(ImmutableSet.of(UUID.randomUUID()));
+        when(im.getIslandAt(location)).thenReturn(Optional.of(island));
+        listener.onPlayerDeath(getPlayerDeathEvent(p, Collections.emptyList(), 0, 0, 0, 0, null));
+        verify(manager, never()).addDeath(any(), any());
+    }
+
+    @Test
+    void testOnPlayerDeathOutsideIslandSpaceNoCount() {
+        when(addon.isRegisteredGameModeWorld(world)).thenReturn(true);
+        when(im.getIslandAt(location)).thenReturn(Optional.empty());
+        listener.onPlayerDeath(getPlayerDeathEvent(p, Collections.emptyList(), 0, 0, 0, 0, null));
+        verify(manager, never()).addDeath(any(), any());
+    }
+
+    @Test
+    void testOnPlayerDeathNotGameModeWorldNoCount() {
+        when(addon.isRegisteredGameModeWorld(world)).thenReturn(false);
+        listener.onPlayerDeath(getPlayerDeathEvent(p, Collections.emptyList(), 0, 0, 0, 0, null));
+        verify(manager, never()).addDeath(any(), any());
+    }
+
+    @Test
+    void testOnPlayerDeathDeathsNotCountedNoCount() {
+        when(addon.isRegisteredGameModeWorld(world)).thenReturn(true);
+        WorldSettings ws = mock(WorldSettings.class);
+        when(ws.isDeathsCounted()).thenReturn(false);
+        when(iwm.getWorldSettings(world)).thenReturn(ws);
+        listener.onPlayerDeath(getPlayerDeathEvent(p, Collections.emptyList(), 0, 0, 0, 0, null));
+        verify(manager, never()).addDeath(any(), any());
     }
 }
