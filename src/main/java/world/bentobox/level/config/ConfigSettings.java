@@ -123,15 +123,19 @@ public class ConfigSettings implements ConfigObject {
 
     @ConfigComment("")
     @ConfigComment("Death penalty")
-    @ConfigComment("How many block values a player will lose per death.")
-    @ConfigComment("Default value of 100 means that for every death, the player will lose 1 level (if levelcost is 100)")
+    @ConfigComment("How many block values the island will lose per death.")
+    @ConfigComment("Default value of 100 means that for every death, the island will lose 1 level (if levelcost is 100)")
+    @ConfigComment("Deaths are tracked per island: only deaths that happen in the island's space count against it,")
+    @ConfigComment("and they stay with the island even if the player later leaves the team.")
+    @ConfigComment("The per-player count is capped by the deaths max setting in the GameModeAddon's config.yml,")
+    @ConfigComment("and deaths are only recorded if deaths counted is enabled there.")
     @ConfigComment("Set to zero to not use this feature")
     @ConfigEntry(path = "deathpenalty")
     private int deathPenalty = 100;
 
-    @ConfigComment("Sum team deaths - if true, all the teams deaths are summed")
-    @ConfigComment("If false, only the leader's deaths counts")
-    @ConfigComment("For other death related settings, see the GameModeAddon's config.yml settings.")
+    @ConfigComment("Deprecated - no longer used for level calculation, which now always counts all deaths")
+    @ConfigComment("that occurred on the island. Only read once, when migrating legacy per-world death counts:")
+    @ConfigComment("if true the migrated count is the sum of all team members' deaths, otherwise the owner's deaths.")
     @ConfigEntry(path = "sumteamdeaths")
     private boolean sumTeamDeaths = false;
 
@@ -318,7 +322,10 @@ public class ConfigSettings implements ConfigObject {
 
     /**
      * @return the sumTeamDeaths
+     * @deprecated deaths are now tracked per island; this setting is only read when
+     *             migrating legacy per-world death counts
      */
+    @Deprecated(since = "2.29.0")
     public boolean isSumTeamDeaths() {
         return sumTeamDeaths;
     }
