@@ -1,0 +1,254 @@
+# ##########################################################################################
+# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
+# the one at http://yaml-online-parser.appspot.com                                        #
+# ##########################################################################################
+
+admin:
+  level:
+    parameters: <player>
+    description: 計算玩家的島嶼等級
+    sethandicap:
+      parameters: <player> [+/-]<handicap>
+      description: |-
+        設定或修改島嶼補正值。
+        例如：
+        +10 會扣除 10 個等級；
+        30 會將補正值設為 30；
+        -20 會增加 20 個等級。
+      changed: <green>島嶼補正值已由 [number] 變更為 [new_number]。
+      invalid-level: <red>補正值無效，請輸入整數。
+  levelstatus:
+    description: 顯示等待掃描的島嶼數量
+    islands-in-queue: '<green>佇列中的島嶼： [number]'
+  top:
+    description: 顯示前十名排行榜
+    unknown-world: <red>未知的世界！
+    display: <white>[rank]. <green>[name] <gray>- <aqua>[level]
+    remove:
+      description: 將玩家從前十名排行榜中移除
+      parameters: <player>
+  stats:
+    description: 顯示此伺服器的島嶼統計資料
+    title: 伺服器島嶼統計資料
+    world: <green>[name]
+    no-data: <red>沒有可處理的資料。
+    average-level: '平均島嶼等級： [number]'
+    median-level: '島嶼等級中位數： [number]'
+    mode-level: '島嶼等級眾數： [number]'
+    highest-level: '最高島嶼等級： [number]'
+    lowest-level: '最低島嶼等級： [number]'
+    distribution: '島嶼等級分布：'
+    islands: 座島嶼
+island:
+  level:
+    parameters: '[player]'
+    description: 計算你的島嶼等級，或顯示 [player] 的島嶼等級
+    calculating: <green>正在計算島嶼等級……
+    estimated-wait: '<green>預估等待時間： [number] 秒'
+    in-queue: <green>你目前位於佇列第 [number] 位
+    island-level-is: <green>島嶼等級：<aqua>[level]
+    required-points-to-next-level: '<green>等級進度：<gold>[progress]<aqua>/<yellow>[levelcost] <green>點'
+    deaths: <red>（死亡 [number] 次）
+    cooldown: <red>請等待 <aqua>[time] <red>秒後才能再次使用。
+    in-progress: <gold>正在計算島嶼等級……
+    time-out: <red>島嶼等級計算逾時，請稍後再試。
+  donate:
+    parameters: '[hand [amount]] [inv]'
+    description: 捐贈方塊以永久提升島嶼等級
+    must-be-on-island: <red>你必須位於自己的島嶼上才能捐贈方塊。
+    no-permission: <red>你沒有權限在此島嶼捐贈方塊。
+    no-value: <red>此方塊沒有島嶼等級價值。
+    invalid-amount: <red>數量無效，請輸入正整數。
+    invalid-item: <red>只有已設定等級價值的方塊才能捐贈。
+    empty: <red>沒有可捐贈的有效方塊。
+    cancelled: <yellow>已取消捐贈，物品已退還。
+    success: <green>成功捐贈 [number] 個方塊，獲得 <aqua>[points]<green> 點永久點數！
+    confirm: <red><bold>確認－物品將會被銷毀！
+    cancel: <green><bold>取消－退還物品
+    gui-title: <black><bold>捐贈方塊
+    gui-info: '<gold>捐贈方塊以提升島嶼等級|<gray>目前已捐贈：<gold>[points]<gray> 點|<red>注意：已捐贈的物品|<red>會被銷毀且無法取回！'
+    preview: '<yellow>將增加點數：<gold>[points]|<red>這些物品將被銷毀！'
+    hand:
+      keyword: hand
+      success: <green>成功捐贈 [number] 個 [material]，獲得 <aqua>[points]<green> 點永久點數！
+      not-block: <red>你必須手持可放置的方塊才能捐贈。
+      confirm-prompt: <red>即將銷毀 <gold>[number] 個 [material]<red>，並獲得 <aqua>[points]<red> 點永久點數。
+    inv:
+      keyword: inv
+      confirm-header: '<red>即將從你的背包中銷毀以下方塊：'
+      confirm-line: <gold>[number] 個 [material] <gray>= <aqua>[points]<gray> 點
+      confirm-total: '<red>合計：<aqua>[points]<red> 點永久點數。'
+  detail:
+    description: 顯示島嶼方塊詳細資訊
+  top:
+    description: 顯示前十名排行榜
+    gui-title: <green>前十名排行榜
+    gui-heading: '<gold>[name]：<aqua>[rank]'
+    island-level: <aqua>等級 [level]
+    warp-to: <green>正在傳送至 [name] 的島嶼
+  
+  level-details:
+    above-sea-level-blocks: 海平面以上的方塊
+    spawners: 生怪磚
+    underwater-blocks: 海平面以下的方塊
+    all-blocks: 所有方塊
+    no-island: <red>你沒有島嶼！
+    names-island: '[name] 的島嶼'
+    syntax: '[name] x [number]'
+    hint: <red>請執行 level 指令查看方塊報告。
+
+protection:
+  flags:
+    ISLAND_BLOCK_DONATION:
+      description: |-
+        <green>設定哪些人可以</green>
+        <green>捐贈方塊以提升島嶼等級。</green>
+      name: 方塊捐贈
+      hint: 不允許捐贈方塊
+
+level:
+  commands:
+    value:
+      parameters: '[hand|<material>]'
+      description: 顯示方塊的價值。加入「hand」可顯示手中物品的價值。
+  gui:
+    titles:
+      top: <black><bold>島嶼排行榜
+      detail-panel: <black><bold>[name] 的島嶼
+      value-panel: <black><bold>方塊價值
+    buttons:
+      island:
+        empty: <white><bold>第 [name] 名
+        name: <white><bold>[name]
+        description: |-
+          [owner]
+          [members]
+          [place]
+          [level]
+        owners-island: '[player] 的島嶼'
+        owner: '<gray><bold>島主：<reset><aqua>[player]'
+        members-title: '<gray><bold>成員：'
+        member: <aqua>- [player]
+        unknown: 未知
+        place: <gray><italic>第 [number] 名
+        level: '<gray>等級：<italic>[number]'
+      material:
+        name: <white><bold>[number] x [material]
+        description: |-
+          [description]
+          [count]
+          [value]
+          [calculated]
+          [limit]
+          [id]
+        id: '<gray>方塊 ID：<yellow>[id]'
+        value: '<gray>方塊價值：<yellow>[number]'
+        limit: '<gray>方塊上限：<yellow>[number]'
+        count: '<gray>方塊數量：<yellow>[number]'
+        calculated: '<gray>計算價值：<yellow>[number]'
+      value_blocks:
+        name: <white><bold>所有有價值的方塊
+        description: |-
+          <gray>顯示島嶼上所有
+          <gray>具有價值的方塊。
+      all_blocks:
+        name: <white><bold>所有方塊
+        description: |-
+          <gray>顯示島嶼上的
+          <gray>所有方塊。
+      above_sea_level:
+        name: <white><bold>海平面以上的方塊
+        description: |-
+          <gray>只顯示位於
+          <gray>海平面以上的
+          <gray>方塊。
+      underwater:
+        name: <white><bold>海平面以下的方塊
+        description: |-
+          <gray>只顯示位於
+          <gray>海平面以下的
+          <gray>方塊。
+      spawner:
+        name: <white><bold>生怪磚
+        description: <gray>只顯示生怪磚。
+        block-name: <aqua>生怪磚
+      donated:
+        name: <white><bold>已捐贈方塊
+        description: |-
+          <gray>顯示所有已永久
+          <gray>捐贈給島嶼等級的方塊。
+      filters:
+        name:
+          name: <white><bold>依名稱排序
+          description: <gray>依名稱排序所有方塊。
+        value:
+          name: <white><bold>依價值排序
+          description: <gray>依方塊價值排序。
+        count:
+          name: <white><bold>依數量排序
+          description: <gray>依方塊數量排序。
+      value:
+        name: <white><bold>[material]
+        description: |-
+          [description]
+          [value]
+          [underwater]
+          [limit]
+          [id]
+        id: '<gray>方塊 ID：<yellow>[id]'
+        value: '<gray>方塊價值：<yellow>[number]'
+        underwater: '<gray>海平面以下價值：<yellow>[number]'
+        limit: '<gray>方塊上限：<yellow>[number]'
+      previous:
+        name: <white><bold>上一頁
+        description: <gray>切換至第 [number] 頁。
+      next:
+        name: <white><bold>下一頁
+        description: <gray>切換至第 [number] 頁。
+      search:
+        name: <white><bold>搜尋
+        description: |-
+          <gray>搜尋指定的
+          <gray>數值。
+        search: '<aqua>搜尋值： [value]'
+    tips:
+      click-to-view: <yellow>點擊 <gray>即可查看。
+      click-to-previous: <yellow>點擊 <gray>即可查看上一頁。
+      click-to-next: <yellow>點擊 <gray>即可查看下一頁。
+      click-to-select: <yellow>點擊 <gray>即可選取。
+      left-click-to-cycle-up: <yellow>左鍵 <gray>即可切換至上一個選項。
+      right-click-to-cycle-down: <yellow>右鍵 <gray>即可切換至下一個選項。
+      left-click-to-change: <yellow>左鍵 <gray>即可編輯。
+      right-click-to-clear: <yellow>右鍵 <gray>即可清除。
+      click-to-asc: <yellow>點擊 <gray>即可依升冪排序。
+      click-to-desc: <yellow>點擊 <gray>即可依降冪排序。
+      click-to-warp: <yellow>點擊 <gray>即可傳送。
+      click-to-visit: <yellow>點擊 <gray>即可參觀。
+      right-click-to-visit: <yellow>右鍵 <gray>即可參觀。
+  conversations:
+    # Prefix for messages that are send from server.
+    prefix: '<bold><gold>[BentoBox]: <reset>'
+    no-data: <red>請執行 level 指令查看方塊報告。
+    # String that allows to cancel conversation. (can be only one)
+    cancel-string: cancel
+    # List of strings that allows to exit conversation. (separated with ,)
+    exit-string: cancel, exit, quit
+    # Message that asks for search value input.
+    write-search: <yellow>請輸入要搜尋的數值。（輸入「cancel」即可取消）
+    # Message that appears after updating search value.
+    search-updated: <green>搜尋條件已更新。
+    # Message that is sent to user when conversation is cancelled.
+    cancelled: <red>對話已取消！
+    # Message that is sent to user when given material does not have any value.
+    no-value: <red>此物品沒有價值。
+    # Message that is sent to user when requested material does not exist.
+    unknown-item: <red>遊戲中不存在「[material]」。
+    # Messages that is sent to user when requesting value for a specific material.
+    value: '<gray>「[material]」的價值：<yellow>[value]'
+    value-underwater: '<gray>「[material]」在海平面以下的價值：<yellow>[value]'
+    # Message that is sent to user when he does not hold any items in hand.
+    empty-hand: <red>你的手中沒有可計算的方塊。
+    # Message when showing how many have been placed of a block
+    you-have: <gray>上次統計時共有 [number] 個。
+    # Message about the limit
+    you-can-place: <gray>最多可放置 [number] 個並計入島嶼等級。
