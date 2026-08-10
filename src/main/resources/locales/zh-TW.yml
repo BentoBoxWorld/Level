@@ -68,6 +68,9 @@ island:
     gui-title: <black><bold>捐贈方塊
     gui-info: '<gold>捐贈方塊以提升島嶼等級|<gray>目前已捐贈：<gold>[points]<gray> 點|<red>注意：已捐贈的物品|<red>會被銷毀且無法取回！'
     preview: '<yellow>將增加點數：<gold>[points]|<red>這些物品將被銷毀！'
+    limit-reached: <red>[material] 的捐贈數量已達上限。
+    limit-reached-all: <red>這些方塊的捐贈數量皆已達上限。
+    limit-notice: '<gold>部分方塊有數量上限限制|<gold>超過上限的部分將不會被捐贈'
     hand:
       keyword: hand
       success: <green>成功捐贈 [number] 個 [material]，獲得 <aqua>[points]<green> 點永久點數！
@@ -86,7 +89,6 @@ island:
     gui-heading: '<gold>[name]：<aqua>[rank]'
     island-level: <aqua>等級 [level]
     warp-to: <green>正在傳送至 [name] 的島嶼
-  
   level-details:
     above-sea-level-blocks: 海平面以上的方塊
     spawners: 生怪磚
@@ -96,7 +98,6 @@ island:
     names-island: '[name] 的島嶼'
     syntax: '[name] x [number]'
     hint: <red>請執行 level 指令查看方塊報告。
-
 protection:
   flags:
     ISLAND_BLOCK_DONATION:
@@ -105,7 +106,6 @@ protection:
         <green>捐贈方塊以提升島嶼等級。</green>
       name: 方塊捐贈
       hint: 不允許捐贈方塊
-
 level:
   commands:
     value:
