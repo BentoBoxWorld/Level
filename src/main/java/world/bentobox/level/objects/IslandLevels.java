@@ -441,14 +441,16 @@ public class IslandLevels implements DataObject {
      * @return the initialLevel
      * @deprecated only used for backwards compatibility. Use {@link #getInitialCount()} instead
      */
+    @Deprecated
     public Long getInitialLevel() {
         return initialLevel;
     }
 
     /**
      * @param initialLevel the initialLevel to set
-     * @deprecated only used for backwards compatil
+     * @deprecated only used for backwards compatibility. Use {@link #setInitialCount(Long)} instead
      */
+    @Deprecated
     public void setInitialLevel(Long initialLevel) {
         this.initialLevel = initialLevel;
     }

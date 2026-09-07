@@ -679,12 +679,22 @@ public class ValuePanel
         return key;
     }
 
+    /**
+     * Looks up a material by namespaced key string, tolerating malformed keys.
+     * @param key namespaced key string, e.g. "minecraft:stone"
+     * @return the material, or null if the key is malformed or unknown
+     */
+    private static Material lookupMaterial(String key) {
+        NamespacedKey namespacedKey = NamespacedKey.fromString(key);
+        return namespacedKey == null ? null : Registry.MATERIAL.get(namespacedKey);
+    }
+
     private Material getIcon(String key) {
         // Filter out some names
-        key = key.replaceAll("wall_", "");
-        Material icon = Registry.MATERIAL.get(NamespacedKey.fromString(key));
+        key = key.replace("wall_", "");
+        Material icon = lookupMaterial(key);
         if (icon == null && key.endsWith("_spawner")) {
-            icon = Registry.MATERIAL.get(NamespacedKey.fromString(key.substring(0, key.length() - 2) + "_egg"));
+            icon = lookupMaterial(key.substring(0, key.length() - 2) + "_egg");
         }
         // ItemsAdder
         if (icon == null && addon.isItemsAdder() && ItemsAdderHook.isInRegistry(key)) {

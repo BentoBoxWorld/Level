@@ -380,6 +380,7 @@ public class Level extends Addon {
      * @param level        - level
      * @deprecated This is a useless method. 
      */
+    @Deprecated
     public void setIslandLevel(World world, UUID targetPlayer, long level) {
         getManager().setIslandLevel(world, targetPlayer, level);
     }
