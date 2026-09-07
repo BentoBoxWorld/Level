@@ -36,7 +36,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
-import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.FurnitureMechanic;
 
 import com.bgsoftware.wildstacker.api.WildStackerAPI;
 import com.bgsoftware.wildstacker.api.objects.StackedBarrel;

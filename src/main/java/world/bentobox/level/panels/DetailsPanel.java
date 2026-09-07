@@ -213,6 +213,11 @@ public class DetailsPanel {
     private void updateFilters() {
         this.blockCountList.clear();
 
+        if (this.levelsData == null) {
+            // No island, nothing to show. build() reports this to the user.
+            return;
+        }
+
         if (this.activeTab == Tab.DONATED) {
             // Show donated blocks
             Map<String, Integer> donated = this.levelsData.getDonatedBlocks();
