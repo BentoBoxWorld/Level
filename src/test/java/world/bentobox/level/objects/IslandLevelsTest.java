@@ -230,4 +230,31 @@ class IslandLevelsTest {
         islandLevels.setInitialLevel(100L);
         assertEquals(100L, islandLevels.getInitialLevel());
     }
+
+    // --- Per-island death tracking ---
+
+    @Test
+    void testNewIslandStartsMigratedWithNoDeaths() {
+        assertTrue(islandLevels.isDeathsMigrated());
+        assertNotNull(islandLevels.getMemberDeaths());
+        assertTrue(islandLevels.getMemberDeaths().isEmpty());
+        assertEquals(0L, islandLevels.getAnonymousDeaths());
+        assertEquals(0L, islandLevels.getTotalDeaths());
+    }
+
+    @Test
+    void testTotalDeathsSumsAnonymousAndMembers() {
+        islandLevels.setAnonymousDeaths(5);
+        islandLevels.getMemberDeaths().put("uuid-1", 3);
+        islandLevels.getMemberDeaths().put("uuid-2", 2);
+        assertEquals(10L, islandLevels.getTotalDeaths());
+    }
+
+    @Test
+    void testSetMemberDeaths() {
+        Map<String, Integer> deaths = new HashMap<>();
+        deaths.put("uuid-1", 4);
+        islandLevels.setMemberDeaths(deaths);
+        assertEquals(4, islandLevels.getMemberDeaths().get("uuid-1"));
+    }
 }

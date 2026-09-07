@@ -24,6 +24,7 @@ import world.bentobox.level.CommonTestSetup;
 import world.bentobox.level.LevelsManager;
 import world.bentobox.level.config.BlockConfig;
 import world.bentobox.level.config.ConfigSettings;
+import world.bentobox.level.objects.IslandLevels;
 
 /**
  * Pins down the contract of {@link IslandLevelCalculator#tidyUp()} for the
@@ -62,7 +63,6 @@ class IslandLevelCalculatorTidyUpTest extends CommonTestSetup {
         when(settings.isDonationsOnly()).thenReturn(false);
         when(settings.getDeathPenalty()).thenReturn(0);
         when(settings.getUnderWaterMultiplier()).thenReturn(1.0);
-        when(settings.isSumTeamDeaths()).thenReturn(false);
         when(settings.isNether()).thenReturn(false);
         when(settings.isEnd()).thenReturn(false);
 
@@ -71,6 +71,8 @@ class IslandLevelCalculatorTidyUpTest extends CommonTestSetup {
         when(manager.getDonatedBlocks(any(Island.class))).thenReturn(Collections.emptyMap());
         when(manager.getIslandLevel(any(), any())).thenReturn(0L);
         when(manager.getInitialCount(any(Island.class))).thenReturn(INITIAL_COUNT);
+        when(manager.getDeathHandicap(any(Island.class))).thenReturn(0);
+        when(manager.checkDeathsMigration(any(Island.class))).thenReturn(new IslandLevels("test"));
 
         when(addon.getBlockConfig()).thenReturn(blockConfig);
         when(blockConfig.getValue(any(), any())).thenReturn(0);
@@ -81,7 +83,6 @@ class IslandLevelCalculatorTidyUpTest extends CommonTestSetup {
         when(addon.getInitialIslandCount(any(Island.class))).thenReturn(INITIAL_COUNT);
 
         PlayersManager players = mock(PlayersManager.class);
-        when(players.getDeaths(any(), any())).thenReturn(0);
         when(addon.getPlayers()).thenReturn(players);
 
         // Island — tiny protection range keeps the chunks-to-scan queue small
@@ -184,6 +185,25 @@ class IslandLevelCalculatorTidyUpTest extends CommonTestSetup {
         // and the "remaining to next" not negative.
         long remaining = r.getPointsToNextLevel();
         assertTrue(remaining > 0, "pointsToNextLevel should be positive, got " + remaining);
+    }
+
+    @Test
+    @DisplayName("Death handicap from the per-island tracker reduces the level")
+    void deathHandicapReducesLevel() {
+        when(settings.getDeathPenalty()).thenReturn(100);
+        when(manager.getDeathHandicap(any(Island.class))).thenReturn(2);
+        IslandLevels deathData = new IslandLevels("test");
+        deathData.setAnonymousDeaths(2);
+        when(manager.checkDeathsMigration(any(Island.class))).thenReturn(deathData);
+
+        IslandLevelCalculator calc = newCalculator();
+        Results r = calc.getResults();
+        r.rawBlockCount.set(INITIAL_COUNT + 3 * LEVEL_COST); // 520 → level 3 without deaths
+        calc.tidyUp();
+
+        assertEquals(2, r.getDeathHandicap(), "death handicap should come from the island tracker");
+        // 520 - 2*100 penalty = 320; (320 - 130 initial) / 130 = 1
+        assertEquals(1L, r.getLevel(), "2 deaths at penalty 100 should cost 2 levels");
     }
 
     @Test

@@ -1,10 +1,12 @@
 package world.bentobox.level.listeners;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 
 import world.bentobox.bentobox.api.events.island.IslandCreatedEvent;
 import world.bentobox.bentobox.api.events.island.IslandDeleteEvent;
@@ -108,16 +110,32 @@ public class IslandActivitiesListeners implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onIsland(TeamLeaveEvent e) {
-        // TODO: anything to do here?
-        // Remove player from the top ten and level
-        // remove(e.getIsland().getWorld(), e.getPlayerUUID());
+        // Deaths stay with the island: fold the leaver's balance into the anonymous count
+        addon.getManager().rollDeathsToAnonymous(e.getIsland(), e.getPlayerUUID());
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onIsland(TeamKickEvent e) {
-        //// TODO: anything to do here?
-        // Remove player from the top ten and level
-        // remove(e.getIsland().getWorld(), e.getPlayerUUID());
+        // Deaths stay with the island: fold the kicked player's balance into the anonymous count
+        addon.getManager().rollDeathsToAnonymous(e.getIsland(), e.getPlayerUUID());
+    }
+
+    /**
+     * Record deaths per island. A death only counts if it happens in the island space
+     * of an island the player is a member of; deaths anywhere else are ignored.
+     * @param e death event
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerDeath(PlayerDeathEvent e) {
+        Location location = e.getEntity().getLocation();
+        World world = location.getWorld();
+        if (world == null || !addon.isRegisteredGameModeWorld(world)
+                || !addon.getPlugin().getIWM().getWorldSettings(world).isDeathsCounted()) {
+            return;
+        }
+        addon.getIslands().getIslandAt(location)
+                .filter(island -> island.getMemberSet().contains(e.getEntity().getUniqueId()))
+                .ifPresent(island -> addon.getManager().addDeath(island, e.getEntity().getUniqueId()));
     }
 
 }

@@ -592,4 +592,84 @@ public class LevelsManager {
         return getLevelsData(island).getDonatedBlocks();
     }
 
+    // ---- Per-island death tracking ----
+
+    /**
+     * Ensure this island's death data has been seeded from the legacy per-world death
+     * counts. The seed reproduces what the old calculation would produce right now:
+     * the sum of all members' world death counts if {@code sumteamdeaths} is set,
+     * otherwise the owner's count. It is stored as anonymous deaths so the island's
+     * level does not change when the tracking model changes. Runs at most once per
+     * island; new islands are created already migrated with zero deaths.
+     *
+     * @param island the island to check
+     * @return the island's levels data, migrated
+     */
+    @SuppressWarnings("deprecation") // sumteamdeaths is intentionally read for the legacy seed
+    @NonNull
+    public IslandLevels checkDeathsMigration(@NonNull Island island) {
+        IslandLevels data = getLevelsData(island);
+        if (data.isDeathsMigrated()) {
+            return data;
+        }
+        long seed = 0;
+        if (island.getWorld() != null) {
+            if (addon.getSettings().isSumTeamDeaths()) {
+                for (UUID uuid : island.getMemberSet()) {
+                    seed += addon.getPlayers().getDeaths(island.getWorld(), uuid);
+                }
+            } else if (island.getOwner() != null) {
+                seed = addon.getPlayers().getDeaths(island.getWorld(), island.getOwner());
+            }
+        }
+        data.setAnonymousDeaths(seed);
+        data.setDeathsMigrated(true);
+        handler.saveObjectAsync(data);
+        return data;
+    }
+
+    /**
+     * Record a death for a player on this island. The per-player count is capped at
+     * the game mode's {@code deaths.max} setting.
+     *
+     * @param island     the island in whose space the player died
+     * @param playerUUID the player who died
+     */
+    public void addDeath(@NonNull Island island, @NonNull UUID playerUUID) {
+        IslandLevels data = checkDeathsMigration(island);
+        int max = addon.getPlugin().getIWM().getDeathsMax(island.getWorld());
+        if (max <= 0) {
+            return;
+        }
+        data.getMemberDeaths().merge(playerUUID.toString(), 1, (old, one) -> Math.min(max, old + one));
+        handler.saveObjectAsync(data);
+    }
+
+    /**
+     * Fold a departing member's death balance into the island's anonymous death count
+     * so that the island's level does not change when they leave.
+     *
+     * @param island     the island the player is leaving
+     * @param playerUUID the departing player
+     */
+    public void rollDeathsToAnonymous(@NonNull Island island, @NonNull UUID playerUUID) {
+        IslandLevels data = checkDeathsMigration(island);
+        Integer balance = data.getMemberDeaths().remove(playerUUID.toString());
+        if (balance != null && balance > 0) {
+            data.setAnonymousDeaths(data.getAnonymousDeaths() + balance);
+        }
+        handler.saveObjectAsync(data);
+    }
+
+    /**
+     * Get the death handicap for an island: anonymous deaths plus all current member
+     * deaths in this island's space.
+     *
+     * @param island the island
+     * @return total deaths counting against the island
+     */
+    public int getDeathHandicap(@NonNull Island island) {
+        return (int) Math.min(Integer.MAX_VALUE, checkDeathsMigration(island).getTotalDeaths());
+    }
+
 }

@@ -62,6 +62,7 @@ import world.bentobox.bentobox.util.Util;
 import world.bentobox.level.Level;
 import world.bentobox.level.calculators.Results.Result;
 import world.bentobox.level.config.BlockConfig;
+import world.bentobox.level.objects.IslandLevels;
 import world.bentobox.level.util.Utils;
 
 public class IslandLevelCalculator {
@@ -264,6 +265,15 @@ public class IslandLevelCalculator {
         reportLines.add("Level cost = " + addon.getSettings().getLevelCost());
         reportLines.add("Island members = " + island.getMemberSet().size());
         reportLines.add("Deaths handicap = " + results.deathHandicap.get());
+        IslandLevels levelsData = addon.getManager().checkDeathsMigration(island);
+        levelsData.getMemberDeaths().forEach((uuid, deaths) -> {
+            String name = addon.getPlayers().getName(UUID.fromString(uuid));
+            reportLines.add("  Deaths by " + (name.isEmpty() ? uuid : name) + " = " + deaths);
+        });
+        if (levelsData.getAnonymousDeaths() > 0) {
+            reportLines.add("  Deaths by former members or migrated from pre-island tracking = "
+                    + levelsData.getAnonymousDeaths());
+        }
         /*
         if (addon.getSettings().isZeroNewIslandLevels()) {
             reportLines.add("Initial island level = " + (0L - addon.getManager().getInitialLevel(island)));
@@ -746,16 +756,9 @@ public class IslandLevelCalculator {
         results.rawBlockCount.addAndGet(donatedPoints);
         results.donatedPoints.set(donatedPoints);
 
-        // Set the death penalty
-        if (this.addon.getSettings().isSumTeamDeaths()) {
-            for (UUID uuid : this.island.getMemberSet()) {
-                this.results.deathHandicap.addAndGet(this.addon.getPlayers().getDeaths(island.getWorld(), uuid));
-            }
-        } else {
-            // At this point, it may be that the island has become unowned.
-            this.results.deathHandicap.set(this.island.getOwner() == null ? 0
-                    : this.addon.getPlayers().getDeaths(island.getWorld(), this.island.getOwner()));
-        }
+        // Set the death penalty. Deaths are tracked per island: only deaths in this
+        // island's space count, and deaths of former members are retained anonymously.
+        this.results.deathHandicap.set(this.addon.getManager().getDeathHandicap(island));
 
         long blockAndDeathPoints = this.results.rawBlockCount.get();
         this.results.totalPoints.set(blockAndDeathPoints);
