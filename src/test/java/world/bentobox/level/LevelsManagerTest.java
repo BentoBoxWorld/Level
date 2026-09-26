@@ -554,4 +554,81 @@ class LevelsManagerTest extends CommonTestSetup {
         assertEquals(6, lm.getDeathHandicap(island));
     }
 
+    /**
+     * Test method for
+     * {@link world.bentobox.level.LevelsManager#setDeaths(Island, UUID, int)}.
+     * Reproduces the Discord report: migrated deaths sit in the anonymous count and
+     * an admin reset must clear them.
+     */
+    @Test
+    void testSetDeathsZeroClearsAnonymousAndPlayer() throws Exception {
+        IslandLevels data = deathData(true);
+        data.setAnonymousDeaths(3);
+        data.getMemberDeaths().put(uuid.toString(), 2);
+        UUID mate = UUID.randomUUID();
+        data.getMemberDeaths().put(mate.toString(), 1);
+
+        lm.setDeaths(island, uuid, 0);
+
+        assertEquals(0L, data.getAnonymousDeaths());
+        assertFalse(data.getMemberDeaths().containsKey(uuid.toString()));
+        // Other members keep their deaths
+        assertEquals(1, lm.getDeathHandicap(island));
+    }
+
+    /**
+     * Test method for
+     * {@link world.bentobox.level.LevelsManager#setDeaths(Island, UUID, int)}
+     */
+    @Test
+    void testSetDeathsCapsAtDeathsMax() throws Exception {
+        IslandLevels data = deathData(true);
+        when(iwm.getDeathsMax(world)).thenReturn(10);
+
+        lm.setDeaths(island, uuid, 5);
+        assertEquals(5, data.getMemberDeaths().get(uuid.toString()).intValue());
+        lm.setDeaths(island, uuid, 50);
+        assertEquals(10, data.getMemberDeaths().get(uuid.toString()).intValue());
+    }
+
+    /**
+     * Test method for
+     * {@link world.bentobox.level.LevelsManager#addDeaths(Island, UUID, int)}
+     */
+    @Test
+    void testAddDeaths() throws Exception {
+        IslandLevels data = deathData(true);
+        when(iwm.getDeathsMax(world)).thenReturn(10);
+        data.setAnonymousDeaths(1);
+
+        lm.addDeaths(island, uuid, 4);
+        lm.addDeaths(island, uuid, 4);
+        assertEquals(8, data.getMemberDeaths().get(uuid.toString()).intValue());
+        lm.addDeaths(island, uuid, 4);
+        assertEquals(10, data.getMemberDeaths().get(uuid.toString()).intValue());
+        assertEquals(11, lm.getDeathHandicap(island));
+    }
+
+    /**
+     * Test method for
+     * {@link world.bentobox.level.LevelsManager#removeDeaths(Island, UUID, int)}
+     */
+    @Test
+    void testRemoveDeathsSpillsIntoAnonymous() throws Exception {
+        IslandLevels data = deathData(true);
+        data.setAnonymousDeaths(3);
+        data.getMemberDeaths().put(uuid.toString(), 2);
+
+        lm.removeDeaths(island, uuid, 1);
+        assertEquals(1, data.getMemberDeaths().get(uuid.toString()).intValue());
+        assertEquals(3L, data.getAnonymousDeaths());
+
+        lm.removeDeaths(island, uuid, 3);
+        assertFalse(data.getMemberDeaths().containsKey(uuid.toString()));
+        assertEquals(1L, data.getAnonymousDeaths());
+
+        lm.removeDeaths(island, uuid, 100);
+        assertEquals(0, lm.getDeathHandicap(island));
+    }
+
 }
