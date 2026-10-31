@@ -54,9 +54,9 @@
         <!-- Non-minecraft related dependencies -->
         <junit.version>5.10.2</junit.version>
         <mockito.version>5.11.0</mockito.version>
-        <mock-bukkit.version>4.110.0</mock-bukkit.version>
+        <mock-bukkit.version>4.119.0</mock-bukkit.version>
         <!-- More visible way how to change dependency versions -->
-        <paper.version>1.21.11-R0.1-SNAPSHOT</paper.version>
+        <paper.version>26.3.build.231-stable</paper.version>
         <bentobox.version>3.23.3</bentobox.version>
         <!-- Warps addon version -->
         <warps.version>1.12.0</warps.version>
@@ -178,7 +178,7 @@
         <!-- Mock Bukkit - used to mock the server in tests -->
         <dependency>
             <groupId>org.mockbukkit.mockbukkit</groupId>
-            <artifactId>mockbukkit-v1.21</artifactId>
+            <artifactId>mockbukkit-v26.3</artifactId>
             <version>${mock-bukkit.version}</version>
             <scope>test</scope>
          </dependency>
