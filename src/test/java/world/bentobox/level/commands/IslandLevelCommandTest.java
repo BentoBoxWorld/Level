@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -113,6 +114,53 @@ class IslandLevelCommandTest extends CommonTestSetup {
         when(im.getIsland(any(), any(UUID.class))).thenReturn(null);
         assertFalse(cmd.execute(user, "level", Collections.emptyList()));
         verify(user).sendMessage("general.errors.player-has-no-island");
+    }
+
+    @Test
+    void testCanExecuteNoCooldownConfigured() {
+        assertTrue(cmd.canExecute(user, "level", Collections.emptyList()));
+        assertTrue(cmd.canExecute(user, "level", Collections.emptyList()));
+        verify(user, never()).sendMessage(eq("general.errors.you-must-wait"), any(), any());
+    }
+
+    /**
+     * The cooldown is enforced in canExecute, so a refused self request is reported
+     * as the command not being able to run rather than as bad arguments.
+     */
+    @Test
+    void testCanExecuteSelfRequestOnCooldown() {
+        when(settings.getLevelWait()).thenReturn(60);
+        Results results = new Results(Result.AVAILABLE);
+        when(manager.calculateLevel(any(), any())).thenReturn(CompletableFuture.completedFuture(results));
+        when(manager.getIslandLevelString(any(), any())).thenReturn("5");
+
+        assertTrue(cmd.canExecute(user, "level", Collections.emptyList()));
+        assertTrue(cmd.execute(user, "level", Collections.emptyList()));
+        // Now the cooldown is running
+        assertFalse(cmd.canExecute(user, "level", Collections.emptyList()));
+        verify(user).sendMessage(eq("general.errors.you-must-wait"), eq(TextVariables.NUMBER), any());
+        // Asking by own name is the same request
+        when(pm.getUUID("tastybento")).thenReturn(uuid);
+        assertFalse(cmd.canExecute(user, "level", List.of("tastybento")));
+    }
+
+    @Test
+    void testCanExecuteCooldownDoesNotApplyToOthersOrAdmins() {
+        when(settings.getLevelWait()).thenReturn(60);
+        Results results = new Results(Result.AVAILABLE);
+        when(manager.calculateLevel(any(), any())).thenReturn(CompletableFuture.completedFuture(results));
+        when(manager.getIslandLevelString(any(), any())).thenReturn("5");
+        assertTrue(cmd.execute(user, "level", Collections.emptyList()));
+
+        // Another player's level is a lookup, not a scan
+        when(pm.getUUID("other")).thenReturn(UUID.randomUUID());
+        assertTrue(cmd.canExecute(user, "level", List.of("other")));
+        // Ops and the console are never held to the cooldown
+        when(user.isOp()).thenReturn(true);
+        assertTrue(cmd.canExecute(user, "level", Collections.emptyList()));
+        when(user.isOp()).thenReturn(false);
+        when(user.isPlayer()).thenReturn(false);
+        assertTrue(cmd.canExecute(user, "level", Collections.emptyList()));
     }
 
     @Test
