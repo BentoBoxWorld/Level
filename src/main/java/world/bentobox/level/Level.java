@@ -43,6 +43,7 @@ import world.bentobox.level.commands.IslandTopCommand;
 import world.bentobox.level.commands.IslandValueCommand;
 import world.bentobox.level.config.BlockConfig;
 import world.bentobox.level.config.ConfigSettings;
+import world.bentobox.level.listeners.AdminDeathsListener;
 import world.bentobox.level.listeners.IslandActivitiesListeners;
 import world.bentobox.level.listeners.JoinLeaveListener;
 import world.bentobox.level.listeners.MigrationListener;
@@ -154,6 +155,13 @@ public class Level extends Addon {
         registerListener(new IslandActivitiesListeners(this));
         registerListener(new JoinLeaveListener(this));
         registerListener(new MigrationListener(this));
+        // The admin deaths event only exists in newer BentoBox versions
+        try {
+            Class.forName("world.bentobox.bentobox.api.events.player.PlayerDeathsChangedEvent");
+            registerListener(new AdminDeathsListener(this));
+        } catch (ClassNotFoundException e) {
+            log("This BentoBox version does not support syncing admin deaths commands to island levels. Update BentoBox to enable it.");
+        }
     }
 
     private void registerGameModeCommands() {

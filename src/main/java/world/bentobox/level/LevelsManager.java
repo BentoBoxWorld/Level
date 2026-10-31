@@ -662,6 +662,76 @@ public class LevelsManager {
     }
 
     /**
+     * Admin set of a player's deaths on this island. The player's count becomes
+     * {@code deaths}, capped at the game mode's {@code deaths.max} setting. Anonymous
+     * deaths are cleared too: they are unattributed (migrated legacy deaths or deaths
+     * of former members), so an admin setting the deaths expects them to go.
+     *
+     * @param island     the island
+     * @param playerUUID the player whose deaths are being set
+     * @param deaths     the new death count, zero or more
+     */
+    public void setDeaths(@NonNull Island island, @NonNull UUID playerUUID, int deaths) {
+        IslandLevels data = checkDeathsMigration(island);
+        data.setAnonymousDeaths(0);
+        int count = capDeaths(island, Math.max(0, deaths));
+        if (count > 0) {
+            data.getMemberDeaths().put(playerUUID.toString(), count);
+        } else {
+            data.getMemberDeaths().remove(playerUUID.toString());
+        }
+        handler.saveObjectAsync(data);
+    }
+
+    /**
+     * Admin addition of deaths to a player on this island, capped at the game mode's
+     * {@code deaths.max} setting.
+     *
+     * @param island     the island
+     * @param playerUUID the player
+     * @param amount     the number of deaths to add
+     */
+    public void addDeaths(@NonNull Island island, @NonNull UUID playerUUID, int amount) {
+        if (amount <= 0) {
+            return;
+        }
+        IslandLevels data = checkDeathsMigration(island);
+        int current = data.getMemberDeaths().getOrDefault(playerUUID.toString(), 0);
+        data.getMemberDeaths().put(playerUUID.toString(), capDeaths(island, (int) Math.min(Integer.MAX_VALUE, (long) current + amount)));
+        handler.saveObjectAsync(data);
+    }
+
+    /**
+     * Admin removal of deaths from a player on this island. Deaths come off the
+     * player's own count first and any remainder comes off the island's anonymous
+     * deaths. Neither goes below zero.
+     *
+     * @param island     the island
+     * @param playerUUID the player
+     * @param amount     the number of deaths to remove
+     */
+    public void removeDeaths(@NonNull Island island, @NonNull UUID playerUUID, int amount) {
+        if (amount <= 0) {
+            return;
+        }
+        IslandLevels data = checkDeathsMigration(island);
+        int current = data.getMemberDeaths().getOrDefault(playerUUID.toString(), 0);
+        int fromPlayer = Math.min(current, amount);
+        if (current - fromPlayer > 0) {
+            data.getMemberDeaths().put(playerUUID.toString(), current - fromPlayer);
+        } else {
+            data.getMemberDeaths().remove(playerUUID.toString());
+        }
+        data.setAnonymousDeaths(Math.max(0, data.getAnonymousDeaths() - (amount - fromPlayer)));
+        handler.saveObjectAsync(data);
+    }
+
+    private int capDeaths(Island island, int deaths) {
+        int max = addon.getPlugin().getIWM().getDeathsMax(island.getWorld());
+        return max > 0 ? Math.min(max, deaths) : deaths;
+    }
+
+    /**
      * Get the death handicap for an island: anonymous deaths plus all current member
      * deaths in this island's space.
      *

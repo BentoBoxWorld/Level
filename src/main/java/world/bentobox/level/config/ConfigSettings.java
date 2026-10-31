@@ -129,6 +129,8 @@ public class ConfigSettings implements ConfigObject {
     @ConfigComment("and they stay with the island even if the player later leaves the team.")
     @ConfigComment("The per-player count is capped by the deaths max setting in the GameModeAddon's config.yml,")
     @ConfigComment("and deaths are only recorded if deaths counted is enabled there.")
+    @ConfigComment("The game mode's admin deaths commands (set/add/remove/reset) also change the island's deaths.")
+    @ConfigComment("Set and reset also clear deaths left by former members and deaths carried over from older versions.")
     @ConfigComment("Set to zero to not use this feature")
     @ConfigEntry(path = "deathpenalty")
     private int deathPenalty = 100;
