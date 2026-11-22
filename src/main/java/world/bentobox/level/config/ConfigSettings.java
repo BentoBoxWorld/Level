@@ -55,6 +55,16 @@ public class ConfigSettings implements ConfigObject {
     private boolean zeroNewIslandLevels = true;
 
     @ConfigComment("")
+    @ConfigComment("Game modes where island levels are not zeroed")
+    @ConfigComment("Zeroing suits void worlds, where the only blocks present at the start are the starter island.")
+    @ConfigComment("In worlds with generated terrain, e.g. CaveBlock, it is better to give natural blocks a")
+    @ConfigComment("value of 0 for that world in blockconfig.yml and list the game mode here.")
+    @ConfigComment("Islands in these game modes are not zeroed, and any initial count already recorded for")
+    @ConfigComment("them is ignored. Has no effect if zero-new-island-levels is false.")
+    @ConfigEntry(path = "zero-disabled-game-modes")
+    private List<String> zeroDisabledGameModes = new ArrayList<>();
+
+    @ConfigComment("")
     @ConfigComment("Donations-only mode")
     @ConfigComment("If true, the island block scan is skipped entirely and the island level")
     @ConfigComment("is computed only from blocks donated via /island donate. This removes the")
@@ -398,6 +408,20 @@ public class ConfigSettings implements ConfigObject {
         return zeroNewIslandLevels;
     }
 
+
+    /**
+     * @return the names of game modes whose islands are not zeroed
+     */
+    public List<String> getZeroDisabledGameModes() {
+        return zeroDisabledGameModes == null ? Collections.emptyList() : zeroDisabledGameModes;
+    }
+
+    /**
+     * @param zeroDisabledGameModes the names of game modes whose islands are not zeroed
+     */
+    public void setZeroDisabledGameModes(List<String> zeroDisabledGameModes) {
+        this.zeroDisabledGameModes = zeroDisabledGameModes;
+    }
 
     /**
      * @param zeroNewIslandLevels the zeroNewIslandLevels to set

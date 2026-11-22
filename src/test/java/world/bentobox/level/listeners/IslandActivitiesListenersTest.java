@@ -96,7 +96,25 @@ class IslandActivitiesListenersTest extends CommonTestSetup {
         verify(sch, never()).runTaskLater(any(), any(Runnable.class), anyLong());
     }
 
+    @Test
+    void testOnNewIslandCreatedZeroingDisabledForGameMode() {
+        when(settings.isZeroNewIslandLevels()).thenReturn(true);
+        when(addon.isZeroingDisabled(world)).thenReturn(true);
+        IslandCreatedEvent event = new IslandCreatedEvent(island, uuid, false, location);
+        listener.onNewIsland(event);
+        verify(sch, never()).runTaskLater(any(), any(Runnable.class), anyLong());
+    }
+
     // --- IslandResettedEvent ---
+
+    @Test
+    void testOnIslandResettedZeroingDisabledForGameMode() {
+        when(settings.isZeroNewIslandLevels()).thenReturn(true);
+        when(addon.isZeroingDisabled(world)).thenReturn(true);
+        IslandResettedEvent event = new IslandResettedEvent(island, uuid, false, location, island);
+        listener.onNewIsland(event);
+        verify(pipeliner, never()).zeroIsland(any());
+    }
 
     @Test
     void testOnIslandResettedZeroNewIslandLevelsTrue() {
