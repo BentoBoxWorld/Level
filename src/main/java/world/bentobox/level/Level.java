@@ -274,7 +274,8 @@ public class Level extends Addon {
             new AdminLevelCommand(this, adminCommand);
             new AdminTopCommand(this, adminCommand);
             new AdminLevelStatusCommand(this, adminCommand);
-            if (getSettings().isZeroNewIslandLevels()) {
+            if (getSettings().isZeroNewIslandLevels()
+                    && !getSettings().getZeroDisabledGameModes().contains(gm.getDescription().getName())) {
                 new AdminSetInitialLevelCommand(this, adminCommand);
             }
             new AdminStatsCommand(this, adminCommand);
@@ -414,6 +415,23 @@ public class Level extends Addon {
     public long getInitialIslandLevel(@NonNull Island island) {
     	return getManager().getInitialLevel(island);
     }*/
+
+    /**
+     * Check if island level zeroing is switched off for the game mode that owns a world.
+     * Islands in such a world are not zeroed when created or reset, and any initial
+     * count already stored for them is ignored.
+     *
+     * @param world - world, may be null
+     * @return true if zeroing is disabled for the world's game mode
+     */
+    public boolean isZeroingDisabled(@Nullable World world) {
+        if (world == null) {
+            return false;
+        }
+        List<String> disabled = getSettings().getZeroDisabledGameModes();
+        return !disabled.isEmpty() && getPlugin().getIWM().getAddon(world)
+                .map(gm -> disabled.contains(gm.getDescription().getName())).orElse(false);
+    }
 
     /**
      * Get the initial island count

@@ -27,6 +27,14 @@ calculation-timeout: 5
 # This will reduce CPU if false.
 zero-new-island-levels: true
 #
+# Game modes where island levels are not zeroed
+# Zeroing suits void worlds, where the only blocks present at the start are the starter island.
+# In worlds with generated terrain, e.g. CaveBlock, it is better to give natural blocks a
+# value of 0 for that world in blockconfig.yml and list the game mode here.
+# Islands in these game modes are not zeroed, and any initial count already recorded for
+# them is ignored. Has no effect if zero-new-island-levels is false.
+zero-disabled-game-modes: []
+#
 # Donations-only mode
 # If true, the island block scan is skipped entirely and the island level
 # is computed only from blocks donated via /island donate. This removes the

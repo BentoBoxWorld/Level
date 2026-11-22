@@ -127,6 +127,14 @@ public class IslandLevelCalculator {
     }
 
     /**
+     * @return true if this island's initial count should be subtracted from its
+     *         points: zeroing is on and not switched off for the island's game mode
+     */
+    private boolean isZeroing() {
+        return addon.getSettings().isZeroNewIslandLevels() && !addon.isZeroingDisabled(island.getWorld());
+    }
+
+    /**
      * Calculate the level based on the raw points
      * 
      * @param rawPoints - raw points counted on island
@@ -140,7 +148,7 @@ public class IslandLevelCalculator {
         // when subtracted from donation-only points (e.g. when an admin enables
         // this mode mid-game on islands that already have an initial count).
         long modifiedPoints = rawPoints
-                - (addon.getSettings().isZeroNewIslandLevels() && !addon.getSettings().isDonationsOnly()
+                - (isZeroing() && !addon.getSettings().isDonationsOnly()
                         ? results.initialCount.get() : 0);
         // Paste in the values to the formula
         // Use Math.max(1, ...) to prevent division by zero if island_members is used in the formula
@@ -274,10 +282,10 @@ public class IslandLevelCalculator {
                     + levelsData.getAnonymousDeaths());
         }
         /*
-        if (addon.getSettings().isZeroNewIslandLevels()) {
+        if (isZeroing()) {
             reportLines.add("Initial island level = " + (0L - addon.getManager().getInitialLevel(island)));
         }*/
-        if (addon.getSettings().isZeroNewIslandLevels() && !addon.getSettings().isDonationsOnly()) {
+        if (isZeroing() && !addon.getSettings().isDonationsOnly()) {
             reportLines.add("Initial island count = " + (0L - addon.getManager().getInitialCount(island)));
         }
         reportLines.add("Previous level = " + addon.getManager().getIslandLevel(island.getWorld(), island.getOwner()));
@@ -374,20 +382,34 @@ public class IslandLevelCalculator {
         return CompletableFuture.completedFuture(Collections.emptyList());
     }
 
+    /**
+     * Load a batch of chunks. All the chunks are requested at once so the server can
+     * read them from disk in parallel; requesting them one after another costs about
+     * a tick per chunk, which times out on large, fully generated islands.
+     */
     private void loadChunks(CompletableFuture<List<Chunk>> r2, World world, Queue<Pair<Integer, Integer>> pairList,
             List<Chunk> chunkList) {
-        if (pairList.isEmpty()) {
-            r2.complete(chunkList);
-            return;
+        List<CompletableFuture<Chunk>> futures = new ArrayList<>();
+        Pair<Integer, Integer> p;
+        while ((p = pairList.poll()) != null) {
+            // Never generate chunks. A chunk that has not been generated holds nothing a
+            // player has built, and generating a large protected area takes longer than
+            // the calculation timeout. The future completes with null for such chunks.
+            futures.add(Util.getChunkAtAsync(world, p.x, p.z, false));
         }
-        Pair<Integer, Integer> p = pairList.poll();
-        // We need to generate now all the time because some game modes are not voids
-        Util.getChunkAtAsync(world, p.x, p.z, true).thenAccept(chunk -> {
-            if (chunk != null) {
-                chunkList.add(chunk);
-                roseStackerCheck(chunk);
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).whenComplete((v, ex) -> {
+            if (ex != null) {
+                addon.logError("Could not load a chunk for the level scan: " + ex.getMessage());
             }
-            loadChunks(r2, world, pairList, chunkList); // Iteration
+            // Every future is done at this point, so collecting here needs no locking
+            for (CompletableFuture<Chunk> future : futures) {
+                Chunk chunk = future.isCompletedExceptionally() ? null : future.getNow(null);
+                if (chunk != null) {
+                    chunkList.add(chunk);
+                    roseStackerCheck(chunk);
+                }
+            }
+            r2.complete(chunkList);
         });
     }
 
@@ -785,7 +807,7 @@ public class IslandLevelCalculator {
         // Binary search for points accumulated within the current level.
         // Floor at initialCount when zeroing new islands to avoid negative/NaN in non-linear formulas.
         // In donations-only mode, the initial count is ignored (see calculateLevel).
-        long minBlocks = addon.getSettings().isZeroNewIslandLevels() && !addon.getSettings().isDonationsOnly()
+        long minBlocks = isZeroing() && !addon.getSettings().isDonationsOnly()
                 ? results.initialCount.get() : 0;
         lo = Math.max(minBlocks, blockAndDeathPoints - MAX_AMOUNT);
         hi = blockAndDeathPoints;

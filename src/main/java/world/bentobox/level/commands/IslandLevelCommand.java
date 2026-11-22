@@ -32,6 +32,37 @@ public class IslandLevelCommand extends CompositeCommand {
     }
 
 
+    /**
+     * A player asking for their own level is held to the configured cooldown. This
+     * is checked here rather than in {@link #execute} so that a refusal counts as the
+     * command not being able to run, not as bad arguments.
+     */
+    @Override
+    public boolean canExecute(User user, String label, List<String> args) {
+        if (!isSelfRequest(user, args)) {
+            return true;
+        }
+        return this.addon.getSettings().getLevelWait() <= 0 || !checkCooldown(user);
+    }
+
+    /**
+     * Whether this is a player asking for their own island level, i.e. no name given
+     * or their own name, and not someone allowed to scan any island on demand.
+     */
+    private boolean isSelfRequest(User user, List<String> args) {
+        if (!user.isPlayer()) {
+            return false;
+        }
+        if (user.isOp() || user.hasPermission(this.getPermissionPrefix() + "admin.level")) {
+            return false;
+        }
+        if (args.isEmpty()) {
+            return true;
+        }
+        UUID playerUUID = getPlugin().getPlayers().getUUID(args.get(0));
+        return user.getUniqueId().equals(playerUUID);
+    }
+
     @Override
     public boolean execute(User user, String label, List<String> args) {
         if (!args.isEmpty()) {
@@ -56,14 +87,9 @@ public class IslandLevelCommand extends CompositeCommand {
             user.sendMessage("general.errors.use-in-game");
             return false;
         }
-        // Self request
-        // Check player cooldown
+        // Self request. The cooldown was checked in canExecute; start a new one.
         int coolDown = this.addon.getSettings().getLevelWait();
-
         if (coolDown > 0) {
-            // Check cool down
-            if (checkCooldown(user)) return false;
-            // Set cool down
             setCooldown(user.getUniqueId(), coolDown);
         }
 
