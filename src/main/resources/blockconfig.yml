@@ -1198,7 +1198,7 @@ blocks:
   cracked_polished_blackstone_bricks: 1
 worlds:
   # CaveBlock is a solid world, so the terrain itself must be worth nothing or the level
-  # would rise as chunks generate. Natural terrain, ores and cave decorations are 0 here.
+  # would rise as chunks generate. Natural terrain, ores, cave decorations and naturally generated spawners are 0 here.
   # These values also apply to the CaveBlock nether and end.
   caveblock-world:
     stone: 0
@@ -1251,6 +1251,16 @@ worlds:
     nether_gold_ore: 0
     ancient_debris: 0
     end_stone: 0
+    bubble_column: 0
+    spawner: 0
+    zombie_spawner: 0
+    skeleton_spawner: 0
+    spider_spawner: 0
+    cave_spider_spawner: 0
+    silverfish_spawner: 0
+    blaze_spawner: 0
+    magma_cube_spawner: 0
+    trial_spawner: 0
   acidisland_world:
     brain_coral: 0
     brain_coral_block: 0
