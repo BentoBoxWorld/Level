@@ -238,6 +238,26 @@ class LevelTest extends CommonTestSetup {
 	}
 
 	/**
+	 * Test method for {@link world.bentobox.level.Level#isZeroingDisabled(org.bukkit.World)}.
+	 */
+	@Test
+	void testIsZeroingDisabled() {
+		when(iwm.getAddon(world)).thenReturn(Optional.of(gameMode));
+		// Nothing listed
+		assertEquals(false, addon.isZeroingDisabled(world));
+		// Another game mode listed
+		addon.getSettings().setZeroDisabledGameModes(java.util.List.of("CaveBlock"));
+		assertEquals(false, addon.isZeroingDisabled(world));
+		// This game mode listed
+		addon.getSettings().setZeroDisabledGameModes(java.util.List.of("CaveBlock", "BSkyBlock"));
+		assertEquals(true, addon.isZeroingDisabled(world));
+		// Null world and a world that belongs to no game mode
+		assertEquals(false, addon.isZeroingDisabled(null));
+		when(iwm.getAddon(world)).thenReturn(Optional.empty());
+		assertEquals(false, addon.isZeroingDisabled(world));
+	}
+
+	/**
 	 * Test method for {@link world.bentobox.level.Level#getSettings()}.
 	 */
 	@Test

@@ -42,7 +42,7 @@ public class IslandActivitiesListeners implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onNewIsland(IslandCreatedEvent e) {
-        if (addon.getSettings().isZeroNewIslandLevels()) {
+        if (addon.getSettings().isZeroNewIslandLevels() && !addon.isZeroingDisabled(e.getIsland().getWorld())) {
             // Wait a few seconds before performing the zero
             Bukkit.getScheduler().runTaskLater(addon.getPlugin(), () -> zeroIsland(e.getIsland()), 150L);
         }
@@ -50,7 +50,7 @@ public class IslandActivitiesListeners implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onNewIsland(IslandResettedEvent e) {
-        if (addon.getSettings().isZeroNewIslandLevels()) {
+        if (addon.getSettings().isZeroNewIslandLevels() && !addon.isZeroingDisabled(e.getIsland().getWorld())) {
             zeroIsland(e.getIsland());
         }
     }

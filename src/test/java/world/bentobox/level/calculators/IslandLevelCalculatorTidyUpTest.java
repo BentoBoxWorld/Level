@@ -121,6 +121,20 @@ class IslandLevelCalculatorTidyUpTest extends CommonTestSetup {
     }
 
     @Test
+    @DisplayName("Zeroing disabled for the game mode: stored initial count is ignored")
+    void zeroingDisabledForGameMode() {
+        when(addon.isZeroingDisabled(world)).thenReturn(true);
+        IslandLevelCalculator calc = newCalculator();
+        Results r = calc.getResults();
+        r.rawBlockCount.set(INITIAL_COUNT + LEVEL_COST); // 260 → level 2 when nothing is subtracted
+        calc.tidyUp();
+
+        assertEquals(2L, r.getLevel(), "level counts every point");
+        assertEquals(0L, r.getPointsFromCurrentLevel(), "progress");
+        assertEquals(LEVEL_COST, r.getPointsFromCurrentLevel() + r.getPointsToNextLevel(), "interval");
+    }
+
+    @Test
     @DisplayName("Below start: progress goes negative, interval still equals level_cost (PR #434 claim)")
     void belowStart() {
         IslandLevelCalculator calc = newCalculator();

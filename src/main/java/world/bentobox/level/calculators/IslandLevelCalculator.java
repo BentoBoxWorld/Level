@@ -127,6 +127,14 @@ public class IslandLevelCalculator {
     }
 
     /**
+     * @return true if this island's initial count should be subtracted from its
+     *         points: zeroing is on and not switched off for the island's game mode
+     */
+    private boolean isZeroing() {
+        return addon.getSettings().isZeroNewIslandLevels() && !addon.isZeroingDisabled(island.getWorld());
+    }
+
+    /**
      * Calculate the level based on the raw points
      * 
      * @param rawPoints - raw points counted on island
@@ -140,7 +148,7 @@ public class IslandLevelCalculator {
         // when subtracted from donation-only points (e.g. when an admin enables
         // this mode mid-game on islands that already have an initial count).
         long modifiedPoints = rawPoints
-                - (addon.getSettings().isZeroNewIslandLevels() && !addon.getSettings().isDonationsOnly()
+                - (isZeroing() && !addon.getSettings().isDonationsOnly()
                         ? results.initialCount.get() : 0);
         // Paste in the values to the formula
         // Use Math.max(1, ...) to prevent division by zero if island_members is used in the formula
@@ -274,10 +282,10 @@ public class IslandLevelCalculator {
                     + levelsData.getAnonymousDeaths());
         }
         /*
-        if (addon.getSettings().isZeroNewIslandLevels()) {
+        if (isZeroing()) {
             reportLines.add("Initial island level = " + (0L - addon.getManager().getInitialLevel(island)));
         }*/
-        if (addon.getSettings().isZeroNewIslandLevels() && !addon.getSettings().isDonationsOnly()) {
+        if (isZeroing() && !addon.getSettings().isDonationsOnly()) {
             reportLines.add("Initial island count = " + (0L - addon.getManager().getInitialCount(island)));
         }
         reportLines.add("Previous level = " + addon.getManager().getIslandLevel(island.getWorld(), island.getOwner()));
@@ -381,8 +389,10 @@ public class IslandLevelCalculator {
             return;
         }
         Pair<Integer, Integer> p = pairList.poll();
-        // We need to generate now all the time because some game modes are not voids
-        Util.getChunkAtAsync(world, p.x, p.z, true).thenAccept(chunk -> {
+        // Never generate chunks. A chunk that has not been generated holds nothing a
+        // player has built, and generating a large protected area takes longer than
+        // the calculation timeout. The future completes with null for such chunks.
+        Util.getChunkAtAsync(world, p.x, p.z, false).thenAccept(chunk -> {
             if (chunk != null) {
                 chunkList.add(chunk);
                 roseStackerCheck(chunk);
@@ -785,7 +795,7 @@ public class IslandLevelCalculator {
         // Binary search for points accumulated within the current level.
         // Floor at initialCount when zeroing new islands to avoid negative/NaN in non-linear formulas.
         // In donations-only mode, the initial count is ignored (see calculateLevel).
-        long minBlocks = addon.getSettings().isZeroNewIslandLevels() && !addon.getSettings().isDonationsOnly()
+        long minBlocks = isZeroing() && !addon.getSettings().isDonationsOnly()
                 ? results.initialCount.get() : 0;
         lo = Math.max(minBlocks, blockAndDeathPoints - MAX_AMOUNT);
         hi = blockAndDeathPoints;
