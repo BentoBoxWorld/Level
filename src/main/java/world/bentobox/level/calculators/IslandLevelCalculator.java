@@ -389,24 +389,25 @@ public class IslandLevelCalculator {
      */
     private void loadChunks(CompletableFuture<List<Chunk>> r2, World world, Queue<Pair<Integer, Integer>> pairList,
             List<Chunk> chunkList) {
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        List<CompletableFuture<Chunk>> futures = new ArrayList<>();
         Pair<Integer, Integer> p;
         while ((p = pairList.poll()) != null) {
             // Never generate chunks. A chunk that has not been generated holds nothing a
             // player has built, and generating a large protected area takes longer than
             // the calculation timeout. The future completes with null for such chunks.
-            futures.add(Util.getChunkAtAsync(world, p.x, p.z, false).thenAccept(chunk -> {
-                if (chunk != null) {
-                    synchronized (chunkList) {
-                        chunkList.add(chunk);
-                    }
-                    roseStackerCheck(chunk);
-                }
-            }));
+            futures.add(Util.getChunkAtAsync(world, p.x, p.z, false));
         }
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).whenComplete((v, ex) -> {
             if (ex != null) {
                 addon.logError("Could not load a chunk for the level scan: " + ex.getMessage());
+            }
+            // Every future is done at this point, so collecting here needs no locking
+            for (CompletableFuture<Chunk> future : futures) {
+                Chunk chunk = future.isCompletedExceptionally() ? null : future.getNow(null);
+                if (chunk != null) {
+                    chunkList.add(chunk);
+                    roseStackerCheck(chunk);
+                }
             }
             r2.complete(chunkList);
         });
