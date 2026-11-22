@@ -1261,6 +1261,7 @@ worlds:
     blaze_spawner: 0
     magma_cube_spawner: 0
     trial_spawner: 0
+    obsidian: 0
   acidisland_world:
     brain_coral: 0
     brain_coral_block: 0
