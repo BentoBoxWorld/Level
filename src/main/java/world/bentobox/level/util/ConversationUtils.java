@@ -9,128 +9,59 @@ package world.bentobox.level.util;
 
 import java.util.function.Consumer;
 
-import org.bukkit.conversations.ConversationAbandonedListener;
-import org.bukkit.conversations.ConversationContext;
-import org.bukkit.conversations.ConversationFactory;
-import org.bukkit.conversations.MessagePrompt;
-import org.bukkit.conversations.Prompt;
-import org.bukkit.conversations.StringPrompt;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-import world.bentobox.bentobox.BentoBox;
+import net.kyori.adventure.text.Component;
+import world.bentobox.bentobox.api.prompts.Prompts;
 import world.bentobox.bentobox.api.user.User;
+import world.bentobox.bentobox.util.Util;
 
 
+/**
+ * Asks a player for typed input. This keeps the shape it had when it was built on Bukkit's conversation API,
+ * which Paper is removing, and now hands the work to BentoBox's {@link Prompts}: the player gets a dialog with
+ * a text box where the server supports dialogs, and is asked in chat otherwise.
+ */
 public class ConversationUtils
 {
-    // ---------------------------------------------------------------------
-    // Section: Conversation API implementation
-    // ---------------------------------------------------------------------
+    /**
+     * The heading of every prompt. The question itself is shown under it.
+     */
+    private static final Component TITLE = Component.text("Level");
+
 
     private ConversationUtils() {} // Private constructor as this is a utility class only with static methods
 
+
     /**
-     * This method will close opened gui and writes question in chat. After players answers on question in chat, message
-     * will trigger consumer and gui will reopen.
+     * Closes the open gui and asks the player for one line of text. Asking again while the player still has
+     * an unanswered question replaces that question; nothing is queued (#451).
      *
-     * @param consumer Consumer that accepts player output text.
-     * @param question Message that will be displayed in chat when player triggers conversion.
-     * @param user User who is targeted with current confirmation.
+     * @param consumer Receives the text, or null if the player cancelled or did not answer.
+     * @param user User who is asked.
+     * @param question What the player is asked, already translated.
+     * @param successMessage Message sent after the text is accepted, or null for none.
      */
     public static void createStringInput(Consumer<String> consumer,
             User user,
             @NonNull String question,
             @Nullable String successMessage)
     {
-        if (user.getPlayer().isConversing())
+        user.closeInventory();
+        Prompts.text(user).
+        title(TITLE).
+        message(Util.parseMiniMessageOrLegacy(question)).
+        onSubmit(text ->
         {
-            // Bukkit queues conversations per player, so starting another one here would
-            // stack prompts that later replay as cancel/prompt spam (#451). Repeat the
-            // question for the pending conversation instead.
-            user.closeInventory();
-            user.getPlayer().sendRawMessage(user.getTranslation("level.conversations.prefix") + question);
-            return;
-        }
+            consumer.accept(text);
 
-        // Text input message.
-        StringPrompt stringPrompt = new StringPrompt()
-        {
-            @Override
-            public @NonNull String getPromptText(@NonNull ConversationContext context)
+            if (successMessage != null && !successMessage.isBlank())
             {
-                user.closeInventory();
-                return question;
+                user.sendRawMessage(successMessage);
             }
-
-
-            @Override
-            public @NonNull Prompt acceptInput(@NonNull ConversationContext context, @Nullable String input)
-            {
-                consumer.accept(input);
-                return ConversationUtils.endMessagePrompt(successMessage);
-            }
-        };
-
-        new ConversationFactory(BentoBox.getInstance()).
-        withPrefix(context -> user.getTranslation("level.conversations.prefix")).
-        withFirstPrompt(stringPrompt).
-        // On cancel conversation will be closed.
-        withLocalEcho(false).
-        withTimeout(90).
-        withEscapeSequence(user.getTranslation("level.conversations.cancel-string")).
-        // Use null value in consumer to detect if user has abandoned conversation.
-        addConversationAbandonedListener(ConversationUtils.getAbandonListener(consumer, user)).
-        buildConversation(user.getPlayer()).
-        begin();
-    }
-
-
-    /**
-     * This is just a simple end message prompt that displays requested message.
-     *
-     * @param message Message that will be displayed.
-     * @return MessagePrompt that displays given message and exists from conversation.
-     */
-    private static MessagePrompt endMessagePrompt(@Nullable String message)
-    {
-        return new MessagePrompt()
-        {
-            @Override
-            public @NonNull String getPromptText(@NonNull ConversationContext context)
-            {
-                return message == null ? "" : message;
-            }
-
-
-            @Override
-            protected @Nullable Prompt getNextPrompt(@NonNull ConversationContext context)
-            {
-                return Prompt.END_OF_CONVERSATION;
-            }
-        };
-    }
-
-
-    /**
-     * This method creates and returns abandon listener for every conversation.
-     *
-     * @param consumer Consumer which must return null value.
-     * @param user User who was using conversation.
-     * @return ConversationAbandonedListener instance.
-     */
-    private static ConversationAbandonedListener getAbandonListener(Consumer<?> consumer, User user)
-    {
-        return abandonedEvent ->
-        {
-            if (!abandonedEvent.gracefulExit())
-            {
-                consumer.accept(null);
-                // send cancell message
-                abandonedEvent.getContext().getForWhom().sendRawMessage(
-                        user.getTranslation("level.conversations.prefix") +
-                        user.getTranslation("level.conversations.cancelled"));
-            }
-        };
+        }).
+        onCancel(() -> consumer.accept(null)).
+        open();
     }
 }
