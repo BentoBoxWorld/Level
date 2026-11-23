@@ -1,62 +1,127 @@
 package world.bentobox.level.util;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.bukkit.conversations.Conversation;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
+import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.text.Component;
+import world.bentobox.bentobox.api.prompts.ChatInputListener;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.level.CommonTestSetup;
 
 /**
- * Tests for {@link ConversationUtils}.
+ * Tests that {@link ConversationUtils} hands its questions to BentoBox's prompts and passes the answers back
+ * the way its callers expect: the value on success, and null (or false for a confirmation) when the player
+ * backs out.
+ * <p>
+ * Dialogs cannot be built without a server, so they are switched off here and every prompt is answered in
+ * chat. Translations come back as their locale key, so the cancel, done and confirm words are the keys.
  */
-class ConversationUtilsTest extends CommonTestSetup {
+class ConversationUtilsTest extends CommonTestSetup
+{
+    private static final String CANCEL = "prompts.chat.cancel-word";
 
     private User user;
 
+    private final ChatInputListener listener = new ChatInputListener();
+
+    private final List<Object> answers = new ArrayList<>();
+
+
     @Override
     @BeforeEach
-    protected void setUp() throws Exception {
+    protected void setUp() throws Exception
+    {
         super.setUp();
-        // The conversation timeout canceller starts a scheduler timer on build.
-        when(plugin.getServer()).thenReturn(server);
-        user = User.getInstance(p);
+        this.plugin.getSettings().setDialogPrompts(false);
+        this.user = User.getInstance(this.p);
     }
 
-    /**
-     * A player with no active conversation should get a new one.
-     */
-    @Test
-    void testCreateStringInputStartsConversation() {
-        when(p.isConversing()).thenReturn(false);
 
-        Consumer<String> consumer = value -> {};
-        ConversationUtils.createStringInput(consumer, user, "question?", "done");
-
-        verify(p).beginConversation(any(Conversation.class));
+    @Override
+    @AfterEach
+    protected void tearDown() throws Exception
+    {
+        PlayerQuitEvent quit = mock(PlayerQuitEvent.class);
+        when(quit.getPlayer()).thenReturn(this.p);
+        this.listener.onQuit(quit);
+        super.tearDown();
     }
 
+
     /**
-     * Clicking the search button while a conversation is already pending must not
-     * queue a second conversation (#451) — it should just repeat the question.
+     * Sends a chat message as the player and runs the task that carries it to the main thread.
+     */
+    private void say(String text)
+    {
+        AsyncChatEvent chat = mock(AsyncChatEvent.class);
+        when(chat.getPlayer()).thenReturn(this.p);
+        when(chat.message()).thenReturn(Component.text(text));
+        this.listener.onChat(chat);
+        ArgumentCaptor<Runnable> task = ArgumentCaptor.forClass(Runnable.class);
+        verify(this.sch, atLeastOnce()).runTask(eq(this.plugin), task.capture());
+        task.getValue().run();
+    }
+
+
+    @Test
+    void testStringInput()
+    {
+        ConversationUtils.createStringInput(this.answers::add, this.user, "Search for?", "Updated");
+        verify(this.p).closeInventory();
+        assertTrue(ChatInputListener.isWaitingFor(this.uuid));
+
+        this.say("diamond");
+
+        assertEquals(List.of("diamond"), this.answers);
+        assertFalse(ChatInputListener.isWaitingFor(this.uuid));
+    }
+
+
+    @Test
+    void testStringInputCancelGivesNull()
+    {
+        ConversationUtils.createStringInput(this.answers::add, this.user, "Search for?", null);
+
+        this.say(CANCEL);
+
+        assertEquals(1, this.answers.size());
+        assertNull(this.answers.getFirst());
+        assertFalse(ChatInputListener.isWaitingFor(this.uuid));
+    }
+
+
+    /**
+     * Clicking the search button again while a question is still waiting must not stack questions (#451): the
+     * new one replaces the old one, and only the new consumer is answered.
      */
     @Test
-    void testCreateStringInputDoesNotQueueSecondConversation() {
-        when(p.isConversing()).thenReturn(true);
+    void testSecondQuestionReplacesFirst()
+    {
+        List<Object> first = new ArrayList<>();
+        ConversationUtils.createStringInput(first::add, this.user, "Search for?", null);
+        ConversationUtils.createStringInput(this.answers::add, this.user, "Search for?", null);
 
-        Consumer<String> consumer = value -> {};
-        ConversationUtils.createStringInput(consumer, user, "question?", "done");
+        this.say("stone");
 
-        verify(p, never()).beginConversation(any(Conversation.class));
-        verify(p).closeInventory();
-        verify(p).sendRawMessage(anyString());
+        assertTrue(first.isEmpty());
+        assertEquals(List.of("stone"), this.answers);
+        assertFalse(ChatInputListener.isWaitingFor(this.uuid));
     }
 }
